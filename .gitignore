@@ -1,0 +1,14 @@
+# Log files
+*.log
+
+# JetBrains IDE
+.idea/
+
+# Unit test reports
+TEST*.xml
+
+# Composer packages files
+vendor
+
+# PHPUnit result cache
+.phpunit.result.cache

@@ -1,0 +1,64 @@
+<?php
+
+namespace SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts;
+
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+
+/**
+ * Class OrderProxyInterface
+ *
+ * @package SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts
+ */
+interface OrderProxyInterface
+{
+    /**
+     * Get all available payment methods from SeQura for the provided order.
+     *
+     * @param GetAvailablePaymentMethodsRequest $request
+     *
+     * @throws HttpRequestException
+     *
+     * @return SeQuraPaymentMethod[]
+     */
+    public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array;
+
+    /**
+     * Creates a new order.
+     *
+     * @param CreateOrderRequest $request
+     *
+     * @throws HttpRequestException
+     *
+     * @return SeQuraOrder
+     */
+    public function createOrder(CreateOrderRequest $request): SeQuraOrder;
+
+    /**
+     * Updates an existing order on the SeQura API.
+     *
+     * @param string $id
+     * @param CreateOrderRequest $request
+     *
+     * @return boolean Whether the update operation has been successful or not.
+     *
+     * @throws HttpRequestException
+     */
+    public function updateOrder(string $id, CreateOrderRequest $request): bool;
+
+    /**
+     * Gets the user verification form.
+     *
+     * @param GetFormRequest $request
+     *
+     * @throws HttpRequestException
+     *
+     * @return SeQuraForm
+     */
+    public function getForm(GetFormRequest $request): SeQuraForm;
+}

@@ -1,1 +1,1 @@
-# integration-core
+# SeQura integration core.

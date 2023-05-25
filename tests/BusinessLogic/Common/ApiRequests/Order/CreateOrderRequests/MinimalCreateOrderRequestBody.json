@@ -1,0 +1,63 @@
+{
+  "order": {
+    "state": "testState",
+    "merchant": {
+      "id": "testMerchantId"
+    },
+    "merchant_reference": {
+      "order_ref_1": "test123"
+    },
+    "cart": {
+      "currency": "testCurrency",
+      "gift": false,
+      "order_total_with_tax": 10,
+      "items": [
+        {
+          "type": "product",
+          "reference": "testItemReference",
+          "name": "testName",
+          "price_with_tax": 5,
+          "quantity": 2,
+          "total_with_tax": 10,
+          "downloadable": false
+        }
+      ]
+    },
+    "delivery_method": {
+      "name": "testDeliveryMethodName"
+    },
+    "delivery_address": {
+      "company": "testDeliveryAddressCompany",
+      "address_line_1": "testDeliveryAddressLine1",
+      "address_line_2": "testDeliveryAddressLine2",
+      "postal_code": "testDeliveryAddressPostalCode",
+      "city": "testDeliveryAddressCity",
+      "country_code": "ES"
+    },
+    "invoice_address": {
+      "company": "testInvoiceAddressCompany",
+      "address_line_1": "testInvoiceAddressLine1",
+      "address_line_2": "testInvoiceAddressLine2",
+      "postal_code": "testInvoiceAddressPostalCode",
+      "city": "testInvoiceAddressCity",
+      "country_code": "ES"
+    },
+    "customer": {
+      "email": "test@test.test",
+      "logged_in": "unknown",
+      "language_code": "testCode",
+      "ip_number": "testIpNum",
+      "user_agent": "testAgent"
+    },
+    "gui": {
+      "layout": "desktop"
+    },
+    "platform": {
+      "name": "testName",
+      "version": "testVersion",
+      "uname": "testUName",
+      "db_name": "testDbName",
+      "db_version": "testDbVersion"
+    }
+  }
+}

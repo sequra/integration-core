@@ -1,0 +1,64 @@
+<?php
+
+namespace SeQura\Core\BusinessLogic\WebhookAPI\Controller;
+
+use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
+use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
+use SeQura\Core\BusinessLogic\Webhook\Validator\WebhookValidator;
+use SeQura\Core\BusinessLogic\WebhookAPI\Response\WebhookErrorResponse;
+use SeQura\Core\BusinessLogic\WebhookAPI\Response\WebhookSuccessResponse;
+
+/**
+ * Class WebhookController
+ *
+ * @package SeQura\Core\BusinessLogic\WebhookAPI\Controller
+ */
+class WebhookController
+{
+    /**
+     * @var WebhookValidator
+     */
+    private $validator;
+
+    /**
+     * @var WebhookHandler
+     */
+    private $handler;
+
+    /**
+     * WebhookController constructor.
+     *
+     * @param WebhookValidator $validator
+     * @param WebhookHandler $handler
+     */
+    public function __construct(WebhookValidator $validator, WebhookHandler $handler)
+    {
+        $this->validator = $validator;
+        $this->handler = $handler;
+    }
+
+    /**
+     * Handles a webhook request from SeQura.
+     *
+     * SeQura expects an empty response. Expected response status values are 200, 201, 202, 302, 307, 404 and 501.
+     * Other values will be considered errors. If the integration receives any unknown or unimplemented event type,
+     * it should respond with a 501 Not Implemented response.
+     *
+     * @param array $payload
+     *
+     * @return Response
+     */
+    public function handleRequest(array $payload): Response
+    {
+        try {
+            $webhook = Webhook::fromArray($payload);
+            $this->validator->validate($webhook);
+            $this->handler->handle($webhook);
+        } catch (\Exception $e) {
+            return new WebhookErrorResponse($e);
+        }
+
+        return new WebhookSuccessResponse();
+    }
+}
