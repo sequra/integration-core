@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethodCategory;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -27,6 +28,17 @@ interface OrderProxyInterface
      * @return SeQuraPaymentMethod[]
      */
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array;
+
+    /**
+     * Get all available payment methods in categories from SeQura for the provided order.
+     *
+     * @param GetAvailablePaymentMethodsRequest $request
+     *
+     * @throws HttpRequestException
+     *
+     * @return SeQuraPaymentMethodCategory[]
+     */
+    public function getAvailablePaymentMethodsInCategories(GetAvailablePaymentMethodsRequest $request): array;
 
     /**
      * Creates a new order.

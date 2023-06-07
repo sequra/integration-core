@@ -10,6 +10,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethodCategory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Authorization\AuthorizedProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\CreateOrderHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\GetAvailablePaymentMethodsHttpRequest;
@@ -36,6 +37,18 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
         $response = $this->get(new GetAvailablePaymentMethodsHttpRequest($request))->decodeBodyToArray();
 
         return $this->getListOfPaymentMethods($response);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws Exception
+     */
+    public function getAvailablePaymentMethodsInCategories(GetAvailablePaymentMethodsRequest $request): array
+    {
+        $response = $this->get(new GetAvailablePaymentMethodsHttpRequest($request))->decodeBodyToArray();
+
+        return $this->getListOfPaymentMethodsInCategories($response);
     }
 
     /**
@@ -134,5 +147,25 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
         }
 
         return $paymentMethods;
+    }
+
+    /**
+     * Gets a list of SeQuraPaymentMethodCategories from the raw response data.
+     *
+     * @param array $responseData
+     *
+     * @return SeQuraPaymentMethodCategory[]
+     *
+     * @throws Exception
+     */
+    private function getListOfPaymentMethodsInCategories(array $responseData): array
+    {
+        $paymentMethodCategories = [];
+
+        foreach ($responseData[self::PAYMENT_OPTIONS_KEY] as $category) {
+            $paymentMethodCategories[] = SeQuraPaymentMethodCategory::fromArray($category);
+        }
+
+        return $paymentMethodCategories;
     }
 }

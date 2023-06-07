@@ -244,6 +244,159 @@ class OrderProxyTest extends BaseTestCase
      *
      * @throws HttpRequestException
      */
+    public function testGetPaymentMethodsInCategoriesUrl(): void
+    {
+        $this->httpClient->setMockResponses([
+            new HttpResponse(200, [], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/Order/GetPaymentMethodsResponses/SuccessfulResponse.json'
+            ))
+        ]);
+
+        $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('testId'));
+
+        self::assertCount(1, $this->httpClient->getHistory());
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertStringContainsString('orders/testId/payment_methods', $lastRequest['url']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws HttpRequestException
+     */
+    public function testGetPaymentMethodsInCategoriesAuthHeader(): void
+    {
+        $this->httpClient->setMockResponses([
+            new HttpResponse(200, [], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/Order/GetPaymentMethodsResponses/SuccessfulResponse.json'
+            ))
+        ]);
+
+        $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('testId'));
+
+        self::assertCount(1, $this->httpClient->getHistory());
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertArrayHasKey('Authorization', $lastRequest['headers']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws HttpRequestException
+     */
+    public function testGetPaymentMethodsInCategoriesMethod(): void
+    {
+        $this->httpClient->setMockResponses([
+            new HttpResponse(200, [], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/Order/GetPaymentMethodsResponses/SuccessfulResponse.json'
+            ))
+        ]);
+
+        $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('testId'));
+
+        self::assertCount(1, $this->httpClient->getHistory());
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertEquals(HttpClient::HTTP_METHOD_GET, $lastRequest['method']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testGetPaymentMethodsInCategoriesSuccessfulResponse(): void
+    {
+        $rawResponseBody = file_get_contents(
+            __DIR__ . '/../../Common/ApiResponses/Order/GetPaymentMethodsResponses/SuccessfulResponse.json'
+        );
+
+        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody )]);
+        $response = $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('testId'));
+        $responseBody = json_decode($rawResponseBody, true);
+        $paymentMethodCategories = [];
+
+        foreach ($responseBody['payment_options'] as $category) {
+            $paymentMethodCategories[] = $category;
+        }
+
+        for ($i = 0, $iMax = count($paymentMethodCategories); $i < $iMax; $i++){
+            self::assertEquals($paymentMethodCategories[$i]['title'], $response[$i]->getTitle());
+            self::assertEquals($paymentMethodCategories[$i]['description'], $response[$i]->getDescription());
+            self::assertEquals($paymentMethodCategories[$i]['icon'], $response[$i]->getIcon());
+
+            for ($j = 0, $jMax = count($paymentMethodCategories[$i]['methods']); $j < $jMax; $j++) {
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['product'], $response[$i]->getMethods()[$j]->getProduct());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['campaign'], $response[$i]->getMethods()[$j]->getCampaign());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['title'], $response[$i]->getMethods()[$j]->getTitle());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['long_title'], $response[$i]->getMethods()[$j]->getLongTitle());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['claim'], $response[$i]->getMethods()[$j]->getClaim());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['description'], $response[$i]->getMethods()[$j]->getDescription());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['icon'], $response[$i]->getMethods()[$j]->getIcon());
+                self::assertEquals(new DateTime($paymentMethodCategories[$i]['methods'][$j]['starts_at']), $response[$i]->getMethods()[$j]->getStartsAt());
+                self::assertEquals(new DateTime($paymentMethodCategories[$i]['methods'][$j]['ends_at']), $response[$i]->getMethods()[$j]->getEndsAt());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['min_amount'] ?? null, $response[$i]->getMethods()[$j]->getMinAmount());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['max_amount'] ?? null, $response[$i]->getMethods()[$j]->getMaxAmount());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost_description'], $response[$i]->getMethods()[$j]->getCostDescription());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['setup_fee'], $response[$i]->getMethods()[$j]->getCost()->getSetupFee());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['instalment_fee'], $response[$i]->getMethods()[$j]->getCost()->getInstalmentFee());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['down_payment_fees'], $response[$i]->getMethods()[$j]->getCost()->getDownPaymentFees());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['instalment_total'], $response[$i]->getMethods()[$j]->getCost()->getInstalmentTotal());
+            }
+        }
+    }
+
+    /**
+     * @return void
+     *
+     * @throws HttpRequestException
+     */
+    public function testGetPaymentMethodsInCategoriesInvalidOrderIdResponse(): void
+    {
+        $exception = null;
+        $rawResponseBody = file_get_contents(
+            __DIR__ . '/../../Common/ApiResponses/Order/GetPaymentMethodsResponses/InvalidOrderIdResponse.json'
+        );
+
+        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody )]);
+
+        try {
+            $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('test'));
+        } catch (HttpApiInvalidUrlParameterException $exception) {}
+
+        $responseBody = json_decode($rawResponseBody, true);
+        self::assertNotNull($exception);
+        self::assertEquals('Access forbidden.', $exception->getMessage());
+        self::assertEquals(403, $exception->getCode());
+        self::assertEquals($responseBody['errors'] ?? [], $exception->getErrors());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws HttpRequestException
+     */
+    public function testGetPaymentMethodsInCategoriesUnauthorizedResponse(): void
+    {
+        $exception = null;
+        $rawResponseBody = file_get_contents(__DIR__ . '/../../Common/ApiResponses/InvalidCredentialsResponse.txt');
+        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody )]);
+
+        try {
+            $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('test'));
+        } catch (HttpApiUnauthorizedException $exception) {}
+
+        $responseBody = json_decode($rawResponseBody, true);
+        self::assertNotNull($exception);
+        self::assertEquals('Wrong credentials.', $exception->getMessage());
+        self::assertEquals(401, $exception->getCode());
+        self::assertEquals($responseBody['errors'] ?? [], $exception->getErrors());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws HttpRequestException
+     */
     public function testGetFormUrl(): void
     {
         $this->httpClient->setMockResponses([
