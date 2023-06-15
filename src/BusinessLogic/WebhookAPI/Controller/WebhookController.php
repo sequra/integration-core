@@ -43,7 +43,9 @@ class WebhookController
      *
      * SeQura expects an empty response. Expected response status values are 200, 201, 202, 302, 307, 404 and 501.
      * Other values will be considered errors. If the integration receives any unknown or unimplemented event type,
-     * it should respond with a 501 Not Implemented response.
+     * it should respond with a 501 Not Implemented response. If the integration encounters an error while updating
+     * the target shop order status, it should respond with a 410 Gone response, to indicate to SeQura that the
+     * target shop refuses to accept the order status update.
      *
      * @param array $payload
      *

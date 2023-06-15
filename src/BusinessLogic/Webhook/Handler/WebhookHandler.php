@@ -2,24 +2,15 @@
 
 namespace SeQura\Core\BusinessLogic\Webhook\Handler;
 
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidDateException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidDurationException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidOrderStateException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidServiceEndTimeException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTimestampException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\OrderRequestStatusMapping;
 use SeQura\Core\BusinessLogic\Domain\Order\OrderStates;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
-use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Webhook\Tasks\OrderUpdateTask;
-use SeQura\Core\Infrastructure\Configuration\ConfigurationManager;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
@@ -27,8 +18,6 @@ use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\ServiceRegister;
-use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
-use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 
 /**
  * Class WebhookHandler
@@ -38,28 +27,6 @@ use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 class WebhookHandler
 {
     /**
-     * @var QueueService
-     */
-    private $queueService;
-
-    /**
-     * @var QueueNameProviderInterface
-     */
-    private $queueNameProvider;
-
-    /**
-     * WebhookHandler constructor.
-     *
-     * @param QueueService $queueService
-     * @param QueueNameProviderInterface $queueNameProvider
-     */
-    public function __construct(QueueService $queueService, QueueNameProviderInterface $queueNameProvider)
-    {
-        $this->queueService = $queueService;
-        $this->queueNameProvider = $queueNameProvider;
-    }
-
-    /**
      * Handles an incoming webhook request.
      *
      * @param Webhook $webhook
@@ -67,28 +34,15 @@ class WebhookHandler
      * @return void
      *
      * @throws HttpRequestException
-     * @throws InvalidCartItemsException
-     * @throws InvalidDateException
-     * @throws InvalidDurationException
-     * @throws InvalidQuantityException
-     * @throws InvalidServiceEndTimeException
-     * @throws InvalidTimestampException
-     * @throws InvalidUrlException
-     * @throws QueryFilterInvalidParamException
-     * @throws QueueStorageUnavailableException
-     * @throws RepositoryNotRegisteredException
      * @throws InvalidOrderStateException
+     * @throws QueryFilterInvalidParamException
+     * @throws RepositoryNotRegisteredException
+     * @throws \Exception
      */
     public function handle(Webhook $webhook): void
     {
-        $configurationManager = ServiceRegister::getService(ConfigurationManager::class);
-        $task  = new OrderUpdateTask($webhook);
-
-        $this->queueService->enqueue(
-            $this->queueNameProvider->getQueueName($task),
-            $task,
-            $configurationManager->getContext()
-        );
+        $task = new OrderUpdateTask($webhook);
+        $task->execute();
 
         if (in_array($webhook->getSqState(), [OrderStates::STATE_APPROVED, OrderStates::STATE_NEEDS_REVIEW], true)) {
             $this->acknowledgeOrder($webhook->getOrderRef(), $webhook->getSqState());
