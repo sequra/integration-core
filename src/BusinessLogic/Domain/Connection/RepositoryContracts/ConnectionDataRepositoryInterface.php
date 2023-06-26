@@ -26,4 +26,11 @@ interface ConnectionDataRepositoryInterface
      * @return void
      */
     public function setConnectionData(ConnectionData $connectionData): void;
+
+    /**
+     * Retrieves first ConnectionData storeId.
+     *
+     * @return string|null
+     */
+    public function getOldestConnectionSettingsStoreId(): ?string;
 }

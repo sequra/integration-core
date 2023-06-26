@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\Connection;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\ConnectionRequest;
+use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\ConnectionSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\SuccessfulConnectionResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\ErrorResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
@@ -68,6 +69,16 @@ class ConnectionController
         }
 
         return new SuccessfulConnectionResponse();
+    }
+
+    /**
+     * Gets the connection data from the database.
+     *
+     * @return ConnectionSettingsResponse
+     */
+    public function getConnectionSettings(): ConnectionSettingsResponse
+    {
+        return new ConnectionSettingsResponse($this->connectionService->getConnectionData());
     }
 
     /**

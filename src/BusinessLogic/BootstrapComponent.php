@@ -3,16 +3,29 @@
 namespace SeQura\Core\BusinessLogic;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
+use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
+use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
+use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
+use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
+use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
+use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
+use SeQura\Core\BusinessLogic\AdminAPI\WidgetConfiguration\WidgetConfigurationController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
+use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
+use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\OrderStatusProvider;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
@@ -71,6 +84,16 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+
+        ServiceRegister::registerService(
+            CountryConfigurationRepositoryInterface::class,
+            static function () {
+                return new CountryConfigurationRepository(
+                    RepositoryRegistry::getRepository(CountryConfiguration::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
     }
 
     /**
@@ -105,6 +128,23 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new ConnectionService(
                     ServiceRegister::getService(ConnectionProxyInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            CountryConfigurationService::class,
+            static function () {
+                return new CountryConfigurationService();
+            }
+        );
+
+        ServiceRegister::registerService(
+            StoreService::class,
+            static function () {
+                return new StoreService(
+                    ServiceRegister::getService(IntegrationStoreService::class),
+                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
                 );
             }
         );
@@ -157,6 +197,59 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new ConnectionController(
                     ServiceRegister::getService(ConnectionService::class)
                 );
+            }
+        );
+
+        ServiceRegister::registerService(
+            CountryConfigurationController::class,
+            static function () {
+                return new CountryConfigurationController(
+                    ServiceRegister::getService(CountryConfigurationService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            StoreController::class,
+            static function () {
+                return new StoreController(
+                    ServiceRegister::getService(StoreService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            GeneralSettingsController::class,
+            static function () {
+                return new GeneralSettingsController();
+            }
+        );
+
+        ServiceRegister::registerService(
+            OrderStatusSettingsController::class,
+            static function () {
+                return new OrderStatusSettingsController();
+            }
+        );
+
+        ServiceRegister::registerService(
+            PaymentMethodsController::class,
+            static function () {
+                return new PaymentMethodsController();
+            }
+        );
+
+        ServiceRegister::registerService(
+            WidgetConfigurationController::class,
+            static function () {
+                return new WidgetConfigurationController();
+            }
+        );
+
+        ServiceRegister::registerService(
+            IntegrationController::class,
+            static function () {
+                return new IntegrationController();
             }
         );
     }

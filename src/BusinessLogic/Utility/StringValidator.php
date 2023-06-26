@@ -45,7 +45,7 @@ class StringValidator
     }
 
     /**
-     * Returns true if a string is ISO 3166 alpha-2 or ISO 3166 alpha-3 code.
+     * Returns true if a string is between provided min and max length.
      *
      * @param string $string
      * @param int $minLength
