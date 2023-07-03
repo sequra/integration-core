@@ -203,6 +203,16 @@ class Cart extends OrderRequestDTO
     }
 
     /**
+     * @param Item[] $items
+     *
+     * @return void
+     */
+    public function setItems(array $items)
+    {
+        $this->items = $items;
+    }
+
+    /**
      * @inheritDoc
      */
     public function toArray(): array

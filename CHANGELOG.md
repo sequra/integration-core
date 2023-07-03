@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+# [v1.0.4](https://github.com/sequra/integration-core/tree/v1.0.4)
+## Changed
+- Updated the cart DTO to allow updating order items.
+
 # [v1.0.3](https://github.com/sequra/integration-core/tree/v1.0.3)
 ## Added
 - Added a proxy method for updating carts on the SeQura API
