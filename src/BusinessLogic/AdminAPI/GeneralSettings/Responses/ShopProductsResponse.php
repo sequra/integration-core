@@ -33,8 +33,8 @@ class ShopProductsResponse extends Response
         $shopProducts = [];
         foreach ($this->products as $product) {
             $shopProducts[] = [
-                'productId' => $product->getProductId(),
-                'productName' => $product->getProductName()
+                'id' => $product->getId(),
+                'name' => $product->getName()
             ];
         }
 

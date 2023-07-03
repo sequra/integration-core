@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\Category\Models;
 
 use SeQura\Core\BusinessLogic\Domain\Category\Exceptions\EmptyCategoryParameterException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 
 /**
  * Class Category
@@ -14,42 +15,44 @@ class Category
     /**
      * @var string
      */
-    private $categoryId;
+    private $id;
 
     /**
      * @var string
      */
-    private $categoryName;
+    private $name;
 
     /**
-     * @param string $categoryId
-     * @param string $categoryName
+     * @param string $id
+     * @param string $name
      *
      * @throws EmptyCategoryParameterException
      */
-    public function __construct(string $categoryId, string $categoryName)
+    public function __construct(string $id, string $name)
     {
-        if(empty($categoryId) || empty($categoryName)) {
-            throw new EmptyCategoryParameterException('No parameter can be an empty string.');
+        if(empty($id) || empty($name)) {
+            throw new EmptyCategoryParameterException(
+                new TranslatableLabel('No parameter can be an empty string.',400)
+            );
         }
 
-        $this->categoryId = $categoryId;
-        $this->categoryName = $categoryName;
+        $this->id = $id;
+        $this->name = $name;
     }
 
     /**
      * @return string
      */
-    public function getCategoryId(): string
+    public function getId(): string
     {
-        return $this->categoryId;
+        return $this->id;
     }
 
     /**
      * @return string
      */
-    public function getCategoryName(): string
+    public function getName(): string
     {
-        return $this->categoryName;
+        return $this->name;
     }
 }

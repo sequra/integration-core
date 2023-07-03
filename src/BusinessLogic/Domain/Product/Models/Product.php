@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\Product\Models;
 
 use SeQura\Core\BusinessLogic\Domain\Product\Exceptions\EmptyProductParameterException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 
 /**
  * Class Product
@@ -14,42 +15,60 @@ class Product
     /**
      * @var string
      */
-    private $productId;
+    private $id;
 
     /**
      * @var string
      */
-    private $productName;
+    private $name;
 
     /**
-     * @param string $productId
-     * @param string $productName
+     * @param string $id
+     * @param string $name
      *
      * @throws EmptyProductParameterException
      */
-    public function __construct(string $productId, string $productName)
+    public function __construct(string $id, string $name)
     {
-        if(empty($productId) || empty($productName)) {
-            throw new EmptyProductParameterException('No parameter can be an empty string.');
+        if(empty($id) || empty($name)) {
+            throw new EmptyProductParameterException(
+                new TranslatableLabel('No parameter can be an empty string.',400)
+            );
         }
 
-        $this->productId = $productId;
-        $this->productName = $productName;
+        $this->id = $id;
+        $this->name = $name;
     }
 
     /**
      * @return string
      */
-    public function getProductId(): string
+    public function getId(): string
     {
-        return $this->productId;
+        return $this->id;
+    }
+
+    /**
+     * @param string $id
+     */
+    public function setId(string $id): void
+    {
+        $this->id = $id;
     }
 
     /**
      * @return string
      */
-    public function getProductName(): string
+    public function getName(): string
     {
-        return $this->productName;
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName(string $name): void
+    {
+        $this->name = $name;
     }
 }

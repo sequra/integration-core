@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\Responses\ShopOrderSt
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\Responses\SuccessfulOrderStatusSettingsResponse;
 use SeQura\Core\BusinessLogic\Domain\OrderStatus\Models\OrderStatus;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusMapping;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusSettings;
 
 /**
  * Class OrderStatusSettingsController
@@ -23,12 +24,13 @@ class OrderStatusSettingsController
      */
     public function getOrderStatusSettings(): OrderStatusSettingsResponse
     {
-        return new OrderStatusSettingsResponse(
+        return new OrderStatusSettingsResponse(new OrderStatusSettings(
             [
-                new OrderStatusMapping('approved','paid'),
-                new OrderStatusMapping('needs_review','pending'),
-                new OrderStatusMapping('cancelled','denied'),
-            ]
+                new OrderStatusMapping('approved','status1'),
+                new OrderStatusMapping('needs_review','status3'),
+                new OrderStatusMapping('cancelled','status2'),
+            ],
+            true)
         );
     }
 

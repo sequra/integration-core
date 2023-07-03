@@ -36,7 +36,7 @@ class WidgetConfigurationResponse extends Response
 
         return [
             'useWidgets' => $this->widgetConfiguration->isUseWidgets(),
-            'disableWidgetOnProductPage' => $this->widgetConfiguration->isDisableWidgetOnProductPage(),
+            'displayWidgetOnProductPage' => $this->widgetConfiguration->isDisplayWidgetOnProductPage(),
             'showInstallmentAmountInProductListing' => $this->widgetConfiguration->isShowInstallmentAmountInProductListing(),
             'showInstallmentAmountInCartPage' => $this->widgetConfiguration->isShowInstallmentAmountInCartPage(),
             'assetsKey' => $this->widgetConfiguration->getAssetsKey(),

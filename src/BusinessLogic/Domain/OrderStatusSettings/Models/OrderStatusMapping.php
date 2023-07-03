@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models;
 use SeQura\Core\BusinessLogic\Domain\Order\OrderStates;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Exceptions\EmptyOrderStatusMappingParameterException;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Exceptions\InvalidSeQuraOrderStatusException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 
 /**
  * Class OrderStatusMapping
@@ -33,11 +34,15 @@ class OrderStatusMapping
     public function __construct(string $seQuraStatus, string $shopStatus)
     {
         if(empty($seQuraStatus) || empty($shopStatus)) {
-            throw new EmptyOrderStatusMappingParameterException('No parameter can be an empty string.');
+            throw new EmptyOrderStatusMappingParameterException(
+                new TranslatableLabel('No parameter can be an empty string.', 400)
+            );
         }
 
         if(!in_array($seQuraStatus, OrderStates::toArray(),true)) {
-            throw new InvalidSeQuraOrderStatusException('Invalid SeQura order status.');
+            throw new InvalidSeQuraOrderStatusException(
+                new TranslatableLabel('Invalid SeQura order status.', 400)
+            );
         }
 
         $this->sequraStatus = $seQuraStatus;

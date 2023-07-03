@@ -2,13 +2,13 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Stores\Exceptions;
 
-use SeQura\Core\Infrastructure\Exceptions\BaseException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableException;
 
 /**
  * Class FailedToRetrieveStoresException
  *
  * @package SeQura\Core\BusinessLogic\Domain\Stores\Exceptions
  */
-class FailedToRetrieveStoresException extends BaseException
+class FailedToRetrieveStoresException extends BaseTranslatableException
 {
 }

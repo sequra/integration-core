@@ -2,13 +2,13 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions;
 
-use SeQura\Core\Infrastructure\Exceptions\BaseException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableException;
 
 /**
  * Class EmptyCountryConfigurationParameterException
  *
  * @package SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions
  */
-class EmptyCountryConfigurationParameterException extends BaseException
+class EmptyCountryConfigurationParameterException extends BaseTranslatableException
 {
 }

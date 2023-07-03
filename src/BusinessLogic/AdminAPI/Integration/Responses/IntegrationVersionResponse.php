@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\Domain\Version\Models\Version;
 
 /**
  * Class IntegrationVersionResponse
@@ -12,14 +13,14 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 class IntegrationVersionResponse extends Response
 {
     /**
-     * @var string
+     * @var Version
      */
     private $version;
 
     /**
-     * @param string $version
+     * @param Version $version
      */
-    public function __construct(string $version)
+    public function __construct(Version $version)
     {
         $this->version = $version;
     }
@@ -30,7 +31,9 @@ class IntegrationVersionResponse extends Response
     public function toArray(): array
     {
         return [
-            'version' => $this->version
+            'current' => $this->version->getCurrent(),
+            'new' => $this->version->getNew(),
+            'downloadNewVersionUrl' => $this->version->getDownloadNewVersionUrl()
         ];
     }
 }

@@ -22,7 +22,7 @@ class WidgetConfiguration
     /**
      * @var bool
      */
-    private $disableWidgetOnProductPage;
+    private $displayWidgetOnProductPage;
 
     /**
      * @var bool
@@ -46,7 +46,7 @@ class WidgetConfiguration
 
     /**
      * @param bool $useWidgets
-     * @param bool $disableWidgetOnProductPage
+     * @param bool $displayWidgetOnProductPage
      * @param bool $showInstallmentAmountInProductListing
      * @param bool $showInstallmentAmountInCartPage
      * @param string|null $assetsKey
@@ -55,7 +55,7 @@ class WidgetConfiguration
      */
     public function __construct(
         bool $useWidgets,
-        bool $disableWidgetOnProductPage,
+        bool $displayWidgetOnProductPage,
         bool $showInstallmentAmountInProductListing,
         bool $showInstallmentAmountInCartPage,
         ?string $assetsKey,
@@ -65,7 +65,7 @@ class WidgetConfiguration
     {
         $this->useWidgets = $useWidgets;
         $this->assetsKey = $assetsKey;
-        $this->disableWidgetOnProductPage = $disableWidgetOnProductPage;
+        $this->displayWidgetOnProductPage = $displayWidgetOnProductPage;
         $this->showInstallmentAmountInProductListing = $showInstallmentAmountInProductListing;
         $this->showInstallmentAmountInCartPage = $showInstallmentAmountInCartPage;
         $this->widgetStyles = $widgetStyles;
@@ -107,17 +107,17 @@ class WidgetConfiguration
     /**
      * @return bool
      */
-    public function isDisableWidgetOnProductPage(): bool
+    public function isDisplayWidgetOnProductPage(): bool
     {
-        return $this->disableWidgetOnProductPage;
+        return $this->displayWidgetOnProductPage;
     }
 
     /**
-     * @param bool $disableWidgetOnProductPage
+     * @param bool $displayWidgetOnProductPage
      */
-    public function setDisableWidgetOnProductPage(bool $disableWidgetOnProductPage): void
+    public function setDisplayWidgetOnProductPage(bool $displayWidgetOnProductPage): void
     {
-        $this->disableWidgetOnProductPage = $disableWidgetOnProductPage;
+        $this->displayWidgetOnProductPage = $displayWidgetOnProductPage;
     }
 
     /**

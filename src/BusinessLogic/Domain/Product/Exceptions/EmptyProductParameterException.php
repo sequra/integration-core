@@ -2,13 +2,13 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Product\Exceptions;
 
-use SeQura\Core\Infrastructure\Exceptions\BaseException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableException;
 
 /**
  * Class EmptyProductParameterException
  *
  * @package SeQura\Core\BusinessLogic\Domain\Product\Exceptions
  */
-class EmptyProductParameterException extends BaseException
+class EmptyProductParameterException extends BaseTranslatableException
 {
 }

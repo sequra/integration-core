@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\Stores\Models;
 
 use SeQura\Core\BusinessLogic\Domain\Stores\Exceptions\EmptyStoreParameterException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 
 /**
  * Class Store
@@ -30,7 +31,9 @@ class Store
     public function __construct(string $storeId, string $storeName)
     {
         if(empty($storeId) || empty($storeName)) {
-            throw new EmptyStoreParameterException('No parameter can be an empty string.');
+            throw new EmptyStoreParameterException(
+                new TranslatableLabel('No parameter can be an empty string.', 400)
+            );
         }
 
         $this->storeId = $storeId;

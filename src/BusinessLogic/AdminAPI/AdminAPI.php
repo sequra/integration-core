@@ -6,6 +6,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\Aspects\ErrorHandlingAspect;
 use SeQura\Core\BusinessLogic\AdminAPI\Aspects\StoreContextAspect;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
+use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\DisconnectController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
@@ -154,5 +155,20 @@ class AdminAPI
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
             ->beforeEachMethodOfService(IntegrationController::class);
+    }
+
+    /**
+     * Returns a DisconnectController instance.
+     *
+     * @param string $storeId
+     *
+     * @return DisconnectController
+     */
+    public function disconnect(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(DisconnectController::class);
     }
 }

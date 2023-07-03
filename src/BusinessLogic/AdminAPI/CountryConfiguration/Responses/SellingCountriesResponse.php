@@ -17,6 +17,14 @@ class SellingCountriesResponse extends Response
      */
     public function toArray(): array
     {
-        return SellingCountries::SELLING_COUNTRIES;
+        $sellingCountries = [];
+        foreach (SellingCountries::SELLING_COUNTRIES as $key => $value) {
+            $sellingCountries[] = [
+                'code' => $key,
+                'name' => $value
+            ];
+        }
+
+        return $sellingCountries;
     }
 }

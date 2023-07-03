@@ -33,8 +33,8 @@ class ShopCategoriesResponse extends Response
         $shopCategories = [];
         foreach ($this->categories as $category) {
             $shopCategories[] = [
-                'categoryId' => $category->getCategoryId(),
-                'categoryName' => $category->getCategoryName()
+                'id' => $category->getId(),
+                'name' => $category->getName()
             ];
         }
 

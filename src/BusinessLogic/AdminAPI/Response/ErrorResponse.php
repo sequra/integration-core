@@ -32,20 +32,39 @@ class ErrorResponse extends Response
     }
 
     /**
+     * Implementation is swallowing all undefined calls to avoid undefined method call exceptions when
+     * @see ErrorHandlingAspect already hanled the API call exception but because of chaining calle will trigger
+     * API controller messages on instance of the @see self.
+     *
+     * @param $methodName
+     * @param $arguments
+     * @return self Already handled error response
+     */
+    public function __call($methodName, $arguments)
+    {
+        return $this;
+    }
+
+    /**
+     * Creates an ErrorResponse instance from a Throwable.
+     *
+     * @param Throwable $e
+     *
+     * @return self
+     */
+    public static function fromError(Throwable $e): self
+    {
+        return new static($e);
+    }
+
+    /**
      * @inheritDoc
      */
     public function toArray(): array
     {
         return [
-            'error' => $this->error->getMessage(),
+            'errorCode' => $this->error->getCode(),
+            'errorMessage' => $this->error->getMessage(),
         ];
-    }
-
-    /**
-     * @return Throwable
-     */
-    public function getError(): Throwable
-    {
-        return $this->error;
     }
 }

@@ -34,7 +34,7 @@ class PaymentMethodsController
                 'description1',
                 'icon1',
                 'costDescription1',
-                123,
+                1234567.89,
                 321
             ),
             new SeQuraPaymentMethod(

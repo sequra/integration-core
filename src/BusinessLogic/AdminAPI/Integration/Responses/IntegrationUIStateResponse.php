@@ -3,7 +3,6 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
-use SeQura\Core\BusinessLogic\Domain\UIState\Models\UIPageState;
 
 /**
  * Class IntegrationUIStateResponse
@@ -13,16 +12,48 @@ use SeQura\Core\BusinessLogic\Domain\UIState\Models\UIPageState;
 class IntegrationUIStateResponse extends Response
 {
     /**
-     * @var UIPageState
+     * Onboarding string constant.
      */
-    private $UIState;
+    private const ONBOARDING = 'onboarding';
 
     /**
-     * @param UIPageState $UIState
+     * Dashboard string constant.
      */
-    public function __construct(UIPageState $UIState)
+    private const DASHBOARD = 'dashboard';
+
+    /**
+     * String representation of state.
+     *
+     * @var string
+     */
+    private $state;
+
+    /**
+     * @param string $state
+     */
+    private function __construct(string $state)
     {
-        $this->UIState = $UIState;
+        $this->state = $state;
+    }
+
+    /**
+     * Called when user state is onboarding.
+     *
+     * @return IntegrationUIStateResponse
+     */
+    public static function onboarding(): self
+    {
+        return new self(self::ONBOARDING);
+    }
+
+    /**
+     * Called when user state is dashboard.
+     *
+     * @return IntegrationUIStateResponse
+     */
+    public static function dashboard(): self
+    {
+        return new self(self::DASHBOARD);
     }
 
     /**
@@ -31,8 +62,7 @@ class IntegrationUIStateResponse extends Response
     public function toArray(): array
     {
         return [
-            'state' => $this->UIState->getState(),
-            'page' => $this->UIState->getPage()
+            'state' => $this->state
         ];
     }
 }

@@ -3,8 +3,10 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\Aspects;
 
 use Exception;
+use SeQura\Core\BusinessLogic\AdminAPI\Response\TranslatableErrorResponse;
 use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspect;
-use SeQura\Core\Infrastructure\Exceptions\BaseException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableUnhandledException;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use Throwable;
 
@@ -22,7 +24,7 @@ class ErrorHandlingAspect implements Aspect
     {
         try {
             $response = call_user_func_array($callee, $params);
-        } catch (BaseException $e) {
+        } catch (BaseTranslatableException $e) {
             Logger::logError(
                 $e->getMessage(),
                 'Core',
@@ -33,7 +35,7 @@ class ErrorHandlingAspect implements Aspect
                 ]
             );
 
-            $response = $e->getMessage();
+            $response = TranslatableErrorResponse::fromError($e);
         } catch (Throwable $e) {
             Logger::logError(
                 'Unhandled error occurred.',
@@ -45,7 +47,8 @@ class ErrorHandlingAspect implements Aspect
                 ]
             );
 
-            $response = $e;
+            $exception = new BaseTranslatableUnhandledException($e);
+            $response = TranslatableErrorResponse::fromError($exception);
         }
 
         return $response;

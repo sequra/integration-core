@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDa
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Stores\Exceptions\FailedToRetrieveStoresException;
 use SeQura\Core\BusinessLogic\Domain\Stores\Models\Store;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 
 /**
  * Class StoreService
@@ -46,7 +47,7 @@ class StoreService
         try {
             return $this->integrationStoreService->getStores();
         } catch (Exception $e) {
-            throw new FailedToRetrieveStoresException($e);
+            throw new FailedToRetrieveStoresException(new TranslatableLabel($e->getMessage(), $e->getCode()));
         }
     }
 
@@ -66,7 +67,7 @@ class StoreService
                 $firstConnectedStoreId
             ) : $this->integrationStoreService->getDefaultStore();
         } catch (Exception $e) {
-            throw new FailedToRetrieveStoresException($e);
+            throw new FailedToRetrieveStoresException(new TranslatableLabel($e->getMessage(), $e->getCode()));
         }
     }
 

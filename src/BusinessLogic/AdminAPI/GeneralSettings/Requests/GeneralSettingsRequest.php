@@ -76,16 +76,16 @@ class GeneralSettingsRequest extends Request
         $categories = [];
         foreach ($this->excludedCategories as $category) {
             $categories = new Category(
-                $category['categoryId'] ?? '',
-                $category['categoryName'] ?? ''
+                $category['id'] ?? '',
+                $category['name'] ?? ''
             );
         }
 
         $products = [];
         foreach ($this->excludedProducts as $product) {
             $products = new Product(
-                $product['productId'] ?? '',
-                $product['productName'] ?? ''
+                $product['id'] ?? '',
+                $product['name'] ?? ''
             );
         }
 

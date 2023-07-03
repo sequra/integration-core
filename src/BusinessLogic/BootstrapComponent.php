@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
+use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\DisconnectController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
@@ -250,6 +251,13 @@ class BootstrapComponent extends BaseBootstrapComponent
             IntegrationController::class,
             static function () {
                 return new IntegrationController();
+            }
+        );
+
+        ServiceRegister::registerService(
+            DisconnectController::class,
+            static function () {
+                return new DisconnectController();
             }
         );
     }

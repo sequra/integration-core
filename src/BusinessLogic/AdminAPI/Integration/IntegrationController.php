@@ -2,12 +2,9 @@
 
 namespace SeQura\Core\BusinessLogic\AdminAPI\Integration;
 
-use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationAvailableUIPagesResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationUIStateResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationVersionResponse;
-use SeQura\Core\BusinessLogic\Domain\UIState\Exception\InvalidUIPageException;
-use SeQura\Core\BusinessLogic\Domain\UIState\Models\UIPages;
-use SeQura\Core\BusinessLogic\Domain\UIState\Models\UIPageState;
+use SeQura\Core\BusinessLogic\Domain\Version\Models\Version;
 
 /**
  * Class IntegrationController
@@ -17,29 +14,13 @@ use SeQura\Core\BusinessLogic\Domain\UIState\Models\UIPageState;
 class IntegrationController
 {
     /**
-     * Gets available UI pages for the integration.
-     *
-     * @return IntegrationAvailableUIPagesResponse
-     *
-     * @throws InvalidUIPageException
-     */
-    public function getAvailableUIPages(): IntegrationAvailableUIPagesResponse
-    {
-        return new IntegrationAvailableUIPagesResponse(
-            new UIPages([],[])
-        );
-    }
-
-    /**
      * Gets the UI state for the integration.
      *
      * @return IntegrationUIStateResponse
      */
     public function getUIState(): IntegrationUIStateResponse
     {
-        return new IntegrationUIStateResponse(
-            new UIPageState('onboarding','')
-        );
+        return IntegrationUIStateResponse::dashboard();
     }
 
     /**
@@ -49,8 +30,10 @@ class IntegrationController
      */
     public function getVersion(): IntegrationVersionResponse
     {
-        return new IntegrationVersionResponse(
-            ''
-        );
+        return new IntegrationVersionResponse(new Version(
+            'v1.0.1',
+            'v1.0.5',
+            'https://logeecom.com/wp-content/uploads/2016/09/logo-white.png'
+        ));
     }
 }
