@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
@@ -62,6 +63,18 @@ interface OrderProxyInterface
      * @throws HttpRequestException
      */
     public function updateOrder(string $id, CreateOrderRequest $request): bool;
+
+    /**
+     * Updates an existing order's unshipped and shipped cart on the SeQura API.
+     *
+     * @param string $id
+     * @param UpdateOrderRequest $request
+     *
+     * @return boolean Whether the update operation has been successful or not.
+     *
+     * @throws HttpRequestException
+     */
+    public function updateOrderCarts(string $id, UpdateOrderRequest $request): bool;
 
     /**
      * Gets the user verification form.

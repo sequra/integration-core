@@ -6,6 +6,7 @@ use Exception;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
@@ -65,6 +66,14 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
      * @inheritDoc
      */
     public function updateOrder(string $id, CreateOrderRequest $request): bool
+    {
+        return $this->put(new UpdateOrderHttpRequest($id, $request))->isSuccessful();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function updateOrderCarts(string $id, UpdateOrderRequest $request): bool
     {
         return $this->put(new UpdateOrderHttpRequest($id, $request))->isSuccessful();
     }

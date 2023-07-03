@@ -17,7 +17,7 @@ class UpdateOrderHttpRequest extends HttpRequest
      * @param string $id
      * @param CreateOrderRequest $request
      */
-    public function __construct(string $id, CreateOrderRequest $request)
+    public function __construct(string $id, BaseOrderRequest $request)
     {
         parent::__construct('/orders/' . $id, $this->transformBody($request));
     }
