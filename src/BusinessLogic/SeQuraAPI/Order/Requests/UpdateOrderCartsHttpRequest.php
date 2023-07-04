@@ -6,11 +6,11 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\BaseOrderRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\HttpRequest;
 
 /**
- * Class UpdateOrderHttpRequest
+ * Class UpdateOrderCartsHttpRequest
  *
  * @package SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests
  */
-class UpdateOrderHttpRequest extends HttpRequest
+class UpdateOrderCartsHttpRequest extends HttpRequest
 {
     /**
      * @param string $id
@@ -18,7 +18,7 @@ class UpdateOrderHttpRequest extends HttpRequest
      */
     public function __construct(string $id, BaseOrderRequest $request)
     {
-        parent::__construct('/orders/' . $id, $this->transformBody($request));
+        parent::__construct('/merchants/' . $request->getMerchant()->getId() . '/orders/' . $id, $this->transformBody($request));
     }
 
     /**

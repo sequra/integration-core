@@ -16,6 +16,7 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Authorization\AuthorizedProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\CreateOrderHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\GetAvailablePaymentMethodsHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\GetFormHttpRequest;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\UpdateOrderCartsHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\UpdateOrderHttpRequest;
 
 /**
@@ -75,7 +76,7 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
      */
     public function updateOrderCarts(string $id, UpdateOrderRequest $request): bool
     {
-        return $this->put(new UpdateOrderHttpRequest($id, $request))->isSuccessful();
+        return $this->put(new UpdateOrderCartsHttpRequest($id, $request))->isSuccessful();
     }
 
     /**
