@@ -15,7 +15,6 @@
       "rejected_callback": "testRejectCallback",
       "partpayment_details_getter": "testPartPaymentDetailsGetter",
       "approved_url": "testApprovedUrl",
-      "operator_ref": "testOperatorRef",
       "options": {
         "has_jquery": true,
         "uses_shipped_cart": false,

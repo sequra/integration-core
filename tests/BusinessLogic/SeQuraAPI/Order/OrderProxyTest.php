@@ -781,7 +781,6 @@ class OrderProxyTest extends BaseTestCase
             'testRejectCallback',
             'testPartPaymentDetailsGetter',
             'testApprovedUrl',
-            'testOperatorRef',
             new Options(true,false,true,true),
             new EventsWebhook('https://testUrl', ['signature' => 'testSignature', 'testParam1Key' => 'testParam1Value'])
         );
