@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+# [v1.0.7](https://github.com/sequra/integration-core/tree/v1.0.7)
+## Changed
+- Fixed a duplicated cart bug when transforming order update request.
+
 # [v1.0.6](https://github.com/sequra/integration-core/tree/v1.0.6)
 ## Changed
 - Removed operator reference from merchant DTO.

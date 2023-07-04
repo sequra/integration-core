@@ -85,7 +85,7 @@ class UpdateOrderRequest extends BaseOrderRequest
     {
         $merchant = Merchant::fromArray(self::getDataValue($data, 'merchant', []));
         $unshippedCart = Cart::fromArray(self::getDataValue($data, 'unshipped_cart', []));
-        $shippedCart = Cart::fromArray(self::getDataValue($data, 'unshipped_cart', []));
+        $shippedCart = Cart::fromArray(self::getDataValue($data, 'shipped_cart', []));
         $deliveryMethod = DeliveryMethod::fromArray(self::getDataValue($data, 'delivery_method', []));
         $customer = Customer::fromArray(self::getDataValue($data, 'customer', []));
         $platform = Platform::fromArray(self::getDataValue($data, 'platform', []));
