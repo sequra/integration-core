@@ -2,14 +2,12 @@
 
 namespace SeQura\Core\BusinessLogic\AdminAPI\Response;
 
-use SeQura\Core\Infrastructure\Data\DataTransferObject;
-
 /**
  * Class Response
  *
  * @package SeQura\Core\BusinessLogic\AdminAPI\Response
  */
-abstract class Response extends DataTransferObject
+abstract class Response
 {
     /**
      * @var bool
@@ -25,4 +23,11 @@ abstract class Response extends DataTransferObject
     {
         return $this->successful;
     }
+
+    /**
+     * Transforms response to array.
+     *
+     * @return array Array representation of response object.
+     */
+    abstract public function toArray(): array;
 }

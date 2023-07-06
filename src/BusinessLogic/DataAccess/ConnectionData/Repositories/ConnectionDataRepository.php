@@ -74,6 +74,17 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getOldestConnectionSettingsStoreId(): ?string
+    {
+        /** @var ConnectionDataEntity $connectionData */
+        $connectionData = $this->repository->selectOne(new QueryFilter());
+
+        return $connectionData ? $connectionData->getStoreId() : null;
+    }
+
+    /**
      * Gets the connection data entity from the database.
      *
      * @return ConnectionDataEntity|null

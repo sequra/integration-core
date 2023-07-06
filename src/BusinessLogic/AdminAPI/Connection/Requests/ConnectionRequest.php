@@ -2,12 +2,17 @@
 
 namespace SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests;
 
+use SeQura\Core\BusinessLogic\AdminAPI\Request\Request;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+
 /**
  * Class ConnectionRequest
  *
  * @package SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests
  */
-class ConnectionRequest
+class ConnectionRequest extends Request
 {
     /**
      * @var string
@@ -44,34 +49,21 @@ class ConnectionRequest
     }
 
     /**
-     * @return string
+     * Transforms the request to a ConnectionData object.
+     *
+     * @return ConnectionData
+     *
+     * @throws InvalidEnvironmentException
      */
-    public function getEnvironment(): string
+    public function transformToDomainModel(): object
     {
-        return $this->environment;
-    }
-
-    /**
-     * @return string
-     */
-    public function getMerchantId(): string
-    {
-        return $this->merchantId;
-    }
-
-    /**
-     * @return string
-     */
-    public function getUsername(): string
-    {
-        return $this->username;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPassword(): string
-    {
-        return $this->password;
+        return new ConnectionData(
+            $this->environment,
+            $this->merchantId,
+            new AuthorizationCredentials(
+                $this->username,
+                $this->password
+            )
+        );
     }
 }
