@@ -6,13 +6,9 @@ use SeQura\Core\BusinessLogic\AdminAPI\Request\Request;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\OnboardingData;
 
-/**
- * Class ConnectionRequest
- *
- * @package SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests
- */
-class ConnectionRequest extends Request
+class OnboardingRequest extends Request
 {
     /**
      * @var string
@@ -35,35 +31,45 @@ class ConnectionRequest extends Request
     private $password;
 
     /**
+     * @var bool
+     */
+    private $sendStatisticalData;
+
+    /**
      * @param string $environment
      * @param string $merchantId
      * @param string $username
      * @param string $password
+     * @param bool $sendStatisticalData
      */
-    public function __construct(string $environment, string $merchantId, string $username, string $password)
+    public function __construct(string $environment, string $merchantId, string $username, string $password, bool $sendStatisticalData)
     {
         $this->environment = $environment;
         $this->merchantId = $merchantId;
         $this->username = $username;
         $this->password = $password;
+        $this->sendStatisticalData = $sendStatisticalData;
     }
 
     /**
-     * Transforms the request to a ConnectionData object.
+     * Transforms the request to a OnboardingData object.
      *
-     * @return ConnectionData
+     * @return OnboardingData
      *
      * @throws InvalidEnvironmentException
      */
     public function transformToDomainModel(): object
     {
-        return new ConnectionData(
-            $this->environment,
-            $this->merchantId,
-            new AuthorizationCredentials(
-                $this->username,
-                $this->password
-            )
+        return new OnboardingData(
+            new ConnectionData(
+                $this->environment,
+                $this->merchantId,
+                new AuthorizationCredentials(
+                    $this->username,
+                    $this->password
+                )
+            ),
+            $this->sendStatisticalData
         );
     }
 }

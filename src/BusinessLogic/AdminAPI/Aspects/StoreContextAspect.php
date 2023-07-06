@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\AdminAPI\Aspects;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspect;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 
@@ -23,7 +24,7 @@ class StoreContextAspect implements Aspect
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function applyOn(callable $callee, array $params = [])
     {
