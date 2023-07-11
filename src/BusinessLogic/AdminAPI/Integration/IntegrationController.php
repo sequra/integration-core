@@ -5,7 +5,9 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\Integration;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationShopNameResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationUIStateResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationVersionResponse;
-use SeQura\Core\BusinessLogic\Domain\Version\Models\Version;
+use SeQura\Core\BusinessLogic\Domain\Version\Exceptions\FailedToRetrieveVersionException;
+use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
+use SeQura\Core\Infrastructure\Configuration\Configuration;
 
 /**
  * Class IntegrationController
@@ -14,6 +16,25 @@ use SeQura\Core\BusinessLogic\Domain\Version\Models\Version;
  */
 class IntegrationController
 {
+    /**
+     * @var VersionService
+     */
+    private $versionService;
+
+    /**
+     * @var Configuration
+     */
+    private $configurationService;
+
+    /**
+     * @param VersionService $versionService
+     * @param Configuration $configurationService
+     */
+    public function __construct(VersionService $versionService, Configuration $configurationService)
+    {
+        $this->versionService = $versionService;
+        $this->configurationService = $configurationService;
+    }
     /**
      * Gets the UI state for the integration.
      *
@@ -28,14 +49,12 @@ class IntegrationController
      * Gets the integration version.
      *
      * @return IntegrationVersionResponse
+     *
+     * @throws FailedToRetrieveVersionException
      */
     public function getVersion(): IntegrationVersionResponse
     {
-        return new IntegrationVersionResponse(new Version(
-            'v1.0.1',
-            'v1.0.5',
-            'https://logeecom.com/wp-content/uploads/2016/09/logo-white.png'
-        ));
+        return new IntegrationVersionResponse($this->versionService->getVersion());
     }
 
     /**
@@ -45,6 +64,6 @@ class IntegrationController
      */
     public function getShopName(): IntegrationShopNameResponse
     {
-        return new IntegrationShopNameResponse('Magento 2');
+        return new IntegrationShopNameResponse($this->configurationService->getIntegrationName());
     }
 }

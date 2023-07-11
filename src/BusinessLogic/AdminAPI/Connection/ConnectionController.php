@@ -12,6 +12,8 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdExceptio
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -27,11 +29,18 @@ class ConnectionController
     private $connectionService;
 
     /**
-     * @param ConnectionService $connectionService
+     * @var StatisticalDataService
      */
-    public function __construct(ConnectionService $connectionService)
+    private $statisticalDataService;
+
+    /**
+     * @param ConnectionService $connectionService
+     * @param StatisticalDataService $statisticalDataService
+     */
+    public function __construct(ConnectionService $connectionService, StatisticalDataService $statisticalDataService)
     {
         $this->connectionService = $connectionService;
+        $this->statisticalDataService = $statisticalDataService;
     }
 
     /**
@@ -42,10 +51,20 @@ class ConnectionController
      * @return Response
      *
      * @throws InvalidEnvironmentException
+     * @throws BadMerchantIdException
+     * @throws WrongCredentialsException
+     * @throws HttpRequestException
      */
     public function saveOnboardingData(OnboardingRequest $onboardingRequest): Response
     {
+        $this->connectionService->isConnectionDataValid(
+            $onboardingRequest->transformToDomainModel()->getConnectionData()
+        );
+
         $this->connectionService->saveConnectionData($onboardingRequest->transformToDomainModel()->getConnectionData());
+        $this->statisticalDataService->saveStatisticalData(
+            new StatisticalData($onboardingRequest->transformToDomainModel()->isSendStatisticalData())
+        );
 
         return new SuccessfulConnectionResponse();
     }

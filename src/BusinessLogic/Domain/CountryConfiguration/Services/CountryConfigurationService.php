@@ -4,7 +4,6 @@ namespace SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services;
 
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
-use SeQura\Core\Infrastructure\ServiceRegister;
 
 /**
  * Class CountryConfigurationService
@@ -14,13 +13,26 @@ use SeQura\Core\Infrastructure\ServiceRegister;
 class CountryConfigurationService
 {
     /**
+     * @var CountryConfigurationRepositoryInterface
+     */
+    private $countryConfigurationRepository;
+
+    /**
+     * @param CountryConfigurationRepositoryInterface $countryConfigurationRepository
+     */
+    public function __construct(CountryConfigurationRepositoryInterface $countryConfigurationRepository)
+    {
+        $this->countryConfigurationRepository = $countryConfigurationRepository;
+    }
+
+    /**
      * Retrieves country configuration from the database via country configuration data repository.
      *
      * @return CountryConfiguration[]|null
      */
-    public function getConnectionData(): ?array
+    public function getCountryConfiguration(): ?array
     {
-        return $this->getCountryConfigurationRepository()->getCountryConfiguration();
+        return $this->countryConfigurationRepository->getCountryConfiguration();
     }
 
     /**
@@ -30,18 +42,8 @@ class CountryConfigurationService
      *
      * @return void
      */
-    public function saveConnectionData(array $countryConfiguration): void
+    public function saveCountryConfiguration(array $countryConfiguration): void
     {
-        $this->getCountryConfigurationRepository()->setCountryConfiguration($countryConfiguration);
-    }
-
-    /**
-     * Returns an instance of the country configuration repository.
-     *
-     * @return CountryConfigurationRepositoryInterface
-     */
-    private function getCountryConfigurationRepository(): CountryConfigurationRepositoryInterface
-    {
-        return ServiceRegister::getService(CountryConfigurationRepositoryInterface::class);
+        $this->countryConfigurationRepository->setCountryConfiguration($countryConfiguration);
     }
 }

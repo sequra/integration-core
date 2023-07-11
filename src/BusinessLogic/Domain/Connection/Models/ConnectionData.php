@@ -19,7 +19,7 @@ class ConnectionData extends DataTransferObject
     private $environment;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $merchantId;
 
@@ -30,14 +30,14 @@ class ConnectionData extends DataTransferObject
 
     /**
      * @param string $environment
-     * @param string $merchantId
+     * @param string|null $merchantId
      * @param AuthorizationCredentials $authorizationCredentials
      *
      * @throws InvalidEnvironmentException
      */
     public function __construct(
         string $environment,
-        string $merchantId,
+        ?string $merchantId,
         AuthorizationCredentials $authorizationCredentials
     )
     {
@@ -67,22 +67,6 @@ class ConnectionData extends DataTransferObject
     }
 
     /**
-     * @return string
-     */
-    public function getMerchantId(): string
-    {
-        return $this->merchantId;
-    }
-
-    /**
-     * @param string $merchantId
-     */
-    public function setMerchantId(string $merchantId): void
-    {
-        $this->merchantId = $merchantId;
-    }
-
-    /**
      * @return AuthorizationCredentials
      */
     public function getAuthorizationCredentials(): AuthorizationCredentials
@@ -96,6 +80,22 @@ class ConnectionData extends DataTransferObject
     public function setAuthorizationCredentials(AuthorizationCredentials $authorizationCredentials): void
     {
         $this->authorizationCredentials = $authorizationCredentials;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMerchantId(): ?string
+    {
+        return $this->merchantId;
+    }
+
+    /**
+     * @param string|null $merchantId
+     */
+    public function setMerchantId(?string $merchantId): void
+    {
+        $this->merchantId = $merchantId;
     }
 
     /**

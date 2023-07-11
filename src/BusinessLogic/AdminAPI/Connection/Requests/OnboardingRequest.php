@@ -18,11 +18,6 @@ class OnboardingRequest extends Request
     /**
      * @var string
      */
-    private $merchantId;
-
-    /**
-     * @var string
-     */
     private $username;
 
     /**
@@ -36,13 +31,24 @@ class OnboardingRequest extends Request
     private $sendStatisticalData;
 
     /**
+     * @var string|null
+     */
+    private $merchantId;
+
+    /**
      * @param string $environment
-     * @param string $merchantId
      * @param string $username
      * @param string $password
      * @param bool $sendStatisticalData
+     * @param string|null $merchantId
      */
-    public function __construct(string $environment, string $merchantId, string $username, string $password, bool $sendStatisticalData)
+    public function __construct(
+        string $environment,
+        string $username,
+        string $password,
+        bool $sendStatisticalData,
+        ?string $merchantId = null
+    )
     {
         $this->environment = $environment;
         $this->merchantId = $merchantId;

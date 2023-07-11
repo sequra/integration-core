@@ -6,7 +6,8 @@ use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Requests\CountryConf
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\CountryConfigurationResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\SellingCountriesResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\SuccessfulCountryConfigurationResponse;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 
 /**
@@ -46,13 +47,7 @@ class CountryConfigurationController
      */
     public function getCountryConfigurations(): CountryConfigurationResponse
     {
-        return new CountryConfigurationResponse(
-            [
-                new CountryConfiguration('CO','logeecom'),
-                new CountryConfiguration('ES','logeecom'),
-                new CountryConfiguration('FR','logeecom'),
-            ]
-        );
+        return new CountryConfigurationResponse($this->countryConfigurationService->getCountryConfiguration());
     }
 
     /**
@@ -61,9 +56,14 @@ class CountryConfigurationController
      * @param CountryConfigurationRequest $request
      *
      * @return SuccessfulCountryConfigurationResponse
+     *
+     * @throws EmptyCountryConfigurationParameterException
+     * @throws InvalidCountryCodeForConfigurationException
      */
     public function saveCountryConfigurations(CountryConfigurationRequest $request): SuccessfulCountryConfigurationResponse
     {
+        $this->countryConfigurationService->saveCountryConfiguration($request->transformToDomainModel());
+
         return new SuccessfulCountryConfigurationResponse();
     }
 }

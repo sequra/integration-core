@@ -17,16 +17,21 @@ use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryCo
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
+use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
+use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\OrderStatusProvider;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
@@ -39,6 +44,7 @@ use SeQura\Core\BusinessLogic\Webhook\Validator\WebhookValidator;
 use SeQura\Core\BusinessLogic\WebhookAPI\Controller\WebhookController;
 use SeQura\Core\Infrastructure\BootstrapComponent as BaseBootstrapComponent;
 use SeQura\Core\BusinessLogic\Webhook\Repositories\OrderStatusMappingRepository as OrderStatusMappingRepositoryInterface;
+use SeQura\Core\Infrastructure\Configuration\Configuration;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\ServiceRegister;
@@ -80,6 +86,16 @@ class BootstrapComponent extends BaseBootstrapComponent
             ConnectionDataRepositoryInterface::class,
             static function () {
                 return new ConnectionDataRepository(
+                    RepositoryRegistry::getRepository(ConnectionData::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            StatisticalDataRepositoryInterface::class,
+            static function () {
+                return new StatisticalDataRepository(
                     RepositoryRegistry::getRepository(ConnectionData::getClassName()),
                     ServiceRegister::getService(StoreContext::class)
                 );
@@ -134,9 +150,20 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            StatisticalDataService::class,
+            static function () {
+                return new StatisticalDataService(
+                    ServiceRegister::getService(StatisticalDataRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             CountryConfigurationService::class,
             static function () {
-                return new CountryConfigurationService();
+                return new CountryConfigurationService(
+                    ServiceRegister::getService(CountryConfigurationRepositoryInterface::class)
+                );
             }
         );
 
@@ -146,6 +173,15 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new StoreService(
                     ServiceRegister::getService(IntegrationStoreService::class),
                     ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            VersionService::class,
+            static function () {
+                return new VersionService(
+                    ServiceRegister::getService(VersionStoreService::class)
                 );
             }
         );
@@ -196,7 +232,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             ConnectionController::class,
             static function () {
                 return new ConnectionController(
-                    ServiceRegister::getService(ConnectionService::class)
+                    ServiceRegister::getService(ConnectionService::class),
+                    ServiceRegister::getService(StatisticalDataService::class)
                 );
             }
         );
@@ -250,7 +287,10 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             IntegrationController::class,
             static function () {
-                return new IntegrationController();
+                return new IntegrationController(
+                    ServiceRegister::getService(VersionService::class),
+                    ServiceRegister::getService(Configuration::class)
+                );
             }
         );
 

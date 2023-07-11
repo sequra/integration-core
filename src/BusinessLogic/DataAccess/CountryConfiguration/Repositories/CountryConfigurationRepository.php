@@ -84,9 +84,7 @@ class CountryConfigurationRepository implements CountryConfigurationRepositoryIn
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
-        /**
-         * @var  CountryConfigurationEntity $countryConfiguration
-         */
+        /** @var  CountryConfigurationEntity $countryConfiguration */
         $countryConfiguration = $this->repository->selectOne($queryFilter);
 
         return $countryConfiguration;
