@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\Connection;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\ConnectionRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\OnboardingRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\ConnectionSettingsResponse;
+use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\ConnectionValidationResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\SuccessfulConnectionResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\ErrorResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
@@ -51,22 +52,38 @@ class ConnectionController
      * @return Response
      *
      * @throws InvalidEnvironmentException
-     * @throws BadMerchantIdException
-     * @throws WrongCredentialsException
-     * @throws HttpRequestException
      */
     public function saveOnboardingData(OnboardingRequest $onboardingRequest): Response
     {
-        $this->connectionService->isConnectionDataValid(
-            $onboardingRequest->transformToDomainModel()->getConnectionData()
-        );
-
         $this->connectionService->saveConnectionData($onboardingRequest->transformToDomainModel()->getConnectionData());
         $this->statisticalDataService->saveStatisticalData(
             new StatisticalData($onboardingRequest->transformToDomainModel()->isSendStatisticalData())
         );
 
         return new SuccessfulConnectionResponse();
+    }
+
+    /**
+     * Validates connection data.
+     *
+     * @param ConnectionRequest $connectionRequest
+     *
+     * @return ConnectionValidationResponse
+     *
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     */
+    public function isConnectionDataValid(ConnectionRequest $connectionRequest): ConnectionValidationResponse
+    {
+        try {
+            $this->connectionService->isConnectionDataValid($connectionRequest->transformToDomainModel());
+        } catch (BadMerchantIdException $e) {
+            return new ConnectionValidationResponse(false, 'merchantId');
+        } catch (WrongCredentialsException $e) {
+            return new ConnectionValidationResponse(false, 'username/password');
+        }
+
+        return new ConnectionValidationResponse(true);
     }
 
     /**
