@@ -17,6 +17,7 @@ use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryCo
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
+use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
@@ -96,7 +97,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             StatisticalDataRepositoryInterface::class,
             static function () {
                 return new StatisticalDataRepository(
-                    RepositoryRegistry::getRepository(ConnectionData::getClassName()),
+                    RepositoryRegistry::getRepository(StatisticalData::getClassName()),
                     ServiceRegister::getService(StoreContext::class)
                 );
             }
