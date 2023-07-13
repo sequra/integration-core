@@ -36,7 +36,7 @@ class StatisticalData extends Entity
     {
         parent::inflate($data);
 
-        $statisticalData = $data['connectionData'] ?? [];
+        $statisticalData = $data['statisticalData'] ?? [];
 
         $this->storeId = $data['storeId'] ?? '';
         $this->statisticalData = new DomainStatisticalData(

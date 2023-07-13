@@ -6,6 +6,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\ConnectionRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\OnboardingRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\ConnectionSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\ConnectionValidationResponse;
+use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\OnboardingDataResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\SuccessfulConnectionResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\ErrorResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
@@ -42,6 +43,19 @@ class ConnectionController
     {
         $this->connectionService = $connectionService;
         $this->statisticalDataService = $statisticalDataService;
+    }
+
+    /**
+     * Gets the onboarding data from the database.
+     *
+     * @return OnboardingDataResponse
+     */
+    public function getOnboardingData(): OnboardingDataResponse
+    {
+        return new OnboardingDataResponse(
+            $this->connectionService->getConnectionData(),
+            $this->statisticalDataService->getStatisticalData()
+        );
     }
 
     /**
