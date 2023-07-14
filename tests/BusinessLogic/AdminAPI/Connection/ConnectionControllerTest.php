@@ -1,11 +1,12 @@
 <?php
 
-namespace BusinessLogic\AdminAPI\Connection;
+namespace SeQura\Core\Tests\BusinessLogic\AdminAPI\Connection;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\ConnectionRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\SuccessfulConnectionResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\Http\HttpResponse;
@@ -13,6 +14,11 @@ use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
+/**
+ * Class ConnectionControllerTest
+ *
+ * @package SeQura\Core\Tests\BusinessLogic\AdminAPI\Connection
+ */
 class ConnectionControllerTest extends BaseTestCase
 {
     /**
@@ -34,7 +40,10 @@ class ConnectionControllerTest extends BaseTestCase
             return $this->httpClient;
         });
 
-        $this->controller = new ConnectionController(TestServiceRegister::getService(ConnectionService::class));
+        $this->controller = new ConnectionController(
+            TestServiceRegister::getService(ConnectionService::class),
+            TestServiceRegister::getService(StatisticalDataService::class)
+        );
     }
 
     /**

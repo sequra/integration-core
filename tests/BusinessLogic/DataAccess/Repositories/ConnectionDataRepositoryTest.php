@@ -1,6 +1,6 @@
 <?php
 
-namespace BusinessLogic\DataAccess\Repositories;
+namespace SeQura\Core\Tests\BusinessLogic\DataAccess\Repositories;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
@@ -11,6 +11,11 @@ use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
+/**
+ * Class ConnectionDataRepositoryTest
+ *
+ * @package SeQura\Core\Tests\BusinessLogic\DataAccess\Repositories
+ */
 class ConnectionDataRepositoryTest extends BaseTestCase
 {
     /**

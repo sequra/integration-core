@@ -1,6 +1,6 @@
 <?php
 
-namespace BusinessLogic\Domain\Connection;
+namespace SeQura\Core\Tests\BusinessLogic\Domain\Connection;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
@@ -8,6 +8,11 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 
+/**
+ * Class ConnectionDataTest
+ *
+ * @package SeQura\Core\Tests\BusinessLogic\Domain\Connection
+ */
 class ConnectionDataTest extends BaseTestCase
 {
     /**

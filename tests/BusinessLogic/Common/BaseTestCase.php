@@ -4,17 +4,26 @@ namespace SeQura\Core\Tests\BusinessLogic\Common;
 
 use PHPUnit\Framework\TestCase;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
+use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
+use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
+use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
+use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
+use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
@@ -106,6 +115,18 @@ class BaseTestCase extends TestCase
                     StoreContext::getInstance()
                 );
             },
+            StatisticalDataRepositoryInterface::class => function () {
+                return new StatisticalDataRepository(
+                    TestRepositoryRegistry::getRepository(StatisticalData::getClassName()),
+                    StoreContext::getInstance()
+                );
+            },
+            CountryConfigurationRepositoryInterface::class => function () {
+                return new CountryConfigurationRepository(
+                    TestRepositoryRegistry::getRepository(CountryConfiguration::getClassName()),
+                    StoreContext::getInstance()
+                );
+            },
             ConnectionDataRepositoryInterface::class => function () {
                 return new ConnectionDataRepository(
                     TestRepositoryRegistry::getRepository(ConnectionData::getClassName()),
@@ -122,12 +143,28 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(ConnectionProxyInterface::class)
                 );
             },
+            StatisticalDataService::class => static function () {
+                return new StatisticalDataService(
+                    TestServiceRegister::getService(StatisticalDataRepositoryInterface::class)
+                );
+            },
+            CountryConfigurationService::class => static function () {
+                return new CountryConfigurationService(
+                    TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class)
+                );
+            },
             ShopOrderService::class => function () {
                 return new MockShopOrderService();
             },
             ConnectionController::class => function () {
                 return new ConnectionController(
-                    TestServiceRegister::getService(ConnectionService::class)
+                    TestServiceRegister::getService(ConnectionService::class),
+                    TestServiceRegister::getService(StatisticalDataService::class)
+                );
+            },
+            CountryConfigurationController::class => function () {
+                return new CountryConfigurationController(
+                    TestServiceRegister::getService(CountryConfigurationService::class)
                 );
             },
             WebhookController::class => function () {
@@ -223,6 +260,11 @@ class BaseTestCase extends TestCase
         TestRepositoryRegistry::registerRepository(SeQuraOrder::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(OrderStatusMapping::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(ConnectionData::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(StatisticalData::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(
+            CountryConfiguration::getClassName(),
+            MemoryRepository::getClassName()
+        );
     }
 
     /**

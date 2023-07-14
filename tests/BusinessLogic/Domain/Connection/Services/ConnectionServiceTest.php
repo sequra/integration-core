@@ -1,6 +1,6 @@
 <?php
 
-namespace BusinessLogic\Domain\Connection\Services;
+namespace SeQura\Core\Tests\BusinessLogic\Domain\Connection\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData as DomainConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
@@ -16,6 +16,11 @@ use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
+/**
+ * Class ConnectionServiceTest
+ *
+ * @package SeQura\Core\Tests\BusinessLogic\Domain\Connection\Services
+ */
 class ConnectionServiceTest extends BaseTestCase
 {
 

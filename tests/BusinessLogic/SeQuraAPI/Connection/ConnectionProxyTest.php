@@ -1,6 +1,6 @@
 <?php
 
-namespace BusinessLogic\SeQuraAPI\Connection;
+namespace SeQura\Core\Tests\BusinessLogic\SeQuraAPI\Connection;
 
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
@@ -19,6 +19,11 @@ use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
+/**
+ * Class ConnectionProxyTest
+ *
+ * @package SeQura\Core\Tests\BusinessLogic\SeQuraAPI\Connection
+ */
 class ConnectionProxyTest extends BaseTestCase
 {
     /**
