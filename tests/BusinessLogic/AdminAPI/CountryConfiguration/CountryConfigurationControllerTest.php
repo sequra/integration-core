@@ -11,7 +11,6 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCoun
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
-use SeQura\Core\Tests\BusinessLogic\AdminAPI\CountryConfiguration\MockComponents\MockCountryConfigurationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
@@ -23,7 +22,7 @@ use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 class CountryConfigurationControllerTest extends BaseTestCase
 {
     /**
-     * @var MockCountryConfigurationRepository
+     * @var CountryConfigurationRepositoryInterface
      */
     private $countryConfigurationRepository;
 
