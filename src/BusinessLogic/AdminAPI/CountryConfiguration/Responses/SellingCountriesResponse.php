@@ -3,7 +3,7 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Enum\SellingCountries;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 
 /**
  * Class SellingCountriesResponse
@@ -13,18 +13,32 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Enum\SellingCountries;
 class SellingCountriesResponse extends Response
 {
     /**
+     * @var SellingCountry[]
+     */
+    private $sellingCountries;
+
+    /**
+     * @param SellingCountry[] $sellingCountries
+     */
+    public function __construct(array $sellingCountries)
+    {
+        $this->sellingCountries = $sellingCountries;
+    }
+
+    /**
      * @inheritDoc
      */
     public function toArray(): array
     {
-        $sellingCountries = [];
-        foreach (SellingCountries::SELLING_COUNTRIES as $key => $value) {
-            $sellingCountries[] = [
-                'code' => $key,
-                'name' => $value
+        $countries = [];
+
+        foreach ($this->sellingCountries as $country) {
+            $countries[] = [
+                'code' => $country->getCode(),
+                'name' => $country->getName()
             ];
         }
 
-        return $sellingCountries;
+        return $countries;
     }
 }

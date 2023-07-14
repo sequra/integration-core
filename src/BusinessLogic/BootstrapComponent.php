@@ -24,6 +24,8 @@ use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDa
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
+use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
@@ -169,6 +171,15 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            SellingCountriesService::class,
+            static function () {
+                return new SellingCountriesService(
+                    ServiceRegister::getService(SellingCountriesServiceInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             StoreService::class,
             static function () {
                 return new StoreService(
@@ -243,7 +254,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             CountryConfigurationController::class,
             static function () {
                 return new CountryConfigurationController(
-                    ServiceRegister::getService(CountryConfigurationService::class)
+                    ServiceRegister::getService(CountryConfigurationService::class),
+                    ServiceRegister::getService(SellingCountriesService::class)
                 );
             }
         );

@@ -10,8 +10,10 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountr
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -29,6 +31,10 @@ class CountryConfigurationControllerTest extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        TestServiceRegister::registerService(SellingCountriesServiceInterface::class, static function () {
+            return new MockSellingCountriesService();
+        });
 
         $this->countryConfigurationRepository = TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class);
     }
@@ -48,7 +54,7 @@ class CountryConfigurationControllerTest extends BaseTestCase
         $response = AdminAPI::get()->countryConfiguration('1')->getSellingCountries();
 
         // Assert
-        self::assertEquals($response->toArray(), $this->expectedSellingCountriesToArrayResponse());
+        self::assertEquals($this->expectedSellingCountriesToArrayResponse(), $response->toArray());
     }
 
 
@@ -110,7 +116,7 @@ class CountryConfigurationControllerTest extends BaseTestCase
         $response = AdminAPI::get()->countryConfiguration('1')->getCountryConfigurations();
 
         // Assert
-        self::assertEquals($response->toArray(), $this->expectedToArrayResponse());
+        self::assertEquals($this->expectedToArrayResponse(), $response->toArray());
     }
 
     /**
@@ -285,24 +291,16 @@ class CountryConfigurationControllerTest extends BaseTestCase
                 'name' => 'Colombia',
             ],
             [
-                'code' => 'ES',
-                'name' => 'Spain',
+                'code' => 'IT',
+                'name' => 'Italy',
             ],
             [
                 'code' => 'FR',
                 'name' => 'France',
             ],
             [
-                'code' => 'IT',
-                'name' => 'Italy',
-            ],
-            [
                 'code' => 'PE',
                 'name' => 'Peru',
-            ],
-            [
-                'code' => 'PT',
-                'name' => 'Portugal',
             ]
         ];
     }

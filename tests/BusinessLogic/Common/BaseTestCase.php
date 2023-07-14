@@ -18,6 +18,8 @@ use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDa
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
+use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -153,6 +155,11 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class)
                 );
             },
+            SellingCountriesService::class => static function () {
+                return new SellingCountriesService(
+                    TestServiceRegister::getService(SellingCountriesServiceInterface::class)
+                );
+            },
             ShopOrderService::class => function () {
                 return new MockShopOrderService();
             },
@@ -164,7 +171,8 @@ class BaseTestCase extends TestCase
             },
             CountryConfigurationController::class => function () {
                 return new CountryConfigurationController(
-                    TestServiceRegister::getService(CountryConfigurationService::class)
+                    TestServiceRegister::getService(CountryConfigurationService::class),
+                    TestServiceRegister::getService(SellingCountriesService::class)
                 );
             },
             WebhookController::class => function () {

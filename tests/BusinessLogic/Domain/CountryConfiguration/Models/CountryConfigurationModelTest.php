@@ -37,12 +37,12 @@ class CountryConfigurationModelTest extends BaseTestCase
 
     public function testSettersAndGetters(): void
     {
-        $seQuraCost = new CountryConfiguration('CO','logeecom');
+        $countryConfiguration = new CountryConfiguration('CO','logeecom');
 
-        $seQuraCost->setCountryCode('ES');
-        $seQuraCost->setMerchantId('logeecom2');
+        $countryConfiguration->setCountryCode('ES');
+        $countryConfiguration->setMerchantId('logeecom2');
 
-        self::assertEquals('ES', $seQuraCost->getCountryCode());
-        self::assertEquals('logeecom2', $seQuraCost->getMerchantId());
+        self::assertEquals('ES', $countryConfiguration->getCountryCode());
+        self::assertEquals('logeecom2', $countryConfiguration->getMerchantId());
     }
 }

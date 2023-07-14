@@ -505,7 +505,7 @@ class ConnectionControllerTest extends BaseTestCase
         $response = AdminAPI::get()->connection('1')->getConnectionSettings();
 
         // Assert
-        self::assertEquals($response->toArray(), $this->expectedConnectionDataToArrayResponse());
+        self::assertEquals($this->expectedConnectionDataToArrayResponse(), $response->toArray());
     }
 
     /**
@@ -587,7 +587,7 @@ class ConnectionControllerTest extends BaseTestCase
         $response = AdminAPI::get()->connection('1')->getOnboardingData();
 
         // Assert
-        self::assertEquals($response->toArray(), $this->expectedOnboardingDataToArrayResponse());
+        self::assertEquals($this->expectedOnboardingDataToArrayResponse(), $response->toArray());
     }
 
     /**

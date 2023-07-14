@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\Successful
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
 
 /**
  * Class CountryConfigurationController
@@ -23,11 +24,21 @@ class CountryConfigurationController
     private $countryConfigurationService;
 
     /**
-     * @param CountryConfigurationService $countryConfigurationService
+     * @var SellingCountriesService
      */
-    public function __construct(CountryConfigurationService $countryConfigurationService)
+    private $sellingCountriesService;
+
+    /**
+     * @param CountryConfigurationService $countryConfigurationService
+     * @param SellingCountriesService $sellingCountriesService
+     */
+    public function __construct(
+        CountryConfigurationService $countryConfigurationService,
+        SellingCountriesService $sellingCountriesService
+    )
     {
         $this->countryConfigurationService = $countryConfigurationService;
+        $this->sellingCountriesService = $sellingCountriesService;
     }
 
     /**
@@ -37,7 +48,7 @@ class CountryConfigurationController
      */
     public function getSellingCountries(): SellingCountriesResponse
     {
-        return new SellingCountriesResponse();
+        return new SellingCountriesResponse($this->sellingCountriesService->getSellingCountries());
     }
 
     /**
