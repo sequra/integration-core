@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\ConnectionSettingsRe
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\ConnectionValidationResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\OnboardingDataResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\SuccessfulConnectionResponse;
+use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\SuccessfulOnboardingResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\ErrorResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
@@ -74,7 +75,7 @@ class ConnectionController
             new StatisticalData($onboardingRequest->transformToDomainModel()->isSendStatisticalData())
         );
 
-        return new SuccessfulConnectionResponse();
+        return new SuccessfulOnboardingResponse();
     }
 
     /**

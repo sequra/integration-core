@@ -1,6 +1,6 @@
 <?php
 
-namespace SeQura\Core\Tests\BusinessLogic\Domain\Connection;
+namespace SeQura\Core\Tests\BusinessLogic\Domain\Connection\Models;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
