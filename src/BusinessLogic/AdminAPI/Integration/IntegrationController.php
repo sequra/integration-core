@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\Integration;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationShopNameResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationUIStateResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationVersionResponse;
+use SeQura\Core\BusinessLogic\Domain\UIState\Services\UIStateService;
 use SeQura\Core\BusinessLogic\Domain\Version\Exceptions\FailedToRetrieveVersionException;
 use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
 use SeQura\Core\Infrastructure\Configuration\Configuration;
@@ -27,14 +28,26 @@ class IntegrationController
     private $configurationService;
 
     /**
+     * @var UIStateService
+     */
+    private $stateService;
+
+    /**
      * @param VersionService $versionService
      * @param Configuration $configurationService
+     * @param UIStateService $stateService
      */
-    public function __construct(VersionService $versionService, Configuration $configurationService)
+    public function __construct(
+        VersionService $versionService,
+        Configuration $configurationService,
+        UIStateService $stateService
+    )
     {
         $this->versionService = $versionService;
         $this->configurationService = $configurationService;
+        $this->stateService = $stateService;
     }
+
     /**
      * Gets the UI state for the integration.
      *
@@ -42,7 +55,9 @@ class IntegrationController
      */
     public function getUIState(): IntegrationUIStateResponse
     {
-        return IntegrationUIStateResponse::onboarding();
+        return $this->stateService->isOnboardingState() ?
+            IntegrationUIStateResponse::onboarding() :
+            IntegrationUIStateResponse::dashboard();
     }
 
     /**

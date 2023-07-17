@@ -6,9 +6,11 @@ use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Requests\CountryConfigurationRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\CountryConfigurationResponse;
+use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\SellingCountriesResponse;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
@@ -46,6 +48,24 @@ class CountryConfigurationControllerTest extends BaseTestCase
 
         // Assert
         self::assertTrue($response->isSuccessful());
+    }
+
+    public function testGetSellingCountriesResponse(): void
+    {
+        // Arrange
+        $sellingCountries = [
+            new SellingCountry('CO','Colombia'),
+            new SellingCountry('IT','Italy'),
+            new SellingCountry('FR','France'),
+            new SellingCountry('PE','Peru')
+        ];
+
+        // Act
+        $response = AdminAPI::get()->countryConfiguration('1')->getSellingCountries();
+        $expectedResponse = new SellingCountriesResponse($sellingCountries);
+
+        // Assert
+        self::assertEquals($expectedResponse, $response);
     }
 
     public function testGetSellingCountriesResponseToArray(): void

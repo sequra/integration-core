@@ -39,6 +39,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
+use SeQura\Core\BusinessLogic\Domain\UIState\Services\UIStateService;
 use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\OrderStatusProvider;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
@@ -179,6 +180,16 @@ class BootstrapComponent extends BaseBootstrapComponent
             CountryConfigurationService::class,
             static function () {
                 return new CountryConfigurationService(
+                    ServiceRegister::getService(CountryConfigurationRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            UIStateService::class,
+            static function () {
+                return new UIStateService(
+                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class),
                     ServiceRegister::getService(CountryConfigurationRepositoryInterface::class)
                 );
             }
@@ -326,7 +337,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new IntegrationController(
                     ServiceRegister::getService(VersionService::class),
-                    ServiceRegister::getService(Configuration::class)
+                    ServiceRegister::getService(Configuration::class),
+                    ServiceRegister::getService(UIStateService::class)
                 );
             }
         );

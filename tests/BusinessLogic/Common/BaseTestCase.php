@@ -5,6 +5,8 @@ namespace SeQura\Core\Tests\BusinessLogic\Common;
 use PHPUnit\Framework\TestCase;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
+use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
+use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
@@ -21,6 +23,8 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\Co
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -28,6 +32,9 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
+use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
+use SeQura\Core\BusinessLogic\Domain\UIState\Services\UIStateService;
+use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
@@ -162,6 +169,23 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(SellingCountriesServiceInterface::class)
                 );
             },
+            VersionService::class => static function () {
+                return new VersionService(
+                    TestServiceRegister::getService(VersionServiceInterface::class)
+                );
+            },
+            StoreService::class => static function () {
+                return new StoreService(
+                    TestServiceRegister::getService(StoreServiceInterface::class),
+                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                );
+            },
+            UIStateService::class => static function () {
+                return new UIStateService(
+                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                    TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class)
+                );
+            },
             ShopOrderService::class => function () {
                 return new MockShopOrderService();
             },
@@ -175,6 +199,18 @@ class BaseTestCase extends TestCase
                 return new CountryConfigurationController(
                     TestServiceRegister::getService(CountryConfigurationService::class),
                     TestServiceRegister::getService(SellingCountriesService::class)
+                );
+            },
+            IntegrationController::class => function () {
+                return new IntegrationController(
+                    TestServiceRegister::getService(VersionService::class),
+                    TestServiceRegister::getService(Configuration::class),
+                    TestServiceRegister::getService(UIStateService::class)
+                );
+            },
+            StoreController::class => function () {
+                return new StoreController(
+                    TestServiceRegister::getService(StoreService::class)
                 );
             },
             WebhookController::class => function () {

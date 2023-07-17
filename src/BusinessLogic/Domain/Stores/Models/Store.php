@@ -55,4 +55,20 @@ class Store
     {
         return $this->storeName;
     }
+
+    /**
+     * @param string $storeId
+     */
+    public function setStoreId(string $storeId): void
+    {
+        $this->storeId = $storeId;
+    }
+
+    /**
+     * @param string $storeName
+     */
+    public function setStoreName(string $storeName): void
+    {
+        $this->storeName = $storeName;
+    }
 }
