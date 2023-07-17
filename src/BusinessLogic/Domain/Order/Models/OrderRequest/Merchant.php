@@ -141,20 +141,30 @@ class Merchant extends OrderRequestDTO
      */
     public static function fromArray(array $data): Merchant
     {
+        $options = self::getDataValue($data, 'options', null);
+        if ($options) {
+            $options = Options::fromArray($options);
+        }
+
+        $eventsWebhook = self::getDataValue($data, 'events_webhook', null);
+        if ($eventsWebhook) {
+            $eventsWebhook = EventsWebhook::fromArray($eventsWebhook);
+        }
+
         return new self(
-            self::getDataValue($data, 'id'),
-            self::getDataValue($data, 'notify_url'),
-            self::getDataValue($data, 'notification_parameters'),
-            self::getDataValue($data, 'return_url'),
-            self::getDataValue($data, 'approved_callback'),
-            self::getDataValue($data, 'edit_url'),
-            self::getDataValue($data, 'abort_url'),
-            self::getDataValue($data, 'rejected_callback'),
-            self::getDataValue($data, 'partpayment_details_getter'),
-            self::getDataValue($data, 'approved_url'),
-            self::getDataValue($data, 'operator_ref'),
-            Options::fromArray(self::getDataValue($data, 'options', [])),
-            EventsWebhook::fromArray(self::getDataValue($data, 'events_webhook', []))
+            self::getDataValue($data, 'id', null),
+            self::getDataValue($data, 'notify_url', null),
+            self::getDataValue($data, 'notification_parameters', null),
+            self::getDataValue($data, 'return_url', null),
+            self::getDataValue($data, 'approved_callback', null),
+            self::getDataValue($data, 'edit_url', null),
+            self::getDataValue($data, 'abort_url', null),
+            self::getDataValue($data, 'rejected_callback', null),
+            self::getDataValue($data, 'partpayment_details_getter', null),
+            self::getDataValue($data, 'approved_url', null),
+            self::getDataValue($data, 'operator_ref', null),
+            $options,
+            $eventsWebhook
         );
     }
 

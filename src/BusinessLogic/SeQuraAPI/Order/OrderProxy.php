@@ -59,15 +59,17 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
     {
         $response = $this->post(new CreateOrderHttpRequest($request));
 
-        return $this->generateSeQuraOrder($this->getOrderUUID($response->getHeaders()),$request);
+        return $request->toSequraOrderInstance($this->getOrderUUID($response->getHeaders()));
     }
 
     /**
      * @inheritDoc
      */
-    public function updateOrder(string $id, CreateOrderRequest $request): bool
+    public function updateOrder(string $id, CreateOrderRequest $request): SeQuraOrder
     {
-        return $this->put(new UpdateOrderHttpRequest($id, $request))->isSuccessful();
+        $this->put(new UpdateOrderHttpRequest($id, $request));
+
+        return $request->toSequraOrderInstance($id);
     }
 
     /**
@@ -100,40 +102,6 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
         $location = array_key_exists('location', $headers) ? $headers['location'] : '';
 
         return !empty($location) ? basename(parse_url($location, PHP_URL_PATH)) : '';
-    }
-
-    /**
-     * Creates a SeQuraOrder instance from request and response data.
-     *
-     * @param string $id
-     * @param CreateOrderRequest $request
-     *
-     * @return SeQuraOrder
-     */
-    private function generateSeQuraOrder(string $id, CreateOrderRequest $request): SeQuraOrder
-    {
-        $order = (new SeQuraOrder())
-            ->setReference($id)
-            ->setState($request->getState())
-            ->setMerchant($request->getMerchant())
-            ->setMerchantReference($request->getMerchantReference())
-            ->setCart($request->getCart())
-            ->setDeliveryMethod($request->getDeliveryMethod())
-            ->setDeliveryAddress($request->getDeliveryAddress())
-            ->setInvoiceAddress($request->getInvoiceAddress())
-            ->setCustomer($request->getCustomer())
-            ->setPlatform($request->getPlatform())
-            ->setGui($request->getGui());
-
-        if($request->getCart()->getCartRef()) {
-            $order->setCartId($request->getCart()->getCartRef());
-        }
-
-        if($request->getMerchantReference()){
-            $order->setOrderRef1($request->getMerchantReference()->getOrderRef1());
-        }
-
-        return $order;
     }
 
     /**

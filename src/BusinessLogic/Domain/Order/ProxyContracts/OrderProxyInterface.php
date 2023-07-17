@@ -58,11 +58,11 @@ interface OrderProxyInterface
      * @param string $id
      * @param CreateOrderRequest $request
      *
-     * @return boolean Whether the update operation has been successful or not.
+     * @return SeQuraOrder Returns updated SeQuraOrder instance if update operation has been successful.
      *
      * @throws HttpRequestException
      */
-    public function updateOrder(string $id, CreateOrderRequest $request): bool;
+    public function updateOrder(string $id, CreateOrderRequest $request): SeQuraOrder;
 
     /**
      * Updates an existing order's unshipped and shipped cart on the SeQura API.
