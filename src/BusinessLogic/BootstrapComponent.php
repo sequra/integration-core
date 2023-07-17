@@ -36,6 +36,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
@@ -196,6 +197,15 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            PaymentMethodsService::class,
+            static function () {
+                return new PaymentMethodsService(
+                    ServiceRegister::getService(MerchantProxyInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             SellingCountriesService::class,
             static function () {
                 return new SellingCountriesService(
@@ -321,7 +331,9 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             PaymentMethodsController::class,
             static function () {
-                return new PaymentMethodsController();
+                return new PaymentMethodsController(
+                    ServiceRegister::getService(PaymentMethodsService::class)
+                );
             }
         );
 

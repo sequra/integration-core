@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
+use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
@@ -30,6 +31,7 @@ use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
@@ -154,6 +156,11 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(ConnectionProxyInterface::class)
                 );
             },
+            PaymentMethodsService::class => static function () {
+                return new PaymentMethodsService(
+                    TestServiceRegister::getService(MerchantProxyInterface::class)
+                );
+            },
             StatisticalDataService::class => static function () {
                 return new StatisticalDataService(
                     TestServiceRegister::getService(StatisticalDataRepositoryInterface::class)
@@ -199,6 +206,11 @@ class BaseTestCase extends TestCase
                 return new CountryConfigurationController(
                     TestServiceRegister::getService(CountryConfigurationService::class),
                     TestServiceRegister::getService(SellingCountriesService::class)
+                );
+            },
+            PaymentMethodsController::class => function () {
+                return new PaymentMethodsController(
+                    TestServiceRegister::getService(PaymentMethodsService::class)
                 );
             },
             IntegrationController::class => function () {
