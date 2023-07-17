@@ -2,8 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries;
 
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
-
 /**
  * Interface SellingCountriesServiceInterface
  *
@@ -12,9 +10,9 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 interface SellingCountriesServiceInterface
 {
     /**
-     * Return all configured selling countries of the shop system.
+     * Return all configured selling country ISO2 codes of the shop system.
      *
-     * @return SellingCountry[]
+     * @return string[]
      */
     public function getSellingCountries(): array;
 }

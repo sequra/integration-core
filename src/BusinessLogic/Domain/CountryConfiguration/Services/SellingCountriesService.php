@@ -30,10 +30,15 @@ class SellingCountriesService
      */
     public function getSellingCountries(): array
     {
-        $storeConfiguredCountries = $this->integrationSellingCountriesService->getSellingCountries();
+        $storeConfiguredCountryCodes = $this->integrationSellingCountriesService->getSellingCountries();
 
-        return array_filter($storeConfiguredCountries, static function ($country) {
-            return array_key_exists($country->getCode(), SellingCountries::SELLING_COUNTRIES);
-        });
+        $sellingCountries = [];
+        foreach ($storeConfiguredCountryCodes as $code) {
+            if(array_key_exists($code, SellingCountries::SELLING_COUNTRIES)) {
+                $sellingCountries[] = new SellingCountry($code, SellingCountries::SELLING_COUNTRIES[$code]);
+            }
+        }
+
+        return $sellingCountries;
     }
 }
