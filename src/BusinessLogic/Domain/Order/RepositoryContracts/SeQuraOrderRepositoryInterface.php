@@ -42,4 +42,12 @@ interface SeQuraOrderRepositoryInterface
      * @return void
      */
     public function setSeQuraOrder(SeQuraOrder $order): void;
+
+    /**
+     * Deletes Sequra order form storage
+     *
+     * @param SeQuraOrder $existingOrder
+     * @return void
+     */
+    public function deleteOrder(SeQuraOrder $existingOrder): void;
 }

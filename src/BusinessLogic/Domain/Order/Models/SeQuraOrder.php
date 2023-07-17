@@ -64,7 +64,7 @@ class SeQuraOrder extends Entity
     /**
      * @var string External order reference, denoting the ID of that order in the shop system
      */
-    protected $orderRef1;
+    protected $orderRef1 = '';
 
     /**
      * @var Merchant Merchant details

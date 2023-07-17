@@ -45,11 +45,10 @@ class OrderService
         $createOrderRequest = $builder->build();
         $existingOrder = $this->getExistingOrderFor($createOrderRequest);
         if ($existingOrder) {
-            $order = $this->proxy->updateOrder($existingOrder->getReference(), $createOrderRequest);
-        } else {
-            $order = $this->proxy->createOrder($createOrderRequest);
+            $this->orderRepository->deleteOrder($existingOrder);
         }
 
+        $order = $this->proxy->createOrder($createOrderRequest);
         $this->orderRepository->setSeQuraOrder($order);
 
         return $order;

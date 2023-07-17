@@ -174,7 +174,6 @@ class CreateOrderRequest extends BaseOrderRequest
             ->setReference($reference)
             ->setState($this->getState())
             ->setMerchant($this->getMerchant())
-            ->setMerchantReference($this->getMerchantReference())
             ->setCart($this->getCart())
             ->setDeliveryMethod($this->getDeliveryMethod())
             ->setDeliveryAddress($this->getDeliveryAddress())
@@ -187,7 +186,8 @@ class CreateOrderRequest extends BaseOrderRequest
             $order->setCartId($this->getCart()->getCartRef());
         }
 
-        if($this->getMerchantReference()){
+        if($this->getMerchantReference()) {
+            $order->setMerchantReference($this->getMerchantReference());
             $order->setOrderRef1($this->getMerchantReference()->getOrderRef1());
         }
 

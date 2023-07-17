@@ -73,4 +73,9 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         $order->setId($savedOrder->getId());
         $this->repository->update($order);
     }
+
+    public function deleteOrder(SeQuraOrder $existingOrder): void
+    {
+        $this->repository->delete($existingOrder);
+    }
 }
