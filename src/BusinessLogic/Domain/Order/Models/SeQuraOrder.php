@@ -34,6 +34,7 @@ class SeQuraOrder extends Entity
      * @var array
      */
     protected $fields = [
+        'id',
         'reference',
         'cartId',
         'orderRef1',
@@ -182,9 +183,10 @@ class SeQuraOrder extends Entity
         $data['customer'] = $this->customer ? $this->customer->toArray() : [];
         $data['platform'] = $this->platform ? $this->platform->toArray() : [];
         $data['gui'] = $this->gui ? $this->gui->toArray() : [];
-        $data['trackings'] = [];
 
         if (!empty($this->trackings)) {
+            $data['trackings'] = [];
+
             foreach ($this->trackings as $tracking) {
                 $data['trackings'][] = $tracking->toArray();
             }

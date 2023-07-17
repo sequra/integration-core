@@ -11,10 +11,12 @@ use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsCo
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\WidgetConfiguration\WidgetConfigurationController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
+use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
@@ -30,7 +32,10 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as 
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
@@ -111,6 +116,15 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new CountryConfigurationRepository(
                     RepositoryRegistry::getRepository(CountryConfiguration::getClassName()),
                     ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            SeQuraOrderRepositoryInterface::class,
+            static function () {
+                return new SeQuraOrderRepository(
+                    RepositoryRegistry::getRepository(SeQuraOrder::getClassName())
                 );
             }
         );
@@ -221,6 +235,16 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new WebhookValidator();
             }
         );
+
+        ServiceRegister::registerService(
+            OrderService::class,
+            static function () {
+                return new OrderService(
+                    ServiceRegister::getService(OrderProxyInterface::class),
+                    ServiceRegister::getService(SeQuraOrderRepositoryInterface::class)
+                );
+            }
+        );
     }
 
     /**
@@ -311,6 +335,13 @@ class BootstrapComponent extends BaseBootstrapComponent
             DisconnectController::class,
             static function () {
                 return new DisconnectController();
+            }
+        );
+
+        ServiceRegister::registerService(
+            SolicitationController::class,
+            static function () {
+                return new SolicitationController(ServiceRegister::getService(OrderService::class));
             }
         );
     }

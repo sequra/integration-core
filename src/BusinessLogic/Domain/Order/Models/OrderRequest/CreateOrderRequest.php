@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidServiceEndTimeExcep
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTimestampException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\Tracking;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 
 /**
  * Class CreateOrderRequest
@@ -158,5 +159,38 @@ class CreateOrderRequest extends BaseOrderRequest
     public function toArray(): array
     {
         return $this->transformPropertiesToAnArray(get_object_vars($this));
+    }
+
+    /**
+     * Creates a SeQuraOrder instance from request for a given order reference.
+     *
+     * @param string $reference
+     *
+     * @return SeQuraOrder
+     */
+    public function toSequraOrderInstance(string $reference)
+    {
+        $order = (new SeQuraOrder())
+            ->setReference($reference)
+            ->setState($this->getState())
+            ->setMerchant($this->getMerchant())
+            ->setMerchantReference($this->getMerchantReference())
+            ->setCart($this->getCart())
+            ->setDeliveryMethod($this->getDeliveryMethod())
+            ->setDeliveryAddress($this->getDeliveryAddress())
+            ->setInvoiceAddress($this->getInvoiceAddress())
+            ->setCustomer($this->getCustomer())
+            ->setPlatform($this->getPlatform())
+            ->setGui($this->getGui());
+
+        if($this->getCart()->getCartRef()) {
+            $order->setCartId($this->getCart()->getCartRef());
+        }
+
+        if($this->getMerchantReference()){
+            $order->setOrderRef1($this->getMerchantReference()->getOrderRef1());
+        }
+
+        return $order;
     }
 }

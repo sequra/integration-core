@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
+use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
@@ -24,6 +25,7 @@ use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterf
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
@@ -256,6 +258,15 @@ class BaseTestCase extends TestCase
                 return new ConnectionDataRepository(
                     TestRepositoryRegistry::getRepository(ConnectionData::getClassName()),
                     TestServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            SeQuraOrderRepositoryInterface::class,
+            static function () {
+                return new SeQuraOrderRepository(
+                    TestRepositoryRegistry::getRepository(SeQuraOrder::getClassName())
                 );
             }
         );
