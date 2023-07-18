@@ -1,8 +1,8 @@
 <?php
 
-namespace SeQura\Core\BusinessLogic\Domain\Category\Models;
+namespace SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models;
 
-use SeQura\Core\BusinessLogic\Domain\Category\Exceptions\EmptyCategoryParameterException;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\EmptyCategoryParameterException;
 use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 
 /**
@@ -54,5 +54,21 @@ class Category
     public function getName(): string
     {
         return $this->name;
+    }
+
+    /**
+     * @param string $id
+     */
+    public function setId(string $id): void
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName(string $name): void
+    {
+        $this->name = $name;
     }
 }

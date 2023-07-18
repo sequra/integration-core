@@ -8,6 +8,8 @@ use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\ConnectionRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\OnboardingRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\ConnectionSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\OnboardingDataResponse;
+use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\SuccessfulConnectionResponse;
+use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\SuccessfulOnboardingResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
@@ -262,6 +264,27 @@ class ConnectionControllerTest extends BaseTestCase
     /**
      * @return void
      */
+    public function testSavingConnectionDataResponse(): void
+    {
+        // Arrange
+        $request = new ConnectionRequest(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'test_username',
+            'test_password'
+        );
+
+        // Act
+        $response = AdminAPI::get()->connection('1')->saveConnectionData($request);
+        $expectedResponse = new SuccessfulConnectionResponse();
+
+        // Assert
+        self::assertEquals($expectedResponse, $response);
+    }
+
+    /**
+     * @return void
+     */
     public function testSavingConnectionDataResponseToArray(): void
     {
         // Arrange
@@ -307,6 +330,30 @@ class ConnectionControllerTest extends BaseTestCase
      *
      * @throws InvalidEnvironmentException
      */
+    public function testSavingOnboardingDataResponse(): void
+    {
+        // Arrange
+        $request = new OnboardingRequest(
+            BaseProxy::TEST_MODE,
+            'test_username',
+            'test_password',
+            true,
+            'logeecom'
+        );
+
+        // Act
+        $response = AdminAPI::get()->connection('1')->saveOnboardingData($request);
+        $expectedResponse = new SuccessfulOnboardingResponse();
+
+        // Assert
+        self::assertEquals($expectedResponse, $response);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
     public function testSavingOnboardingDataResponseToArray(): void
     {
         // Arrange
@@ -330,6 +377,7 @@ class ConnectionControllerTest extends BaseTestCase
      */
     public function testIsUpdateConnectionDataResponseSuccessful(): void
     {
+        // Arrange
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'logeecom',
@@ -338,7 +386,6 @@ class ConnectionControllerTest extends BaseTestCase
 
         StoreContext::doWithStore('1', [$this->connectionDataRepository,'setConnectionData'], [$connectionData]);
 
-        // Arrange
         $request = new ConnectionRequest(
             BaseProxy::TEST_MODE,
             'logeecom2',
@@ -356,8 +403,9 @@ class ConnectionControllerTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testUpdateConnectionDataResponseToArray(): void
+    public function testUpdateConnectionDataResponse(): void
     {
+        // Arrange
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'logeecom',
@@ -366,7 +414,35 @@ class ConnectionControllerTest extends BaseTestCase
 
         StoreContext::doWithStore('1', [$this->connectionDataRepository,'setConnectionData'], [$connectionData]);
 
+        $request = new ConnectionRequest(
+            BaseProxy::TEST_MODE,
+            'logeecom2',
+            'test_username2',
+            'test_password2'
+        );
+
+        // Act
+        $response = AdminAPI::get()->connection('1')->saveConnectionData($request);
+        $expectedResponse = new SuccessfulConnectionResponse();
+
+        // Assert
+        self::assertEquals($expectedResponse, $response);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateConnectionDataResponseToArray(): void
+    {
         // Arrange
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+
+        StoreContext::doWithStore('1', [$this->connectionDataRepository,'setConnectionData'], [$connectionData]);
+
         $request = new ConnectionRequest(
             BaseProxy::TEST_MODE,
             'logeecom2',
@@ -386,6 +462,7 @@ class ConnectionControllerTest extends BaseTestCase
      */
     public function testIsUpdateOnboardingDataResponseSuccessful(): void
     {
+        // Arrange
         $statisticalData = new StatisticalData(true);
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
@@ -396,7 +473,6 @@ class ConnectionControllerTest extends BaseTestCase
         StoreContext::doWithStore('1', [$this->statisticalDataRepository,'setStatisticalData'], [$statisticalData]);
         StoreContext::doWithStore('1', [$this->connectionDataRepository,'setConnectionData'], [$connectionData]);
 
-        // Arrange
         $request = new OnboardingRequest(
             BaseProxy::TEST_MODE,
             'test_username',
@@ -415,8 +491,9 @@ class ConnectionControllerTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testUpdateOnboardingDataResponseToArray(): void
+    public function testUpdateOnboardingDataResponse(): void
     {
+        // Arrange
         $statisticalData = new StatisticalData(true);
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
@@ -427,7 +504,38 @@ class ConnectionControllerTest extends BaseTestCase
         StoreContext::doWithStore('1', [$this->statisticalDataRepository,'setStatisticalData'], [$statisticalData]);
         StoreContext::doWithStore('1', [$this->connectionDataRepository,'setConnectionData'], [$connectionData]);
 
+        $request = new OnboardingRequest(
+            BaseProxy::TEST_MODE,
+            'test_username',
+            'test_password',
+            true,
+            'logeecom'
+        );
+
+        // Act
+        $response = AdminAPI::get()->connection('1')->saveOnboardingData($request);
+        $expectedResponse = new SuccessfulOnboardingResponse();
+
+        // Assert
+        self::assertEquals($expectedResponse, $response);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateOnboardingDataResponseToArray(): void
+    {
         // Arrange
+        $statisticalData = new StatisticalData(true);
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+
+        StoreContext::doWithStore('1', [$this->statisticalDataRepository,'setStatisticalData'], [$statisticalData]);
+        StoreContext::doWithStore('1', [$this->connectionDataRepository,'setConnectionData'], [$connectionData]);
+
         $request = new OnboardingRequest(
             BaseProxy::TEST_MODE,
             'test_username',

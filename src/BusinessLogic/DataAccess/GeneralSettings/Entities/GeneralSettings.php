@@ -1,0 +1,134 @@
+<?php
+
+namespace SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities;
+
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\EmptyCategoryParameterException;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\Category;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings as DomainGeneralSettings;
+use SeQura\Core\Infrastructure\ORM\Configuration\EntityConfiguration;
+use SeQura\Core\Infrastructure\ORM\Configuration\IndexMap;
+use SeQura\Core\Infrastructure\ORM\Entity;
+
+/**
+ * Class GeneralSettings
+ *
+ * @package SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities
+ */
+class GeneralSettings extends Entity
+{
+    /**
+     * Fully qualified name of this class.
+     */
+    public const CLASS_NAME = __CLASS__;
+
+    /**
+     * @var string
+     */
+    protected $storeId;
+
+    /**
+     * @var DomainGeneralSettings
+     */
+    protected $generalSettings;
+
+    /**
+     * @inheritDoc
+     * @throws EmptyCategoryParameterException
+     */
+    public function inflate(array $data): void
+    {
+        parent::inflate($data);
+
+        parent::inflate($data);
+
+        $generalSettings = $data['generalSettings'] ?? [];
+        $this->storeId = $data['storeId'] ?? '';
+
+        $excludedCategories = [];
+        if($generalSettings['excludedCategories']) {
+            foreach ($generalSettings['excludedCategories'] as $category) {
+                $excludedCategories[] = new Category(
+                    self::getArrayValue($category, 'id'),
+                    self::getArrayValue($category, 'name')
+                );
+            }
+        }
+
+        $this->generalSettings = new DomainGeneralSettings(
+            self::getArrayValue($generalSettings, 'showSeQuraCheckoutAsHostedPage'),
+            self::getArrayValue($generalSettings, 'sendOrderReportsPeriodicallyToSeQura'),
+            static::getDataValue($generalSettings, 'allowedIPAddresses', []),
+            static::getDataValue($generalSettings, 'excludedProducts', []),
+            $excludedCategories
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toArray(): array
+    {
+        $data = parent::toArray();
+
+        $data['storeId'] = $this->storeId;
+        $data['generalSettings'] = [
+            'showSeQuraCheckoutAsHostedPage' => $this->generalSettings->isShowSeQuraCheckoutAsHostedPage(),
+            'sendOrderReportsPeriodicallyToSeQura' => $this->generalSettings->isSendOrderReportsPeriodicallyToSeQura(),
+            'allowedIPAddresses' => $this->generalSettings->getAllowedIPAddresses(),
+            'excludedProducts' => $this->generalSettings->getExcludedProducts()
+        ];
+
+        foreach ($this->generalSettings->getExcludedCategories() as $category) {
+            $data['generalSettings']['excludedCategories'][] = [
+                'id' => $category->getId(),
+                'name' => $category->getName()
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getConfig(): EntityConfiguration
+    {
+        $indexMap = new IndexMap();
+
+        $indexMap->addStringIndex('storeId');
+
+        return new EntityConfiguration($indexMap, 'GeneralSettings');
+    }
+
+    /**
+     * @return string
+     */
+    public function getStoreId(): string
+    {
+        return $this->storeId;
+    }
+
+    /**
+     * @param string $storeId
+     */
+    public function setStoreId(string $storeId): void
+    {
+        $this->storeId = $storeId;
+    }
+
+    /**
+     * @return DomainGeneralSettings
+     */
+    public function getGeneralSettings(): DomainGeneralSettings
+    {
+        return $this->generalSettings;
+    }
+
+    /**
+     * @param DomainGeneralSettings $generalSettings
+     */
+    public function setGeneralSettings(DomainGeneralSettings $generalSettings): void
+    {
+        $this->generalSettings = $generalSettings;
+    }
+}

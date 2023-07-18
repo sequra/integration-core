@@ -1,6 +1,6 @@
 <?php
 
-namespace SeQura\Core\BusinessLogic\Domain\Category\Exceptions;
+namespace SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions;
 
 use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableException;
 

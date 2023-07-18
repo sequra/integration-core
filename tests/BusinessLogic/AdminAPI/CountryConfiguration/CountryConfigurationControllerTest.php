@@ -7,7 +7,9 @@ use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Requests\CountryConfigurationRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\CountryConfigurationResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\SellingCountriesResponse;
+use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\SuccessfulCountryConfigurationResponse;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
@@ -41,6 +43,9 @@ class CountryConfigurationControllerTest extends BaseTestCase
         $this->countryConfigurationRepository = TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class);
     }
 
+    /**
+     * @throws FailedToRetrieveSellingCountriesException
+     */
     public function testIsGetSellingCountriesResponseSuccessful(): void
     {
         // Act
@@ -50,6 +55,9 @@ class CountryConfigurationControllerTest extends BaseTestCase
         self::assertTrue($response->isSuccessful());
     }
 
+    /**
+     * @throws FailedToRetrieveSellingCountriesException
+     */
     public function testGetSellingCountriesResponse(): void
     {
         // Arrange
@@ -68,6 +76,9 @@ class CountryConfigurationControllerTest extends BaseTestCase
         self::assertEquals($expectedResponse, $response);
     }
 
+    /**
+     * @throws FailedToRetrieveSellingCountriesException
+     */
     public function testGetSellingCountriesResponseToArray(): void
     {
         // Act
@@ -180,6 +191,35 @@ class CountryConfigurationControllerTest extends BaseTestCase
         self::assertTrue($response->isSuccessful());
     }
 
+    /**
+     * @throws EmptyCountryConfigurationParameterException
+     * @throws InvalidCountryCodeForConfigurationException
+     */
+    public function testSaveResponse(): void
+    {
+        // Arrange
+        $countryConfigurationRequest = new CountryConfigurationRequest([
+            [
+                'countryCode' => 'CO',
+                'merchantId' => 'logeecom',
+            ],
+            [
+                'countryCode' => 'ES',
+                'merchantId' => 'logeecom',
+            ],
+            [
+                'countryCode' => 'FR',
+                'merchantId' => 'logeecom',
+            ]
+        ]);
+
+        // Act
+        $response = AdminAPI::get()->countryConfiguration('1')->saveCountryConfigurations($countryConfigurationRequest);
+        $expectedResponse = new SuccessfulCountryConfigurationResponse();
+
+        // Assert
+        self::assertEquals($expectedResponse, $response);
+    }
 
     /**
      * @throws EmptyCountryConfigurationParameterException
@@ -215,6 +255,7 @@ class CountryConfigurationControllerTest extends BaseTestCase
      */
     public function testIsUpdateResponseSuccessful(): void
     {
+        // Arrange
         $countryConfigurations = [
             new CountryConfiguration('CO','logeecom'),
             new CountryConfiguration('ES','logeecom'),
@@ -223,7 +264,6 @@ class CountryConfigurationControllerTest extends BaseTestCase
 
         StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurations]);
 
-        // Arrange
         $countryConfigurationRequest = new CountryConfigurationRequest([
             [
                 'countryCode' => 'IT',
@@ -249,8 +289,9 @@ class CountryConfigurationControllerTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testUpdateResponseToArray(): void
+    public function testUpdateResponse(): void
     {
+        // Arrange
         $countryConfigurations = [
             new CountryConfiguration('CO','logeecom'),
             new CountryConfiguration('ES','logeecom'),
@@ -259,7 +300,43 @@ class CountryConfigurationControllerTest extends BaseTestCase
 
         StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurations]);
 
+        $countryConfigurationRequest = new CountryConfigurationRequest([
+            [
+                'countryCode' => 'IT',
+                'merchantId' => 'logeecom2',
+            ],
+            [
+                'countryCode' => 'CO',
+                'merchantId' => 'logeecom2',
+            ],
+            [
+                'countryCode' => 'PT',
+                'merchantId' => 'logeecom2',
+            ]
+        ]);
+
+        // Act
+        $response = AdminAPI::get()->countryConfiguration('1')->saveCountryConfigurations($countryConfigurationRequest);
+        $expectedResponse = new SuccessfulCountryConfigurationResponse();
+
+        // Assert
+        self::assertEquals($expectedResponse, $response);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateResponseToArray(): void
+    {
         // Arrange
+        $countryConfigurations = [
+            new CountryConfiguration('CO','logeecom'),
+            new CountryConfiguration('ES','logeecom'),
+            new CountryConfiguration('FR','logeecom')
+        ];
+
+        StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurations]);
+
         $countryConfigurationRequest = new CountryConfigurationRequest([
             [
                 'countryCode' => 'IT',

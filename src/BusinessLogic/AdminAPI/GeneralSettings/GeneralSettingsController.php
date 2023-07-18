@@ -5,11 +5,11 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Requests\GeneralSettingsRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\GeneralSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\ShopCategoriesResponse;
-use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\ShopProductsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\SuccessfulGeneralSettingsResponse;
-use SeQura\Core\BusinessLogic\Domain\Category\Models\Category;
-use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
-use SeQura\Core\BusinessLogic\Domain\Product\Models\Product;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\EmptyCategoryParameterException;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\FailedToRetrieveCategoriesException;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 
 /**
  * Class GeneralSettingsController
@@ -19,21 +19,33 @@ use SeQura\Core\BusinessLogic\Domain\Product\Models\Product;
 class GeneralSettingsController
 {
     /**
+     * @var GeneralSettingsService
+     */
+    private $generalSettingsService;
+
+    /**
+     * @var CategoryService
+     */
+    private $categoryService;
+
+    /**
+     * @param GeneralSettingsService $generalSettingsService
+     * @param CategoryService $categoryService
+     */
+    public function __construct(GeneralSettingsService $generalSettingsService, CategoryService $categoryService)
+    {
+        $this->generalSettingsService = $generalSettingsService;
+        $this->categoryService = $categoryService;
+    }
+
+    /**
      * Gets active general settings.
      *
      * @return GeneralSettingsResponse
      */
     public function getGeneralSettings(): GeneralSettingsResponse
     {
-        return new GeneralSettingsResponse(
-            new GeneralSettings(
-                true,
-                false,
-                null,
-                null,
-                null
-            )
-        );
+        return new GeneralSettingsResponse($this->generalSettingsService->getGeneralSettings());
     }
 
     /**
@@ -42,9 +54,13 @@ class GeneralSettingsController
      * @param GeneralSettingsRequest $request
      *
      * @return SuccessfulGeneralSettingsResponse
+     *
+     * @throws EmptyCategoryParameterException
      */
     public function saveGeneralSettings(GeneralSettingsRequest $request): SuccessfulGeneralSettingsResponse
     {
+        $this->generalSettingsService->saveGeneralSettings($request->transformToDomainModel());
+
         return new SuccessfulGeneralSettingsResponse();
     }
 
@@ -52,33 +68,11 @@ class GeneralSettingsController
      * Gets shop categories.
      *
      * @return ShopCategoriesResponse
+     *
+     * @throws FailedToRetrieveCategoriesException
      */
     public function getShopCategories(): ShopCategoriesResponse
     {
-        return new ShopCategoriesResponse([
-            new Category('cat1', 'Shoes'),
-            new Category('cat2', 'Bags'),
-            new Category('cat3', 'Watches'),
-            new Category('cat4', 'Shirts'),
-            new Category('cat5', 'Dresses')
-        ]);
-    }
-
-    /**
-     * Gets shop products.
-     *
-     * @return ShopProductsResponse
-     */
-    public function getShopProducts(): ShopProductsResponse
-    {
-        return new ShopProductsResponse([
-            new Product('prod1', 'IPhone 5'),
-            new Product('prod2', 'Red dress'),
-            new Product('prod3', 'Black T-Shirt'),
-            new Product('prod4', 'Xiaomi headphones'),
-            new Product('prod5', 'Asus motherboard'),
-            new Product('prod6', 'Nvidia GPU'),
-            new Product('prod7', 'Logitech keyboard')
-        ]);
+        return new ShopCategoriesResponse($this->categoryService->getCategories());
     }
 }

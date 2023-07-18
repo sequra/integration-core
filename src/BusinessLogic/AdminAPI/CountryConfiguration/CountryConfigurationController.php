@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\CountryCon
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\SellingCountriesResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\SuccessfulCountryConfigurationResponse;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
@@ -45,6 +46,8 @@ class CountryConfigurationController
      * Gets all the available selling countries.
      *
      * @return SellingCountriesResponse
+     *
+     * @throws FailedToRetrieveSellingCountriesException
      */
     public function getSellingCountries(): SellingCountriesResponse
     {

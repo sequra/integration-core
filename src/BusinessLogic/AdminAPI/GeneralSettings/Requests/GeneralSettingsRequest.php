@@ -3,11 +3,9 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Requests;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Request\Request;
-use SeQura\Core\BusinessLogic\Domain\Category\Exceptions\EmptyCategoryParameterException;
-use SeQura\Core\BusinessLogic\Domain\Category\Models\Category;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\EmptyCategoryParameterException;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\Category;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
-use SeQura\Core\BusinessLogic\Domain\Product\Exceptions\EmptyProductParameterException;
-use SeQura\Core\BusinessLogic\Domain\Product\Models\Product;
 
 /**
  * Class GeneralSettingsRequest
@@ -45,22 +43,22 @@ class GeneralSettingsRequest extends Request
      * @param bool $showSeQuraCheckoutAsHostedPage
      * @param bool $sendOrderReportsPeriodicallyToSeQura
      * @param string[]|null $allowedIPAddresses
-     * @param array|null $excludedCategories
      * @param array|null $excludedProducts
+     * @param array|null $excludedCategories
      */
     public function __construct(
         bool $showSeQuraCheckoutAsHostedPage,
         bool $sendOrderReportsPeriodicallyToSeQura,
         ?array $allowedIPAddresses,
-        ?array $excludedCategories,
-        ?array $excludedProducts
+        ?array $excludedProducts,
+        ?array $excludedCategories
     )
     {
         $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
         $this->allowedIPAddresses = $allowedIPAddresses;
-        $this->excludedCategories = $excludedCategories;
         $this->excludedProducts = $excludedProducts;
+        $this->excludedCategories = $excludedCategories;
     }
 
     /**
@@ -68,33 +66,25 @@ class GeneralSettingsRequest extends Request
      *
      * @return GeneralSettings
      *
-     * @throws EmptyProductParameterException
      * @throws EmptyCategoryParameterException
      */
     public function transformToDomainModel(): object
     {
-        $categories = [];
-        foreach ($this->excludedCategories as $category) {
-            $categories = new Category(
-                $category['id'] ?? '',
-                $category['name'] ?? ''
-            );
-        }
-
-        $products = [];
-        foreach ($this->excludedProducts as $product) {
-            $products = new Product(
-                $product['id'] ?? '',
-                $product['name'] ?? ''
-            );
+        if ($this->excludedCategories) {
+            foreach ($this->excludedCategories as $category) {
+                $categories[] = new Category(
+                    $category['id'] ?? '',
+                    $category['name'] ?? ''
+                );
+            }
         }
 
         return new GeneralSettings(
             $this->showSeQuraCheckoutAsHostedPage,
             $this->sendOrderReportsPeriodicallyToSeQura,
             $this->allowedIPAddresses,
-            $categories,
-            $products
+            $this->excludedProducts,
+            $categories ?? null
         );
     }
 }

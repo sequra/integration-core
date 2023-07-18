@@ -3,7 +3,7 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
-use SeQura\Core\BusinessLogic\Domain\Category\Models\Category;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\Category;
 
 /**
  * Class ShopCategoriesResponse

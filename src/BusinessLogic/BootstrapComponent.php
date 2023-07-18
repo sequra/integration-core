@@ -16,6 +16,8 @@ use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
+use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
+use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
@@ -27,6 +29,10 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
@@ -123,6 +129,16 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            GeneralSettingsRepositoryInterface::class,
+            static function () {
+                return new GeneralSettingsRepository(
+                    RepositoryRegistry::getRepository(GeneralSettings::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             SeQuraOrderRepositoryInterface::class,
             static function () {
                 return new SeQuraOrderRepository(
@@ -206,6 +222,15 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            GeneralSettingsService::class,
+            static function () {
+                return new GeneralSettingsService(
+                    ServiceRegister::getService(GeneralSettingsRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             SellingCountriesService::class,
             static function () {
                 return new SellingCountriesService(
@@ -229,6 +254,15 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new VersionService(
                     ServiceRegister::getService(VersionStoreService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            CategoryService::class,
+            static function () {
+                return new CategoryService(
+                    ServiceRegister::getService(CategoryServiceInterface::class)
                 );
             }
         );
@@ -317,7 +351,10 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             GeneralSettingsController::class,
             static function () {
-                return new GeneralSettingsController();
+                return new GeneralSettingsController(
+                    ServiceRegister::getService(GeneralSettingsService::class),
+                    ServiceRegister::getService(CategoryService::class)
+                );
             }
         );
 

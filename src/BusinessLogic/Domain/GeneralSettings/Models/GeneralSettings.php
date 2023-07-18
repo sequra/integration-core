@@ -2,9 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models;
 
-use SeQura\Core\BusinessLogic\Domain\Category\Models\Category;
-use SeQura\Core\BusinessLogic\Domain\Product\Models\Product;
-
 /**
  * Class GeneralSettings
  *
@@ -33,7 +30,7 @@ class GeneralSettings
     private $excludedCategories;
 
     /**
-     * @var Product[]|null
+     * @var string[]|null
      */
     private $excludedProducts;
 
@@ -41,22 +38,22 @@ class GeneralSettings
      * @param bool $showSeQuraCheckoutAsHostedPage
      * @param bool $sendOrderReportsPeriodicallyToSeQura
      * @param string[]|null $allowedIPAddresses
+     * @param string[]|null $excludedProducts
      * @param Category[]|null $excludedCategories
-     * @param Product[]|null $excludedProducts
      */
     public function __construct(
         bool $showSeQuraCheckoutAsHostedPage,
         bool $sendOrderReportsPeriodicallyToSeQura,
         ?array $allowedIPAddresses,
-        ?array $excludedCategories,
-        ?array $excludedProducts
+        ?array $excludedProducts,
+        ?array $excludedCategories
     )
     {
         $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
         $this->allowedIPAddresses = $allowedIPAddresses;
-        $this->excludedCategories = $excludedCategories;
         $this->excludedProducts = $excludedProducts;
+        $this->excludedCategories = $excludedCategories;
     }
 
     /**
@@ -124,7 +121,7 @@ class GeneralSettings
     }
 
     /**
-     * @return Product[]|null
+     * @return string[]|null
      */
     public function getExcludedProducts(): ?array
     {
@@ -132,7 +129,7 @@ class GeneralSettings
     }
 
     /**
-     * @param Product[]|null $excludedProducts
+     * @param string[]|null $excludedProducts
      */
     public function setExcludedProducts(?array $excludedProducts): void
     {

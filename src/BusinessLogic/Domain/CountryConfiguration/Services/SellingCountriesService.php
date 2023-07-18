@@ -2,9 +2,12 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Enum\SellingCountries;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 
 /**
  * Class SellingCountriesService
@@ -27,18 +30,25 @@ class SellingCountriesService
      * Returns all available selling countries.
      *
      * @return SellingCountry[]
+     *
+     * @throws FailedToRetrieveSellingCountriesException
      */
     public function getSellingCountries(): array
     {
-        $storeConfiguredCountryCodes = $this->integrationSellingCountriesService->getSellingCountries();
+        try {
+            $storeConfiguredCountryCodes = $this->integrationSellingCountriesService->getSellingCountries();
 
-        $sellingCountries = [];
-        foreach ($storeConfiguredCountryCodes as $code) {
-            if(array_key_exists($code, SellingCountries::SELLING_COUNTRIES)) {
-                $sellingCountries[] = new SellingCountry($code, SellingCountries::SELLING_COUNTRIES[$code]);
+            $sellingCountries = [];
+            foreach ($storeConfiguredCountryCodes as $code) {
+                if(array_key_exists($code, SellingCountries::SELLING_COUNTRIES)) {
+                    $sellingCountries[] = new SellingCountry($code, SellingCountries::SELLING_COUNTRIES[$code]);
+                }
             }
+
+            return $sellingCountries;
+        }catch (Exception $e) {
+            throw new FailedToRetrieveSellingCountriesException(new TranslatableLabel($e->getMessage(), $e->getCode()));
         }
 
-        return $sellingCountries;
     }
 }

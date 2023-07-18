@@ -29,15 +29,18 @@ class GeneralSettingsResponse extends Response
      */
     public function toArray(): array
     {
+        if (!$this->generalSettings) {
+            return [];
+        }
+
         $categoriesResponse = new ShopCategoriesResponse($this->generalSettings->getExcludedCategories());
-        $productsResponse = new ShopProductsResponse($this->generalSettings->getExcludedProducts());
 
         return[
             'showSeQuraCheckoutAsHostedPage' => $this->generalSettings->isShowSeQuraCheckoutAsHostedPage(),
             'sendOrderReportsPeriodicallyToSeQura' => $this->generalSettings->isSendOrderReportsPeriodicallyToSeQura(),
             'allowedIPAddresses' => $this->generalSettings->getAllowedIPAddresses(),
-            'excludedCategories' => $categoriesResponse->toArray(),
-            'excludedProducts' => $productsResponse->toArray()
+            'excludedProducts' => $this->generalSettings->getExcludedProducts(),
+            'excludedCategories' => $categoriesResponse->toArray()
         ];
     }
 }

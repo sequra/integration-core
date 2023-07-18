@@ -5,6 +5,7 @@ namespace SeQura\Core\Tests\BusinessLogic\Common;
 use PHPUnit\Framework\TestCase;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
+use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
@@ -12,6 +13,8 @@ use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
+use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
+use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
@@ -23,6 +26,10 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface;
@@ -140,6 +147,12 @@ class BaseTestCase extends TestCase
                     StoreContext::getInstance()
                 );
             },
+            GeneralSettingsRepositoryInterface::class => function () {
+                return new GeneralSettingsRepository(
+                    TestRepositoryRegistry::getRepository(GeneralSettings::getClassName()),
+                    StoreContext::getInstance()
+                );
+            },
             ConnectionDataRepositoryInterface::class => function () {
                 return new ConnectionDataRepository(
                     TestRepositoryRegistry::getRepository(ConnectionData::getClassName()),
@@ -171,6 +184,11 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class)
                 );
             },
+            GeneralSettingsService::class => static function () {
+                return new GeneralSettingsService(
+                    TestServiceRegister::getService(GeneralSettingsRepositoryInterface::class)
+                );
+            },
             SellingCountriesService::class => static function () {
                 return new SellingCountriesService(
                     TestServiceRegister::getService(SellingCountriesServiceInterface::class)
@@ -179,6 +197,11 @@ class BaseTestCase extends TestCase
             VersionService::class => static function () {
                 return new VersionService(
                     TestServiceRegister::getService(VersionServiceInterface::class)
+                );
+            },
+            CategoryService::class => static function () {
+                return new CategoryService(
+                    TestServiceRegister::getService(CategoryServiceInterface::class)
                 );
             },
             StoreService::class => static function () {
@@ -206,6 +229,12 @@ class BaseTestCase extends TestCase
                 return new CountryConfigurationController(
                     TestServiceRegister::getService(CountryConfigurationService::class),
                     TestServiceRegister::getService(SellingCountriesService::class)
+                );
+            },
+            GeneralSettingsController::class => function () {
+                return new GeneralSettingsController(
+                    TestServiceRegister::getService(GeneralSettingsService::class),
+                    TestServiceRegister::getService(CategoryService::class)
                 );
             },
             PaymentMethodsController::class => function () {
@@ -328,6 +357,7 @@ class BaseTestCase extends TestCase
         TestRepositoryRegistry::registerRepository(OrderStatusMapping::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(ConnectionData::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(StatisticalData::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(GeneralSettings::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(
             CountryConfiguration::getClassName(),
             MemoryRepository::getClassName()
