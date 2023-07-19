@@ -26,15 +26,26 @@ class MockOrderProxy implements OrderProxyInterface
      * @var SeQuraPaymentMethod[]
      */
     private $availablePaymentMethods;
+    /**
+     * @var SeQuraForm|null
+     */
+    private $form;
+    /**
+     * @var GetFormRequest
+     */
+    private $lastGetFormRequest;
 
     /**
      * @param ?SeQuraOrder $order
+     * @param array $availablePaymentMethods
+     * @param SeQuraForm|null $form
      * @return void
      */
-    public function setMockResult(?SeQuraOrder $order, array $availablePaymentMethods = []): void
+    public function setMockResult(?SeQuraOrder $order, array $availablePaymentMethods = [], SeQuraForm $form = null): void
     {
         $this->order = $order;
         $this->availablePaymentMethods = $availablePaymentMethods;
+        $this->form = $form ?? new SeQuraForm('');
     }
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array
     {
@@ -63,6 +74,15 @@ class MockOrderProxy implements OrderProxyInterface
 
     public function getForm(GetFormRequest $request): SeQuraForm
     {
-        return new SeQuraForm('test');
+        $this->lastGetFormRequest = $request;
+        return $this->form;
+    }
+
+    /**
+     * @return GetFormRequest
+     */
+    public function getLastGetFormRequest(): GetFormRequest
+    {
+        return $this->lastGetFormRequest;
     }
 }

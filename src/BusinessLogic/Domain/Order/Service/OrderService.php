@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\Domain\Order\Service;
 
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
@@ -64,6 +65,22 @@ class OrderService
     public function getAvailablePaymentMethods(SeQuraOrder $order): array
     {
         return $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest($order->getReference()));
+    }
+
+    public function getIdentificationForm(
+        string $cartId,
+        string $product = null,
+        string $campaign = null,
+        bool $ajax = true
+    ) {
+        $existingOrder = $this->orderRepository->getByCartId($cartId);
+        if (!$existingOrder) {
+            throw new \InvalidArgumentException(
+                "Order form could not be fetched. SeQura order could not be found for cart id ($cartId)."
+            );
+        }
+
+        return $this->proxy->getForm(new GetFormRequest($existingOrder->getReference(), $product, $campaign, $ajax));
     }
 
     private function getExistingOrderFor(CreateOrderRequest $request): ?SeQuraOrder

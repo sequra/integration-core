@@ -25,10 +25,15 @@ class MockCreateOrderRequestBuilder implements CreateOrderRequestBuilder
      * @var \Exception|null
      */
     private $throwException;
+    /**
+     * @var string
+     */
+    private $cartId;
 
-    public function __construct(\Exception $exception = null)
+    public function __construct(\Exception $exception = null, $cartId = 'testCart123')
     {
         $this->throwException = $exception;
+        $this->cartId = $cartId;
     }
 
     public function build(): CreateOrderRequest
@@ -46,7 +51,7 @@ class MockCreateOrderRequestBuilder implements CreateOrderRequestBuilder
         $merchantReference = new MerchantReference('test123');
         $cart = new Cart('testCurrency', false, [
             new ProductItem('testItemReference','testName', 5,2, 10, false)
-        ], 'testCart123');
+        ], $this->cartId);
 
         $deliveryMethod = new DeliveryMethod('testDeliveryMethodName');
         $deliveryAddress = new Address(
