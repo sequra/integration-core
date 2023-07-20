@@ -79,7 +79,7 @@ class OrderUpdateTask extends Task
     private function doExecute(): void
     {
         $shopStatus = $this->getStatusMappingService()->getMapping($this->webhook->getSqState());
-        $this->getShopOrderService()->updateStatus($this->webhook->getOrderRef1(), $shopStatus);
+        $this->getShopOrderService()->updateStatus($this->webhook, $shopStatus);
 
         $this->reportProgress(100);
     }

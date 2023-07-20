@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+# Unreleased
+**BREAKING CHANGES**
+- The `\SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService::updateStatus` method signature is changed.
+Now the whol `Webhook` instance is passed as first argument instead of shop order reference. Existing code can get
+the shop order id directly from `Webhook` instance.
+
 # [v1.0.4](https://github.com/sequra/integration-core/tree/v1.0.4)
 ## Changed
 - Updated the cart DTO to allow updating order items.

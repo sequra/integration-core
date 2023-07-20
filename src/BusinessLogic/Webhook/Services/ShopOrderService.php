@@ -2,6 +2,8 @@
 
 namespace SeQura\Core\BusinessLogic\Webhook\Services;
 
+use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
+
 /**
  * Interface ShopOrderService
  *
@@ -12,10 +14,10 @@ interface ShopOrderService
     /**
      * Updates status of the order in the shop system based on the provided status.
      *
-     * @param string $orderId
+     * @param Webhook $orderId
      * @param string $status
      *
      * @return mixed
      */
-    public function updateStatus(string $orderId, string $status);
+    public function updateStatus(Webhook $webhook, string $status);
 }
