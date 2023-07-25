@@ -33,14 +33,12 @@ class GeneralSettingsResponse extends Response
             return [];
         }
 
-        $categoriesResponse = new ShopCategoriesResponse($this->generalSettings->getExcludedCategories());
-
         return[
             'showSeQuraCheckoutAsHostedPage' => $this->generalSettings->isShowSeQuraCheckoutAsHostedPage(),
             'sendOrderReportsPeriodicallyToSeQura' => $this->generalSettings->isSendOrderReportsPeriodicallyToSeQura(),
             'allowedIPAddresses' => $this->generalSettings->getAllowedIPAddresses(),
             'excludedProducts' => $this->generalSettings->getExcludedProducts(),
-            'excludedCategories' => $categoriesResponse->toArray()
+            'excludedCategories' => $this->generalSettings->getExcludedCategories()
         ];
     }
 }

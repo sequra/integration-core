@@ -3,8 +3,6 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Requests;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Request\Request;
-use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\EmptyCategoryParameterException;
-use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\Category;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 
 /**
@@ -30,12 +28,12 @@ class GeneralSettingsRequest extends Request
     private $allowedIPAddresses;
 
     /**
-     * @var array|null
+     * @var string[]|null
      */
     private $excludedCategories;
 
     /**
-     * @var array|null
+     * @var string[]|null
      */
     private $excludedProducts;
 
@@ -43,8 +41,8 @@ class GeneralSettingsRequest extends Request
      * @param bool $showSeQuraCheckoutAsHostedPage
      * @param bool $sendOrderReportsPeriodicallyToSeQura
      * @param string[]|null $allowedIPAddresses
-     * @param array|null $excludedProducts
-     * @param array|null $excludedCategories
+     * @param string[]|null $excludedProducts
+     * @param string[]|null $excludedCategories
      */
     public function __construct(
         bool $showSeQuraCheckoutAsHostedPage,
@@ -65,26 +63,15 @@ class GeneralSettingsRequest extends Request
      * Transforms the request to a GeneralSettings object.
      *
      * @return GeneralSettings
-     *
-     * @throws EmptyCategoryParameterException
      */
     public function transformToDomainModel(): object
     {
-        if ($this->excludedCategories) {
-            foreach ($this->excludedCategories as $category) {
-                $categories[] = new Category(
-                    $category['id'] ?? '',
-                    $category['name'] ?? ''
-                );
-            }
-        }
-
         return new GeneralSettings(
             $this->showSeQuraCheckoutAsHostedPage,
             $this->sendOrderReportsPeriodicallyToSeQura,
             $this->allowedIPAddresses,
             $this->excludedProducts,
-            $categories ?? null
+            $this->excludedCategories
         );
     }
 }

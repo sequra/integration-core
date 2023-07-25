@@ -61,9 +61,9 @@ class GeneralSettingsControllerTest extends BaseTestCase
     {
         // Arrange
         $categories = [
-            new Category('1','Test 1'),
-            new Category('2','Test 2'),
-            new Category('3','Test 3')
+            new Category('1', 'Test 1'),
+            new Category('2', 'Test 2'),
+            new Category('3', 'Test 3')
         ];
 
         // Act
@@ -91,11 +91,11 @@ class GeneralSettingsControllerTest extends BaseTestCase
     {
         // Arrange
         $this->generalSettingsRepository->setGeneralSettings(new GeneralSettings(
-                true,
-                true,
-                ['address 1', 'address 2'],
-                ['sku 1', 'sku 2'],
-                [new Category('1', 'name 1'), new Category('2', 'name 2')]
+            true,
+            true,
+            ['address 1', 'address 2'],
+            ['sku 1', 'sku 2'],
+            ['1', '2']
         ));
 
         // Act
@@ -116,10 +116,10 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            [new Category('1', 'name 1'), new Category('2', 'name 2')]
+            ['1', '2']
         );
 
-        StoreContext::doWithStore('1', [$this->generalSettingsRepository,'setGeneralSettings'], [$generalSettings]);
+        StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
         $expectedResponse = new GeneralSettingsResponse($generalSettings);
 
         // Act
@@ -140,10 +140,10 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            [new Category('1', 'name 1'), new Category('2', 'name 2')]
+            ['1', '2']
         );
 
-        StoreContext::doWithStore('1', [$this->generalSettingsRepository,'setGeneralSettings'], [$generalSettings]);
+        StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
 
         // Act
         $response = AdminAPI::get()->generalSettings('1')->getGeneralSettings();
@@ -175,16 +175,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            [
-                [
-                    'id' => '1',
-                    'name' => 'name 1'
-                ],
-                [
-                    'id' => '2',
-                    'name' => 'name 2'
-                ]
-            ]
+            ['1', '2']
         );
 
         // Act
@@ -205,16 +196,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            [
-                [
-                    'id' => '1',
-                    'name' => 'name 1'
-                ],
-                [
-                    'id' => '2',
-                    'name' => 'name 2'
-                ]
-            ]
+            ['1', '2']
         );
 
         // Act
@@ -236,16 +218,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            [
-                [
-                    'id' => '1',
-                    'name' => 'name 1'
-                ],
-                [
-                    'id' => '2',
-                    'name' => 'name 2'
-                ]
-            ]
+            ['1', '2']
         );
 
         // Act
@@ -266,26 +239,17 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            [new Category('1', 'name 1'), new Category('2', 'name 2')]
+            ['1', '2']
         );
 
-        StoreContext::doWithStore('1', [$this->generalSettingsRepository,'setGeneralSettings'], [$generalSettings]);
+        StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
 
         $generalSettingsRequest = new GeneralSettingsRequest(
             false,
             false,
             ['address 3', 'address 4'],
             ['sku 3', 'sku 4'],
-            [
-                [
-                    'id' => '1',
-                    'name' => 'name 1'
-                ],
-                [
-                    'id' => '2',
-                    'name' => 'name 2'
-                ]
-            ]
+            ['1', '2']
         );
 
         // Act
@@ -306,26 +270,17 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            [new Category('1', 'name 1'), new Category('2', 'name 2')]
+            ['1', '2']
         );
 
-        StoreContext::doWithStore('1', [$this->generalSettingsRepository,'setGeneralSettings'], [$generalSettings]);
+        StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
 
         $generalSettingsRequest = new GeneralSettingsRequest(
             false,
             false,
             ['address 3', 'address 4'],
             ['sku 3', 'sku 4'],
-            [
-                [
-                    'id' => '1',
-                    'name' => 'name 1'
-                ],
-                [
-                    'id' => '2',
-                    'name' => 'name 2'
-                ]
-            ]
+            ['1', '2']
         );
 
         // Act
@@ -347,26 +302,17 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            [new Category('1', 'name 1'), new Category('2', 'name 2')]
+            ['1', '2']
         );
 
-        StoreContext::doWithStore('1', [$this->generalSettingsRepository,'setGeneralSettings'], [$generalSettings]);
+        StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
 
         $generalSettingsRequest = new GeneralSettingsRequest(
             false,
             false,
             ['address 3', 'address 4'],
             ['sku 3', 'sku 4'],
-            [
-                [
-                    'id' => '1',
-                    'name' => 'name 1'
-                ],
-                [
-                    'id' => '2',
-                    'name' => 'name 2'
-                ]
-            ]
+            ['1', '2']
         );
 
         // Act
@@ -386,16 +332,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             'sendOrderReportsPeriodicallyToSeQura' => true,
             'allowedIPAddresses' => ['address 1', 'address 2'],
             'excludedProducts' => ['sku 1', 'sku 2'],
-            'excludedCategories' => [
-                [
-                    'id' => '1',
-                    'name' => 'name 1'
-                ],
-                [
-                    'id' => '2',
-                    'name' => 'name 2'
-                ]
-            ]
+            'excludedCategories' => ['1', '2']
         ];
     }
 

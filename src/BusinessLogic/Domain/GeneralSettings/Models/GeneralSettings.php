@@ -25,7 +25,7 @@ class GeneralSettings
     private $allowedIPAddresses;
 
     /**
-     * @var Category[]|null
+     * @var string[]|null
      */
     private $excludedCategories;
 
@@ -39,7 +39,7 @@ class GeneralSettings
      * @param bool $sendOrderReportsPeriodicallyToSeQura
      * @param string[]|null $allowedIPAddresses
      * @param string[]|null $excludedProducts
-     * @param Category[]|null $excludedCategories
+     * @param string[]|null $excludedCategories
      */
     public function __construct(
         bool $showSeQuraCheckoutAsHostedPage,
@@ -105,7 +105,7 @@ class GeneralSettings
     }
 
     /**
-     * @return Category[]|null
+     * @return string[]|null
      */
     public function getExcludedCategories(): ?array
     {
@@ -113,7 +113,7 @@ class GeneralSettings
     }
 
     /**
-     * @param Category[]|null $excludedCategories
+     * @param string[]|null $excludedCategories
      */
     public function setExcludedCategories(?array $excludedCategories): void
     {

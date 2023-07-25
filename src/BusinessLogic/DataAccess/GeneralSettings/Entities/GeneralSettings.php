@@ -2,8 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities;
 
-use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\EmptyCategoryParameterException;
-use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\Category;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings as DomainGeneralSettings;
 use SeQura\Core\Infrastructure\ORM\Configuration\EntityConfiguration;
 use SeQura\Core\Infrastructure\ORM\Configuration\IndexMap;
@@ -33,33 +31,20 @@ class GeneralSettings extends Entity
 
     /**
      * @inheritDoc
-     * @throws EmptyCategoryParameterException
      */
     public function inflate(array $data): void
     {
         parent::inflate($data);
 
-        parent::inflate($data);
-
         $generalSettings = $data['generalSettings'] ?? [];
         $this->storeId = $data['storeId'] ?? '';
-
-        $excludedCategories = [];
-        if($generalSettings['excludedCategories']) {
-            foreach ($generalSettings['excludedCategories'] as $category) {
-                $excludedCategories[] = new Category(
-                    self::getArrayValue($category, 'id'),
-                    self::getArrayValue($category, 'name')
-                );
-            }
-        }
 
         $this->generalSettings = new DomainGeneralSettings(
             self::getArrayValue($generalSettings, 'showSeQuraCheckoutAsHostedPage'),
             self::getArrayValue($generalSettings, 'sendOrderReportsPeriodicallyToSeQura'),
             static::getDataValue($generalSettings, 'allowedIPAddresses', []),
             static::getDataValue($generalSettings, 'excludedProducts', []),
-            $excludedCategories
+            static::getDataValue($generalSettings, 'excludedCategories', [])
         );
     }
 
@@ -69,21 +54,14 @@ class GeneralSettings extends Entity
     public function toArray(): array
     {
         $data = parent::toArray();
-
         $data['storeId'] = $this->storeId;
         $data['generalSettings'] = [
             'showSeQuraCheckoutAsHostedPage' => $this->generalSettings->isShowSeQuraCheckoutAsHostedPage(),
             'sendOrderReportsPeriodicallyToSeQura' => $this->generalSettings->isSendOrderReportsPeriodicallyToSeQura(),
             'allowedIPAddresses' => $this->generalSettings->getAllowedIPAddresses(),
-            'excludedProducts' => $this->generalSettings->getExcludedProducts()
+            'excludedProducts' => $this->generalSettings->getExcludedProducts(),
+            'excludedCategories' => $this->generalSettings->getExcludedCategories()
         ];
-
-        foreach ($this->generalSettings->getExcludedCategories() as $category) {
-            $data['generalSettings']['excludedCategories'][] = [
-                'id' => $category->getId(),
-                'name' => $category->getName()
-            ];
-        }
 
         return $data;
     }
