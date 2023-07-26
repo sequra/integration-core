@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\Disconnect;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\Responses\DisconnectResponse;
+use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 
 /**
  * Class DisconnectController
@@ -12,12 +13,27 @@ use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\Responses\DisconnectResponse;
 class DisconnectController
 {
     /**
-     * Disconnects and removes necessary data of the merchant.
+     * @var DisconnectService
+     */
+    private $disconnectService;
+
+    /**
+     * @param DisconnectService $disconnectService
+     */
+    public function __construct(DisconnectService $disconnectService)
+    {
+        $this->disconnectService = $disconnectService;
+    }
+
+    /**
+     * Disconnects integration and removes necessary data of the merchant.
      *
      * @return DisconnectResponse
      */
     public function disconnect(): DisconnectResponse
     {
+        $this->disconnectService->disconnect();
+
         return new DisconnectResponse();
     }
 }
