@@ -14,8 +14,10 @@ interface ShopOrderService
      *
      * @param string $orderId
      * @param string $status
+     * @param int|null $reasonCode
+     * @param string|null $message
      *
      * @return mixed
      */
-    public function updateStatus(string $orderId, string $status);
+    public function updateStatus(string $orderId, string $status, ?int $reasonCode = null, ?string $message = null);
 }
