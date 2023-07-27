@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+# [v1.0.9](https://github.com/sequra/integration-core/tree/v1.0.9)
+## Changed
+- Added optional parameters to the updateStatus method of ShopOrderService interface.
+
 # [v1.0.8](https://github.com/sequra/integration-core/tree/v1.0.8)
 ## Changed
 - Made methods of webhook handler protected.
