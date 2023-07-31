@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Webhook\Handler;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidOrderStateException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -37,7 +38,7 @@ class WebhookHandler
      * @throws InvalidOrderStateException
      * @throws QueryFilterInvalidParamException
      * @throws RepositoryNotRegisteredException
-     * @throws \Exception
+     * @throws Exception
      */
     public function handle(Webhook $webhook): void
     {
@@ -82,7 +83,7 @@ class WebhookHandler
             $order->getMerchantReference()
         );
 
-        $orderProxy->updateOrder($orderReference, $request);
+        $orderProxy->acknowledgeOrder($orderReference, $request);
     }
 
     /**

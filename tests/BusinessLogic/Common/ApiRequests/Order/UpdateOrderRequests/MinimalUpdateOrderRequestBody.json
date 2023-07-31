@@ -1,0 +1,49 @@
+{
+  "order": {
+    "merchant": {
+      "id": "testMerchantId"
+    },
+    "merchant_reference": {
+      "order_ref_1": "testOrderRef1"
+    },
+    "unshipped_cart": {
+      "currency": "testCurrency",
+      "gift": false,
+      "order_total_with_tax": 10,
+      "items": [
+        {
+          "type": "product",
+          "reference": "testItemReference",
+          "name": "testName",
+          "price_with_tax": 5,
+          "quantity": 2,
+          "total_with_tax": 10,
+          "downloadable": false
+        }
+      ]
+    },
+    "shipped_cart": {
+      "currency": "testCurrency",
+      "gift": false,
+      "order_total_with_tax": 10,
+      "items": [
+        {
+          "type": "product",
+          "reference": "testItemReference",
+          "name": "testName",
+          "price_with_tax": 5,
+          "quantity": 2,
+          "total_with_tax": 10,
+          "downloadable": false
+        }
+      ]
+    },
+    "platform": {
+      "name": "testName",
+      "version": "testVersion",
+      "uname": "testUName",
+      "db_name": "testDbName",
+      "db_version": "testDbVersion"
+    }
+  }
+}

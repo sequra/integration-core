@@ -29,6 +29,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\PreviousOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\TrackingPickupPoint;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\TrackingPickupStore;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\TrackingPostal;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Vehicle;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
@@ -713,6 +714,170 @@ class OrderProxyTest extends BaseTestCase
     }
 
     /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testUpdateOrderUrl(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, ['UUID' => 'testUUID'], '')]);
+        $this->proxy->updateOrder($this->generateMinimalUpdateOrderRequest());
+
+        self::assertCount(1, $this->httpClient->getHistory());
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertStringContainsString('https://sandbox.sequrapi.com/merchants/testMerchantId/orders/testOrderRef1', $lastRequest['url']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testUpdateOrderAuthHeader(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, ['UUID' => 'testUUID'], '')]);
+        $this->proxy->updateOrder($this->generateMinimalUpdateOrderRequest());
+
+        self::assertCount(1, $this->httpClient->getHistory());
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertArrayHasKey('Authorization', $lastRequest['headers']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testUpdateOrderMethod(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, ['UUID' => 'testUUID'], '')]);
+        $this->proxy->updateOrder($this->generateMinimalUpdateOrderRequest());
+
+        self::assertCount(1, $this->httpClient->getHistory());
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertEquals(HttpClient::HTTP_METHOD_PUT, $lastRequest['method']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testUpdateOrderMinimalRequestBody(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, ['UUID' => 'testUUID'], '')]);
+        $expectedRequestBody = file_get_contents(
+            __DIR__ . '/../../Common/ApiRequests/Order/UpdateOrderRequests/MinimalUpdateOrderRequestBody.json'
+        );
+
+        $updateOrderRequest = $this->generateMinimalUpdateOrderRequest();
+        $this->proxy->updateOrder($updateOrderRequest);
+
+        self::assertCount(1, $this->httpClient->getHistory());
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertEquals(json_decode($expectedRequestBody,true), json_decode($lastRequest['body'],true));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testUpdateOrderFullRequestBody(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, ['UUID' => 'testUUID'], '')]);
+        $expectedRequestBody = file_get_contents(
+            __DIR__ . '/../../Common/ApiRequests/Order/UpdateOrderRequests/FullUpdateOrderRequestBody.json'
+        );
+
+        $updateOrderRequest = $this->generateFullUpdateOrderRequest();
+        $this->proxy->updateOrder($updateOrderRequest);
+
+        self::assertCount(1, $this->httpClient->getHistory());
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertEquals(json_decode($expectedRequestBody,true), json_decode($lastRequest['body'],true));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testMinimalUpdateOrderSuccessfulResponse(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, ['location' => 'https://sandbox.sequrapi.com/merchants/test/orders/testOrderRef1'], '')]);
+
+        $updateOrderRequest = $this->generateMinimalUpdateOrderRequest();
+        $response = $this->proxy->updateOrder($updateOrderRequest);
+
+        self::assertTrue($response);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testFullUpdateOrderSuccessfulResponse(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, ['location' => 'https://sandbox.sequrapi.com/merchants/test/orders/testOrderRef1'], '')]);
+
+        $updateOrderRequest = $this->generateFullUpdateOrderRequest();
+        $response = $this->proxy->updateOrder($updateOrderRequest);
+
+        self::assertTrue($response);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testUpdateOrderInvalidMerchantIdResponse(): void
+    {
+        $exception = null;
+        $rawResponseBody = file_get_contents(
+            __DIR__ . '/../../Common/ApiResponses/Order/UpdateOrderResponses/InvalidMerchantIdResponse.json'
+        );
+
+        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody )]);
+
+        try {
+            $this->proxy->updateOrder($this->generateMinimalUpdateOrderRequest());
+        } catch (HttpApiInvalidUrlParameterException $exception) {}
+
+        $responseBody = json_decode($rawResponseBody, true);
+
+        self::assertNotNull($exception);
+        self::assertEquals('Access forbidden.', $exception->getMessage());
+        self::assertEquals(403, $exception->getCode());
+        self::assertEquals($responseBody['errors'] ?? [], $exception->getErrors());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testUpdateOrderUnauthorizedResponse(): void
+    {
+        $exception = null;
+        $rawResponseBody = file_get_contents(__DIR__ . '/../../Common/ApiResponses/InvalidCredentialsResponse.txt');
+        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody )]);
+
+        try {
+            $this->proxy->updateOrder($this->generateFullUpdateOrderRequest());
+        } catch (HttpApiUnauthorizedException $exception) {}
+
+        $responseBody = json_decode($rawResponseBody, true);
+
+        self::assertNotNull($exception);
+        self::assertEquals('Wrong credentials.', $exception->getMessage());
+        self::assertEquals(401, $exception->getCode());
+        self::assertEquals($responseBody['errors'] ?? [], $exception->getErrors());
+    }
+
+    /**
      * @return CreateOrderRequest
      *
      * @throws Exception
@@ -968,6 +1133,220 @@ class OrderProxyTest extends BaseTestCase
             $invoiceAddress,
             $gui,
             $merchantReference,
+            $trackings
+        );
+    }
+
+    /**
+     * @return UpdateOrderRequest
+     *
+     * @throws Exception
+     */
+    private function generateMinimalUpdateOrderRequest(): UpdateOrderRequest {
+        $merchant = new Merchant('testMerchantId');
+        $platform = new Platform('testName','testVersion','testUName','testDbName','testDbVersion');
+        $merchantReference = new MerchantReference('testOrderRef1');
+        $cart = new Cart('testCurrency', false, [
+            new ProductItem('testItemReference','testName', 5,2, 10, false)
+        ]);
+
+
+        return new UpdateOrderRequest($merchant, $merchantReference, $platform, $cart, $cart);
+    }
+
+    /**
+     * @return UpdateOrderRequest
+     *
+     * @throws Exception
+     */
+    private function generateFullUpdateOrderRequest(): UpdateOrderRequest {
+        $merchant = new Merchant(
+            'testMerchantId',
+            'https://testNotifyUrl',
+            [
+                'signature' => 'testSignature',
+                'testParam1Key' => 'testParam1Value',
+            ],
+            'testReturnUrl',
+            'testApprovedCallback',
+            'testEditUrl',
+            'testAbortUrl',
+            'testRejectCallback',
+            'testPartPaymentDetailsGetter',
+            'testApprovedUrl',
+            'testOperatorRef',
+            new Options(true,false,true,true),
+            new EventsWebhook('https://testUrl', ['signature' => 'testSignature', 'testParam1Key' => 'testParam1Value'])
+        );
+
+        $cart = new Cart(
+            'EUR',
+            false,
+            [
+                new ProductItem(
+                    'testItemReference1',
+                    'testName1',
+                    5,
+                    2,
+                    10,
+                    false,
+                    true,
+                    true,
+                    true,
+                    'testCategory',
+                    'testDescription',
+                    'testManufacturer',
+                    'testSupplier',
+                    'testProductId',
+                    'testUrl',
+                    'testTrackingReference'
+                ),
+                new HandlingItem('testItemReference4','testName4',5),
+                new InvoiceFeeItem(30),
+                new DiscountItem('testItemReference5','testName5',-20),
+                new OtherPaymentItem('testItemReference3','testName3',-5)
+            ],
+            'testCartRef',
+            'testCreatedAt',
+            'testUpdatedAt'
+        );
+
+        $deliveryMethod = new DeliveryMethod('testName','testDays','testProvider', false);
+        $deliveryAddress = new Address(
+            'testDeliveryAddressCompany',
+            'testDeliveryAddressLine1',
+            'testDeliveryAddressLine2',
+            'testDeliveryAddressPostalCode',
+            'testDeliveryAddressCity',
+            'ES',
+            'testDeliveryAddressGivenNames',
+            'testDeliveryAddressSurnames',
+            'testDeliveryAddressPhone',
+            'testDeliveryAddressMobilePhone',
+            'testDeliveryAddressState',
+            'testDeliveryAddressExtra',
+            'testDeliveryAddressVatNumber'
+        );
+
+        $invoiceAddress = new Address(
+            'testInvoiceAddressCompany',
+            'testInvoiceAddressLine1',
+            'testInvoiceAddressLine2',
+            'testInvoiceAddressPostalCode',
+            'testInvoiceAddressCity',
+            'ES',
+            'testInvoiceAddressGivenNames',
+            'testInvoiceAddressSurnames',
+            'testInvoiceAddressPhone',
+            'testInvoiceAddressMobilePhone',
+            'testInvoiceAddressState',
+            'testInvoiceAddressExtra',
+            'testInvoiceAddressVatNumber'
+        );
+
+        $customer = new Customer(
+            'test@test.test',
+            'testCode',
+            'testIpNum',
+            'testAgent',
+            'testGivenNames',
+            'testSurnames',
+            'testTitle',
+            'testRef',
+            'testDateOfBirth',
+            'testNin',
+            'testCompany',
+            'testVetNumber',
+            'testCreatedAt',
+            'testUpdatedAt',
+            10,
+            'testNinControl',
+            [
+                new PreviousOrder(
+                    'testCreatedAt1',
+                    10,
+                    'testCurrency1',
+                    'testRawStatus1',
+                    'testStatus1',
+                    'testPaymentMethodRaw1',
+                    'testPaymentMethod1',
+                    'testPostalCode1',
+                    'testCountryCode1'
+                ),
+                new PreviousOrder(
+                    'testCreatedAt2',
+                    20,
+                    'testCurrency2',
+                    'testRawStatus2',
+                    'testStatus2',
+                    'testPaymentMethodRaw2',
+                    'testPaymentMethod2',
+                    'testPostalCode2',
+                    'testCountryCode2'
+                )
+            ],
+            new Vehicle('testPlaque','testBrand','testModel','testFrame','testFirstRegistrationDate'),
+            true
+        );
+
+        $platform = new Platform(
+            'testName',
+            'testVersion',
+            'testUName',
+            'testDbName',
+            'testDbVersion',
+            'testPluginVersion',
+            'testPhpVersion'
+        );
+
+        $merchantReference = new MerchantReference('testOrderRef1', 'testOrderRef2');
+        $trackings = [
+            new TrackingPickupStore(
+                'testReference1',
+                'testTrackingNumber1',
+                '2222-02-02T22:22:22+01:00',
+                'testOperatorRef1',
+                'testStoreRef1',
+                '2222-02-02T22:22:22+01:00',
+                'testAddressLine11',
+                'testAddressLine21',
+                'testPostalCode1',
+                'testCity1',
+                'testState1',
+                'ES'
+            ),
+            new TrackingPickupPoint(
+                'testReference2',
+                'testTrackingNumber2',
+                '2222-02-02T22:22:22+01:00',
+                'testOperatorRef2',
+                'testStoreRef2',
+                '2222-02-02T22:22:22+01:00',
+                'testAddressLine12',
+                'testAddressLine22',
+                'testPostalCode2',
+                'testCity2',
+                'testState2',
+                'ES'),
+            new TrackingPostal(
+                'testReference3',
+                'testCarrier',
+                'testTrackingNumber3',
+                '2222-02-02T22:22:22+01:00',
+                'https://testTrackingUrl'
+            )
+        ];
+
+        return new UpdateOrderRequest(
+            $merchant,
+            $merchantReference,
+            $platform,
+            $cart,
+            $cart,
+            $deliveryMethod,
+            $customer,
+            $deliveryAddress,
+            $invoiceAddress,
             $trackings
         );
     }

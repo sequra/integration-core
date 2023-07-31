@@ -18,7 +18,6 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\Tracking
  */
 class UpdateOrderRequest extends BaseOrderRequest
 {
-
     /**
      * @var Cart Fields describing the unshipped cart.
      */
@@ -31,30 +30,34 @@ class UpdateOrderRequest extends BaseOrderRequest
 
     /**
      * @param Merchant $merchant
+     * @param MerchantReference $merchantReference
+     * @param Platform $platform
      * @param Cart $unshippedCart
      * @param Cart $shippedCart
-     * @param DeliveryMethod $deliveryMethod
-     * @param Customer $customer
-     * @param Platform $platform
-     * @param Address $deliveryAddress
-     * @param Address $invoiceAddress
-     * @param MerchantReference|null $merchantReference
-     * @param array|null $trackings
+     * @param DeliveryMethod|null $deliveryMethod
+     * @param Customer|null $customer
+     * @param Address|null $deliveryAddress
+     * @param Address|null $invoiceAddress
+     * @param Tracking[]|null $trackings
+     *
+     * @throws InvalidUrlException
      */
     public function __construct(
         Merchant $merchant,
+        MerchantReference $merchantReference,
+        Platform $platform ,
         Cart $unshippedCart,
         Cart $shippedCart,
-        DeliveryMethod $deliveryMethod,
-        Customer $customer,
-        Platform $platform,
-        Address $deliveryAddress,
-        Address $invoiceAddress,
-        MerchantReference $merchantReference = null,
+        DeliveryMethod $deliveryMethod = null,
+        Customer $customer = null,
+        Address $deliveryAddress = null,
+        Address $invoiceAddress = null,
         array $trackings = null
     )
     {
-        $this->merchant = $merchant;
+        $merchantId = $merchant->getId();
+
+        $this->merchant = new Merchant($merchantId);
         $this->unshippedCart = $unshippedCart;
         $this->shippedCart = $shippedCart;
         $this->deliveryMethod = $deliveryMethod;
@@ -83,18 +86,32 @@ class UpdateOrderRequest extends BaseOrderRequest
      */
     public static function fromArray(array $data): self
     {
-        $merchant = Merchant::fromArray(self::getDataValue($data, 'merchant', []));
+        $merchantData = Merchant::fromArray(self::getDataValue($data, 'merchant', []));
+
+        $merchant = Merchant::fromArray([$merchantData->getId()]);
         $unshippedCart = Cart::fromArray(self::getDataValue($data, 'unshipped_cart', []));
         $shippedCart = Cart::fromArray(self::getDataValue($data, 'unshipped_cart', []));
-        $deliveryMethod = DeliveryMethod::fromArray(self::getDataValue($data, 'delivery_method', []));
-        $customer = Customer::fromArray(self::getDataValue($data, 'customer', []));
         $platform = Platform::fromArray(self::getDataValue($data, 'platform', []));
-        $deliveryAddress = Address::fromArray(self::getDataValue($data, 'delivery_address', []));
-        $invoiceAddress = Address::fromArray(self::getDataValue($data, 'invoice_address', []));
+        $merchantReference = MerchantReference::fromArray(self::getDataValue($data, 'merchant_reference', []));
 
-        $merchantReference = self::getDataValue($data, 'merchant_reference', null);
-        if ($merchantReference !== null) {
-            $merchantReference = MerchantReference::fromArray($merchantReference);
+        $deliveryMethod = self::getDataValue($data, 'delivery_method', null);
+        if ($deliveryMethod !== null) {
+            $deliveryMethod = DeliveryMethod::fromArray($deliveryMethod);
+        }
+
+        $customer = self::getDataValue($data, 'customer', null);
+        if ($customer !== null) {
+            $customer = Customer::fromArray($customer);
+        }
+
+        $deliveryAddress = self::getDataValue($data, 'delivery_address', null);
+        if ($deliveryAddress !== null) {
+            $deliveryAddress = Address::fromArray($deliveryAddress);
+        }
+
+        $invoiceAddress = self::getDataValue($data, 'invoice_address', null);
+        if ($invoiceAddress !== null) {
+            $invoiceAddress = Address::fromArray($invoiceAddress);
         }
 
         $trackings = self::getDataValue($data, 'trackings', null);
@@ -106,14 +123,14 @@ class UpdateOrderRequest extends BaseOrderRequest
 
         return new self(
             $merchant,
+            $merchantReference,
+            $platform,
             $unshippedCart,
             $shippedCart,
             $deliveryMethod,
             $customer,
-            $platform,
             $deliveryAddress,
             $invoiceAddress,
-            $merchantReference,
             $trackings
         );
     }
@@ -124,5 +141,21 @@ class UpdateOrderRequest extends BaseOrderRequest
     public function toArray(): array
     {
         return $this->transformPropertiesToAnArray(get_object_vars($this));
+    }
+
+    /**
+     * @return Cart
+     */
+    public function getUnshippedCart(): Cart
+    {
+        return $this->unshippedCart;
+    }
+
+    /**
+     * @return Cart
+     */
+    public function getShippedCart(): Cart
+    {
+        return $this->shippedCart;
     }
 }

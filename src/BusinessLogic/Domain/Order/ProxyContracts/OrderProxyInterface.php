@@ -53,28 +53,27 @@ interface OrderProxyInterface
     public function createOrder(CreateOrderRequest $request): SeQuraOrder;
 
     /**
-     * Updates an existing order on the SeQura API.
+     * Acknowledges an order on the SeQura API.
      *
      * @param string $id
      * @param CreateOrderRequest $request
      *
-     * @return SeQuraOrder Returns updated SeQuraOrder instance if update operation has been successful.
+     * @return SeQuraOrder Returns acknowledged SeQuraOrder instance if the operation has been successful.
      *
      * @throws HttpRequestException
      */
-    public function updateOrder(string $id, CreateOrderRequest $request): SeQuraOrder;
+    public function acknowledgeOrder(string $id, CreateOrderRequest $request): SeQuraOrder;
 
     /**
-     * Updates an existing order's unshipped and shipped cart on the SeQura API.
+     * Updates an existing order on the SeQura API.
      *
-     * @param string $id
      * @param UpdateOrderRequest $request
      *
      * @return boolean Whether the update operation has been successful or not.
      *
      * @throws HttpRequestException
      */
-    public function updateOrderCarts(string $id, UpdateOrderRequest $request): bool;
+    public function updateOrder(UpdateOrderRequest $request): bool;
 
     /**
      * Gets the user verification form.

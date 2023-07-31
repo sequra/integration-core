@@ -38,6 +38,7 @@ use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
@@ -157,6 +158,12 @@ class BaseTestCase extends TestCase
                 return new ConnectionDataRepository(
                     TestRepositoryRegistry::getRepository(ConnectionData::getClassName()),
                     StoreContext::getInstance()
+                );
+            },
+            OrderService::class => static function () {
+                return new OrderService(
+                    TestServiceRegister::getService(OrderProxyInterface::class),
+                    TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class)
                 );
             },
             StatusMappingService::class => static function () {

@@ -3,26 +3,22 @@
 namespace SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests;
 
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\BaseOrderRequest;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\HttpRequest;
 
 /**
- * Class UpdateOrderHttpRequest
+ * Class AcknowledgeOrderHttpRequest
  *
  * @package SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests
  */
-class UpdateOrderHttpRequest extends HttpRequest
+class AcknowledgeOrderHttpRequest extends HttpRequest
 {
     /**
-     * @param string $merchantId
-     * @param string $shopOrderReference
-     * @param UpdateOrderRequest $request
+     * @param string $id
+     * @param BaseOrderRequest $request
      */
-    public function __construct(string $merchantId, string $shopOrderReference, UpdateOrderRequest $request)
+    public function __construct(string $id, BaseOrderRequest $request)
     {
-        parent::__construct(
-            '/merchants/' . $merchantId . '/orders/' . $shopOrderReference, $this->transformBody($request)
-        );
+        parent::__construct('/orders/' . $id, $this->transformBody($request));
     }
 
     /**
