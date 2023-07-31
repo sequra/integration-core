@@ -39,6 +39,25 @@ class OrderService
     }
 
     /**
+     * Gets the SeQuraOrder for a given shop order reference.
+     *
+     * @param string $shopReference
+     *
+     * @return SeQuraOrder|null
+     *
+     * @throws OrderNotFoundException
+     */
+    public function getOrderByShopReference(string $shopReference): ?SeQuraOrder
+    {
+        $order = $this->orderRepository->getByShopReference($shopReference);
+        if(!$order){
+            throw new OrderNotFoundException('Order for shop reference ' . $shopReference . ' not found.');
+        }
+
+        return $order;
+    }
+
+    /**
      * Starts solicitation with a provided builder request data, if order is already solicited it will be updated with
      * provided builder data
      *
