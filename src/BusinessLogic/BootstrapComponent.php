@@ -9,8 +9,8 @@ use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
+use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
-use SeQura\Core\BusinessLogic\AdminAPI\WidgetConfiguration\WidgetConfigurationController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
@@ -455,9 +455,13 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
-            WidgetConfigurationController::class,
+            PromotionalWidgetsController::class,
             static function () {
-                return new WidgetConfigurationController();
+                return new PromotionalWidgetsController(
+                    ServiceRegister::getService(WidgetConfigService::class),
+                    ServiceRegister::getService(WidgetSettingsService::class),
+                    ServiceRegister::getService(WidgetLabelsService::class)
+                );
             }
         );
 
