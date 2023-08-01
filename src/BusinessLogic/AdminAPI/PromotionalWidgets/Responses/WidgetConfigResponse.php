@@ -18,9 +18,9 @@ class WidgetConfigResponse extends Response
     private $widgetConfig;
 
     /**
-     * @param WidgetConfiguration $widgetConfig
+     * @param WidgetConfiguration|null $widgetConfig
      */
-    public function __construct(WidgetConfiguration $widgetConfig)
+    public function __construct(?WidgetConfiguration $widgetConfig)
     {
         $this->widgetConfig = $widgetConfig;
     }

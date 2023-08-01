@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfiguration
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
+use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
@@ -18,6 +19,12 @@ use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSet
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
+use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetConfiguration;
+use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetLabels;
+use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSettings;
+use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetConfigRepository;
+use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetLabelsRepository;
+use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
@@ -40,6 +47,12 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetConfigRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetLabelsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetConfigService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetLabelsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
@@ -267,6 +280,46 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(WebhookHandler::class)
                 );
             },
+            WidgetConfigRepositoryInterface::class => function () {
+                return new WidgetConfigRepository(
+                    TestRepositoryRegistry::getRepository(WidgetConfiguration::getClassName()),
+                    TestServiceRegister::getService(StoreContext::class)
+                );
+            },
+            WidgetConfigService::class => function () {
+                return new WidgetConfigService(
+                    TestServiceRegister::getService(WidgetConfigRepositoryInterface::class)
+                );
+            },
+            WidgetSettingsRepositoryInterface::class => function () {
+                return new WidgetSettingsRepository(
+                    TestRepositoryRegistry::getRepository(WidgetSettings::getClassName()),
+                    TestServiceRegister::getService(StoreContext::class)
+                );
+            },
+            WidgetSettingsService::class => function () {
+                return new WidgetSettingsService(
+                    TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class)
+                );
+            },
+            WidgetLabelsRepositoryInterface::class => function () {
+                return new WidgetLabelsRepository(
+                    TestRepositoryRegistry::getRepository(WidgetLabels::getClassName()),
+                    TestServiceRegister::getService(StoreContext::class)
+                );
+            },
+            WidgetLabelsService::class => function () {
+                return new WidgetLabelsService(
+                    TestServiceRegister::getService(WidgetLabelsRepositoryInterface::class)
+                );
+            },
+            PromotionalWidgetsController::class => function () {
+                return new PromotionalWidgetsController(
+                    TestServiceRegister::getService(WidgetConfigService::class),
+                    TestServiceRegister::getService(WidgetSettingsService::class),
+                    TestServiceRegister::getService(WidgetLabelsService::class)
+                );
+            }
         ]);
 
         TestServiceRegister::registerService(
@@ -301,8 +354,8 @@ class BaseTestCase extends TestCase
             WebhookHandler::class,
             static function () {
                 return new WebhookHandler(
-                  TestServiceRegister::getService(QueueService::class),
-                  TestServiceRegister::getService(QueueNameProviderInterface::class)
+                    TestServiceRegister::getService(QueueService::class),
+                    TestServiceRegister::getService(QueueNameProviderInterface::class)
                 );
             }
         );
@@ -369,6 +422,9 @@ class BaseTestCase extends TestCase
             CountryConfiguration::getClassName(),
             MemoryRepository::getClassName()
         );
+        TestRepositoryRegistry::registerRepository(WidgetSettings::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(WidgetConfiguration::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(WidgetLabels::getClassName(), MemoryRepository::getClassName());
     }
 
     /**

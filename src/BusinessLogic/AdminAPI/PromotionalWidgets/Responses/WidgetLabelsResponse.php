@@ -18,9 +18,9 @@ class WidgetLabelsResponse extends Response
     private $widgetLabels;
 
     /**
-     * @param WidgetLabels $widgetLabels
+     * @param WidgetLabels|null $widgetLabels
      */
-    public function __construct(WidgetLabels $widgetLabels)
+    public function __construct(?WidgetLabels $widgetLabels)
     {
         $this->widgetLabels = $widgetLabels;
     }
