@@ -1,6 +1,6 @@
 <?php
 
-namespace SeQura\Core\BusinessLogic\AdminAPI\WidgetConfiguration\Responses;
+namespace SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 

@@ -21,6 +21,12 @@ use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSet
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
+use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetConfiguration;
+use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetLabels;
+use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSettings;
+use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetConfigRepository;
+use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetLabelsRepository;
+use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
@@ -45,6 +51,12 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetConfigRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetLabelsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetConfigService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetLabelsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
@@ -145,6 +157,36 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new SeQuraOrderRepository(
                     RepositoryRegistry::getRepository(SeQuraOrder::getClassName())
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            WidgetConfigRepositoryInterface::class,
+            static function () {
+                return new WidgetConfigRepository(
+                    RepositoryRegistry::getRepository(WidgetConfiguration::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            WidgetSettingsRepositoryInterface::class,
+            static function () {
+                return new WidgetSettingsRepository(
+                    RepositoryRegistry::getRepository(WidgetSettings::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            WidgetLabelsRepositoryInterface::class,
+            static function () {
+                return new WidgetLabelsRepository(
+                    RepositoryRegistry::getRepository(WidgetLabels::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
                 );
             }
         );
@@ -308,6 +350,33 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new OrderService(
                     ServiceRegister::getService(OrderProxyInterface::class),
                     ServiceRegister::getService(SeQuraOrderRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            WidgetConfigService::class,
+            static function () {
+                return new WidgetConfigService(
+                    ServiceRegister::getService(WidgetConfigRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            WidgetSettingsService::class,
+            static function () {
+                return new WidgetSettingsService(
+                    ServiceRegister::getService(WidgetSettingsRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            WidgetLabelsService::class,
+            static function () {
+                return new WidgetLabelsService(
+                    ServiceRegister::getService(WidgetLabelsRepositoryInterface::class)
                 );
             }
         );
