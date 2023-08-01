@@ -16,6 +16,7 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Authorization\AuthorizedProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\CreateOrderHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\GetAvailablePaymentMethodsHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\GetFormHttpRequest;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\AcknowledgeOrderHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\UpdateOrderHttpRequest;
 
 /**
@@ -65,19 +66,25 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
     /**
      * @inheritDoc
      */
-    public function updateOrder(string $id, CreateOrderRequest $request): SeQuraOrder
+    public function acknowledgeOrder(string $id, CreateOrderRequest $request): SeQuraOrder
     {
-        $this->put(new UpdateOrderHttpRequest($id, $request));
+        $this->put(new AcknowledgeOrderHttpRequest($id, $request));
 
         return $request->toSequraOrderInstance($id);
     }
 
     /**
      * @inheritDoc
+     *
+     * @noinspection NullPointerExceptionInspection
      */
-    public function updateOrderCarts(string $id, UpdateOrderRequest $request): bool
+    public function updateOrder(UpdateOrderRequest $request): bool
     {
-        return $this->put(new UpdateOrderHttpRequest($id, $request))->isSuccessful();
+        return $this->put(new UpdateOrderHttpRequest(
+            $request->getMerchant()->getId(),
+            $request->getMerchantReference()->getOrderRef1(),
+            $request)
+        )->isSuccessful();
     }
 
     /**

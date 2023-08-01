@@ -62,12 +62,12 @@ class MockOrderProxy implements OrderProxyInterface
         return $this->order;
     }
 
-    public function updateOrder(string $id, CreateOrderRequest $request): SeQuraOrder
+    public function acknowledgeOrder(string $id, CreateOrderRequest $request): SeQuraOrder
     {
         return $this->order;
     }
 
-    public function updateOrderCarts(string $id, UpdateOrderRequest $request): bool
+    public function updateOrder(UpdateOrderRequest $request): bool
     {
         return true;
     }
