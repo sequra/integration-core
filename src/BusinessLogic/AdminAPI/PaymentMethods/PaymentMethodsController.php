@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods;
 
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Responses\PaymentMethodsResponse;
+use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Responses\ProductsResponse;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
@@ -38,5 +39,19 @@ class PaymentMethodsController
     public function getPaymentMethods(string $merchantId): PaymentMethodsResponse
     {
         return new PaymentMethodsResponse($this->paymentMethodsService->getMerchantsPaymentMethods($merchantId));
+    }
+
+    /**
+     * Gets all products for the merchant.
+     *
+     * @param string $merchantId
+     *
+     * @return ProductsResponse
+     *
+     * @throws HttpRequestException
+     */
+    public function getProducts(string $merchantId): ProductsResponse
+    {
+        return new ProductsResponse($this->paymentMethodsService->getMerchantProducts($merchantId));
     }
 }

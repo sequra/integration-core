@@ -40,4 +40,22 @@ class PaymentMethodsService
     {
         return $this->merchantProxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest($merchantId));
     }
+
+    /**
+     * Gets available products for the merchant.
+     *
+     * @param string $merchantId
+     *
+     * @return array
+     *
+     * @throws HttpRequestException
+     */
+    public function getMerchantProducts(string $merchantId): array
+    {
+        $methods = $this->getMerchantsPaymentMethods($merchantId);
+
+        return array_map(function (SeQuraPaymentMethod $method) {
+            return $method->getProduct();
+        }, $methods);
+    }
 }

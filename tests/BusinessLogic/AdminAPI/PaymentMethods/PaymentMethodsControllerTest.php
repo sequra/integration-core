@@ -143,6 +143,20 @@ class PaymentMethodsControllerTest extends BaseTestCase
         self::assertEquals($this->expectedToArrayResponse(), $response->toArray());
     }
 
+    /**
+     * @return void
+     *
+     * @throws HttpRequestException
+     */
+    public function testGetProducts(): void
+    {
+        // act
+        $response = AdminAPI::get()->paymentMethods('1')->getProducts('test');
+
+        // assert
+        self::assertEquals(['i1', 'pp5', 'pp3'], $response->toArray());
+    }
+
     private function expectedToArrayResponse(): array
     {
         return [
