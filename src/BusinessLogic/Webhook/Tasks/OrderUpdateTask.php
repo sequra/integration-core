@@ -98,6 +98,23 @@ class OrderUpdateTask extends Task
     }
 
     /**
+     * @inheritDocs
+     */
+    public function __serialize(): array
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * @inheritDocs
+     */
+    public function __unserialize($data): void
+    {
+        $this->webhook = Serializer::unserialize($data['webhook']);
+        $this->storeId = $data['storeId'];
+    }
+
+    /**
      * String representation of object
      *
      * @return string the string representation of the object or null

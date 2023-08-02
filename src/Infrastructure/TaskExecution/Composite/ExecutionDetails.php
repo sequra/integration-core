@@ -108,6 +108,24 @@ class ExecutionDetails implements Serializable
     /**
      * @inheritDoc
      */
+    public function __serialize()
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __unserialize($data)
+    {
+        $this->progress = $data['progress'];
+        $this->executionId = $data['executionId'];
+        $this->weight = $data['weight'];
+    }
+
+    /**
+     * @inheritDoc
+     */
     public static function fromArray(array $array)
     {
         $entity = new static($array['executionId'], $array['weight']);

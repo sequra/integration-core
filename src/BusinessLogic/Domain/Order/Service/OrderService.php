@@ -43,11 +43,11 @@ class OrderService
      *
      * @param string $shopReference
      *
-     * @return SeQuraOrder|null
+     * @return SeQuraOrder
      *
      * @throws OrderNotFoundException
      */
-    public function getOrderByShopReference(string $shopReference): ?SeQuraOrder
+    public function getOrderByShopReference(string $shopReference): SeQuraOrder
     {
         $order = $this->orderRepository->getByShopReference($shopReference);
         if(!$order){

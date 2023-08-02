@@ -80,6 +80,27 @@ abstract class Orchestrator extends Task
     }
 
     /**
+     * @inheritDoc
+     */
+    public function __serialize()
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __unserialize($data)
+    {
+        $taskList = array();
+        foreach ($data['taskList'] as $task) {
+            $taskList[] = Serializer::serialize($task);
+        }
+
+        $this->taskList = $taskList;
+    }
+
+    /**
      * Creates subtasks.
      *
      * @final
