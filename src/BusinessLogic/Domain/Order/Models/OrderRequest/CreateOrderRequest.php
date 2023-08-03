@@ -167,14 +167,17 @@ class CreateOrderRequest extends BaseOrderRequest
      * @param string $reference
      *
      * @return SeQuraOrder
+     *
+     * @throws InvalidCartItemsException
      */
-    public function toSequraOrderInstance(string $reference)
+    public function toSequraOrderInstance(string $reference): SeQuraOrder
     {
         $order = (new SeQuraOrder())
             ->setReference($reference)
             ->setState($this->getState())
             ->setMerchant($this->getMerchant())
-            ->setCart($this->getCart())
+            ->setUnshippedCart($this->getCart())
+            ->setShippedCart(new Cart($this->getCart()->getCurrency()))
             ->setDeliveryMethod($this->getDeliveryMethod())
             ->setDeliveryAddress($this->getDeliveryAddress())
             ->setInvoiceAddress($this->getInvoiceAddress())

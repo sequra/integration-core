@@ -25,7 +25,12 @@
       "order_ref_1": "ZXCV1234",
       "order_ref_2": "0080-1234-4343-5353"
     },
-    "cart": {
+    "shipped_cart": {
+      "currency": "EUR",
+      "order_total_with_tax": 0,
+      "items": []
+    },
+    "unshipped_cart": {
       "currency": "EUR",
       "order_total_with_tax": 6097,
       "items": [

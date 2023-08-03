@@ -2,7 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Order\Models;
 
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Customer;
@@ -40,7 +40,8 @@ class SeQuraOrder extends Entity
         'orderRef1',
         'merchant',
         'merchantReference',
-        'cart',
+        'shippedCart',
+        'unshippedCart',
         'state',
         'trackings',
         'deliveryMethod',
@@ -79,7 +80,12 @@ class SeQuraOrder extends Entity
     /**
      * @var Cart Shipped cart
      */
-    protected $cart;
+    protected $shippedCart;
+
+    /**
+     * @var Cart Unshipped cart
+     */
+    protected $unshippedCart;
 
     /**
      * @var string Current order state on SeQura
@@ -138,7 +144,9 @@ class SeQuraOrder extends Entity
     /**
      * @inheritDoc
      *
-     * @throws InvalidUrlException
+     * @param array $data
+     *
+     * @throws Exception
      */
     public function inflate(array $data): void
     {
@@ -149,7 +157,8 @@ class SeQuraOrder extends Entity
         $this->orderRef1 = $data['orderRef1'] ?? '';
         $this->merchant = Merchant::fromArray($data['merchant']);
         $this->merchantReference = MerchantReference::fromArray($data['merchant_reference']);
-        $this->cart = Cart::fromArray($data['cart']);
+        $this->shippedCart = Cart::fromArray($data['shipped_cart']);
+        $this->unshippedCart = Cart::fromArray($data['unshipped_cart']);
         $this->deliveryMethod = DeliveryMethod::fromArray($data['delivery_method']);
         $this->deliveryAddress = Address::fromArray($data['delivery_address']);
         $this->invoiceAddress = Address::fromArray($data['invoice_address']);
@@ -176,7 +185,8 @@ class SeQuraOrder extends Entity
         $data['state'] = $this->state;
         $data['merchant'] = $this->merchant ? $this->merchant->toArray() : [];
         $data['merchant_reference'] = $this->merchantReference ? $this->merchantReference->toArray() : [];
-        $data['cart'] = $this->cart ? $this->cart->toArray() : [];
+        $data['shipped_cart'] = $this->shippedCart ? $this->shippedCart->toArray() : [];
+        $data['unshipped_cart'] = $this->unshippedCart ? $this->unshippedCart->toArray() : [];
         $data['delivery_method'] = $this->deliveryMethod ? $this->deliveryMethod->toArray() : [];
         $data['delivery_address'] = $this->deliveryAddress ? $this->deliveryAddress->toArray() :[];
         $data['invoice_address'] = $this->invoiceAddress ? $this->invoiceAddress->toArray() : [];
@@ -392,21 +402,45 @@ class SeQuraOrder extends Entity
      *
      * @return Cart
      */
-    public function getCart(): Cart
+    public function getShippedCart(): Cart
     {
-        return $this->cart;
+        return $this->shippedCart;
     }
 
     /**
      * Set the value of shipped cart.
      *
-     * @param Cart $cart
+     * @param Cart $shippedCart
      *
      * @return SeQuraOrder
      */
-    public function setCart(Cart $cart): SeQuraOrder
+    public function setShippedCart(Cart $shippedCart): SeQuraOrder
     {
-        $this->cart = $cart;
+        $this->shippedCart = $shippedCart;
+
+        return $this;
+    }
+
+    /**
+     * Return the value of unshipped cart.
+     *
+     * @return Cart
+     */
+    public function getUnshippedCart(): Cart
+    {
+        return $this->unshippedCart;
+    }
+
+    /**
+     * Set the value of unshipped cart.
+     *
+     * @param Cart $unshippedCart
+     *
+     * @return SeQuraOrder
+     */
+    public function setUnshippedCart(Cart $unshippedCart): SeQuraOrder
+    {
+        $this->unshippedCart = $unshippedCart;
 
         return $this;
     }

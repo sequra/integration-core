@@ -73,7 +73,7 @@ class WebhookHandler
         $request = new CreateOrderRequest(
             OrderRequestStatusMapping::mapOrderRequestStatus($state),
             $order->getMerchant(),
-            $order->getCart(),
+            $order->getUnshippedCart(),
             $order->getDeliveryMethod(),
             $order->getCustomer(),
             $order->getPlatform(),

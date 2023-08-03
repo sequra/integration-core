@@ -70,7 +70,7 @@ class Cart extends OrderRequestDTO
      */
     public function __construct(
         string $currency,
-        bool $gift,
+        bool $gift = false,
         array $items = [],
         $cartRef = null,
         string $createdAt = null,
