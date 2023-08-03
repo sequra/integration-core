@@ -94,7 +94,7 @@ abstract class Orchestrator extends Task
     {
         $taskList = array();
         foreach ($data['taskList'] as $task) {
-            $taskList[] = Serializer::serialize($task);
+            $taskList[] = ExecutionDetails::fromArray($task);
         }
 
         $this->taskList = $taskList;

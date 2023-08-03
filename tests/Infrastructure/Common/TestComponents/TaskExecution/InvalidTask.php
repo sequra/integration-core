@@ -39,7 +39,13 @@ class InvalidTask extends Task
         return $this->toArray();
     }
 
+    /**
+     * @param $data
+     * @return mixed
+     * @throws QueueItemDeserializationException
+     */
     public function __unserialize($data)
     {
+        throw new QueueItemDeserializationException("Failed to deserialize task.");
     }
 }

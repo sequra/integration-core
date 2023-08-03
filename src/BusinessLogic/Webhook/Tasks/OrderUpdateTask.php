@@ -110,7 +110,7 @@ class OrderUpdateTask extends Task
      */
     public function __unserialize($data): void
     {
-        $this->webhook = Serializer::unserialize($data['webhook']);
+        $this->webhook = Webhook::fromArray($data['webhook']);
         $this->storeId = $data['storeId'];
     }
 

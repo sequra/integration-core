@@ -6,7 +6,8 @@
   "require": {
     "php": ">=7.2",
     "ext-json": "*",
-    "ext-ctype": "*"
+    "ext-ctype": "*",
+    "ext-mbstring": "*"
   },
   "autoload": {
     "psr-4": {
