@@ -185,10 +185,10 @@ class WidgetSettingsRequest extends Request
     {
         return new WidgetSettings(
             $this->enabled,
+            $this->assetsKey,
             $this->displayOnProductPage,
             $this->showInProductListing,
             $this->showInCartPage,
-            $this->assetsKey,
             new WidgetConfiguration(
                 $this->type,
                 $this->size,
