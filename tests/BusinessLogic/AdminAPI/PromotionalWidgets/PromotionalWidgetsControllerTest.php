@@ -116,10 +116,11 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
         // arrange
         $settings = new WidgetSettingsRequest(
             false,
-            true,
+            'qqqwerty',
             false,
             true,
-            'qqqwerty'
+            true,
+            'banner'
         );
 
         // act

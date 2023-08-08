@@ -79,7 +79,7 @@ class WidgetConfiguration
      * @param string $branding
      * @param string $startingText
      * @param string $amountFontSize
-     * @param string $amountColorSize
+     * @param string $amountFontColor
      * @param string $amountFontBold
      * @param string $linkFontColor
      * @param string $linkUnderline
@@ -96,7 +96,7 @@ class WidgetConfiguration
         string $branding = '',
         string $startingText = '',
         string $amountFontSize = '',
-        string $amountColorSize = '',
+        string $amountFontColor = '',
         string $amountFontBold = '',
         string $linkFontColor = '',
         string $linkUnderline = '',
@@ -113,7 +113,7 @@ class WidgetConfiguration
         $this->branding = $branding;
         $this->startingText = $startingText;
         $this->amountFontSize = $amountFontSize;
-        $this->amountFontColor = $amountColorSize;
+        $this->amountFontColor = $amountFontColor;
         $this->amountFontBold = $amountFontBold;
         $this->linkFontColor = $linkFontColor;
         $this->linkUnderline = $linkUnderline;
