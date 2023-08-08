@@ -40,6 +40,27 @@ class WidgetSettingsResponse extends Response
             'showInstallmentAmountInProductListing' => $this->widgetSettings->isShowInProductListing(),
             'showInstallmentAmountInCartPage' => $this->widgetSettings->isShowInCartPage(),
             'assetsKey' => $this->widgetSettings->getAssetsKey(),
+            'widgetConfiguration' => $this->widgetSettings->getWidgetConfig() ? [
+                'type' => $this->widgetSettings->getWidgetConfig()->getType(),
+                'size' => $this->widgetSettings->getWidgetConfig()->getSize(),
+                'fontColor' => $this->widgetSettings->getWidgetConfig()->getFontColor(),
+                'backgroundColor' => $this->widgetSettings->getWidgetConfig()->getBackgroundColor(),
+                'alignment' => $this->widgetSettings->getWidgetConfig()->getAlignment(),
+                'branding' => $this->widgetSettings->getWidgetConfig()->getBranding(),
+                'startingText' => $this->widgetSettings->getWidgetConfig()->getStartingText(),
+                'amountFontSize' => $this->widgetSettings->getWidgetConfig()->getAmountFontSize(),
+                'amountFontColor' => $this->widgetSettings->getWidgetConfig()->getAmountFontColor(),
+                'amountFontBold' => $this->widgetSettings->getWidgetConfig()->getAmountFontBold(),
+                'linkFontColor' => $this->widgetSettings->getWidgetConfig()->getLinkFontColor(),
+                'linkUnderline' => $this->widgetSettings->getWidgetConfig()->getLinkUnderline(),
+                'borderColor' => $this->widgetSettings->getWidgetConfig()->getBorderColor(),
+                'borderRadius' => $this->widgetSettings->getWidgetConfig()->getBorderRadius(),
+                'noCostsClaim' => $this->widgetSettings->getWidgetConfig()->getNoCostsClaim(),
+            ] : [],
+            'widgetLabels' => $this->widgetSettings->getWidgetLabels() ? [
+                'messages' => $this->widgetSettings->getWidgetLabels()->getMessages(),
+                'messagesBelowLimit' => $this->widgetSettings->getWidgetLabels()->getMessagesBelowLimit(),
+            ] : [],
         ];
     }
 }

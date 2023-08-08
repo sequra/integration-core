@@ -29,6 +29,14 @@ class WidgetSettings
      * @var bool
      */
     private $showInCartPage;
+    /**
+     * @var WidgetConfiguration
+     */
+    private $widgetConfig;
+    /**
+     * @var WidgetLabels
+     */
+    private $widgetLabels;
 
     /**
      * @param bool $enabled
@@ -36,13 +44,17 @@ class WidgetSettings
      * @param bool $displayOnProductPage
      * @param bool $showInProductListing
      * @param bool $showInCartPage
+     * @param WidgetConfiguration|null $widgetConfig
+     * @param WidgetLabels|null $widgetLabels
      */
     public function __construct(
         bool $enabled,
         string $assetsKey = '',
         bool $displayOnProductPage = false,
         bool $showInProductListing = false,
-        bool $showInCartPage = false
+        bool $showInCartPage = false,
+        WidgetConfiguration $widgetConfig = null,
+        WidgetLabels $widgetLabels = null
     )
     {
         $this->enabled = $enabled;
@@ -50,6 +62,8 @@ class WidgetSettings
         $this->displayOnProductPage = $displayOnProductPage;
         $this->showInProductListing = $showInProductListing;
         $this->showInCartPage = $showInCartPage;
+        $this->widgetConfig = $widgetConfig;
+        $this->widgetLabels = $widgetLabels;
     }
 
     public function isEnabled(): bool
@@ -100,5 +114,25 @@ class WidgetSettings
     public function setShowInCartPage(bool $showInCartPage): void
     {
         $this->showInCartPage = $showInCartPage;
+    }
+
+    public function getWidgetConfig(): ?WidgetConfiguration
+    {
+        return $this->widgetConfig;
+    }
+
+    public function setWidgetConfig(?WidgetConfiguration $widgetConfig): void
+    {
+        $this->widgetConfig = $widgetConfig;
+    }
+
+    public function getWidgetLabels(): ?WidgetLabels
+    {
+        return $this->widgetLabels;
+    }
+
+    public function setWidgetLabels(?WidgetLabels $widgetLabels): void
+    {
+        $this->widgetLabels = $widgetLabels;
     }
 }

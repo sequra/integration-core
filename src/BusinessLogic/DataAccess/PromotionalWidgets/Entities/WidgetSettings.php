@@ -2,6 +2,8 @@
 
 namespace SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities;
 
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetConfiguration as DomainWidgetConfiguration;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetLabels as DomainWidgetLabels;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings as DomainWidgetSettings;
 use SeQura\Core\Infrastructure\ORM\Configuration\EntityConfiguration;
 use SeQura\Core\Infrastructure\ORM\Configuration\IndexMap;
@@ -34,15 +36,38 @@ class WidgetSettings extends Entity
     {
         parent::inflate($data);
 
-        $widgetConfiguration = $data['widgetConfiguration'] ?? [];
+        $widgetSettings = $data['widgetSettings'] ?? [];
+        $widgetConfiguration = $widgetSettings['widgetConfiguration'] ?? [];
+        $widgetLabels = $widgetSettings['widgetLabels'] ?? [];
 
         $this->storeId = $data['storeId'] ?? '';
         $this->widgetSettings = new DomainWidgetSettings(
-            self::getArrayValue($widgetConfiguration, 'enabled', false),
-            self::getArrayValue($widgetConfiguration, 'assetsKey', ''),
-            self::getArrayValue($widgetConfiguration, 'displayOnProductPage', false),
-            self::getArrayValue($widgetConfiguration, 'showInProductListing', false),
-            self::getArrayValue($widgetConfiguration, 'showInCartPage', false)
+            self::getArrayValue($widgetSettings, 'enabled', false),
+            self::getArrayValue($widgetSettings, 'assetsKey', ''),
+            self::getArrayValue($widgetSettings, 'displayOnProductPage', false),
+            self::getArrayValue($widgetSettings, 'showInProductListing', false),
+            self::getArrayValue($widgetSettings, 'showInCartPage', false),
+            $widgetConfiguration ? new DomainWidgetConfiguration(
+                self::getArrayValue($widgetConfiguration, 'type', ''),
+                self::getArrayValue($widgetConfiguration, 'size', ''),
+                self::getArrayValue($widgetConfiguration, 'fontColor', ''),
+                self::getArrayValue($widgetConfiguration, 'backgroundColor', ''),
+                self::getArrayValue($widgetConfiguration, 'alignment', ''),
+                self::getArrayValue($widgetConfiguration, 'branding', ''),
+                self::getArrayValue($widgetConfiguration, 'startingText', ''),
+                self::getArrayValue($widgetConfiguration, 'amountFontSize', ''),
+                self::getArrayValue($widgetConfiguration, 'amountFontColor', ''),
+                self::getArrayValue($widgetConfiguration, 'amountFontBold', ''),
+                self::getArrayValue($widgetConfiguration, 'linkFontColor', ''),
+                self::getArrayValue($widgetConfiguration, 'linkUnderline', ''),
+                self::getArrayValue($widgetConfiguration, 'borderColor', ''),
+                self::getArrayValue($widgetConfiguration, 'borderRadius', ''),
+                self::getArrayValue($widgetConfiguration, 'noCostsClaim', '')
+            ) : null,
+            $widgetLabels ? new DomainWidgetLabels(
+                static::getDataValue($widgetLabels, 'messages', []),
+                static::getDataValue($widgetLabels, 'messagesBelowLimit', [])
+            ) : null
         );
     }
 
@@ -52,13 +77,38 @@ class WidgetSettings extends Entity
     public function toArray(): array
     {
         $data = parent::toArray();
+
+        $config = $this->widgetSettings->getWidgetConfig();
+        $labels = $this->widgetSettings->getWidgetLabels();
+
         $data['storeId'] = $this->storeId;
-        $data['widgetConfiguration'] = [
+        $data['widgetSettings'] = [
             'enabled' => $this->widgetSettings->isEnabled(),
             'assetsKey' => $this->widgetSettings->getAssetsKey(),
             'displayOnProductPage' => $this->widgetSettings->isDisplayOnProductPage(),
             'showInProductListing' => $this->widgetSettings->isShowInProductListing(),
             'showInCartPage' => $this->widgetSettings->isShowInCartPage(),
+            'widgetConfiguration' => $config ? [
+                'type' => $config->getType(),
+                'size' => $config->getSize(),
+                'fontColor' => $config->getFontColor(),
+                'backgroundColor' => $config->getBackgroundColor(),
+                'alignment' => $config->getAlignment(),
+                'branding' => $config->getBranding(),
+                'startingText' => $config->getStartingText(),
+                'amountFontSize' => $config->getAmountFontSize(),
+                'amountFontColor' => $config->getAmountFontColor(),
+                'amountFontBold' => $config->getAmountFontBold(),
+                'linkFontColor' => $config->getLinkFontColor(),
+                'linkUnderline' => $config->getLinkUnderline(),
+                'borderColor' => $config->getBorderColor(),
+                'borderRadius' => $config->getBorderRadius(),
+                'noCostsClaim' => $config->getNoCostsClaim(),
+            ] : [],
+            'widgetLabels' => $labels ? [
+                'messages' => $labels->getMessages(),
+                'messagesBelowLimit' => $labels->getMessagesBelowLimit(),
+            ] : [],
         ];
 
         return $data;
