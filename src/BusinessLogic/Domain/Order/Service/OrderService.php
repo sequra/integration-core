@@ -5,11 +5,9 @@ namespace SeQura\Core\BusinessLogic\Domain\Order\Service;
 use Exception;
 use InvalidArgumentException;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
@@ -152,30 +150,30 @@ class OrderService
         $hasChanges = false;
 
         $newShippedCart = $orderUpdateData->getShippedCart();
-        if ($newShippedCart && $this->hasCartChanged($order->getShippedCart(), $newShippedCart)) {
-            $order->setShippedCart($this->getUpdatedCart($order->getShippedCart(), $newShippedCart));
+        if($newShippedCart && !$this->areObjectsEqual($order->getShippedCart(), $newShippedCart)) {
+            $order->setShippedCart($newShippedCart);
             $hasChanges = true;
         }
 
         $newUnshippedCart = $orderUpdateData->getUnshippedCart();
-        if ($newUnshippedCart && $this->hasCartChanged($order->getUnshippedCart(), $newUnshippedCart)) {
-            $order->setUnshippedCart($this->getUpdatedCart($order->getUnshippedCart(), $newUnshippedCart));
+        if($newUnshippedCart && !$this->areObjectsEqual($order->getUnshippedCart(), $newUnshippedCart)) {
+            $order->setUnshippedCart($newUnshippedCart);
             $hasChanges = true;
         }
 
         $newInvoiceAddress = $orderUpdateData->getInvoiceAddress();
-        if ($newInvoiceAddress && !$this->areObjectsEqual($order->getInvoiceAddress(), $newInvoiceAddress)) {
+        if($newInvoiceAddress && !$this->areObjectsEqual($order->getInvoiceAddress(), $newInvoiceAddress)) {
             $order->setInvoiceAddress($newInvoiceAddress);
             $hasChanges = true;
         }
 
         $newDeliveryAddress = $orderUpdateData->getDeliveryAddress();
-        if ($newDeliveryAddress && !$this->areObjectsEqual($order->getDeliveryAddress(), $newDeliveryAddress)) {
+        if($newDeliveryAddress && !$this->areObjectsEqual($order->getDeliveryAddress(), $newDeliveryAddress)) {
             $order->setDeliveryAddress($newDeliveryAddress);
             $hasChanges = true;
         }
 
-        if ($hasChanges) {
+        if($hasChanges) {
             $this->proxy->updateOrder($this->getUpdateOrderRequest($order));
             $this->orderRepository->setSeQuraOrder($order);
         }
@@ -237,52 +235,5 @@ class OrderService
         }
 
         return json_encode($object1) === json_encode($object2);
-    }
-
-    /**
-     * Checks if cart items or currency have changed.
-     *
-     * @param Cart $oldCart
-     * @param Cart $newCart
-     *
-     * @return bool
-     */
-    private function hasCartChanged(Cart $oldCart, Cart $newCart): bool
-    {
-        if (count($newCart->getItems()) !== count($oldCart->getItems())) {
-            return true;
-        }
-
-        foreach ($newCart->getItems() as $index => $item) {
-            if (!$this->areObjectsEqual($item, $oldCart->getItems()[$index])) {
-                return true;
-            }
-        }
-
-        return
-            $newCart->getCurrency() !== $oldCart->getCurrency() ||
-            $newCart->getOrderTotalWithTax() !== $oldCart->getOrderTotalWithTax();
-    }
-
-    /**
-     * Creates a new updated cart form the new and old carts.
-     *
-     * @param Cart $oldCart
-     * @param Cart $newCart
-     *
-     * @return Cart
-     *
-     * @throws InvalidCartItemsException
-     */
-    private function getUpdatedCart(Cart $oldCart, Cart $newCart): Cart
-    {
-        return new Cart(
-            $newCart->getCurrency(),
-            $oldCart->isGift(),
-            $newCart->getItems(),
-            $oldCart->getCartRef(),
-            $oldCart->getCreatedAt(),
-            $oldCart->getUpdatedAt()
-        );
     }
 }

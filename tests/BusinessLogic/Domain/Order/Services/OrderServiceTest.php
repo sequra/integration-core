@@ -277,6 +277,9 @@ class OrderServiceTest extends BaseTestCase
             "currency" => "EUR",
             "gift" => false,
             "order_total_with_tax" => 20,
+            "cart_ref" => 'testCartRef',
+            "created_at" => 'testCreatedAt',
+            "updated_at" => 'testUpdatedAt',
             "items" => [
                 [
                     "type" => "product",
