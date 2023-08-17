@@ -44,6 +44,8 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
             false,
             false,
             false,
+            false,
+            '',
             new WidgetConfiguration(
                 'text',
                 'medium',
@@ -82,9 +84,11 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
             [
                 'useWidgets' => $settings->isEnabled(),
                 'displayWidgetOnProductPage' => $settings->isDisplayOnProductPage(),
-                'showInstallmentAmountInProductListing' => $settings->isShowInProductListing(),
-                'showInstallmentAmountInCartPage' => $settings->isShowInCartPage(),
+                'showInstallmentAmountInProductListing' => $settings->isShowInstallmentsInProductListing(),
+                'showInstallmentAmountInCartPage' => $settings->isShowInstallmentsInCartPage(),
                 'assetsKey' => $settings->getAssetsKey(),
+                'displayMiniWidgetOnProductListingPage' => false,
+                'miniWidgetSelector' => '',
                 'widgetConfiguration' => [
                     'type' => $settings->getWidgetConfig()->getType(),
                     'size' => $settings->getWidgetConfig()->getSize(),
@@ -120,6 +124,8 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
             false,
             true,
             true,
+            true,
+            '',
             'banner'
         );
 
