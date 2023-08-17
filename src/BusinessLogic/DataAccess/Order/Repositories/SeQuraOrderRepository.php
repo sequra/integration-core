@@ -39,7 +39,7 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         return $result;
     }
 
-    public function getOrderBatchByShopReferences(array $shopOrderReferences): ?array
+    public function getOrderBatchByShopReferences(array $shopOrderReferences): array
     {
         $filter = new QueryFilter();
         $filter->where('orderRef1', Operators::IN, $shopOrderReferences);

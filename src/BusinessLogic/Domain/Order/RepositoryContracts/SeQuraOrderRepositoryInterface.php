@@ -20,12 +20,12 @@ interface SeQuraOrderRepositoryInterface
     public function getByShopReference(string $shopOrderReference): ?SeQuraOrder;
 
     /**
-     * Gets Sequra order by shop order reference
+     * Gets Sequra orders by shop order references
      *
      * @param string[] $shopOrderReferences
-     * @return SeQuraOrder[]|null
+     * @return SeQuraOrder[]
      */
-    public function getOrderBatchByShopReferences(array $shopOrderReferences): ?array;
+    public function getOrderBatchByShopReferences(array $shopOrderReferences): array;
 
     /**
      * Gets Sequra order by shop cart/quote reference

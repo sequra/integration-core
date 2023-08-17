@@ -67,14 +67,10 @@ class OrderService
      * @param string[] $shopReferences
      *
      * @return SeQuraOrder[]
-     *
-     * @throws OrderNotFoundException
      */
     public function getOrderBatchForShopReferences(array $shopReferences): array
     {
-        $orders = $this->orderRepository->getOrderBatchByShopReferences($shopReferences);
-
-        return $this->sortOrdersByShopReference($shopReferences, $orders);
+        return $this->orderRepository->getOrderBatchByShopReferences($shopReferences);
     }
 
     /**
@@ -241,35 +237,6 @@ class OrderService
         }
 
         return json_encode($object1) === json_encode($object2);
-    }
-
-    /**
-     * Sorts and array od orders by shop references according to the given shop reference array order.
-     *
-     * @param string[] $shopReferences
-     * @param SeQuraOrder[] $orders
-     *
-     * @return SeQuraOrder[]
-     *
-     * @throws OrderNotFoundException
-     */
-    private function sortOrdersByShopReference(array $shopReferences, array $orders): array
-    {
-        $orderMap = [];
-        foreach ($orders as $order) {
-            $orderMap[$order->getOrderRef1()] = $order;
-        }
-
-        $sortedOrders = [];
-        foreach ($shopReferences as $shopReference) {
-            if (!isset($orderMap[$shopReference])) {
-                throw new OrderNotFoundException('Order for shop reference ' . $shopReference . ' not found.');
-            }
-
-            $sortedOrders[] = $orderMap[$shopReference];
-        }
-
-        return $sortedOrders;
     }
 
     /**
