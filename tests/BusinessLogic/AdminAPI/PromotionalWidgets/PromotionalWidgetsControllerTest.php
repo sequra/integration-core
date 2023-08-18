@@ -44,7 +44,6 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
             false,
             false,
             false,
-            false,
             '',
             new WidgetConfiguration(
                 'text',
@@ -87,7 +86,6 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
                 'showInstallmentAmountInProductListing' => $settings->isShowInstallmentsInProductListing(),
                 'showInstallmentAmountInCartPage' => $settings->isShowInstallmentsInCartPage(),
                 'assetsKey' => $settings->getAssetsKey(),
-                'displayMiniWidgetOnProductListingPage' => false,
                 'miniWidgetSelector' => '',
                 'widgetConfiguration' => [
                     'type' => $settings->getWidgetConfig()->getType(),
@@ -122,7 +120,6 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
             false,
             'qqqwerty',
             false,
-            true,
             true,
             true,
             '',

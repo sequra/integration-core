@@ -35,10 +35,6 @@ class WidgetSettingsRequest extends Request
      */
     private $showInstallmentsInCartPage;
     /**
-     * @var bool
-     */
-    private $displayMiniWidgetOnProductListingPage;
-    /**
      * @var string
      */
     private $miniWidgetSelector;
@@ -117,7 +113,6 @@ class WidgetSettingsRequest extends Request
      * @param bool $displayOnProductPage
      * @param bool $showInstallmentsInProductListing
      * @param bool $showInstallmentsInCartPage
-     * @param bool $displayMiniWidgetOnProductListingPage
      * @param string $miniWidgetSelector
      * @param string $type
      * @param string $size
@@ -143,7 +138,6 @@ class WidgetSettingsRequest extends Request
         bool    $displayOnProductPage,
         bool    $showInstallmentsInProductListing,
         bool    $showInstallmentsInCartPage,
-        bool    $displayMiniWidgetOnProductListingPage,
         string  $miniWidgetSelector,
         string  $type = '',
         string  $size = '',
@@ -169,7 +163,6 @@ class WidgetSettingsRequest extends Request
         $this->displayOnProductPage = $displayOnProductPage;
         $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
         $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
-        $this->displayMiniWidgetOnProductListingPage = $displayMiniWidgetOnProductListingPage;
         $this->miniWidgetSelector = $miniWidgetSelector;
         $this->type = $type;
         $this->size = $size;
@@ -203,7 +196,6 @@ class WidgetSettingsRequest extends Request
             $this->displayOnProductPage,
             $this->showInstallmentsInProductListing,
             $this->showInstallmentsInCartPage,
-            $this->displayMiniWidgetOnProductListingPage,
             $this->miniWidgetSelector,
             new WidgetConfiguration(
                 $this->type,

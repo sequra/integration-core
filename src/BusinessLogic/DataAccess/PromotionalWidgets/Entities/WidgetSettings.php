@@ -47,7 +47,6 @@ class WidgetSettings extends Entity
             self::getArrayValue($widgetSettings, 'displayOnProductPage', false),
             self::getArrayValue($widgetSettings, 'showInstallmentsInProductListing', false),
             self::getArrayValue($widgetSettings, 'showInstallmentsInCartPage', false),
-            self::getArrayValue($widgetSettings, 'displayMiniWidgetOnProductListingPage', false),
             self::getArrayValue($widgetSettings, 'miniWidgetSelector', ''),
             $widgetConfiguration ? new DomainWidgetConfiguration(
                 self::getArrayValue($widgetConfiguration, 'type', ''),
@@ -90,7 +89,6 @@ class WidgetSettings extends Entity
             'displayOnProductPage' => $this->widgetSettings->isDisplayOnProductPage(),
             'showInstallmentsInProductListing' => $this->widgetSettings->isShowInstallmentsInProductListing(),
             'showInstallmentsInCartPage' => $this->widgetSettings->isShowInstallmentsInCartPage(),
-            'displayMiniWidgetOnProductListingPage' => $this->widgetSettings->isDisplayMiniWidgetOnProductListingPage(),
             'miniWidgetSelector' => $this->widgetSettings->getMiniWidgetSelector(),
             'widgetConfiguration' => $config ? [
                 'type' => $config->getType(),

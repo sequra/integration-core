@@ -40,7 +40,6 @@ class WidgetSettingsResponse extends Response
             'showInstallmentAmountInProductListing' => $this->widgetSettings->isShowInstallmentsInProductListing(),
             'showInstallmentAmountInCartPage' => $this->widgetSettings->isShowInstallmentsInCartPage(),
             'assetsKey' => $this->widgetSettings->getAssetsKey(),
-            'displayMiniWidgetOnProductListingPage' => $this->widgetSettings->isDisplayMiniWidgetOnProductListingPage(),
             'miniWidgetSelector' => $this->widgetSettings->getMiniWidgetSelector(),
             'widgetConfiguration' => $this->widgetSettings->getWidgetConfig() ? [
                 'type' => $this->widgetSettings->getWidgetConfig()->getType(),

@@ -30,10 +30,6 @@ class WidgetSettings
      */
     private $showInstallmentsInCartPage;
     /**
-     * @var bool
-     */
-    private $displayMiniWidgetOnProductListingPage;
-    /**
      * @var string
      */
     private $miniWidgetSelector;
@@ -52,7 +48,6 @@ class WidgetSettings
      * @param bool $displayOnProductPage
      * @param bool $showInstallmentsInProductListing
      * @param bool $showInstallmentsInCartPage
-     * @param bool $displayMiniWidgetOnProductListingPage
      * @param string $miniWidgetSelector
      * @param WidgetConfiguration|null $widgetConfig
      * @param WidgetLabels|null $widgetLabels
@@ -63,7 +58,6 @@ class WidgetSettings
         bool                $displayOnProductPage = false,
         bool                $showInstallmentsInProductListing = false,
         bool                $showInstallmentsInCartPage = false,
-        bool                $displayMiniWidgetOnProductListingPage = false,
         string              $miniWidgetSelector = '',
         WidgetConfiguration $widgetConfig = null,
         WidgetLabels        $widgetLabels = null
@@ -74,7 +68,6 @@ class WidgetSettings
         $this->displayOnProductPage = $displayOnProductPage;
         $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
         $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
-        $this->displayMiniWidgetOnProductListingPage =$displayMiniWidgetOnProductListingPage;
         $this->miniWidgetSelector = $miniWidgetSelector;
         $this->widgetConfig = $widgetConfig;
         $this->widgetLabels = $widgetLabels;
@@ -148,16 +141,6 @@ class WidgetSettings
     public function setWidgetLabels(?WidgetLabels $widgetLabels): void
     {
         $this->widgetLabels = $widgetLabels;
-    }
-
-    public function isDisplayMiniWidgetOnProductListingPage(): bool
-    {
-        return $this->displayMiniWidgetOnProductListingPage;
-    }
-
-    public function setDisplayMiniWidgetOnProductListingPage(bool $displayMiniWidgetOnProductListingPage): void
-    {
-        $this->displayMiniWidgetOnProductListingPage = $displayMiniWidgetOnProductListingPage;
     }
 
     public function getMiniWidgetSelector(): string
