@@ -22,13 +22,20 @@ class PaymentMethod extends DataTransferObject
     private $name;
 
     /**
+     * @var string|null
+     */
+    private $icon;
+
+    /**
      * @param string $id
      * @param string $name
+     * @param string $icon
      */
-    public function __construct(string $id, string $name)
+    public function __construct(string $id, string $name, string $icon)
     {
         $this->id = $id;
         $this->name = $name;
+        $this->icon = $icon;
     }
 
     /**
@@ -68,6 +75,24 @@ class PaymentMethod extends DataTransferObject
     }
 
     /**
+     * @return string|null
+     */
+    public function getIcon(): ?string
+    {
+        return $this->icon;
+    }
+
+    /**
+     * @param string|null $icon
+     *
+     * @return void
+     */
+    public function setIcon(?string $icon): void
+    {
+        $this->icon = $icon;
+    }
+
+    /**
      * Create a new PaymentMethod instance from an array of data.
      *
      * @param array $data Array containing the data.
@@ -78,7 +103,8 @@ class PaymentMethod extends DataTransferObject
     {
         return new self(
             self::getDataValue($data, 'id'),
-            self::getDataValue($data, 'name')
+            self::getDataValue($data, 'name'),
+            self::getDataValue($data, 'icon', null)
         );
     }
 
@@ -89,7 +115,8 @@ class PaymentMethod extends DataTransferObject
     {
         return [
             'id' => $this->id,
-            'name' => $this->name
+            'name' => $this->name,
+            'icon' => $this->icon
         ];
     }
 }
