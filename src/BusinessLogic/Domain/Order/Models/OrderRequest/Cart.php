@@ -209,7 +209,14 @@ class Cart extends OrderRequestDTO
      */
     public function setItems(array $items)
     {
+        $orderTotalWithTax = 0;
+
+        foreach ($items as $item) {
+            $orderTotalWithTax += $item->getTotalWithTax();
+        }
+
         $this->items = $items;
+        $this->orderTotalWithTax = $orderTotalWithTax;
     }
 
     /**
