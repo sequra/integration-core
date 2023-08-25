@@ -33,6 +33,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\General
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface;
@@ -42,6 +43,8 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
@@ -55,6 +58,7 @@ use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
 use SeQura\Core\BusinessLogic\Utility\EncryptorInterface;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
 use SeQura\Core\BusinessLogic\Webhook\Repositories\OrderStatusMappingRepository as OrderStatusMappingRepositoryInterface;
@@ -169,6 +173,13 @@ class BaseTestCase extends TestCase
                 return new OrderService(
                     TestServiceRegister::getService(OrderProxyInterface::class),
                     TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class)
+                );
+            },
+            OrderReportService::class => static function () {
+                return new OrderReportService(
+                    TestServiceRegister::getService(OrderReportProxyInterface::class),
+                    TestServiceRegister::getService(OrderReportServiceInterface::class),
+                    TestServiceRegister::getService(StatisticalDataRepositoryInterface::class)
                 );
             },
             StatusMappingService::class => static function () {
@@ -351,6 +362,16 @@ class BaseTestCase extends TestCase
             OrderProxyInterface::class,
             static function () {
                 return new OrderProxy(
+                    TestServiceRegister::getService(HttpClient::class),
+                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            OrderReportProxyInterface::class,
+            static function () {
+                return new OrderReportProxy(
                     TestServiceRegister::getService(HttpClient::class),
                     TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
                 );
