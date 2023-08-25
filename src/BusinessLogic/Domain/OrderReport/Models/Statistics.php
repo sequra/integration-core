@@ -2,14 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\OrderReport\Models;
 
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidDateException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidDurationException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidServiceEndTimeException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTimestampException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestDTO;
-use SeQura\Core\BusinessLogic\Domain\OrderReport\Exceptions\InvalidOrderDeliveryStateException;
 
 /**
  * Class Statistics
@@ -37,14 +30,6 @@ class Statistics extends OrderRequestDTO
      * @param array $data
      *
      * @return self
-     *
-     * @throws InvalidCartItemsException
-     * @throws InvalidDateException
-     * @throws InvalidDurationException
-     * @throws InvalidQuantityException
-     * @throws InvalidServiceEndTimeException
-     * @throws InvalidTimestampException
-     * @throws InvalidOrderDeliveryStateException
      */
     public static function fromArray(array $data): self
     {

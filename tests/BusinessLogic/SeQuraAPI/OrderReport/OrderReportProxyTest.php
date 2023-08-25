@@ -258,8 +258,8 @@ class OrderReportProxyTest extends BaseTestCase
 
         $orders = [$this->generateOrderReport('1'), $this->generateOrderReport('2')];
         $statistics = new Statistics([
-            $this->generateOrderReport('3', '2222-02-02T22:22:22+01:00', 'EUR'),
-            $this->generateOrderReport('4', '2222-02-02T22:22:22+01:00', 'EUR')
+            $this->generateStatisticsReport('1'),
+            $this->generateStatisticsReport('2')
         ]);
 
         return new SendOrderReportRequest($merchant, $orders, $platform, $statistics);
@@ -267,14 +267,12 @@ class OrderReportProxyTest extends BaseTestCase
 
     /**
      * @param string $id
-     * @param string|null $completedAt
-     * @param string|null $currency
      *
-     * @return OrderReport|OrderStatistics
+     * @return OrderReport
      *
      * @throws Exception
      */
-    private function generateOrderReport(string $id, ?string $completedAt = null, ?string $currency = null)
+    private function generateOrderReport(string $id): OrderReport
     {
         $state = 'shipped';
         $sentAt = '2222-02-02T22:22:22+01:00';
@@ -489,23 +487,6 @@ class OrderReportProxyTest extends BaseTestCase
             'testRemainingUpdatedAt' . $id
         );
 
-        if ($completedAt && $currency) {
-            return new OrderStatistics(
-                $completedAt,
-                $currency,
-                $state,
-                $merchantReference,
-                $cart,
-                $deliveryMethod,
-                $customer,
-                $sentAt,
-                $trackings,
-                $remainingCart,
-                $deliveryAddress,
-                $invoiceAddress
-            );
-        }
-
         return new OrderReport(
             $state,
             $merchantReference,
@@ -517,6 +498,27 @@ class OrderReportProxyTest extends BaseTestCase
             $remainingCart,
             $deliveryAddress,
             $invoiceAddress
+        );
+    }
+
+    /**
+     * @param string $id
+     *
+     * @return OrderStatistics
+     */
+    private function generateStatisticsReport(string $id): OrderStatistics
+    {
+        return new OrderStatistics(
+            '2013-12-24T13:14:15+0100',
+            'EUR',
+            9957,
+            new MerchantReference('ZXCV1234' . $id, '0080-1234-4343-5353' . $id),
+            'CC' . $id,
+            'ES',
+            'tablet/ipad4',
+            'shipped',
+            'Delivered',
+            true
         );
     }
 }

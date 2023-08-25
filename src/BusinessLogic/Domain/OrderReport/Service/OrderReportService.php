@@ -61,7 +61,11 @@ class OrderReportService
      */
     public function sendReport(ReportData $reportData): bool
     {
-        $orderReports = $this->integrationOrderReportService->getOrderReports();
+        $orderReports = [];
+        if ($reportData->isSendDeliveryReport()) {
+            $orderReports = $this->integrationOrderReportService->getOrderReports();
+        }
+
         $orderStatistics = null;
         $statisticalData = $this->statisticalDataRepository->getStatisticalData();
 

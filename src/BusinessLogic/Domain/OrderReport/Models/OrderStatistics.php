@@ -2,26 +2,15 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\OrderReport\Models;
 
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidDateException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidDurationException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidServiceEndTimeException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTimestampException;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Customer;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\DeliveryMethod;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\Tracking;
-use SeQura\Core\BusinessLogic\Domain\OrderReport\Exceptions\InvalidOrderDeliveryStateException;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestDTO;
 
 /**
  * Class OrderStatistics
  *
  * @package SeQura\Core\BusinessLogic\Domain\OrderReport\Models
  */
-class OrderStatistics extends OrderReport
+class OrderStatistics extends OrderRequestDTO
 {
     /**
      * @var string Filed representing the date of order completion.
@@ -34,114 +23,118 @@ class OrderStatistics extends OrderReport
     private $currency;
 
     /**
-     * @param $completedAt
-     * @param $currency
-     * @param string $state
-     * @param MerchantReference $merchantReference
-     * @param Cart $cart
-     * @param DeliveryMethod $deliveryMethod
-     * @param Customer $customer
-     * @param string|null $sentAt
-     * @param array|null $trackings
-     * @param Cart|null $remainingCart
-     * @param Address|null $deliveryAddress
-     * @param Address|null $invoiceAddress
-     *
-     * @throws InvalidOrderDeliveryStateException
+     * @var int|null Field representing the total amount paid or due to pay.
+     */
+    private $amount;
+
+    /**
+     * @var MerchantReference|null Order id(s) used by the merchant.
+     */
+    private $merchantReference;
+
+    /**
+     * @var string|null Name or type of payment method.
+     */
+    private $paymentMethod;
+
+    /**
+     * @var string|null ISO-3166-1 country code of the delivery address.
+     */
+    private $country;
+
+    /**
+     * @var string|null Device used in purchase.
+     */
+    private $device;
+
+    /**
+     * @var string|null Status of the order.
+     */
+    private $status;
+
+    /**
+     * @var string|null Your platform's string representation of the order status.
+     */
+    private $rawStatus;
+
+    /**
+     * @var bool|null Was the shopper offered to use SeQura in the checkout?
+     */
+    private $sequraOffered;
+
+    /**
+     * @param string $completedAt
+     * @param string $currency
+     * @param int|null $amount
+     * @param MerchantReference|null $merchantReference
+     * @param string|null $paymentMethod
+     * @param string|null $country
+     * @param string|null $device
+     * @param string|null $status
+     * @param string|null $rawStatus
+     * @param bool|null $sequraOffered
      */
     public function __construct(
-        $completedAt,
-        $currency,
-        string $state,
-        MerchantReference $merchantReference,
-        Cart $cart,
-        DeliveryMethod $deliveryMethod,
-        Customer $customer,
-        ?string $sentAt = null,
-        ?array $trackings = null,
-        ?Cart $remainingCart = null,
-        ?Address $deliveryAddress = null,
-        ?Address $invoiceAddress = null
+        string             $completedAt,
+        string             $currency,
+        ?int               $amount,
+        ?MerchantReference $merchantReference,
+        ?string            $paymentMethod,
+        ?string            $country,
+        ?string            $device,
+        ?string            $status,
+        ?string            $rawStatus,
+        ?bool              $sequraOffered
     )
     {
-        parent::__construct(
-            $state,
-            $merchantReference,
-            $cart,
-            $deliveryMethod,
-            $customer,
-            $sentAt,
-            $trackings,
-            $remainingCart,
-            $deliveryAddress,
-            $invoiceAddress
-        );
-
         $this->completedAt = $completedAt;
         $this->currency = $currency;
+        $this->amount = $amount;
+        $this->merchantReference = $merchantReference;
+        $this->paymentMethod = $paymentMethod;
+        $this->country = $country;
+        $this->device = $device;
+        $this->status = $status;
+        $this->rawStatus = $rawStatus;
+        $this->sequraOffered = $sequraOffered;
     }
+
 
     /**
      * Creates a new OrderStatistics instance from an array.
      *
      * @param array $data
      *
-     * @return OrderReport
-     *
-     * @throws InvalidOrderDeliveryStateException
-     * @throws InvalidCartItemsException
-     * @throws InvalidDateException
-     * @throws InvalidDurationException
-     * @throws InvalidQuantityException
-     * @throws InvalidServiceEndTimeException
-     * @throws InvalidTimestampException
+     * @return self
      */
-    public static function fromArray(array $data): OrderReport
+    public static function fromArray(array $data): self
     {
         $completedAt = self::getDataValue($data, 'completed_at');
         $currency = self::getDataValue($data, 'currency');
-        $state = self::getDataValue($data, 'state');
-        $merchantReference = MerchantReference::fromArray(self::getDataValue($data, 'merchant_reference', []));
-        $cart = Cart::fromArray(self::getDataValue($data, 'cart', []));
-        $deliveryMethod = DeliveryMethod::fromArray(self::getDataValue($data, 'delivery_method', []));
-        $customer = Customer::fromArray(self::getDataValue($data, 'customer', []));
-        $sentAt = self::getDataValue($data, 'sent_at', null);
+        $amount = self::getDataValue($data, 'amount', null);
+        $paymentMethod = self::getDataValue($data, 'payment_method', null);
+        $country = self::getDataValue($data, 'country', null);
+        $device = self::getDataValue($data, 'device', null);
+        $status = self::getDataValue($data, 'status', null);
+        $rawStatus = self::getDataValue($data, 'raw_status', null);
+        $sequraOffered = self::getDataValue($data, 'sequra_offered', null);
 
-        $deliveryAddress = self::getDataValue($data, 'delivery_address', null);
-        if ($deliveryAddress !== null) {
-            $deliveryAddress = Address::fromArray($deliveryAddress);
+        $merchantReference = self::getDataValue($data, 'merchant_reference', null);
+        if ($merchantReference !== null) {
+            $merchantReference = MerchantReference::fromArray($merchantReference);
         }
 
-        $invoiceAddress = self::getDataValue($data, 'invoice_address', null);
-        if ($invoiceAddress !== null) {
-            $invoiceAddress = Address::fromArray($invoiceAddress);
-        }
-
-        $remainingCart = self::getDataValue($data, 'remaining_cart', null);
-        if ($remainingCart !== null) {
-            $remainingCart = Cart::fromArray($remainingCart);
-        }
-
-        $trackings = self::getDataValue($data, 'trackings', null);
-        if ($trackings !== null) {
-            $trackings = array_map(static function ($tracking) {
-                return Tracking::fromArray($tracking);
-            }, $trackings);
-        }
-
-        return new OrderStatistics(
+        return new self(
             $completedAt,
             $currency,
-            $state,
+            $amount,
             $merchantReference,
-            $cart,
-            $deliveryMethod,
-            $customer,
-            $sentAt,
-            $trackings,
-            $remainingCart,
-            $deliveryAddress,
-            $invoiceAddress
+            $paymentMethod,
+            $country,
+            $device,
+            $status,
+            $rawStatus,
+            $sequraOffered
         );
     }
 
@@ -162,10 +155,74 @@ class OrderStatistics extends OrderReport
     }
 
     /**
+     * @return int|null
+     */
+    public function getAmount(): ?int
+    {
+        return $this->amount;
+    }
+
+    /**
+     * @return MerchantReference|null
+     */
+    public function getMerchantReference(): ?MerchantReference
+    {
+        return $this->merchantReference;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPaymentMethod(): ?string
+    {
+        return $this->paymentMethod;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDevice(): ?string
+    {
+        return $this->device;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRawStatus(): ?string
+    {
+        return $this->rawStatus;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getSequraOffered(): ?bool
+    {
+        return $this->sequraOffered;
+    }
+
+    /**
      * @inheritDoc
      */
     public function toArray(): array
     {
-        return array_merge(parent::toArray(), $this->transformPropertiesToAnArray(get_object_vars($this)));
+        return $this->transformPropertiesToAnArray(get_object_vars($this));
     }
 }

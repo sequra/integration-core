@@ -22,13 +22,20 @@ class ReportData
     private $platform;
 
     /**
+     * @var bool
+     */
+    private $sendDeliveryReport;
+
+    /**
      * @param string $merchantId
      * @param Platform $platform
+     * @param bool $sendDeliveryReport
      */
-    public function __construct(string $merchantId, Platform $platform)
+    public function __construct(string $merchantId, Platform $platform, bool $sendDeliveryReport = true)
     {
         $this->merchantId = $merchantId;
         $this->platform = $platform;
+        $this->sendDeliveryReport = $sendDeliveryReport;
     }
 
     /**
@@ -45,6 +52,14 @@ class ReportData
     public function getPlatform(): Platform
     {
         return $this->platform;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSendDeliveryReport(): bool
+    {
+        return $this->sendDeliveryReport;
     }
 
     /**
@@ -65,5 +80,15 @@ class ReportData
     public function setPlatform(Platform $platform): void
     {
         $this->platform = $platform;
+    }
+
+    /**
+     * @param bool $sendDeliveryReport
+     *
+     * @return void
+     */
+    public function setSendDeliveryReport(bool $sendDeliveryReport): void
+    {
+        $this->sendDeliveryReport = $sendDeliveryReport;
     }
 }
