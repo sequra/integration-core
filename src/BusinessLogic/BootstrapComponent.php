@@ -335,8 +335,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new OrderReportService(
                     ServiceRegister::getService(OrderReportProxyInterface::class),
-                    ServiceRegister::getService(OrderReportServiceInterface::class),
-                    ServiceRegister::getService(StatisticalDataRepositoryInterface::class)
+                    ServiceRegister::getService(OrderReportServiceInterface::class)
                 );
             }
         );

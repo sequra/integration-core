@@ -4,7 +4,6 @@ namespace SeQura\Core\Tests\BusinessLogic\Domain\OrderReport\Services;
 
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Platform;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\ReportData;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\Infrastructure\Http\HttpClient;
@@ -68,8 +67,6 @@ class OrderReportServiceTest extends BaseTestCase
      */
     private function getSendReportRequest(): ReportData
     {
-        $platform = new Platform('testName', 'testVersion', 'testUName', 'testDbName', 'testDbVersion');
-
-        return new ReportData('testMerchantId', $platform);
+        return new ReportData('testMerchantId', [],[]);
     }
 }

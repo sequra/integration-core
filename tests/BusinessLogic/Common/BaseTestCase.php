@@ -178,8 +178,7 @@ class BaseTestCase extends TestCase
             OrderReportService::class => static function () {
                 return new OrderReportService(
                     TestServiceRegister::getService(OrderReportProxyInterface::class),
-                    TestServiceRegister::getService(OrderReportServiceInterface::class),
-                    TestServiceRegister::getService(StatisticalDataRepositoryInterface::class)
+                    TestServiceRegister::getService(OrderReportServiceInterface::class)
                 );
             },
             StatusMappingService::class => static function () {

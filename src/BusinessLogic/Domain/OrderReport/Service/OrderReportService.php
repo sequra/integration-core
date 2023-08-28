@@ -8,7 +8,6 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Merchant;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\ReportData;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\SendOrderReportRequest;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
-use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -28,25 +27,18 @@ class OrderReportService
      */
     private $integrationOrderReportService;
 
-    /**
-     * @var StatisticalDataRepositoryInterface
-     */
-    private $statisticalDataRepository;
 
     /**
      * @param OrderReportProxyInterface $proxy
      * @param OrderReportServiceInterface $integrationOrderReportService
-     * @param StatisticalDataRepositoryInterface $statisticalDataRepository
      */
     public function __construct(
-        OrderReportProxyInterface          $proxy,
-        OrderReportServiceInterface        $integrationOrderReportService,
-        StatisticalDataRepositoryInterface $statisticalDataRepository
+        OrderReportProxyInterface   $proxy,
+        OrderReportServiceInterface $integrationOrderReportService
     )
     {
         $this->proxy = $proxy;
         $this->integrationOrderReportService = $integrationOrderReportService;
-        $this->statisticalDataRepository = $statisticalDataRepository;
     }
 
     /**
@@ -62,18 +54,22 @@ class OrderReportService
     public function sendReport(ReportData $reportData): bool
     {
         $orderReports = [];
-        if ($reportData->isSendDeliveryReport()) {
-            $orderReports = $this->integrationOrderReportService->getOrderReports();
+        if (!empty($reportData->getReportOrderIds())) {
+            $orderReports = $this->integrationOrderReportService->getOrderReports($reportData->getReportOrderIds());
         }
 
         $orderStatistics = null;
-        $statisticalData = $this->statisticalDataRepository->getStatisticalData();
-
-        if ($statisticalData && $statisticalData->isSendStatisticalData()) {
-            $orderStatistics = $this->integrationOrderReportService->getOrderStatistics();
+        if (!empty($reportData->getStatisticsOrderIds())) {
+            $orderStatistics = $this->integrationOrderReportService->getOrderStatistics(
+                $reportData->getStatisticsOrderIds()
+            );
         }
 
-        $reportRequest = $this->createSendOrderReportRequest($reportData, $orderReports, $orderStatistics);
+        $reportRequest = $this->createSendOrderReportRequest(
+            $reportData->getMerchantId(),
+            $orderReports,
+            $orderStatistics
+        );
 
         return $this->proxy->sendReport($reportRequest);
     }
@@ -81,23 +77,24 @@ class OrderReportService
     /**
      * Creates a SendOrderReportRequest instance.
      *
-     * @param ReportData $reportData
+     * @param string $merchantId
      * @param array $orderReports
      * @param array|null $orderStatistics
+     *
      * @return SendOrderReportRequest
      *
      * @throws InvalidUrlException
      */
     private function createSendOrderReportRequest(
-        ReportData $reportData,
-        array      $orderReports,
-        array      $orderStatistics = null
+        string $merchantId,
+        array  $orderReports,
+        array  $orderStatistics = null
     ): SendOrderReportRequest
     {
         return new SendOrderReportRequest(
-            new Merchant($reportData->getMerchantId()),
+            new Merchant($merchantId),
             $orderReports,
-            $reportData->getPlatform(),
+            $this->integrationOrderReportService->getPlatform(),
             $orderStatistics
         );
     }

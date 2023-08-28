@@ -2,8 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\OrderReport\Models;
 
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Platform;
-
 /**
  * Class ReportData
  *
@@ -17,25 +15,25 @@ class ReportData
     private $merchantId;
 
     /**
-     * @var Platform
+     * @var string[]
      */
-    private $platform;
+    private $reportOrderIds;
 
     /**
-     * @var bool
+     * @var string[]
      */
-    private $sendDeliveryReport;
+    private $statisticsOrderIds;
 
     /**
      * @param string $merchantId
-     * @param Platform $platform
-     * @param bool $sendDeliveryReport
+     * @param string[] $reportOrderIds
+     * @param string[] $statisticsOrderIds
      */
-    public function __construct(string $merchantId, Platform $platform, bool $sendDeliveryReport = true)
+    public function __construct(string $merchantId, array $reportOrderIds, array $statisticsOrderIds)
     {
         $this->merchantId = $merchantId;
-        $this->platform = $platform;
-        $this->sendDeliveryReport = $sendDeliveryReport;
+        $this->reportOrderIds = $reportOrderIds;
+        $this->statisticsOrderIds = $statisticsOrderIds;
     }
 
     /**
@@ -47,19 +45,19 @@ class ReportData
     }
 
     /**
-     * @return Platform
+     * @return string[]
      */
-    public function getPlatform(): Platform
+    public function getReportOrderIds(): array
     {
-        return $this->platform;
+        return $this->reportOrderIds;
     }
 
     /**
-     * @return bool
+     * @return string[]
      */
-    public function isSendDeliveryReport(): bool
+    public function getStatisticsOrderIds(): array
     {
-        return $this->sendDeliveryReport;
+        return $this->statisticsOrderIds;
     }
 
     /**
@@ -73,22 +71,22 @@ class ReportData
     }
 
     /**
-     * @param Platform $platform
+     * @param string[] $reportOrderIds
      *
      * @return void
      */
-    public function setPlatform(Platform $platform): void
+    public function setReportOrderIds(array $reportOrderIds): void
     {
-        $this->platform = $platform;
+        $this->reportOrderIds = $reportOrderIds;
     }
 
     /**
-     * @param bool $sendDeliveryReport
+     * @param string[] $statisticsOrderIds
      *
      * @return void
      */
-    public function setSendDeliveryReport(bool $sendDeliveryReport): void
+    public function setStatisticsOrderIds(array $statisticsOrderIds): void
     {
-        $this->sendDeliveryReport = $sendDeliveryReport;
+        $this->statisticsOrderIds = $statisticsOrderIds;
     }
 }
