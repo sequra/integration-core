@@ -43,6 +43,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
@@ -55,6 +56,7 @@ use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
 use SeQura\Core\BusinessLogic\Utility\EncryptorInterface;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
 use SeQura\Core\BusinessLogic\Webhook\Repositories\OrderStatusMappingRepository as OrderStatusMappingRepositoryInterface;
@@ -280,7 +282,11 @@ class BaseTestCase extends TestCase
             },
             WidgetSettingsService::class => function () {
                 return new WidgetSettingsService(
-                    TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class)
+                    TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
+                    TestServiceRegister::getService(PaymentMethodsService::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class),
+                    TestServiceRegister::getService(ConnectionService::class),
+                    TestServiceRegister::getService(WidgetsProxyInterface::class)
                 );
             },
             PromotionalWidgetsController::class => function () {
@@ -321,10 +327,7 @@ class BaseTestCase extends TestCase
         TestServiceRegister::registerService(
             WebhookHandler::class,
             static function () {
-                return new WebhookHandler(
-                    TestServiceRegister::getService(QueueService::class),
-                    TestServiceRegister::getService(QueueNameProviderInterface::class)
-                );
+                return new WebhookHandler();
             }
         );
 
@@ -353,6 +356,15 @@ class BaseTestCase extends TestCase
                 return new OrderProxy(
                     TestServiceRegister::getService(HttpClient::class),
                     TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            WidgetsProxyInterface::class,
+            static function () {
+                return new WidgetsProxy(
+                    TestServiceRegister::getService(HttpClient::class)
                 );
             }
         );

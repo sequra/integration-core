@@ -47,6 +47,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
@@ -60,6 +61,7 @@ use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
 use SeQura\Core\BusinessLogic\Webhook\Services\StatusMappingService;
 use SeQura\Core\BusinessLogic\Webhook\Validator\WebhookValidator;
@@ -330,7 +332,11 @@ class BootstrapComponent extends BaseBootstrapComponent
             WidgetSettingsService::class,
             static function () {
                 return new WidgetSettingsService(
-                    ServiceRegister::getService(WidgetSettingsRepositoryInterface::class)
+                    ServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(PaymentMethodsService::class),
+                    ServiceRegister::getService(CountryConfigurationService::class),
+                    ServiceRegister::getService(ConnectionService::class),
+                    ServiceRegister::getService(WidgetsProxyInterface::class)
                 );
             }
         );
@@ -476,6 +482,15 @@ class BootstrapComponent extends BaseBootstrapComponent
             ConnectionProxyInterface::class,
             static function () {
                 return new ConnectionProxy(
+                    ServiceRegister::getService(HttpClient::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            WidgetsProxyInterface::class,
+            static function () {
+                return new WidgetsProxy(
                     ServiceRegister::getService(HttpClient::class)
                 );
             }

@@ -3,8 +3,14 @@
 namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\ValidateAssetsKeyRequest;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
  * Class WidgetSettingsService
@@ -17,13 +23,43 @@ class WidgetSettingsService
      * @var WidgetSettingsRepositoryInterface
      */
     private $widgetSettingsRepository;
+    /**
+     * @var PaymentMethodsService
+     */
+    private $paymentMethodsService;
+    /**
+     * @var CountryConfigurationService
+     */
+    private $countryConfigService;
+    /**
+     * @var ConnectionService
+     */
+    private $connectionService;
+    /**
+     * @var WidgetsProxyInterface
+     */
+    private $widgetsProxy;
 
     /**
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
+     * @param PaymentMethodsService $paymentMethodsService
+     * @param CountryConfigurationService $countryConfigService
+     * @param ConnectionService $connectionService
+     * @param WidgetsProxyInterface $widgetsProxy
      */
-    public function __construct(WidgetSettingsRepositoryInterface $widgetSettingsRepository)
+    public function __construct(
+        WidgetSettingsRepositoryInterface $widgetSettingsRepository,
+        PaymentMethodsService             $paymentMethodsService,
+        CountryConfigurationService       $countryConfigService,
+        ConnectionService                 $connectionService,
+        WidgetsProxyInterface             $widgetsProxy
+    )
     {
         $this->widgetSettingsRepository = $widgetSettingsRepository;
+        $this->paymentMethodsService = $paymentMethodsService;
+        $this->countryConfigService = $countryConfigService;
+        $this->connectionService = $connectionService;
+        $this->widgetsProxy = $widgetsProxy;
     }
 
     /**
@@ -50,5 +86,46 @@ class WidgetSettingsService
     public function setWidgetSettings(WidgetSettings $settings): void
     {
         $this->widgetSettingsRepository->setWidgetSettings($settings);
+    }
+
+    /**
+     * Checks if assets key is valid.
+     *
+     * @param string $assetsKey
+     *
+     * @return bool
+     *
+     * @throws HttpRequestException
+     */
+    public function isAssetsKeyValid(string $assetsKey): bool
+    {
+        $countryConfig = $this->countryConfigService->getCountryConfiguration();
+        $connectionSettings = $this->connectionService->getConnectionData();
+
+        if (empty($countryConfig) || !isset($countryConfig[0]) || empty($connectionSettings)) {
+            return false;
+        }
+
+        $firstMerchantId = $countryConfig[0]->getMerchantId();
+        $paymentMethods = $this->paymentMethodsService->getMerchantProducts(
+            $firstMerchantId
+        );
+
+        if (empty($paymentMethods)) {
+            return false;
+        }
+
+        try {
+            $this->widgetsProxy->validateAssetsKey(new ValidateAssetsKeyRequest(
+                $firstMerchantId,
+                $paymentMethods,
+                $assetsKey,
+                $connectionSettings->getEnvironment()
+            ));
+
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 }
