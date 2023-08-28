@@ -37,6 +37,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
@@ -46,6 +47,8 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
@@ -62,6 +65,7 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
 use SeQura\Core\BusinessLogic\Webhook\Services\StatusMappingService;
 use SeQura\Core\BusinessLogic\Webhook\Validator\WebhookValidator;
@@ -98,12 +102,12 @@ class BootstrapComponent extends BaseBootstrapComponent
 
         ServiceRegister::registerService(
             OrderStatusMappingRepositoryInterface::class,
-              static function () {
-                  return new OrderStatusMappingRepository(
-                      RepositoryRegistry::getRepository(OrderStatusMapping::getClassName()),
-                      ServiceRegister::getService(StoreContext::class)
-                  );
-              }
+            static function () {
+                return new OrderStatusMappingRepository(
+                    RepositoryRegistry::getRepository(OrderStatusMapping::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
         );
 
         ServiceRegister::registerService(
@@ -329,6 +333,16 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            OrderReportService::class,
+            static function () {
+                return new OrderReportService(
+                    ServiceRegister::getService(OrderReportProxyInterface::class),
+                    ServiceRegister::getService(OrderReportServiceInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             WidgetSettingsService::class,
             static function () {
                 return new WidgetSettingsService(
@@ -462,6 +476,16 @@ class BootstrapComponent extends BaseBootstrapComponent
             OrderProxyInterface::class,
             static function () {
                 return new OrderProxy(
+                    ServiceRegister::getService(HttpClient::class),
+                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            OrderReportProxyInterface::class,
+            static function () {
+                return new OrderReportProxy(
                     ServiceRegister::getService(HttpClient::class),
                     ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
                 );

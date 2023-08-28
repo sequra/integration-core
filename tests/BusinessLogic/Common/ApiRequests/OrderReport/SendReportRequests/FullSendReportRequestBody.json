@@ -1,0 +1,572 @@
+{
+  "delivery_report": {
+    "merchant": {
+      "id": "testMerchantId"
+    },
+    "orders": [
+      {
+        "state": "shipped",
+        "sent_at": "2222-02-02T22:22:22+01:00",
+        "merchant_reference": {
+          "order_ref_1": "testOrderRef11",
+          "order_ref_2": "testOrderRef21"
+        },
+        "cart": {
+          "currency": "EUR",
+          "gift": false,
+          "order_total_with_tax": 30,
+          "cart_ref": "testCartRef1",
+          "created_at": "testCreatedAt1",
+          "updated_at": "testUpdatedAt1",
+          "items": [
+            {
+              "type": "product",
+              "reference": "testItemReference11",
+              "name": "testName11",
+              "price_with_tax": 5,
+              "quantity": 2,
+              "total_with_tax": 10,
+              "downloadable": false,
+              "perishable": true,
+              "personalized": true,
+              "restockable": true,
+              "category": "testCategory1",
+              "description": "testDescription1",
+              "manufacturer": "testManufacturer1",
+              "supplier": "testSupplier1",
+              "product_id": "testProductId1",
+              "url": "testUrl1",
+              "tracking_reference": "testTrackingReference1"
+            },
+            {
+              "type": "service",
+              "reference": "testItemReference21",
+              "name": "testName21",
+              "ends_in": "P3Y6M4DT12H30M5S",
+              "total_with_tax": 10,
+              "price_with_tax": 5,
+              "quantity": 2,
+              "downloadable": false,
+              "supplier": "testSupplier1",
+              "rendered": true
+            },
+            {
+              "type": "handling",
+              "reference": "testItemReference41",
+              "name": "testName41",
+              "total_with_tax": 5
+            },
+            {
+              "type": "invoice_fee",
+              "total_with_tax": 30
+            },
+            {
+              "type": "discount",
+              "reference": "testItemReference51",
+              "name": "testName51",
+              "total_with_tax": -20
+            },
+            {
+              "type": "other_payment",
+              "reference": "testItemReference31",
+              "name": "testName31",
+              "total_with_tax": -5
+            }
+          ]
+        },
+        "remaining_cart": {
+          "currency": "EUR",
+          "gift": false,
+          "order_total_with_tax": 30,
+          "cart_ref": "testRemainingCartRef1",
+          "created_at": "testRemainingCreatedAt1",
+          "updated_at": "testRemainingUpdatedAt1",
+          "items": [
+            {
+              "type": "product",
+              "reference": "testRemainingItemReference11",
+              "name": "testRemainingName11",
+              "price_with_tax": 5,
+              "quantity": 2,
+              "total_with_tax": 10,
+              "downloadable": false,
+              "perishable": true,
+              "personalized": true,
+              "restockable": true,
+              "category": "testRemainingCategory1",
+              "description": "testRemainingDescription1",
+              "manufacturer": "testRemainingManufacturer1",
+              "supplier": "testRemainingSupplier1",
+              "product_id": "testRemainingProductId1",
+              "url": "testRemainingUrl1",
+              "tracking_reference": "testRemainingTrackingReference1"
+            },
+            {
+              "type": "service",
+              "reference": "testRemainingItemReference21",
+              "name": "testRemainingName21",
+              "ends_in": "P3Y6M4DT12H30M5S",
+              "total_with_tax": 10,
+              "price_with_tax": 5,
+              "quantity": 2,
+              "downloadable": false,
+              "supplier": "testRemainingSupplier1",
+              "rendered": true
+            },
+            {
+              "type": "handling",
+              "reference": "testRemainingItemReference41",
+              "name": "testRemainingName41",
+              "total_with_tax": 5
+            },
+            {
+              "type": "invoice_fee",
+              "total_with_tax": 30
+            },
+            {
+              "type": "discount",
+              "reference": "testRemainingItemReference51",
+              "name": "testRemainingName51",
+              "total_with_tax": -20
+            },
+            {
+              "type": "other_payment",
+              "reference": "testRemainingItemReference31",
+              "name": "testRemainingName31",
+              "total_with_tax": -5
+            }
+          ]
+        },
+        "trackings": [
+          {
+            "type": "pickup_store",
+            "reference": "testReference11",
+            "operator_ref": "testOperatorRef11",
+            "store_ref": "testStoreRef11",
+            "tracking_number": "testTrackingNumber11",
+            "available_at": "2222-02-02T22:22:22+01:00",
+            "delivered_at": "2222-02-02T22:22:22+01:00",
+            "address_line_1": "testAddressLine111",
+            "address_line_2": "testAddressLine211",
+            "postal_code": "testPostalCode11",
+            "city": "testCity11",
+            "state": "testState11",
+            "country_code": "ES"
+          },
+          {
+            "type": "pickup_point",
+            "reference": "testReference21",
+            "operator_ref": "testOperatorRef21",
+            "store_ref": "testStoreRef21",
+            "tracking_number": "testTrackingNumber21",
+            "available_at": "2222-02-02T22:22:22+01:00",
+            "delivered_at": "2222-02-02T22:22:22+01:00",
+            "address_line_1": "testAddressLine121",
+            "address_line_2": "testAddressLine221",
+            "postal_code": "testPostalCode21",
+            "city": "testCity21",
+            "state": "testState21",
+            "country_code": "ES"
+          },
+          {
+            "type": "postal",
+            "reference": "testReference31",
+            "carrier": "testCarrier31",
+            "tracking_number": "testTrackingNumber31",
+            "tracking_url": "https://testTrackingUrl1",
+            "delivered_at": "2222-02-02T22:22:22+01:00"
+          }
+        ],
+        "delivery_method": {
+          "name": "testName1",
+          "days": "testDays1",
+          "provider": "testProvider1",
+          "home_delivery": false
+        },
+        "delivery_address": {
+          "given_names": "testDeliveryAddressGivenNames1",
+          "surnames": "testDeliveryAddressSurnames1",
+          "company": "testDeliveryAddressCompany1",
+          "address_line_1": "testDeliveryAddressLine11",
+          "address_line_2": "testDeliveryAddressLine21",
+          "postal_code": "testDeliveryAddressPostalCode1",
+          "city": "testDeliveryAddressCity1",
+          "country_code": "ES",
+          "phone": "testDeliveryAddressPhone1",
+          "mobile_phone": "testDeliveryAddressMobilePhone1",
+          "state": "testDeliveryAddressState1",
+          "extra": "testDeliveryAddressExtra1",
+          "vat_number": "testDeliveryAddressVatNumber1"
+        },
+        "invoice_address": {
+          "given_names": "testInvoiceAddressGivenNames1",
+          "surnames": "testInvoiceAddressSurnames1",
+          "company": "testInvoiceAddressCompany1",
+          "address_line_1": "testInvoiceAddressLine11",
+          "address_line_2": "testInvoiceAddressLine21",
+          "postal_code": "testInvoiceAddressPostalCode1",
+          "city": "testInvoiceAddressCity1",
+          "country_code": "ES",
+          "phone": "testInvoiceAddressPhone1",
+          "mobile_phone": "testInvoiceAddressMobilePhone1",
+          "state": "testInvoiceAddressState1",
+          "extra": "testInvoiceAddressExtra1",
+          "vat_number": "testInvoiceAddressVatNumber1"
+        },
+        "customer": {
+          "given_names": "testGivenNames1",
+          "surnames": "testSurnames1",
+          "title": "testTitle1",
+          "email": "test@test.test1",
+          "logged_in": true,
+          "language_code": "testCode1",
+          "ip_number": "testIpNum1",
+          "user_agent": "testAgent1",
+          "ref": "testRef1",
+          "date_of_birth": "testDateOfBirth1",
+          "nin": "testNin1",
+          "company": "testCompany1",
+          "vat_number": "testVetNumber1",
+          "created_at": "testCreatedAt1",
+          "updated_at": "testUpdatedAt1",
+          "rating": 10,
+          "nin_control": "testNinControl1",
+          "previous_orders": [
+            {
+              "created_at": "testCreatedAt11",
+              "amount": 10,
+              "currency": "testCurrency11",
+              "raw_status": "testRawStatus11",
+              "status": "testStatus11",
+              "payment_method_raw": "testPaymentMethodRaw11",
+              "payment_method": "testPaymentMethod11",
+              "postal_code": "testPostalCode11",
+              "country_code": "testCountryCode11"
+            },
+            {
+              "created_at": "testCreatedAt21",
+              "amount": 20,
+              "currency": "testCurrency21",
+              "raw_status": "testRawStatus21",
+              "status": "testStatus21",
+              "payment_method_raw": "testPaymentMethodRaw21",
+              "payment_method": "testPaymentMethod21",
+              "postal_code": "testPostalCode21",
+              "country_code": "testCountryCode21"
+            }
+          ],
+          "vehicle": {
+            "plaque": "testPlaque1",
+            "brand": "testBrand1",
+            "model": "testModel1",
+            "frame": "testFrame1",
+            "first_registration_date": "testFirstRegistrationDate1"
+          }
+        }
+      },
+      {
+        "state": "shipped",
+        "sent_at": "2222-02-02T22:22:22+01:00",
+        "merchant_reference": {
+          "order_ref_1": "testOrderRef12",
+          "order_ref_2": "testOrderRef22"
+        },
+        "cart": {
+          "currency": "EUR",
+          "gift": false,
+          "order_total_with_tax": 30,
+          "cart_ref": "testCartRef2",
+          "created_at": "testCreatedAt2",
+          "updated_at": "testUpdatedAt2",
+          "items": [
+            {
+              "type": "product",
+              "reference": "testItemReference12",
+              "name": "testName12",
+              "price_with_tax": 5,
+              "quantity": 2,
+              "total_with_tax": 10,
+              "downloadable": false,
+              "perishable": true,
+              "personalized": true,
+              "restockable": true,
+              "category": "testCategory2",
+              "description": "testDescription2",
+              "manufacturer": "testManufacturer2",
+              "supplier": "testSupplier2",
+              "product_id": "testProductId2",
+              "url": "testUrl2",
+              "tracking_reference": "testTrackingReference2"
+            },
+            {
+              "type": "service",
+              "reference": "testItemReference22",
+              "name": "testName22",
+              "ends_in": "P3Y6M4DT12H30M5S",
+              "total_with_tax": 10,
+              "price_with_tax": 5,
+              "quantity": 2,
+              "downloadable": false,
+              "supplier": "testSupplier2",
+              "rendered": true
+            },
+            {
+              "type": "handling",
+              "reference": "testItemReference42",
+              "name": "testName42",
+              "total_with_tax": 5
+            },
+            {
+              "type": "invoice_fee",
+              "total_with_tax": 30
+            },
+            {
+              "type": "discount",
+              "reference": "testItemReference52",
+              "name": "testName52",
+              "total_with_tax": -20
+            },
+            {
+              "type": "other_payment",
+              "reference": "testItemReference32",
+              "name": "testName32",
+              "total_with_tax": -5
+            }
+          ]
+        },
+        "remaining_cart": {
+          "currency": "EUR",
+          "gift": false,
+          "order_total_with_tax": 30,
+          "cart_ref": "testRemainingCartRef2",
+          "created_at": "testRemainingCreatedAt2",
+          "updated_at": "testRemainingUpdatedAt2",
+          "items": [
+            {
+              "type": "product",
+              "reference": "testRemainingItemReference12",
+              "name": "testRemainingName12",
+              "price_with_tax": 5,
+              "quantity": 2,
+              "total_with_tax": 10,
+              "downloadable": false,
+              "perishable": true,
+              "personalized": true,
+              "restockable": true,
+              "category": "testRemainingCategory2",
+              "description": "testRemainingDescription2",
+              "manufacturer": "testRemainingManufacturer2",
+              "supplier": "testRemainingSupplier2",
+              "product_id": "testRemainingProductId2",
+              "url": "testRemainingUrl2",
+              "tracking_reference": "testRemainingTrackingReference2"
+            },
+            {
+              "type": "service",
+              "reference": "testRemainingItemReference22",
+              "name": "testRemainingName22",
+              "ends_in": "P3Y6M4DT12H30M5S",
+              "total_with_tax": 10,
+              "price_with_tax": 5,
+              "quantity": 2,
+              "downloadable": false,
+              "supplier": "testRemainingSupplier2",
+              "rendered": true
+            },
+            {
+              "type": "handling",
+              "reference": "testRemainingItemReference42",
+              "name": "testRemainingName42",
+              "total_with_tax": 5
+            },
+            {
+              "type": "invoice_fee",
+              "total_with_tax": 30
+            },
+            {
+              "type": "discount",
+              "reference": "testRemainingItemReference52",
+              "name": "testRemainingName52",
+              "total_with_tax": -20
+            },
+            {
+              "type": "other_payment",
+              "reference": "testRemainingItemReference32",
+              "name": "testRemainingName32",
+              "total_with_tax": -5
+            }
+          ]
+        },
+        "trackings": [
+          {
+            "type": "pickup_store",
+            "reference": "testReference12",
+            "operator_ref": "testOperatorRef12",
+            "store_ref": "testStoreRef12",
+            "tracking_number": "testTrackingNumber12",
+            "available_at": "2222-02-02T22:22:22+01:00",
+            "delivered_at": "2222-02-02T22:22:22+01:00",
+            "address_line_1": "testAddressLine112",
+            "address_line_2": "testAddressLine212",
+            "postal_code": "testPostalCode12",
+            "city": "testCity12",
+            "state": "testState12",
+            "country_code": "ES"
+          },
+          {
+            "type": "pickup_point",
+            "reference": "testReference22",
+            "operator_ref": "testOperatorRef22",
+            "store_ref": "testStoreRef22",
+            "tracking_number": "testTrackingNumber22",
+            "available_at": "2222-02-02T22:22:22+01:00",
+            "delivered_at": "2222-02-02T22:22:22+01:00",
+            "address_line_1": "testAddressLine122",
+            "address_line_2": "testAddressLine222",
+            "postal_code": "testPostalCode22",
+            "city": "testCity22",
+            "state": "testState22",
+            "country_code": "ES"
+          },
+          {
+            "type": "postal",
+            "reference": "testReference32",
+            "carrier": "testCarrier32",
+            "tracking_number": "testTrackingNumber32",
+            "tracking_url": "https://testTrackingUrl2",
+            "delivered_at": "2222-02-02T22:22:22+01:00"
+          }
+        ],
+        "delivery_method": {
+          "name": "testName2",
+          "days": "testDays2",
+          "provider": "testProvider2",
+          "home_delivery": false
+        },
+        "delivery_address": {
+          "given_names": "testDeliveryAddressGivenNames2",
+          "surnames": "testDeliveryAddressSurnames2",
+          "company": "testDeliveryAddressCompany2",
+          "address_line_1": "testDeliveryAddressLine12",
+          "address_line_2": "testDeliveryAddressLine22",
+          "postal_code": "testDeliveryAddressPostalCode2",
+          "city": "testDeliveryAddressCity2",
+          "country_code": "ES",
+          "phone": "testDeliveryAddressPhone2",
+          "mobile_phone": "testDeliveryAddressMobilePhone2",
+          "state": "testDeliveryAddressState2",
+          "extra": "testDeliveryAddressExtra2",
+          "vat_number": "testDeliveryAddressVatNumber2"
+        },
+        "invoice_address": {
+          "given_names": "testInvoiceAddressGivenNames2",
+          "surnames": "testInvoiceAddressSurnames2",
+          "company": "testInvoiceAddressCompany2",
+          "address_line_1": "testInvoiceAddressLine12",
+          "address_line_2": "testInvoiceAddressLine22",
+          "postal_code": "testInvoiceAddressPostalCode2",
+          "city": "testInvoiceAddressCity2",
+          "country_code": "ES",
+          "phone": "testInvoiceAddressPhone2",
+          "mobile_phone": "testInvoiceAddressMobilePhone2",
+          "state": "testInvoiceAddressState2",
+          "extra": "testInvoiceAddressExtra2",
+          "vat_number": "testInvoiceAddressVatNumber2"
+        },
+        "customer": {
+          "given_names": "testGivenNames2",
+          "surnames": "testSurnames2",
+          "title": "testTitle2",
+          "email": "test@test.test2",
+          "logged_in": true,
+          "language_code": "testCode2",
+          "ip_number": "testIpNum2",
+          "user_agent": "testAgent2",
+          "ref": "testRef2",
+          "date_of_birth": "testDateOfBirth2",
+          "nin": "testNin2",
+          "company": "testCompany2",
+          "vat_number": "testVetNumber2",
+          "created_at": "testCreatedAt2",
+          "updated_at": "testUpdatedAt2",
+          "rating": 10,
+          "nin_control": "testNinControl2",
+          "previous_orders": [
+            {
+              "created_at": "testCreatedAt12",
+              "amount": 10,
+              "currency": "testCurrency12",
+              "raw_status": "testRawStatus12",
+              "status": "testStatus12",
+              "payment_method_raw": "testPaymentMethodRaw12",
+              "payment_method": "testPaymentMethod12",
+              "postal_code": "testPostalCode12",
+              "country_code": "testCountryCode12"
+            },
+            {
+              "created_at": "testCreatedAt22",
+              "amount": 20,
+              "currency": "testCurrency22",
+              "raw_status": "testRawStatus22",
+              "status": "testStatus22",
+              "payment_method_raw": "testPaymentMethodRaw22",
+              "payment_method": "testPaymentMethod22",
+              "postal_code": "testPostalCode22",
+              "country_code": "testCountryCode22"
+            }
+          ],
+          "vehicle": {
+            "plaque": "testPlaque2",
+            "brand": "testBrand2",
+            "model": "testModel2",
+            "frame": "testFrame2",
+            "first_registration_date": "testFirstRegistrationDate2"
+          }
+        }
+      }
+    ],
+    "statistics": {
+      "orders": [
+        {
+          "completed_at": "2013-12-24T13:14:15+0100",
+          "amount": 9957,
+          "currency": "EUR",
+          "merchant_reference": {
+            "order_ref_1": "ZXCV12341",
+            "order_ref_2": "0080-1234-4343-53531"
+          },
+          "payment_method": "CC1",
+          "country": "ES",
+          "device": "tablet/ipad4",
+          "status": "shipped",
+          "raw_status": "Delivered",
+          "sequra_offered": true
+        },
+        {
+          "completed_at": "2013-12-24T13:14:15+0100",
+          "amount": 9957,
+          "currency": "EUR",
+          "merchant_reference": {
+            "order_ref_1": "ZXCV12342",
+            "order_ref_2": "0080-1234-4343-53532"
+          },
+          "payment_method": "CC2",
+          "country": "ES",
+          "device": "tablet/ipad4",
+          "status": "shipped",
+          "raw_status": "Delivered",
+          "sequra_offered": true
+        }
+      ]
+    },
+    "platform": {
+      "name": "testName",
+      "version": "testVersion",
+      "plugin_version": "testPluginVersion",
+      "uname": "testUName",
+      "db_name": "testDbName",
+      "db_version": "testDbVersion",
+      "php_version": "testPhpVersion"
+    }
+  }
+}

@@ -80,6 +80,37 @@ class OrderServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testGetOrderBatchByShopReferences(): void
+    {
+        // Arrange
+        $orderRefs = ['1', '2', '3', '4', '5', '6', '7'];
+
+        foreach ($orderRefs as $ref) {
+            $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
+            $array = json_decode($order, true);
+            $seQuraOrder = SeQuraOrder::fromArray($array['order']);
+            $seQuraOrder->setReference($ref);
+            $seQuraOrder->setCartId('cart-' . $ref);
+            $seQuraOrder->setOrderRef1('shop-' . $ref);
+            $seQuraOrder->setState('approved');
+
+            StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$seQuraOrder]);
+        }
+
+        // Act
+        $shopOrderRefs = ['shop-1', 'shop-4', 'shop-5', 'shop-7'];
+        $response = $this->orderService->getOrderBatchForShopReferences($shopOrderRefs);
+
+        // Assert
+        self::assertCount(4, $response);
+        foreach ($shopOrderRefs as $index => $ref) {
+            self::assertEquals($ref, $response[$index]->getOrderRef1());
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testIsUpdateResponseSuccessful(): void
     {
         // Arrange

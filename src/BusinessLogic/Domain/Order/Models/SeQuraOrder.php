@@ -50,6 +50,7 @@ class SeQuraOrder extends Entity
         'customer',
         'platform',
         'gui',
+        'paymentMethod'
     ];
 
     /**
@@ -128,6 +129,11 @@ class SeQuraOrder extends Entity
     protected $gui;
 
     /**
+     * @var PaymentMethod|null Payment method
+     */
+    protected $paymentMethod;
+
+    /**
      * @inheritDoc
      */
     public function getConfig(): EntityConfiguration
@@ -170,6 +176,10 @@ class SeQuraOrder extends Entity
         if (!empty($data['trackings'])) {
             $this->trackings = Tracking::fromBatch($data['trackings']);
         }
+
+        if (!empty($data['payment_method'])) {
+            $this->paymentMethod = PaymentMethod::fromArray($data['payment_method']);
+        }
     }
 
     /**
@@ -188,10 +198,11 @@ class SeQuraOrder extends Entity
         $data['shipped_cart'] = $this->shippedCart ? $this->shippedCart->toArray() : [];
         $data['unshipped_cart'] = $this->unshippedCart ? $this->unshippedCart->toArray() : [];
         $data['delivery_method'] = $this->deliveryMethod ? $this->deliveryMethod->toArray() : [];
-        $data['delivery_address'] = $this->deliveryAddress ? $this->deliveryAddress->toArray() :[];
+        $data['delivery_address'] = $this->deliveryAddress ? $this->deliveryAddress->toArray() : [];
         $data['invoice_address'] = $this->invoiceAddress ? $this->invoiceAddress->toArray() : [];
         $data['customer'] = $this->customer ? $this->customer->toArray() : [];
         $data['platform'] = $this->platform ? $this->platform->toArray() : [];
+        $data['payment_method'] = $this->paymentMethod ? $this->paymentMethod->toArray() : [];
         $data['gui'] = $this->gui ? $this->gui->toArray() : [];
 
         if (!empty($this->trackings)) {
@@ -563,5 +574,27 @@ class SeQuraOrder extends Entity
         $this->gui = $gui;
 
         return $this;
+    }
+
+    /**
+     * Return the value of payment method
+     *
+     * @return PaymentMethod|null
+     */
+    public function getPaymentMethod(): ?PaymentMethod
+    {
+        return $this->paymentMethod;
+    }
+
+    /**
+     * Sets the value of payment method
+     *
+     * @param PaymentMethod|null $paymentMethod
+     *
+     * @return void
+     */
+    public function setPaymentMethod(?PaymentMethod $paymentMethod): void
+    {
+        $this->paymentMethod = $paymentMethod;
     }
 }

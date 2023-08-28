@@ -1,0 +1,15 @@
+{
+  "delivery_report" : {
+    "merchant": {
+      "id": "testMerchantId"
+    },
+    "orders": [],
+    "platform": {
+      "name": "testName",
+      "version": "testVersion",
+      "uname": "testUName",
+      "db_name": "testDbName",
+      "db_version": "testDbVersion"
+    }
+  }
+}

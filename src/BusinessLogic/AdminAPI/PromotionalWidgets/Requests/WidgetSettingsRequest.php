@@ -29,11 +29,15 @@ class WidgetSettingsRequest extends Request
     /**
      * @var bool
      */
-    private $showInProductListing;
+    private $showInstallmentsInProductListing;
     /**
      * @var bool
      */
-    private $showInCartPage;
+    private $showInstallmentsInCartPage;
+    /**
+     * @var string
+     */
+    private $miniWidgetSelector;
     /**
      * @var string
      */
@@ -107,8 +111,9 @@ class WidgetSettingsRequest extends Request
      * @param bool $enabled
      * @param string|null $assetsKey
      * @param bool $displayOnProductPage
-     * @param bool $showInProductListing
-     * @param bool $showInCartPage
+     * @param bool $showInstallmentsInProductListing
+     * @param bool $showInstallmentsInCartPage
+     * @param string $miniWidgetSelector
      * @param string $type
      * @param string $size
      * @param string $fontColor
@@ -131,8 +136,9 @@ class WidgetSettingsRequest extends Request
         bool    $enabled,
         ?string $assetsKey,
         bool    $displayOnProductPage,
-        bool    $showInProductListing,
-        bool    $showInCartPage,
+        bool    $showInstallmentsInProductListing,
+        bool    $showInstallmentsInCartPage,
+        string  $miniWidgetSelector,
         string  $type = '',
         string  $size = '',
         string  $fontColor = '',
@@ -155,8 +161,9 @@ class WidgetSettingsRequest extends Request
         $this->enabled = $enabled;
         $this->assetsKey = $assetsKey;
         $this->displayOnProductPage = $displayOnProductPage;
-        $this->showInProductListing = $showInProductListing;
-        $this->showInCartPage = $showInCartPage;
+        $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
+        $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
+        $this->miniWidgetSelector = $miniWidgetSelector;
         $this->type = $type;
         $this->size = $size;
         $this->fontColor = $fontColor;
@@ -187,8 +194,9 @@ class WidgetSettingsRequest extends Request
             $this->enabled,
             $this->assetsKey,
             $this->displayOnProductPage,
-            $this->showInProductListing,
-            $this->showInCartPage,
+            $this->showInstallmentsInProductListing,
+            $this->showInstallmentsInCartPage,
+            $this->miniWidgetSelector,
             new WidgetConfiguration(
                 $this->type,
                 $this->size,

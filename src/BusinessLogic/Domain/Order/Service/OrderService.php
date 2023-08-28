@@ -52,11 +52,23 @@ class OrderService
     public function getOrderByShopReference(string $shopReference): SeQuraOrder
     {
         $order = $this->orderRepository->getByShopReference($shopReference);
-        if(!$order){
+        if (!$order) {
             throw new OrderNotFoundException('Order for shop reference ' . $shopReference . ' not found.');
         }
 
         return $order;
+    }
+
+    /**
+     * Gets a batch of orders for a given array of shop references, sorted according to the given shop reference array.
+     *
+     * @param string[] $shopReferences
+     *
+     * @return SeQuraOrder[]
+     */
+    public function getOrderBatchForShopReferences(array $shopReferences): array
+    {
+        return $this->orderRepository->getOrderBatchByShopReferences($shopReferences);
     }
 
     /**
@@ -198,7 +210,7 @@ class OrderService
             'merchant' => $order->getMerchant()->toArray(),
             'merchant_reference' => $order->getMerchantReference()->toArray(),
             'unshipped_cart' => $order->getUnshippedCart()->toArray(),
-            'shipped_cart' =>  $order->getShippedCart()->toArray(),
+            'shipped_cart' => $order->getShippedCart()->toArray(),
             'trackings' => $order->getTrackings(),
             'delivery_method' => $order->getDeliveryMethod()->toArray(),
             'delivery_address' => $order->getDeliveryAddress()->toArray(),
@@ -216,7 +228,7 @@ class OrderService
      *
      * @return bool
      */
-    private function areObjectsEqual($object1, $object2):bool
+    private function areObjectsEqual($object1, $object2): bool
     {
         if (method_exists($object1, 'toArray') && method_exists($object2, 'toArray')) {
             return json_encode($object1->toArray()) === json_encode($object2->toArray());
