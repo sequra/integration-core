@@ -2,10 +2,11 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\OrderReport\Listeners;
 
+use Exception;
+use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\OrderReporter;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\Infrastructure\ServiceRegister;
-use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 
@@ -21,7 +22,7 @@ class TickEventListener
     /**
      * @return void
      *
-     * @throws QueueStorageUnavailableException
+     * @throws Exception
      */
     public static function handle(): void
     {
@@ -33,7 +34,9 @@ class TickEventListener
         $connectedStores = static::getStoreService()->getConnectedStores();
 
         foreach ($connectedStores as $store) {
-            static::getQueueService()->enqueue('order-reports', new OrderReporter(), $store);
+            StoreContext::doWithStore($store, static function () {
+                static::getQueueService()->enqueue('order-reports', new OrderReporter());
+            });
         }
     }
 
