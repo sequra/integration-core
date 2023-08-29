@@ -10,7 +10,23 @@ class MockShopOrderService implements ShopOrderService
     /**
      * @inheritDoc
      */
-    public function updateStatus(Webhook $webhook, string $status)
+    public function updateStatus(Webhook $webhook, string $status): void
     {
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getReportOrderIds(int $page, int $limit = 5000): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getStatisticsOrderIds(int $page, int $limit = 5000): array
+    {
+        return [];
     }
 }
