@@ -47,6 +47,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Listeners\TickEventListener;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
@@ -77,6 +78,8 @@ use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\QueueService;
+use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\TickEvent;
+use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 
 class BootstrapComponent extends BaseBootstrapComponent
 {
@@ -519,5 +522,15 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected static function initEvents()
+    {
+        parent::initEvents();
+
+        EventBus::getInstance()->when(TickEvent::class, TickEventListener::class . '::handle');
     }
 }
