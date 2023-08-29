@@ -72,6 +72,16 @@ class StoreService
     }
 
     /**
+     * Retrieves all connected stores ids.
+     *
+     * @return string[]
+     */
+    public function getConnectedStores(): array
+    {
+        return $this->connectionDataRepository->getAllConnectionSettingsStores();
+    }
+
+    /**
      * Returns ID of first store that was connected to SeQura. If there is no store connected, empty string is returned.
      *
      * @return string

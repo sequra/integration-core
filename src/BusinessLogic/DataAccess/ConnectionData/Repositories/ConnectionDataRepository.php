@@ -85,6 +85,19 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getAllConnectionSettingsStores(): array
+    {
+        /** @var ConnectionDataEntity[] $entities */
+        $entities = $this->repository->select();
+
+        return $entities ? array_map(function ($entity) {
+            return $entity->getStoreId();
+        }, $entities) : [];
+    }
+
+    /**
      * Gets the connection data entity from the database.
      *
      * @return ConnectionDataEntity|null

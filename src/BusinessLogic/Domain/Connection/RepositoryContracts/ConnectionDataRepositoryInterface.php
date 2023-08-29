@@ -33,4 +33,11 @@ interface ConnectionDataRepositoryInterface
      * @return string|null
      */
     public function getOldestConnectionSettingsStoreId(): ?string;
+
+    /**
+     * Retrieves connection settings store ids for all stores.
+     *
+     * @return string[]
+     */
+    public function getAllConnectionSettingsStores(): array;
 }
