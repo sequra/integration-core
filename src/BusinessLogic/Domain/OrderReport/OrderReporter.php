@@ -20,7 +20,6 @@ use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableE
 class OrderReporter extends Orchestrator
 {
     protected const ORDERS_PER_BACH = 5000;
-
     protected $page = 0;
 
     /**
@@ -68,6 +67,15 @@ class OrderReporter extends Orchestrator
 
     /**
      * @inheritDoc
+     */
+    public function __unserialize($data): void
+    {
+        parent::__unserialize($data);
+        $this->page = $data['page'];
+    }
+
+    /**
+     * @inheritDoc
      *
      * @throws QueueStorageUnavailableException
      */
@@ -87,7 +95,7 @@ class OrderReporter extends Orchestrator
             $merchantId = $countryConfiguration[0]->getMerchantId();
         }
 
-        if ((empty($reportOrderIds) && empty($statisticsOrderIds)) || $merchantId) {
+        if ((empty($reportOrderIds) && empty($statisticsOrderIds)) || !$merchantId) {
             return null;
         }
 

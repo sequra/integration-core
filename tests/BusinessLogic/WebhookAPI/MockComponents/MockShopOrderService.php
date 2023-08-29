@@ -5,8 +5,16 @@ namespace SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
 
+/**
+ * Class MockShopOrderService
+ *
+ * @package SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents
+ */
 class MockShopOrderService implements ShopOrderService
 {
+    public $reportOrderIds = [];
+    public $statisticsOrderIds = [];
+
     /**
      * @inheritDoc
      */
@@ -19,7 +27,7 @@ class MockShopOrderService implements ShopOrderService
      */
     public function getReportOrderIds(int $page, int $limit = 5000): array
     {
-        return [];
+        return array_slice($this->reportOrderIds, $page * $limit, $limit);
     }
 
     /**
@@ -27,6 +35,6 @@ class MockShopOrderService implements ShopOrderService
      */
     public function getStatisticsOrderIds(int $page, int $limit = 5000): array
     {
-        return [];
+        return array_slice($this->statisticsOrderIds, $page * $limit, $limit);
     }
 }
