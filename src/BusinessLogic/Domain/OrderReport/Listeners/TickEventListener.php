@@ -34,8 +34,8 @@ class TickEventListener
         $connectedStores = static::getStoreService()->getConnectedStores();
 
         foreach ($connectedStores as $store) {
-            StoreContext::doWithStore($store, static function () {
-                static::getQueueService()->enqueue('order-reports', new OrderReporter());
+            StoreContext::doWithStore($store, static function () use ($store) {
+                static::getQueueService()->enqueue('order-reports', new OrderReporter(), $store);
             });
         }
     }
