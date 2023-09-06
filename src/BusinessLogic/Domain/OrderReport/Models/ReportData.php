@@ -20,16 +20,16 @@ class ReportData
     private $reportOrderIds;
 
     /**
-     * @var string[]
+     * @var string[]|null
      */
     private $statisticsOrderIds;
 
     /**
      * @param string $merchantId
      * @param string[] $reportOrderIds
-     * @param string[] $statisticsOrderIds
+     * @param string[]|null $statisticsOrderIds
      */
-    public function __construct(string $merchantId, array $reportOrderIds, array $statisticsOrderIds)
+    public function __construct(string $merchantId, array $reportOrderIds, ?array $statisticsOrderIds = null)
     {
         $this->merchantId = $merchantId;
         $this->reportOrderIds = $reportOrderIds;
@@ -53,9 +53,9 @@ class ReportData
     }
 
     /**
-     * @return string[]
+     * @return string[]|null
      */
-    public function getStatisticsOrderIds(): array
+    public function getStatisticsOrderIds(): ?array
     {
         return $this->statisticsOrderIds;
     }
@@ -81,11 +81,11 @@ class ReportData
     }
 
     /**
-     * @param string[] $statisticsOrderIds
+     * @param string[]|null $statisticsOrderIds
      *
      * @return void
      */
-    public function setStatisticsOrderIds(array $statisticsOrderIds): void
+    public function setStatisticsOrderIds(?array $statisticsOrderIds): void
     {
         $this->statisticsOrderIds = $statisticsOrderIds;
     }

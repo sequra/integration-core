@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\ReportData;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Task;
@@ -55,6 +56,37 @@ class OrderReportTask extends Task
     }
 
     /**
+     * Transforms array into a serializable object,
+     *
+     * @param array $array
+     *
+     * @return Serializable
+     *
+     * @throws Exception
+     */
+    public static function fromArray(array $array): Serializable
+    {
+        return StoreContext::doWithStore($array['storeId'], static function () use ($array) {
+            return new static($array['merchantId'], $array['reportOrderIds'], $array['statisticsOrderIds'] ?? null);
+        });
+    }
+
+    /**
+     * Transforms serializable object into an array.
+     *
+     * @return array Array representation of a serializable object.
+     */
+    public function toArray(): array
+    {
+        return [
+            'storeId' => $this->storeId,
+            'reportOrderIds' => $this->reportOrderIds,
+            'statisticsOrderIds' => $this->statisticsOrderIds,
+            'merchantId' => $this->merchantId
+        ];
+    }
+
+    /**
      * @inheritDocs
      */
     public function __serialize(): array
@@ -69,7 +101,7 @@ class OrderReportTask extends Task
     {
         $this->merchantId = $data['merchantId'];
         $this->reportOrderIds = $data['reportOrderIds'];
-        $this->statisticsOrderIds = $data['statisticsOrderIds'];
+        $this->statisticsOrderIds = $data['statisticsOrderIds'] ?? null;
         $this->storeId = $data['storeId'];
     }
 

@@ -1,7 +1,8 @@
 <?php
 
-namespace eQura\Core\Tests\BusinessLogic\SeQuraAPI\Widgets;
+namespace SeQura\Core\Tests\BusinessLogic\SeQuraAPI\Widgets;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\ValidateAssetsKeyRequest;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\Infrastructure\Http\HttpClient;
@@ -39,7 +40,10 @@ class WidgetsProxyTest extends BaseTestCase
         $this->proxy = TestServiceRegister::getService(WidgetsProxyInterface::class);
     }
 
-    public function testValidateAssetsKeyUrl()
+    /**
+     * @throws Exception
+     */
+    public function testValidateAssetsKeyUrl(): void
     {
         // arrange
         $this->httpClient->setMockResponses(
@@ -60,7 +64,10 @@ class WidgetsProxyTest extends BaseTestCase
         self::assertEquals('https://sandbox.sequracdn.com/scripts/test/1234567/pp3_pp5_cost.json', $lastRequest['url']);
     }
 
-    public function testValidateAssetsKeyMethod()
+    /**
+     * @throws Exception
+     */
+    public function testValidateAssetsKeyMethod(): void
     {
         // arrange
         $this->httpClient->setMockResponses(

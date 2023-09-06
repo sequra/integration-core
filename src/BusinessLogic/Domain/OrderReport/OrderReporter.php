@@ -2,7 +2,9 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\OrderReport;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Tasks\OrderReportTask;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
@@ -20,8 +22,14 @@ use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableE
 class OrderReporter extends Orchestrator
 {
     protected const ORDERS_PER_BACH = 5000;
-
     protected $page = 0;
+
+    private $storeId;
+
+    public function __construct()
+    {
+        $this->storeId = StoreContext::getInstance()->getStoreId();
+    }
 
     /**
      * @inheritDoc
@@ -30,6 +38,7 @@ class OrderReporter extends Orchestrator
     {
         $result = parent::toArray();
         $result['page'] = $this->page;
+        $result['storeId'] = $this->storeId;
 
         return $result;
     }
@@ -41,6 +50,7 @@ class OrderReporter extends Orchestrator
     {
         $entity = parent::fromArray($array);
         $entity->page = $array['page'];
+        $entity->storeId = $array['storeId'];
 
         return $entity;
     }
@@ -52,7 +62,8 @@ class OrderReporter extends Orchestrator
     {
         return Serializer::serialize([
             'parent' => parent::serialize(),
-            'page' => $this->page
+            'page' => $this->page,
+            'storeId' => $this->storeId,
         ]);
     }
 
@@ -64,14 +75,36 @@ class OrderReporter extends Orchestrator
         $unserialized = Serializer::unserialize($serialized);
         parent::unserialize($unserialized['parent']);
         $this->page = $unserialized['page'];
+        $this->storeId = $unserialized['storeId'];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __unserialize($data): void
+    {
+        parent::__unserialize($data);
+        $this->page = $data['page'];
     }
 
     /**
      * @inheritDoc
      *
-     * @throws QueueStorageUnavailableException
+     * @throws Exception
      */
     protected function getSubTask(): ?ExecutionDetails
+    {
+        return StoreContext::doWithStore($this->storeId, function () {
+            return $this->getSubTaskInContext();
+        });
+    }
+
+    /**
+     * @return ExecutionDetails|null
+     *
+     * @throws QueueStorageUnavailableException
+     */
+    private function getSubTaskInContext(): ?ExecutionDetails
     {
         $reportOrderIds = $this->getShopOrderService()->getReportOrderIds($this->page, static::ORDERS_PER_BACH);
 
@@ -87,7 +120,7 @@ class OrderReporter extends Orchestrator
             $merchantId = $countryConfiguration[0]->getMerchantId();
         }
 
-        if ((empty($reportOrderIds) && empty($statisticsOrderIds)) || $merchantId) {
+        if ((empty($reportOrderIds) && empty($statisticsOrderIds)) || !$merchantId) {
             return null;
         }
 

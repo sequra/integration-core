@@ -5,8 +5,11 @@ namespace SeQura\Core\BusinessLogic\Domain\OrderReport\Service;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Merchant;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\OrderReport;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\OrderStatistics;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\ReportData;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\SendOrderReportRequest;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\Statistics;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
@@ -78,8 +81,8 @@ class OrderReportService
      * Creates a SendOrderReportRequest instance.
      *
      * @param string $merchantId
-     * @param array $orderReports
-     * @param array|null $orderStatistics
+     * @param OrderReport[] $orderReports
+     * @param OrderStatistics[]|null $orderStatistics
      *
      * @return SendOrderReportRequest
      *
@@ -95,7 +98,7 @@ class OrderReportService
             new Merchant($merchantId),
             $orderReports,
             $this->integrationOrderReportService->getPlatform(),
-            $orderStatistics
+            $orderStatistics ? new Statistics($orderStatistics) : null
         );
     }
 }
