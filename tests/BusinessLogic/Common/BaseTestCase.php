@@ -205,7 +205,8 @@ class BaseTestCase extends TestCase
             },
             CountryConfigurationService::class => static function () {
                 return new CountryConfigurationService(
-                    TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class)
+                    TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
+                    TestServiceRegister::getService(SellingCountriesServiceInterface::class)
                 );
             },
             GeneralSettingsService::class => static function () {

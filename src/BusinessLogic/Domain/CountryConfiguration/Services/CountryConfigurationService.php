@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services;
 
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 
 /**
  * Class CountryConfigurationService
@@ -16,13 +17,22 @@ class CountryConfigurationService
      * @var CountryConfigurationRepositoryInterface
      */
     private $countryConfigurationRepository;
+    /**
+     * @var SellingCountriesServiceInterface
+     */
+    private $sellingCountriesService;
 
     /**
      * @param CountryConfigurationRepositoryInterface $countryConfigurationRepository
+     * @param SellingCountriesServiceInterface $sellingCountriesService
      */
-    public function __construct(CountryConfigurationRepositoryInterface $countryConfigurationRepository)
+    public function __construct(
+        CountryConfigurationRepositoryInterface $countryConfigurationRepository,
+        SellingCountriesServiceInterface        $sellingCountriesService
+    )
     {
         $this->countryConfigurationRepository = $countryConfigurationRepository;
+        $this->sellingCountriesService = $sellingCountriesService;
     }
 
     /**
@@ -32,7 +42,20 @@ class CountryConfigurationService
      */
     public function getCountryConfiguration(): ?array
     {
-        return $this->countryConfigurationRepository->getCountryConfiguration();
+        $configuredCountries = $this->countryConfigurationRepository->getCountryConfiguration();
+        $sellingCountries = $this->sellingCountriesService->getSellingCountries();
+
+        if (empty($configuredCountries)) {
+            return null;
+        }
+
+        foreach ($configuredCountries as $key => $configuredCountry) {
+            if (!in_array($configuredCountry->getCountryCode(), $sellingCountries)) {
+                unset($configuredCountries[$key]);
+            }
+        }
+
+        return $configuredCountries;
     }
 
     /**

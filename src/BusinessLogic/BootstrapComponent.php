@@ -222,7 +222,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             CountryConfigurationService::class,
             static function () {
                 return new CountryConfigurationService(
-                    ServiceRegister::getService(CountryConfigurationRepositoryInterface::class)
+                    ServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
+                    ServiceRegister::getService(SellingCountriesServiceInterface::class)
                 );
             }
         );

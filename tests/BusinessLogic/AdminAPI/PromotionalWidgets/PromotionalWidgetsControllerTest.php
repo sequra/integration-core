@@ -4,12 +4,14 @@ namespace SeQura\Core\Tests\BusinessLogic\AdminAPI\PromotionalWidgets;
 
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Requests\WidgetSettingsRequest;
+use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetConfiguration;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetLabels;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 class PromotionalWidgetsControllerTest extends BaseTestCase
@@ -22,6 +24,13 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        TestServiceRegister::registerService(
+            SellingCountriesServiceInterface::class,
+            function () {
+                return new MockSellingCountriesService();
+            }
+        );
 
         $this->widgetSettingsRepository = TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class);
     }

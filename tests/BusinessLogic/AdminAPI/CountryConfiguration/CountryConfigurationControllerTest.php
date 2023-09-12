@@ -120,6 +120,7 @@ class CountryConfigurationControllerTest extends BaseTestCase
         ];
 
         StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurations]);
+        unset($countryConfigurations[1]);
         $expectedResponse = new CountryConfigurationResponse($countryConfigurations);
 
         // Act
@@ -367,10 +368,6 @@ class CountryConfigurationControllerTest extends BaseTestCase
         return [
             [
                 'countryCode' => 'CO',
-                'merchantId' => 'logeecom',
-            ],
-            [
-                'countryCode' => 'ES',
                 'merchantId' => 'logeecom',
             ],
             [
