@@ -14,6 +14,8 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfigur
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Version\Exceptions\FailedToRetrieveVersionException;
 use SeQura\Core\BusinessLogic\Domain\Version\Models\Version;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
@@ -38,6 +40,11 @@ class IntegrationControllerTest extends BaseTestCase
      */
     private $countryConfigurationRepository;
 
+    /**
+     * @var WidgetSettingsRepositoryInterface
+     */
+    protected $widgetSettingsRepository;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -48,6 +55,7 @@ class IntegrationControllerTest extends BaseTestCase
 
         $this->connectionDataRepository = TestServiceRegister::getService(ConnectionDataRepositoryInterface::class);
         $this->countryConfigurationRepository = TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class);
+        $this->widgetSettingsRepository = TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class);
     }
 
     public function testIsGetUIStateResponseSuccessful(): void
@@ -89,8 +97,18 @@ class IntegrationControllerTest extends BaseTestCase
             new CountryConfiguration('FR','logeecom')
         ];
 
+        $widgetSettings = new WidgetSettings(
+            true,
+            'test123',
+            true,
+            true,
+            true,
+            '.test'
+        );
+
         StoreContext::doWithStore('1', [$this->connectionDataRepository,'setConnectionData'], [$connectionData]);
         StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurations]);
+        StoreContext::doWithStore('1', [$this->widgetSettingsRepository,'setWidgetSettings'], [$widgetSettings]);
 
         // Act
         $response = AdminAPI::get()->integration('1')->getUIState();

@@ -238,7 +238,8 @@ class BaseTestCase extends TestCase
             UIStateService::class => static function () {
                 return new UIStateService(
                     TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
-                    TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class)
+                    TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
+                    TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class)
                 );
             },
             ShopOrderService::class => function () {
