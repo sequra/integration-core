@@ -12,9 +12,19 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 class IntegrationUIStateResponse extends Response
 {
     /**
-     * Onboarding string constant.
+     * Connection string constant.
      */
-    private const ONBOARDING = 'onboarding';
+    private const CONNECTION = 'connection';
+
+    /**
+     * Country configuration string constant.
+     */
+    private const COUNTRY_CONFIGURATION = 'country_configuration';
+
+    /**
+     * Widget configuration string constant.
+     */
+    private const WIDGET_CONFIGURATION = 'widget_configuration';
 
     /**
      * Dashboard string constant.
@@ -37,13 +47,33 @@ class IntegrationUIStateResponse extends Response
     }
 
     /**
-     * Called when user state is onboarding.
+     * Called when user state is connection.
      *
      * @return IntegrationUIStateResponse
      */
-    public static function onboarding(): self
+    public static function connection(): self
     {
-        return new self(self::ONBOARDING);
+        return new self(self::CONNECTION);
+    }
+
+    /**
+     * Called when user state is country configuration.
+     *
+     * @return IntegrationUIStateResponse
+     */
+    public static function countryConfiguration(): self
+    {
+        return new self(self::COUNTRY_CONFIGURATION);
+    }
+
+    /**
+     * Called when user state is country configuration.
+     *
+     * @return IntegrationUIStateResponse
+     */
+    public static function widgetConfiguration(): self
+    {
+        return new self(self::WIDGET_CONFIGURATION);
     }
 
     /**

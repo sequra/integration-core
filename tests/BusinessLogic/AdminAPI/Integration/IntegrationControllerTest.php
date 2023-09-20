@@ -70,7 +70,7 @@ class IntegrationControllerTest extends BaseTestCase
     public function testGetUIStateResponse(): void
     {
         // Arrange
-        $expectedResponse = IntegrationUIStateResponse::onboarding();
+        $expectedResponse = IntegrationUIStateResponse::connection();
 
         // Act
         $response = AdminAPI::get()->integration('1')->getUIState();
@@ -135,7 +135,7 @@ class IntegrationControllerTest extends BaseTestCase
         $response = AdminAPI::get()->integration('1')->getUIState();
 
         // Assert
-        self::assertEquals(['state' => 'onboarding'], $response->toArray());
+        self::assertEquals(['state' => 'connection'], $response->toArray());
     }
 
     /**
@@ -156,10 +156,31 @@ class IntegrationControllerTest extends BaseTestCase
         $response = AdminAPI::get()->integration('1')->getUIState();
 
         // Assert
-        self::assertEquals(['state' => 'onboarding'], $response->toArray());
+        self::assertEquals(['state' => 'country_configuration'], $response->toArray());
     }
 
-    // TODO: variations od above tests when widget configuration is added.
+    /**
+     * @throws Exception
+     */
+    public function testGetUIStateNoWidgetConfigurationResponseToArray(): void
+    {
+        // Arrange
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+        $countryConfigurationData = [new CountryConfiguration('ES', 'test')];
+
+        StoreContext::doWithStore('1', [$this->connectionDataRepository,'setConnectionData'], [$connectionData]);
+        StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurationData]);
+
+        // Act
+        $response = AdminAPI::get()->integration('1')->getUIState();
+
+        // Assert
+        self::assertEquals(['state' => 'widget_configuration'], $response->toArray());
+    }
 
     /**
      * @throws FailedToRetrieveVersionException

@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\UIState\Services;
 
+use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationUIStateResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
@@ -45,18 +46,30 @@ class UIStateService
     }
 
     /**
-     * Returns true it the application state is onboarding.
+     * Returns the current application state.
      *
-     * @return bool
+     * @return IntegrationUIStateResponse
      *
      * @throws \Exception
      */
-    public function isOnboardingState(): bool
+    public function getState(): IntegrationUIStateResponse
     {
         $connectionData = $this->connectionDataRepository->getConnectionData();
-        $countryConfiguration = $this->countryConfigurationRepository->getCountryConfiguration();
-        $widgetSettings = $this->widgetSettingsRepository->getWidgetSettings();
 
-        return !($connectionData && $countryConfiguration && $widgetSettings);
+        if ($connectionData === null) {
+            return IntegrationUIStateResponse::connection();
+        }
+
+        $countryConfiguration = $this->countryConfigurationRepository->getCountryConfiguration();
+        if ($countryConfiguration === null) {
+            return IntegrationUIStateResponse::countryConfiguration();
+        }
+
+        $widgetSettings = $this->widgetSettingsRepository->getWidgetSettings();
+        if ($widgetSettings === null) {
+            return IntegrationUIStateResponse::widgetConfiguration();
+        }
+
+        return IntegrationUIStateResponse::dashboard();
     }
 }
