@@ -52,12 +52,12 @@ class IntegrationController
      * Gets the UI state for the integration.
      *
      * @return IntegrationUIStateResponse
-     *
-     * @throws \Exception
      */
     public function getUIState(): IntegrationUIStateResponse
     {
-        return $this->stateService->getState();
+        return $this->stateService->isOnboardingState() ?
+            IntegrationUIStateResponse::onboarding() :
+            IntegrationUIStateResponse::dashboard();
     }
 
     /**
