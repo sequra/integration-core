@@ -16,7 +16,7 @@ class BaseTranslatableUnhandledException extends BaseTranslatableException
         parent::__construct(
             new TranslatableLabel(
                 'Unhandled error occurred: ' . $previous->getMessage(),
-                'general.unhandled'
+                'general.errors.unknown'
             ),
             $previous
         );

@@ -42,7 +42,7 @@ class ConnectionData extends DataTransferObject
     )
     {
         if (!in_array($environment, [BaseProxy::LIVE_MODE,BaseProxy::TEST_MODE], true)) {
-            throw new InvalidEnvironmentException('Invalid environment type.');
+            throw new InvalidEnvironmentException();
         }
 
         $this->environment = $environment;

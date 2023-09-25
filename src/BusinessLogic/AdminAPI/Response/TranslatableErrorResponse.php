@@ -30,6 +30,7 @@ class TranslatableErrorResponse extends ErrorResponse
     public function toArray(): array
     {
         return [
+            'statusCode' => $this->error->getCode(),
             'errorCode' => $this->error->getTranslatableLabel()->getCode(),
             'errorMessage' => $this->error->getTranslatableLabel()->getMessage(),
             'errorParameters' => $this->error->getTranslatableLabel()->getParams(),

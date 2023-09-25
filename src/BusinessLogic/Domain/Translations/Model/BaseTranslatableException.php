@@ -23,7 +23,7 @@ class BaseTranslatableException extends Exception
      */
     public function __construct(TranslatableLabel $translatableLabel, Throwable $previous = null)
     {
-        parent::__construct($translatableLabel->getMessage(), 0, $previous);
+        parent::__construct($translatableLabel->getMessage(), $this->code, $previous);
 
         $this->translatableLabel = $translatableLabel;
     }

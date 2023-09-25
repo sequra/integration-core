@@ -32,7 +32,7 @@ class Category
     {
         if(empty($id) || empty($name)) {
             throw new EmptyCategoryParameterException(
-                new TranslatableLabel('No parameter can be an empty string.',400)
+                new TranslatableLabel('No parameter can be an empty string.','general.errors.empty')
             );
         }
 

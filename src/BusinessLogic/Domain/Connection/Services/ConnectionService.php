@@ -50,17 +50,9 @@ class ConnectionService
         try {
             $this->connectionProxy->validateConnection(new ValidateConnectionRequest($connectionData));
         } catch (HttpApiUnauthorizedException $exception) {
-            throw new WrongCredentialsException(
-                'Invalid username or password.',
-                HttpClient::HTTP_STATUS_CODE_UNAUTHORIZED,
-                $exception
-            );
+            throw new WrongCredentialsException();
         } catch (HttpApiInvalidUrlParameterException $exception) {
-            throw new BadMerchantIdException(
-                'Provided merchantId is invalid.',
-                HttpClient::HTTP_STATUS_CODE_FORBIDDEN,
-                $exception
-            );
+            throw new BadMerchantIdException();
         }
 
         return true;

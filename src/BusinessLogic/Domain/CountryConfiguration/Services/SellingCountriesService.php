@@ -47,8 +47,7 @@ class SellingCountriesService
 
             return $sellingCountries;
         }catch (Exception $e) {
-            throw new FailedToRetrieveSellingCountriesException(new TranslatableLabel($e->getMessage(), $e->getCode()));
+            throw new FailedToRetrieveSellingCountriesException(new TranslatableLabel('Failed to retrieve selling countries.', 'general.errors.countries.sellingCountries'));
         }
-
     }
 }

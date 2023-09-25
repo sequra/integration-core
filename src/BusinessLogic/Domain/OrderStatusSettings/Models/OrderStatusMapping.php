@@ -35,13 +35,13 @@ class OrderStatusMapping
     {
         if(empty($seQuraStatus) || empty($shopStatus)) {
             throw new EmptyOrderStatusMappingParameterException(
-                new TranslatableLabel('No parameter can be an empty string.', 400)
+                new TranslatableLabel('No parameter can be an empty string.', 'general.errors.empty')
             );
         }
 
         if(!in_array($seQuraStatus, OrderStates::toArray(),true)) {
             throw new InvalidSeQuraOrderStatusException(
-                new TranslatableLabel('Invalid SeQura order status.', 400)
+                new TranslatableLabel('Invalid SeQura order status.', 'general.errors.orderStatusMapping.invalidStatus')
             );
         }
 

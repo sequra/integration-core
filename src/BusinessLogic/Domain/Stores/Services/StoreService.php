@@ -27,7 +27,7 @@ class StoreService
     private $integrationStoreService;
 
     public function __construct(
-        StoreServiceInterface $integrationStoreService,
+        StoreServiceInterface             $integrationStoreService,
         ConnectionDataRepositoryInterface $connectionDataRepository
     )
     {
@@ -47,7 +47,7 @@ class StoreService
         try {
             return $this->integrationStoreService->getStores();
         } catch (Exception $e) {
-            throw new FailedToRetrieveStoresException(new TranslatableLabel($e->getMessage(), $e->getCode()));
+            throw new FailedToRetrieveStoresException(new TranslatableLabel('Failed to retrieve stores.', 'general.errors.stores.failed'));
         }
     }
 
@@ -67,7 +67,7 @@ class StoreService
                 $firstConnectedStoreId
             ) : $this->integrationStoreService->getDefaultStore();
         } catch (Exception $e) {
-            throw new FailedToRetrieveStoresException(new TranslatableLabel($e->getMessage(), $e->getCode()));
+            throw new FailedToRetrieveStoresException(new TranslatableLabel('Failed to retrieve stores.', 'general.errors.stores.failed'));
         }
     }
 
