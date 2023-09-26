@@ -232,6 +232,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             UIStateService::class,
             static function () {
                 return new UIStateService(
+                    ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(ConnectionDataRepositoryInterface::class),
                     ServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
                     ServiceRegister::getService(WidgetSettingsRepositoryInterface::class)

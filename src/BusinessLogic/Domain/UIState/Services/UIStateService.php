@@ -2,7 +2,9 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\UIState\Services;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 
@@ -13,6 +15,11 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\Widg
  */
 class UIStateService
 {
+    /**
+     * @var ConnectionService
+     */
+    protected $connectionService;
+
     /**
      * @var ConnectionDataRepositoryInterface
      */
@@ -29,16 +36,19 @@ class UIStateService
     protected $widgetSettingsRepository;
 
     /**
+     * @param ConnectionService $connectionService
      * @param ConnectionDataRepositoryInterface $connectionDataRepository
      * @param CountryConfigurationRepositoryInterface $countryConfigurationRepository
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
      */
     public function __construct(
-        ConnectionDataRepositoryInterface $connectionDataRepository,
+        ConnectionService                       $connectionService,
+        ConnectionDataRepositoryInterface       $connectionDataRepository,
         CountryConfigurationRepositoryInterface $countryConfigurationRepository,
-        WidgetSettingsRepositoryInterface $widgetSettingsRepository
+        WidgetSettingsRepositoryInterface       $widgetSettingsRepository
     )
     {
+        $this->connectionService = $connectionService;
         $this->connectionDataRepository = $connectionDataRepository;
         $this->countryConfigurationRepository = $countryConfigurationRepository;
         $this->widgetSettingsRepository = $widgetSettingsRepository;
@@ -49,7 +59,7 @@ class UIStateService
      *
      * @return bool
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function isOnboardingState(): bool
     {
@@ -57,6 +67,13 @@ class UIStateService
         $countryConfiguration = $this->countryConfigurationRepository->getCountryConfiguration();
         $widgetSettings = $this->widgetSettingsRepository->getWidgetSettings();
 
-        return !($connectionData && $countryConfiguration && $widgetSettings);
+        if ($connectionData && $countryConfiguration && $widgetSettings) {
+            $connectionData->setMerchantId($countryConfiguration[0]->getMerchantId());
+            $this->connectionService->isConnectionDataValid($connectionData);
+
+            return true;
+        }
+
+        return false;
     }
 }
