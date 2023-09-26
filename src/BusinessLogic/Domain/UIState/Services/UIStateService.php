@@ -71,9 +71,9 @@ class UIStateService
             $connectionData->setMerchantId($countryConfiguration[0]->getMerchantId());
             $this->connectionService->isConnectionDataValid($connectionData);
 
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 }
