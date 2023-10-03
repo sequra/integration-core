@@ -70,9 +70,9 @@ class Cart extends OrderRequestDTO
      */
     public function __construct(
         string $currency,
-        bool $gift = false,
-        array $items = [],
-        $cartRef = null,
+        bool   $gift = false,
+        array  $items = [],
+               $cartRef = null,
         string $createdAt = null,
         string $updatedAt = null
     )
@@ -106,9 +106,11 @@ class Cart extends OrderRequestDTO
      */
     public static function fromArray(array $data): Cart
     {
+        $orderTotal = self::getDataValue($data, 'order_total_with_tax', 0);
         $items = self::getDataValue($data, 'items', []);
 
         // Convert item arrays to Item instances
+        /** @type Item[] $itemInstances */
         $itemInstances = [];
         foreach ($items as $itemData) {
             $type = $itemData['type'];
@@ -134,6 +136,20 @@ class Cart extends OrderRequestDTO
                 default:
                     throw new InvalidArgumentException('Invalid cart item type ' . $type);
             }
+        }
+
+        $itemTotal = array_reduce($itemInstances, static function ($sum, $item) {
+            return $sum + $item->getTotalWithTax();
+        }, 0);
+
+        $diff = $orderTotal - $itemTotal;
+
+        if ($diff < 0) {
+            $itemInstances[] = new DiscountItem('additional_discount', 'discount', $diff);
+        }
+
+        if ($diff > 0) {
+            $itemInstances[] = new HandlingItem('additional_handling', 'surcharge', $diff);
         }
 
         return new self(
