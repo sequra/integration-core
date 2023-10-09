@@ -19,8 +19,11 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\Widg
 use SeQura\Core\BusinessLogic\Domain\Version\Exceptions\FailedToRetrieveVersionException;
 use SeQura\Core\BusinessLogic\Domain\Version\Models\Version;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
+use SeQura\Core\Infrastructure\Http\HttpClient;
+use SeQura\Core\Infrastructure\Http\HttpResponse;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockVersionService;
+use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -45,6 +48,11 @@ class IntegrationControllerTest extends BaseTestCase
      */
     protected $widgetSettingsRepository;
 
+    /**
+     * @var TestHttpClient
+     */
+    public $httpClient;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -56,6 +64,12 @@ class IntegrationControllerTest extends BaseTestCase
         $this->connectionDataRepository = TestServiceRegister::getService(ConnectionDataRepositoryInterface::class);
         $this->countryConfigurationRepository = TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class);
         $this->widgetSettingsRepository = TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class);
+
+        $httpClient = TestServiceRegister::getService(HttpClient::class);
+        $this->httpClient = $httpClient;
+        TestServiceRegister::registerService(HttpClient::class, function () {
+            return $this->httpClient;
+        });
     }
 
     public function testIsGetUIStateResponseSuccessful(): void
@@ -84,6 +98,12 @@ class IntegrationControllerTest extends BaseTestCase
      */
     public function testGetUIStateDashboardResponseToArray(): void
     {
+        $this->httpClient->setMockResponses([
+            new HttpResponse(200, [], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/Merchant/GetPaymentMethodsResponses/SuccessfulResponse.json'
+            ))
+        ]);
+
         // Arrange
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
@@ -92,9 +112,9 @@ class IntegrationControllerTest extends BaseTestCase
         );
 
         $countryConfigurations = [
-            new CountryConfiguration('CO','logeecom'),
-            new CountryConfiguration('ES','logeecom'),
-            new CountryConfiguration('FR','logeecom')
+            new CountryConfiguration('CO', 'logeecom'),
+            new CountryConfiguration('ES', 'logeecom'),
+            new CountryConfiguration('FR', 'logeecom')
         ];
 
         $widgetSettings = new WidgetSettings(
@@ -106,9 +126,9 @@ class IntegrationControllerTest extends BaseTestCase
             '.test'
         );
 
-        StoreContext::doWithStore('1', [$this->connectionDataRepository,'setConnectionData'], [$connectionData]);
-        StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurations]);
-        StoreContext::doWithStore('1', [$this->widgetSettingsRepository,'setWidgetSettings'], [$widgetSettings]);
+        StoreContext::doWithStore('1', [$this->connectionDataRepository, 'setConnectionData'], [$connectionData]);
+        StoreContext::doWithStore('1', [$this->countryConfigurationRepository, 'setCountryConfiguration'], [$countryConfigurations]);
+        StoreContext::doWithStore('1', [$this->widgetSettingsRepository, 'setWidgetSettings'], [$widgetSettings]);
 
         // Act
         $response = AdminAPI::get()->integration('1')->getUIState();
@@ -124,12 +144,12 @@ class IntegrationControllerTest extends BaseTestCase
     {
         // Arrange
         $countryConfigurations = [
-            new CountryConfiguration('CO','logeecom'),
-            new CountryConfiguration('ES','logeecom'),
-            new CountryConfiguration('FR','logeecom')
+            new CountryConfiguration('CO', 'logeecom'),
+            new CountryConfiguration('ES', 'logeecom'),
+            new CountryConfiguration('FR', 'logeecom')
         ];
 
-        StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurations]);
+        StoreContext::doWithStore('1', [$this->countryConfigurationRepository, 'setCountryConfiguration'], [$countryConfigurations]);
 
         // Act
         $response = AdminAPI::get()->integration('1')->getUIState();
@@ -150,7 +170,7 @@ class IntegrationControllerTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        StoreContext::doWithStore('1', [$this->connectionDataRepository,'setConnectionData'], [$connectionData]);
+        StoreContext::doWithStore('1', [$this->connectionDataRepository, 'setConnectionData'], [$connectionData]);
 
         // Act
         $response = AdminAPI::get()->integration('1')->getUIState();
@@ -179,7 +199,7 @@ class IntegrationControllerTest extends BaseTestCase
     public function testGetVersionResponse(): void
     {
         // Arrange
-        $expectedResponse = new IntegrationVersionResponse(new Version('v1.0.1','v1.0.3','test'));
+        $expectedResponse = new IntegrationVersionResponse(new Version('v1.0.1', 'v1.0.3', 'test'));
 
         // Act
         $response = AdminAPI::get()->integration('1')->getVersion();

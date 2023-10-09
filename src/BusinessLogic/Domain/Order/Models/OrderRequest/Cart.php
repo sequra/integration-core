@@ -145,11 +145,11 @@ class Cart extends OrderRequestDTO
         $diff = $orderTotal - $itemTotal;
 
         if ($diff < 0) {
-            $itemInstances[] = new DiscountItem('additional_discount', 'discount', $diff);
+            $itemInstances[] = new DiscountItem('additional_discount', 'Discount', $diff);
         }
 
         if ($diff > 0) {
-            $itemInstances[] = new HandlingItem('additional_handling', 'surcharge', $diff);
+            $itemInstances[] = new HandlingItem('additional_handling', 'Surcharge', $diff);
         }
 
         return new self(

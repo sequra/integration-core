@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Order\Services;
 
+use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
@@ -139,6 +140,52 @@ class OrderServiceTest extends BaseTestCase
         self::assertEquals($this->expectedUnshippedToArrayResponse(), $response->getUnshippedCart()->toArray());
         self::assertEquals($this->expectedDeliveryAddressToArrayResponse(), $response->getDeliveryAddress()->toArray());
         self::assertEquals($this->expectedInvoiceAddressToArrayResponse(), $response->getInvoiceAddress()->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testGetPaymentMethodsInCategoriesSuccessfulResponse(): void
+    {
+        $rawResponseBody = file_get_contents(
+            __DIR__ . '/../../../Common/ApiResponses/Order/GetPaymentMethodsResponses/SuccessfulResponse.json'
+        );
+
+        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody)]);
+        $response = $this->orderService->getAvailablePaymentMethodsInCategories('testId');
+        $responseBody = json_decode($rawResponseBody, true);
+        $paymentMethodCategories = [];
+
+        foreach ($responseBody['payment_options'] as $category) {
+            $paymentMethodCategories[] = $category;
+        }
+
+        for ($i = 0, $iMax = count($paymentMethodCategories); $i < $iMax; $i++) {
+            self::assertEquals($paymentMethodCategories[$i]['title'], $response[$i]->getTitle());
+            self::assertEquals($paymentMethodCategories[$i]['description'], $response[$i]->getDescription());
+            self::assertEquals($paymentMethodCategories[$i]['icon'], $response[$i]->getIcon());
+
+            for ($j = 0, $jMax = count($paymentMethodCategories[$i]['methods']); $j < $jMax; $j++) {
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['product'], $response[$i]->getMethods()[$j]->getProduct());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['campaign'], $response[$i]->getMethods()[$j]->getCampaign());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['title'], $response[$i]->getMethods()[$j]->getTitle());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['long_title'], $response[$i]->getMethods()[$j]->getLongTitle());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['claim'], $response[$i]->getMethods()[$j]->getClaim());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['description'], $response[$i]->getMethods()[$j]->getDescription());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['icon'], $response[$i]->getMethods()[$j]->getIcon());
+                self::assertEquals(new DateTime($paymentMethodCategories[$i]['methods'][$j]['starts_at']), $response[$i]->getMethods()[$j]->getStartsAt());
+                self::assertEquals(new DateTime($paymentMethodCategories[$i]['methods'][$j]['ends_at']), $response[$i]->getMethods()[$j]->getEndsAt());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['min_amount'] ?? null, $response[$i]->getMethods()[$j]->getMinAmount());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['max_amount'] ?? null, $response[$i]->getMethods()[$j]->getMaxAmount());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost_description'], $response[$i]->getMethods()[$j]->getCostDescription());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['setup_fee'], $response[$i]->getMethods()[$j]->getCost()->getSetupFee());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['instalment_fee'], $response[$i]->getMethods()[$j]->getCost()->getInstalmentFee());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['down_payment_fees'], $response[$i]->getMethods()[$j]->getCost()->getDownPaymentFees());
+                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['instalment_total'], $response[$i]->getMethods()[$j]->getCost()->getInstalmentTotal());
+            }
+        }
     }
 
     /**

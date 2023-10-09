@@ -16,6 +16,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethodCategory;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -107,6 +108,20 @@ class OrderService
     }
 
     /**
+     * Gets available payment methods for solicited order in categories.
+     *
+     * @param string $orderRef
+     *
+     * @return SeQuraPaymentMethodCategory[]
+     *
+     * @throws HttpRequestException
+     */
+    public function getAvailablePaymentMethodsInCategories(string $orderRef): array
+    {
+        return $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest($orderRef));
+    }
+
+    /**
      * Gets the SeQura form.
      *
      * @param string $cartId
@@ -150,30 +165,30 @@ class OrderService
         $hasChanges = false;
 
         $newShippedCart = $orderUpdateData->getShippedCart();
-        if($newShippedCart && !$this->areObjectsEqual($order->getShippedCart(), $newShippedCart)) {
+        if ($newShippedCart && !$this->areObjectsEqual($order->getShippedCart(), $newShippedCart)) {
             $order->setShippedCart($newShippedCart);
             $hasChanges = true;
         }
 
         $newUnshippedCart = $orderUpdateData->getUnshippedCart();
-        if($newUnshippedCart && !$this->areObjectsEqual($order->getUnshippedCart(), $newUnshippedCart)) {
+        if ($newUnshippedCart && !$this->areObjectsEqual($order->getUnshippedCart(), $newUnshippedCart)) {
             $order->setUnshippedCart($newUnshippedCart);
             $hasChanges = true;
         }
 
         $newInvoiceAddress = $orderUpdateData->getInvoiceAddress();
-        if($newInvoiceAddress && !$this->areObjectsEqual($order->getInvoiceAddress(), $newInvoiceAddress)) {
+        if ($newInvoiceAddress && !$this->areObjectsEqual($order->getInvoiceAddress(), $newInvoiceAddress)) {
             $order->setInvoiceAddress($newInvoiceAddress);
             $hasChanges = true;
         }
 
         $newDeliveryAddress = $orderUpdateData->getDeliveryAddress();
-        if($newDeliveryAddress && !$this->areObjectsEqual($order->getDeliveryAddress(), $newDeliveryAddress)) {
+        if ($newDeliveryAddress && !$this->areObjectsEqual($order->getDeliveryAddress(), $newDeliveryAddress)) {
             $order->setDeliveryAddress($newDeliveryAddress);
             $hasChanges = true;
         }
 
-        if($hasChanges) {
+        if ($hasChanges) {
             $this->proxy->updateOrder($this->getUpdateOrderRequest($order));
             $this->orderRepository->setSeQuraOrder($order);
         }
