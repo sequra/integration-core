@@ -2,7 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities;
 
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetConfiguration as DomainWidgetConfiguration;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetLabels as DomainWidgetLabels;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings as DomainWidgetSettings;
 use SeQura\Core\Infrastructure\ORM\Configuration\EntityConfiguration;
@@ -48,23 +47,7 @@ class WidgetSettings extends Entity
             self::getArrayValue($widgetSettings, 'showInstallmentsInProductListing', false),
             self::getArrayValue($widgetSettings, 'showInstallmentsInCartPage', false),
             self::getArrayValue($widgetSettings, 'miniWidgetSelector', ''),
-            $widgetConfiguration ? new DomainWidgetConfiguration(
-                self::getArrayValue($widgetConfiguration, 'type', ''),
-                self::getArrayValue($widgetConfiguration, 'size', ''),
-                self::getArrayValue($widgetConfiguration, 'fontColor', ''),
-                self::getArrayValue($widgetConfiguration, 'backgroundColor', ''),
-                self::getArrayValue($widgetConfiguration, 'alignment', ''),
-                self::getArrayValue($widgetConfiguration, 'branding', ''),
-                self::getArrayValue($widgetConfiguration, 'startingText', ''),
-                self::getArrayValue($widgetConfiguration, 'amountFontSize', ''),
-                self::getArrayValue($widgetConfiguration, 'amountFontColor', ''),
-                self::getArrayValue($widgetConfiguration, 'amountFontBold', ''),
-                self::getArrayValue($widgetConfiguration, 'linkFontColor', ''),
-                self::getArrayValue($widgetConfiguration, 'linkUnderline', ''),
-                self::getArrayValue($widgetConfiguration, 'borderColor', ''),
-                self::getArrayValue($widgetConfiguration, 'borderRadius', ''),
-                self::getArrayValue($widgetConfiguration, 'noCostsClaim', '')
-            ) : null,
+            self::getArrayValue($widgetSettings, 'widgetConfiguration', ''),
             $widgetLabels ? new DomainWidgetLabels(
                 static::getDataValue($widgetLabels, 'messages', []),
                 static::getDataValue($widgetLabels, 'messagesBelowLimit', [])
@@ -79,7 +62,6 @@ class WidgetSettings extends Entity
     {
         $data = parent::toArray();
 
-        $config = $this->widgetSettings->getWidgetConfig();
         $labels = $this->widgetSettings->getWidgetLabels();
 
         $data['storeId'] = $this->storeId;
@@ -90,23 +72,7 @@ class WidgetSettings extends Entity
             'showInstallmentsInProductListing' => $this->widgetSettings->isShowInstallmentsInProductListing(),
             'showInstallmentsInCartPage' => $this->widgetSettings->isShowInstallmentsInCartPage(),
             'miniWidgetSelector' => $this->widgetSettings->getMiniWidgetSelector(),
-            'widgetConfiguration' => $config ? [
-                'type' => $config->getType(),
-                'size' => $config->getSize(),
-                'fontColor' => $config->getFontColor(),
-                'backgroundColor' => $config->getBackgroundColor(),
-                'alignment' => $config->getAlignment(),
-                'branding' => $config->getBranding(),
-                'startingText' => $config->getStartingText(),
-                'amountFontSize' => $config->getAmountFontSize(),
-                'amountFontColor' => $config->getAmountFontColor(),
-                'amountFontBold' => $config->getAmountFontBold(),
-                'linkFontColor' => $config->getLinkFontColor(),
-                'linkUnderline' => $config->getLinkUnderline(),
-                'borderColor' => $config->getBorderColor(),
-                'borderRadius' => $config->getBorderRadius(),
-                'noCostsClaim' => $config->getNoCostsClaim(),
-            ] : [],
+            'widgetConfiguration' => $this->widgetSettings->getWidgetConfig(),
             'widgetLabels' => $labels ? [
                 'messages' => $labels->getMessages(),
                 'messagesBelowLimit' => $labels->getMessagesBelowLimit(),
