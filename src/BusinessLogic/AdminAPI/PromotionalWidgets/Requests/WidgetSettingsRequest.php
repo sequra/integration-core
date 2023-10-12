@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Requests;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Request\Request;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetConfiguration;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetLabels;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 
@@ -40,7 +41,63 @@ class WidgetSettingsRequest extends Request
     /**
      * @var string
      */
-    private $widgetConfiguration;
+    private $type;
+    /**
+     * @var string
+     */
+    private $size;
+    /**
+     * @var string
+     */
+    private $fontColor;
+    /**
+     * @var string
+     */
+    private $backgroundColor;
+    /**
+     * @var string
+     */
+    private $alignment;
+    /**
+     * @var string
+     */
+    private $branding;
+    /**
+     * @var string
+     */
+    private $startingText;
+    /**
+     * @var string
+     */
+    private $amountFontSize;
+    /**
+     * @var string
+     */
+    private $amountFontColor;
+    /**
+     * @var string
+     */
+    private $amountFontBold;
+    /**
+     * @var string
+     */
+    private $linkFontColor;
+    /**
+     * @var string
+     */
+    private $linkUnderline;
+    /**
+     * @var string
+     */
+    private $borderColor;
+    /**
+     * @var string
+     */
+    private $borderRadius;
+    /**
+     * @var string
+     */
+    private $noCostsClaim;
     /**
      * @var string[]
      */
@@ -50,7 +107,6 @@ class WidgetSettingsRequest extends Request
      */
     private $messagesBelowLimit;
 
-
     /**
      * @param bool $enabled
      * @param string|null $assetsKey
@@ -58,7 +114,23 @@ class WidgetSettingsRequest extends Request
      * @param bool $showInstallmentsInProductListing
      * @param bool $showInstallmentsInCartPage
      * @param string $miniWidgetSelector
-     * @param string $widgetConfiguration
+     * @param string $type
+     * @param string $size
+     * @param string $fontColor
+     * @param string $backgroundColor
+     * @param string $alignment
+     * @param string $branding
+     * @param string $startingText
+     * @param string $amountFontSize
+     * @param string $amountFontColor
+     * @param string $amountFontBold
+     * @param string $linkFontColor
+     * @param string $linkUnderline
+     * @param string $borderColor
+     * @param string $borderRadius
+     * @param string $noCostsClaim
+     * @param string[] $messages
+     * @param string[] $messagesBelowLimit
      */
     public function __construct(
         bool    $enabled,
@@ -67,7 +139,21 @@ class WidgetSettingsRequest extends Request
         bool    $showInstallmentsInProductListing,
         bool    $showInstallmentsInCartPage,
         string  $miniWidgetSelector,
-        string   $widgetConfiguration,
+        string  $type = '',
+        string  $size = '',
+        string  $fontColor = '',
+        string  $backgroundColor = '',
+        string  $alignment = '',
+        string  $branding = '',
+        string  $startingText = '',
+        string  $amountFontSize = '',
+        string  $amountFontColor = '',
+        string  $amountFontBold = '',
+        string  $linkFontColor = '',
+        string  $linkUnderline = '',
+        string  $borderColor = '',
+        string  $borderRadius = '',
+        string  $noCostsClaim = '',
         array   $messages = [],
         array   $messagesBelowLimit = []
     )
@@ -78,7 +164,21 @@ class WidgetSettingsRequest extends Request
         $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
         $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
         $this->miniWidgetSelector = $miniWidgetSelector;
-        $this->widgetConfiguration = $widgetConfiguration;
+        $this->type = $type;
+        $this->size = $size;
+        $this->fontColor = $fontColor;
+        $this->backgroundColor = $backgroundColor;
+        $this->alignment = $alignment;
+        $this->branding = $branding;
+        $this->startingText = $startingText;
+        $this->amountFontSize = $amountFontSize;
+        $this->amountFontColor = $amountFontColor;
+        $this->amountFontBold = $amountFontBold;
+        $this->linkFontColor = $linkFontColor;
+        $this->linkUnderline = $linkUnderline;
+        $this->borderColor = $borderColor;
+        $this->borderRadius = $borderRadius;
+        $this->noCostsClaim = $noCostsClaim;
         $this->messages = $messages;
         $this->messagesBelowLimit = $messagesBelowLimit;
     }
@@ -97,7 +197,23 @@ class WidgetSettingsRequest extends Request
             $this->showInstallmentsInProductListing,
             $this->showInstallmentsInCartPage,
             $this->miniWidgetSelector,
-            $this->widgetConfiguration,
+            new WidgetConfiguration(
+                $this->type,
+                $this->size,
+                $this->fontColor,
+                $this->backgroundColor,
+                $this->alignment,
+                $this->branding,
+                $this->startingText,
+                $this->amountFontSize,
+                $this->amountFontColor,
+                $this->amountFontBold,
+                $this->linkFontColor,
+                $this->linkUnderline,
+                $this->borderColor,
+                $this->borderRadius,
+                $this->noCostsClaim
+            ),
             new WidgetLabels(
                 $this->messages,
                 $this->messagesBelowLimit
