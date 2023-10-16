@@ -34,7 +34,7 @@ class WidgetSettings
      */
     private $miniWidgetSelector;
     /**
-     * @var WidgetConfiguration
+     * @var string
      */
     private $widgetConfig;
     /**
@@ -49,18 +49,18 @@ class WidgetSettings
      * @param bool $showInstallmentsInProductListing
      * @param bool $showInstallmentsInCartPage
      * @param string $miniWidgetSelector
-     * @param WidgetConfiguration|null $widgetConfig
+     * @param string|null $widgetConfig
      * @param WidgetLabels|null $widgetLabels
      */
     public function __construct(
-        bool                $enabled,
-        string              $assetsKey = '',
-        bool                $displayOnProductPage = false,
-        bool                $showInstallmentsInProductListing = false,
-        bool                $showInstallmentsInCartPage = false,
-        string              $miniWidgetSelector = '',
-        WidgetConfiguration $widgetConfig = null,
-        WidgetLabels        $widgetLabels = null
+        bool         $enabled,
+        string       $assetsKey = '',
+        bool         $displayOnProductPage = false,
+        bool         $showInstallmentsInProductListing = false,
+        bool         $showInstallmentsInCartPage = false,
+        string       $miniWidgetSelector = '',
+        string       $widgetConfig = null,
+        WidgetLabels $widgetLabels = null
     )
     {
         $this->enabled = $enabled;
@@ -123,12 +123,12 @@ class WidgetSettings
         $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
     }
 
-    public function getWidgetConfig(): ?WidgetConfiguration
+    public function getWidgetConfig(): ?string
     {
         return $this->widgetConfig;
     }
 
-    public function setWidgetConfig(?WidgetConfiguration $widgetConfig): void
+    public function setWidgetConfig(?string $widgetConfig): void
     {
         $this->widgetConfig = $widgetConfig;
     }
