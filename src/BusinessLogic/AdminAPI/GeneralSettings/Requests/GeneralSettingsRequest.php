@@ -15,12 +15,12 @@ class GeneralSettingsRequest extends Request
     /**
      * @var bool
      */
-    private $showSeQuraCheckoutAsHostedPage;
+    private $sendOrderReportsPeriodicallyToSeQura;
 
     /**
-     * @var bool
+     * @var bool|null
      */
-    private $sendOrderReportsPeriodicallyToSeQura;
+    private $showSeQuraCheckoutAsHostedPage;
 
     /**
      * @var string[]|null
@@ -38,25 +38,33 @@ class GeneralSettingsRequest extends Request
     private $excludedProducts;
 
     /**
-     * @param bool $showSeQuraCheckoutAsHostedPage
+     * @var string|null
+     */
+    private $replacementPaymentMethod;
+
+    /**
      * @param bool $sendOrderReportsPeriodicallyToSeQura
+     * @param bool|null $showSeQuraCheckoutAsHostedPage
      * @param string[]|null $allowedIPAddresses
      * @param string[]|null $excludedProducts
      * @param string[]|null $excludedCategories
+     * @param string|null $replacementPaymentMethod
      */
     public function __construct(
-        bool $showSeQuraCheckoutAsHostedPage,
         bool $sendOrderReportsPeriodicallyToSeQura,
+        ?bool $showSeQuraCheckoutAsHostedPage,
         ?array $allowedIPAddresses,
         ?array $excludedProducts,
-        ?array $excludedCategories
+        ?array $excludedCategories,
+        ?string $replacementPaymentMethod
     )
     {
-        $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
+        $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
         $this->allowedIPAddresses = $allowedIPAddresses;
         $this->excludedProducts = $excludedProducts;
         $this->excludedCategories = $excludedCategories;
+        $this->replacementPaymentMethod = $replacementPaymentMethod;
     }
 
     /**
@@ -67,11 +75,12 @@ class GeneralSettingsRequest extends Request
     public function transformToDomainModel(): object
     {
         return new GeneralSettings(
-            $this->showSeQuraCheckoutAsHostedPage,
             $this->sendOrderReportsPeriodicallyToSeQura,
+            $this->showSeQuraCheckoutAsHostedPage,
             $this->allowedIPAddresses,
             $this->excludedProducts,
-            $this->excludedCategories
+            $this->excludedCategories,
+            $this->replacementPaymentMethod
         );
     }
 }

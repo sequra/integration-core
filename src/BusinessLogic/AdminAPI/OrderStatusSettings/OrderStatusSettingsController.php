@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\Responses\OrderStatus
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\Responses\ShopOrderStatusResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\Responses\SuccessfulOrderStatusSettingsResponse;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Exceptions\EmptyOrderStatusMappingParameterException;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Exceptions\FailedToRetrieveShopOrderStatusesException;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Exceptions\InvalidSeQuraOrderStatusException;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\ShopOrderStatusesService;
@@ -72,6 +73,8 @@ class OrderStatusSettingsController
      * Gets all order statuses of the shop.
      *
      * @return ShopOrderStatusResponse
+     *
+     * @throws FailedToRetrieveShopOrderStatusesException
      */
     public function getShopOrderStatuses(): ShopOrderStatusResponse
     {

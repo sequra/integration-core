@@ -35,10 +35,12 @@ use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\ShopPaymentMethodService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\ShopPaymentMethods\ShopPaymentMethodsServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
@@ -297,6 +299,15 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            ShopPaymentMethodService::class,
+            static function () {
+                return new ShopPaymentMethodService(
+                    ServiceRegister::getService(ShopPaymentMethodsServiceInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             DisconnectService::class,
             static function () {
                 return new DisconnectService(
@@ -414,7 +425,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new GeneralSettingsController(
                     ServiceRegister::getService(GeneralSettingsService::class),
-                    ServiceRegister::getService(CategoryService::class)
+                    ServiceRegister::getService(CategoryService::class),
+                    ServiceRegister::getService(ShopPaymentMethodService::class)
                 );
             }
         );
