@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
+use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
@@ -17,7 +18,7 @@ use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\Count
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
-use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
+use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusSettings;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSettings;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
@@ -35,6 +36,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsSer
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
@@ -45,6 +47,9 @@ use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderReposi
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\ShopOrderStatusesService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
@@ -63,9 +68,7 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
 use SeQura\Core\BusinessLogic\Utility\EncryptorInterface;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
-use SeQura\Core\BusinessLogic\Webhook\Repositories\OrderStatusMappingRepository as OrderStatusMappingRepositoryInterface;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
-use SeQura\Core\BusinessLogic\Webhook\Services\StatusMappingService;
 use SeQura\Core\BusinessLogic\Webhook\Validator\WebhookValidator;
 use SeQura\Core\BusinessLogic\WebhookAPI\Controller\WebhookController;
 use SeQura\Core\Infrastructure\Configuration\ConfigEntity;
@@ -141,9 +144,9 @@ class BaseTestCase extends TestCase
             EncryptorInterface::class => function () {
                 return new TestEncryptor();
             },
-            OrderStatusMappingRepositoryInterface::class => function () {
+            OrderStatusSettingsRepositoryInterface::class => function () {
                 return new OrderStatusMappingRepository(
-                    TestRepositoryRegistry::getRepository(OrderStatusMapping::getClassName()),
+                    TestRepositoryRegistry::getRepository(OrderStatusSettings::getClassName()),
                     StoreContext::getInstance()
                 );
             },
@@ -183,9 +186,9 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(OrderReportServiceInterface::class)
                 );
             },
-            StatusMappingService::class => static function () {
-                return new StatusMappingService(
-                    TestServiceRegister::getService(OrderStatusMappingRepositoryInterface::class)
+            OrderStatusSettingsService::class => static function () {
+                return new OrderStatusSettingsService(
+                    TestServiceRegister::getService(OrderStatusSettingsRepositoryInterface::class)
                 );
             },
             ConnectionService::class => static function () {
@@ -217,6 +220,11 @@ class BaseTestCase extends TestCase
             SellingCountriesService::class => static function () {
                 return new SellingCountriesService(
                     TestServiceRegister::getService(SellingCountriesServiceInterface::class)
+                );
+            },
+            ShopOrderStatusesService::class => static function () {
+                return new ShopOrderStatusesService(
+                    TestServiceRegister::getService(ShopOrderStatusesServiceInterface::class)
                 );
             },
             VersionService::class => static function () {
@@ -256,6 +264,12 @@ class BaseTestCase extends TestCase
                 return new CountryConfigurationController(
                     TestServiceRegister::getService(CountryConfigurationService::class),
                     TestServiceRegister::getService(SellingCountriesService::class)
+                );
+            },
+            OrderStatusSettingsController::class => function () {
+                return new OrderStatusSettingsController(
+                    TestServiceRegister::getService(OrderStatusSettingsService::class),
+                    TestServiceRegister::getService(ShopOrderStatusesService::class)
                 );
             },
             GeneralSettingsController::class => function () {
@@ -417,7 +431,7 @@ class BaseTestCase extends TestCase
             MemoryQueueItemRepository::getClassName()
         );
         TestRepositoryRegistry::registerRepository(SeQuraOrder::getClassName(), MemoryRepository::getClassName());
-        TestRepositoryRegistry::registerRepository(OrderStatusMapping::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(OrderStatusSettings::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(ConnectionData::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(StatisticalData::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(GeneralSettings::getClassName(), MemoryRepository::getClassName());

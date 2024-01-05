@@ -19,7 +19,7 @@ use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\Count
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
-use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
+use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusSettings;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSettings;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
@@ -50,6 +50,9 @@ use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Listeners\TickEventListener;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\ShopOrderStatusesService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
@@ -68,11 +71,9 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
-use SeQura\Core\BusinessLogic\Webhook\Services\StatusMappingService;
 use SeQura\Core\BusinessLogic\Webhook\Validator\WebhookValidator;
 use SeQura\Core\BusinessLogic\WebhookAPI\Controller\WebhookController;
 use SeQura\Core\Infrastructure\BootstrapComponent as BaseBootstrapComponent;
-use SeQura\Core\BusinessLogic\Webhook\Repositories\OrderStatusMappingRepository as OrderStatusMappingRepositoryInterface;
 use SeQura\Core\Infrastructure\Configuration\Configuration;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
@@ -104,10 +105,10 @@ class BootstrapComponent extends BaseBootstrapComponent
         parent::initRepositories();
 
         ServiceRegister::registerService(
-            OrderStatusMappingRepositoryInterface::class,
+            OrderStatusSettingsRepositoryInterface::class,
             static function () {
                 return new OrderStatusMappingRepository(
-                    RepositoryRegistry::getRepository(OrderStatusMapping::getClassName()),
+                    RepositoryRegistry::getRepository(OrderStatusSettings::getClassName()),
                     ServiceRegister::getService(StoreContext::class)
                 );
             }
@@ -192,10 +193,10 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
-            StatusMappingService::class,
+            OrderStatusSettingsService::class,
             static function () {
-                return new StatusMappingService(
-                    ServiceRegister::getService(OrderStatusMappingRepositoryInterface::class)
+                return new OrderStatusSettingsService(
+                    ServiceRegister::getService(OrderStatusSettingsRepositoryInterface::class)
                 );
             }
         );
@@ -317,7 +318,7 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             OrderStatusProvider::class,
             static function () {
-                return ServiceRegister::getService(StatusMappingService::class);
+                return ServiceRegister::getService(OrderStatusSettingsService::class);
             }
         );
 
@@ -421,7 +422,10 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             OrderStatusSettingsController::class,
             static function () {
-                return new OrderStatusSettingsController();
+                return new OrderStatusSettingsController(
+                    ServiceRegister::getService(OrderStatusSettingsService::class),
+                    ServiceRegister::getService(ShopOrderStatusesService::class)
+                );
             }
         );
 
@@ -530,7 +534,7 @@ class BootstrapComponent extends BaseBootstrapComponent
     /**
      * @inheritDoc
      */
-    protected static function initEvents()
+    protected static function initEvents(): void
     {
         parent::initEvents();
 

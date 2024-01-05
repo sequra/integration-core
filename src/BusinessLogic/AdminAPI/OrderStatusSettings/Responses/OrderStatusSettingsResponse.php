@@ -3,7 +3,7 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\Responses;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
-use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusSettings;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusMapping;
 
 /**
  * Class OrderStatusSettingsResponse
@@ -13,16 +13,16 @@ use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusSetti
 class OrderStatusSettingsResponse extends Response
 {
     /**
-     * @var OrderStatusSettings
+     * @var OrderStatusMapping[]
      */
-    private $orderStatusSettings;
+    private $orderStatusMappings;
 
     /**
-     * @param OrderStatusSettings|null $orderStatusSettings
+     * @param OrderStatusMapping[]|null $orderStatusMappings
      */
-    public function __construct(?OrderStatusSettings $orderStatusSettings)
+    public function __construct(?array $orderStatusMappings)
     {
-        $this->orderStatusSettings = $orderStatusSettings;
+        $this->orderStatusMappings = $orderStatusMappings;
     }
 
     /**
@@ -30,17 +30,18 @@ class OrderStatusSettingsResponse extends Response
      */
     public function toArray(): array
     {
+        if (!$this->orderStatusMappings) {
+            return [];
+        }
+
         $mappings = [];
-        foreach ($this->orderStatusSettings->getOrderStatusMappings() as $mapping) {
+        foreach ($this->orderStatusMappings as $mapping) {
             $mappings[] = [
                 'sequraStatus' => $mapping->getSequraStatus(),
                 'shopStatus' => $mapping->getShopStatus()
             ];
         }
 
-        return [
-            'orderStatusMappings' => $mappings,
-            'informCancellations' => $this->orderStatusSettings->isInformCancellation()
-        ];
+        return $mappings;
     }
 }

@@ -2,10 +2,11 @@
 
 namespace SeQura\Core\BusinessLogic\Webhook\Tasks;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
-use SeQura\Core\BusinessLogic\Webhook\Services\StatusMappingService;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Task;
@@ -34,7 +35,7 @@ class OrderUpdateTask extends Task
      *
      * @return OrderUpdateTask  Instance of an order update task object.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function fromArray(array $array): OrderUpdateTask
     {
@@ -59,9 +60,9 @@ class OrderUpdateTask extends Task
      *
      * @return void
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function execute()
+    public function execute(): void
     {
         StoreContext::doWithStore(
             $this->storeId,
@@ -78,7 +79,7 @@ class OrderUpdateTask extends Task
      */
     private function doExecute(): void
     {
-        $shopStatus = $this->getStatusMappingService()->getMapping($this->webhook->getSqState());
+        $shopStatus = $this->getOrderStatusMappingService()->getMapping($this->webhook->getSqState());
         $this->getShopOrderService()->updateStatus($this->webhook, $shopStatus);
 
         $this->reportProgress(100);
@@ -141,11 +142,11 @@ class OrderUpdateTask extends Task
     /**
      * Returns an instance of the status mapping service.
      *
-     * @return StatusMappingService
+     * @return OrderStatusSettingsService
      */
-    private function getStatusMappingService(): StatusMappingService
+    private function getOrderStatusMappingService(): OrderStatusSettingsService
     {
-        return ServiceRegister::getService(StatusMappingService::class);
+        return ServiceRegister::getService(OrderStatusSettingsService::class);
     }
 
     /**

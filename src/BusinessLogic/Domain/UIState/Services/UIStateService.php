@@ -57,17 +57,25 @@ class UIStateService
     /**
      * Returns true it the application state is onboarding.
      *
+     * @param bool $useWidgets
+     *
      * @return bool
      *
      * @throws Exception
      */
-    public function isOnboardingState(): bool
+    public function isOnboardingState(bool $useWidgets): bool
     {
         $connectionData = $this->connectionDataRepository->getConnectionData();
         $countryConfiguration = $this->countryConfigurationRepository->getCountryConfiguration();
-        $widgetSettings = $this->widgetSettingsRepository->getWidgetSettings();
 
-        if ($connectionData && $countryConfiguration && $widgetSettings) {
+        if ($useWidgets) {
+            $widgetSettings = $this->widgetSettingsRepository->getWidgetSettings();
+            if (!$widgetSettings) {
+                return true;
+            }
+        }
+
+        if ($connectionData && $countryConfiguration) {
             $connectionData->setMerchantId($countryConfiguration[0]->getMerchantId());
             $this->connectionService->isConnectionDataValid($connectionData);
 

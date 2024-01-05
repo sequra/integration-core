@@ -6,9 +6,10 @@ use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\Requests\OrderStatusS
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\Responses\OrderStatusSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\Responses\ShopOrderStatusResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\Responses\SuccessfulOrderStatusSettingsResponse;
-use SeQura\Core\BusinessLogic\Domain\OrderStatus\Models\OrderStatus;
-use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusMapping;
-use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusSettings;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Exceptions\EmptyOrderStatusMappingParameterException;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Exceptions\InvalidSeQuraOrderStatusException;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\ShopOrderStatusesService;
 
 /**
  * Class OrderStatusSettingsController
@@ -18,20 +19,36 @@ use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusSetti
 class OrderStatusSettingsController
 {
     /**
+     * @var OrderStatusSettingsService
+     */
+    private $orderStatusSettingsService;
+
+    /**
+     * @var ShopOrderStatusesService
+     */
+    private $shopOrderStatusesService;
+
+    /**
+     * @param OrderStatusSettingsService $orderStatusSettingsService
+     * @param ShopOrderStatusesService $shopOrderStatusesService
+     */
+    public function __construct(
+        OrderStatusSettingsService $orderStatusSettingsService,
+        ShopOrderStatusesService   $shopOrderStatusesService
+    )
+    {
+        $this->orderStatusSettingsService = $orderStatusSettingsService;
+        $this->shopOrderStatusesService = $shopOrderStatusesService;
+    }
+
+    /**
      * Gets active order status settings.
      *
      * @return OrderStatusSettingsResponse
      */
     public function getOrderStatusSettings(): OrderStatusSettingsResponse
     {
-        return new OrderStatusSettingsResponse(new OrderStatusSettings(
-            [
-                new OrderStatusMapping('approved','status1'),
-                new OrderStatusMapping('needs_review','status3'),
-                new OrderStatusMapping('cancelled','status2'),
-            ],
-            true)
-        );
+        return new OrderStatusSettingsResponse($this->orderStatusSettingsService->getOrderStatusSettings());
     }
 
     /**
@@ -40,9 +57,14 @@ class OrderStatusSettingsController
      * @param OrderStatusSettingsRequest $request
      *
      * @return SuccessfulOrderStatusSettingsResponse
+     *
+     * @throws EmptyOrderStatusMappingParameterException
+     * @throws InvalidSeQuraOrderStatusException
      */
-    public function saveCountryConfigurations(OrderStatusSettingsRequest $request): SuccessfulOrderStatusSettingsResponse
+    public function saveOrderStatusSettings(OrderStatusSettingsRequest $request): SuccessfulOrderStatusSettingsResponse
     {
+        $this->orderStatusSettingsService->saveOrderStatusSettings($request->transformToDomainModel());
+
         return new SuccessfulOrderStatusSettingsResponse();
     }
 
@@ -53,12 +75,6 @@ class OrderStatusSettingsController
      */
     public function getShopOrderStatuses(): ShopOrderStatusResponse
     {
-        return new ShopOrderStatusResponse([
-            new OrderStatus('status1', 'paid'),
-            new OrderStatus('status2', 'denied'),
-            new OrderStatus('status3', 'pending'),
-            new OrderStatus('status4', 'refunded'),
-            new OrderStatus('status5', 'shipped'),
-        ]);
+        return new ShopOrderStatusResponse($this->shopOrderStatusesService->getShopOrderStatuses());
     }
 }

@@ -33,8 +33,8 @@ class ShopOrderStatusResponse extends Response
         $statuses = [];
         foreach ($this->orderStatuses as $status) {
             $statuses[] = [
-                'statusId' => $status->getStatusId(),
-                'statusName' => $status->getStatusName()
+                'id' => $status->getId(),
+                'name' => $status->getName()
             ];
         }
 

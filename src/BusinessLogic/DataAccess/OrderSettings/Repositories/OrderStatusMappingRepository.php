@@ -3,8 +3,8 @@
 namespace SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories;
 
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
-use SeQura\Core\BusinessLogic\Webhook\Repositories\OrderStatusMappingRepository as BaseRepository;
-use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusSettings;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
@@ -15,15 +15,15 @@ use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
  *
  * @package SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories
  */
-class OrderStatusMappingRepository implements BaseRepository
+class OrderStatusMappingRepository implements OrderStatusSettingsRepositoryInterface
 {
     /**
-     * @var RepositoryInterface
+     * @var RepositoryInterface OrderStatusMappings repository.
      */
     protected $repository;
 
     /**
-     * @var StoreContext
+     * @var StoreContext Store context needed for multistore environment.
      */
     protected $storeContext;
 
@@ -40,16 +40,20 @@ class OrderStatusMappingRepository implements BaseRepository
     }
 
     /**
+     * @inheritDoc
+     *
      * @throws QueryFilterInvalidParamException
      */
-    public function getOrderStatusMapping(): array
+    public function getOrderStatusMapping(): ?array
     {
         $entity = $this->getOrderStatusMappingsEntity();
 
-        return $entity ? $entity->getOrderStatusMappingSettings() : [];
+        return $entity ? $entity->getOrderStatusMappings() : null;
     }
 
     /**
+     * @inheritDoc
+     *
      * @throws QueryFilterInvalidParamException
      */
     public function setOrderStatusMapping(array $orderStatusMapping): void
@@ -57,25 +61,25 @@ class OrderStatusMappingRepository implements BaseRepository
         $existingOrderStatusMapping = $this->getOrderStatusMappingsEntity();
 
         if ($existingOrderStatusMapping) {
-            $existingOrderStatusMapping->setOrderStatusMappingSettings($orderStatusMapping);
+            $existingOrderStatusMapping->setOrderStatusMappings($orderStatusMapping);
             $existingOrderStatusMapping->setStoreId($this->storeContext->getStoreId());
             $this->repository->update($existingOrderStatusMapping);
 
             return;
         }
 
-        $entity = new OrderStatusMapping();
+        $entity = new OrderStatusSettings();
         $entity->setStoreId($this->storeContext->getStoreId());
-        $entity->setOrderStatusMappingSettings($orderStatusMapping);
+        $entity->setOrderStatusMappings($orderStatusMapping);
         $this->repository->save($entity);
     }
 
     /**
-     * @return OrderStatusMapping|null
+     * @return OrderStatusSettings|null
      *
      * @throws QueryFilterInvalidParamException
      */
-    protected function getOrderStatusMappingsEntity(): ?OrderStatusMapping
+    protected function getOrderStatusMappingsEntity(): ?OrderStatusSettings
     {
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());

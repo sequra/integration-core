@@ -2,6 +2,9 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\OrderStatus\Models;
 
+use SeQura\Core\BusinessLogic\Domain\OrderStatus\Exceptions\EmptyOrderStatusParameterException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
+
 /**
  * Class OrderStatus
  *
@@ -12,52 +15,60 @@ class OrderStatus
     /**
      * @var string
      */
-    private $statusId;
+    private $id;
 
     /**
      * @var string
      */
-    private $statusName;
+    private $name;
 
     /**
-     * @param string $statusId
-     * @param string $statusName
+     * @param string $id
+     * @param string $name
+     *
+     * @throws EmptyOrderStatusParameterException
      */
-    public function __construct(string $statusId, string $statusName)
+    public function __construct(string $id, string $name)
     {
-        $this->statusId = $statusId;
-        $this->statusName = $statusName;
+        if (empty($id) || empty($name)) {
+            throw new EmptyOrderStatusParameterException(
+                new TranslatableLabel('No parameter can be an empty string.', 'general.errors.empty')
+            );
+        }
+
+        $this->id = $id;
+        $this->name = $name;
     }
 
     /**
      * @return string
      */
-    public function getStatusId(): string
+    public function getId(): string
     {
-        return $this->statusId;
+        return $this->id;
     }
 
     /**
-     * @param string $statusId
+     * @param string $id
      */
-    public function setStatusId(string $statusId): void
+    public function setId(string $id): void
     {
-        $this->statusId = $statusId;
+        $this->id = $id;
     }
 
     /**
      * @return string
      */
-    public function getStatusName(): string
+    public function getName(): string
     {
-        return $this->statusName;
+        return $this->name;
     }
 
     /**
-     * @param string $statusName
+     * @param string $name
      */
-    public function setStatusName(string $statusName): void
+    public function setName(string $name): void
     {
-        $this->statusName = $statusName;
+        $this->name = $name;
     }
 }
