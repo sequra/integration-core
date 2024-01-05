@@ -40,6 +40,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterfa
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopPaymentMethods\ShopPaymentMethodsServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
@@ -303,6 +304,15 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new ShopPaymentMethodService(
                     ServiceRegister::getService(ShopPaymentMethodsServiceInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            ShopOrderStatusesService::class,
+            static function () {
+                return new ShopOrderStatusesService(
+                    ServiceRegister::getService(ShopOrderStatusesServiceInterface::class)
                 );
             }
         );
