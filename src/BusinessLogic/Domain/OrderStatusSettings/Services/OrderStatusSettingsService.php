@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services;
 
+use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\OrderStates;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
@@ -20,11 +21,21 @@ class OrderStatusSettingsService implements OrderStatusProvider
     private $orderStatusSettingsRepository;
 
     /**
-     * @param OrderStatusSettingsRepositoryInterface $orderStatusSettingsRepository
+     * @var ShopOrderStatusesServiceInterface
      */
-    public function __construct(OrderStatusSettingsRepositoryInterface $orderStatusSettingsRepository)
+    private $integrationShopOrderStatusesService;
+
+    /**
+     * @param OrderStatusSettingsRepositoryInterface $orderStatusSettingsRepository
+     * @param ShopOrderStatusesServiceInterface $integrationShopOrderStatusesService
+     */
+    public function __construct(
+        OrderStatusSettingsRepositoryInterface $orderStatusSettingsRepository,
+        ShopOrderStatusesServiceInterface      $integrationShopOrderStatusesService
+    )
     {
         $this->orderStatusSettingsRepository = $orderStatusSettingsRepository;
+        $this->integrationShopOrderStatusesService = $integrationShopOrderStatusesService;
     }
 
     /**
@@ -46,6 +57,17 @@ class OrderStatusSettingsService implements OrderStatusProvider
      */
     public function saveOrderStatusSettings(array $orderStatusMappings): void
     {
+        /** @var string[] $shopStatusIds */
+        $shopStatusIds = array_map(static function ($orderStatus) {
+            return $orderStatus->getId();
+        }, $this->integrationShopOrderStatusesService->getShopOrderStatuses());
+
+        foreach ($orderStatusMappings as $mapping) {
+            if (!in_array($mapping->getShopStatus(), $shopStatusIds, true)) {
+                $mapping->setShopStatus('');
+            }
+        }
+
         $this->orderStatusSettingsRepository->setOrderStatusMapping($orderStatusMappings);
     }
 

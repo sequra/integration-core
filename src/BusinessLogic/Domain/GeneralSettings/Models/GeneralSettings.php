@@ -48,11 +48,11 @@ class GeneralSettings
      * @param string|null $replacementPaymentMethod
      */
     public function __construct(
-        bool $sendOrderReportsPeriodicallyToSeQura,
-        ?bool $showSeQuraCheckoutAsHostedPage,
-        ?array $allowedIPAddresses,
-        ?array $excludedProducts,
-        ?array $excludedCategories,
+        bool    $sendOrderReportsPeriodicallyToSeQura,
+        ?bool   $showSeQuraCheckoutAsHostedPage,
+        ?array  $allowedIPAddresses,
+        ?array  $excludedProducts,
+        ?array  $excludedCategories,
         ?string $replacementPaymentMethod
     )
     {
@@ -65,17 +65,17 @@ class GeneralSettings
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
-    public function isShowSeQuraCheckoutAsHostedPage(): bool
+    public function isShowSeQuraCheckoutAsHostedPage(): ?bool
     {
         return $this->showSeQuraCheckoutAsHostedPage;
     }
 
     /**
-     * @param bool $showSeQuraCheckoutAsHostedPage
+     * @param bool|null $showSeQuraCheckoutAsHostedPage
      */
-    public function setShowSeQuraCheckoutAsHostedPage(bool $showSeQuraCheckoutAsHostedPage): void
+    public function setShowSeQuraCheckoutAsHostedPage(?bool $showSeQuraCheckoutAsHostedPage): void
     {
         $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
     }

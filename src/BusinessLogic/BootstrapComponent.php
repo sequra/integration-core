@@ -199,7 +199,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             OrderStatusSettingsService::class,
             static function () {
                 return new OrderStatusSettingsService(
-                    ServiceRegister::getService(OrderStatusSettingsRepositoryInterface::class)
+                    ServiceRegister::getService(OrderStatusSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(ShopOrderStatusesServiceInterface::class)
                 );
             }
         );

@@ -190,7 +190,8 @@ class BaseTestCase extends TestCase
             },
             OrderStatusSettingsService::class => static function () {
                 return new OrderStatusSettingsService(
-                    TestServiceRegister::getService(OrderStatusSettingsRepositoryInterface::class)
+                    TestServiceRegister::getService(OrderStatusSettingsRepositoryInterface::class),
+                    TestServiceRegister::getService(ShopOrderStatusesServiceInterface::class)
                 );
             },
             ConnectionService::class => static function () {

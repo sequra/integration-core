@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\WebhookAPI;
 
+use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
 use SeQura\Core\BusinessLogic\WebhookAPI\Response\WebhookErrorResponse;
@@ -13,6 +14,7 @@ use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockShopOrderStatusesService;
 use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopErrorOrderService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -38,6 +40,10 @@ class WebhookAPITest extends BaseTestCase
         $this->httpClient = $httpClient;
         TestServiceRegister::registerService(HttpClient::class, function () {
             return $this->httpClient;
+        });
+
+        TestServiceRegister::registerService(ShopOrderStatusesServiceInterface::class, static function () {
+            return new MockShopOrderStatusesService();
         });
 
         $order = file_get_contents(
