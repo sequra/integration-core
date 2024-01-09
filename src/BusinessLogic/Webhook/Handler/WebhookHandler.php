@@ -64,7 +64,7 @@ class WebhookHandler
      * @throws RepositoryNotRegisteredException
      * @throws InvalidOrderStateException
      */
-    private function acknowledgeOrder(string $orderReference, string $state): void
+    protected function acknowledgeOrder(string $orderReference, string $state): void
     {
         /** @var OrderProxy $orderProxy */
         $orderProxy = ServiceRegister::getService(OrderProxyInterface::class);
