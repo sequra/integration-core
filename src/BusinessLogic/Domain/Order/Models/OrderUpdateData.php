@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Order\Models;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\Infrastructure\Data\DataTransferObject;
@@ -140,15 +141,22 @@ class OrderUpdateData extends DataTransferObject
      * @param array $data
      *
      * @return OrderUpdateData
+     *
+     * @throws Exception
      */
     public static function fromArray(array $data): self
     {
+        $shippedCart = self::getDataValue($data, 'shipped_cart', null);
+        $unshippedCart = self::getDataValue($data, 'unshipped_cart', null);
+        $deliveryAddress = self::getDataValue($data, 'delivery_address', null);
+        $invoiceAddress = self::getDataValue($data, 'invoice_address', null);
+
         return new self(
             self::getDataValue($data, 'order_shop_reference'),
-            self::getDataValue($data, 'shipped_cart', null),
-            self::getDataValue($data, 'unshipped_cart', null),
-            self::getDataValue($data, 'delivery_address', null),
-            self::getDataValue($data, 'invoice_address', null)
+            $shippedCart ? Cart::fromArray($shippedCart) : null,
+            $unshippedCart ? Cart::fromArray($unshippedCart) : null,
+            $deliveryAddress ? Address::fromArray($deliveryAddress) : null,
+            $invoiceAddress ? Address::fromArray($invoiceAddress) : null
         );
     }
 

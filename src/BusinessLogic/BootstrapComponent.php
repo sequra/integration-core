@@ -25,6 +25,8 @@ use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSetti
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
+use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
+use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
@@ -38,6 +40,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsSer
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\ShopPaymentMethodService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
@@ -73,6 +76,13 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
+use SeQura\Core\BusinessLogic\TransactionLog\Listeners\AbortedListener;
+use SeQura\Core\BusinessLogic\TransactionLog\Listeners\CreateListener;
+use SeQura\Core\BusinessLogic\TransactionLog\Listeners\FailedListener;
+use SeQura\Core\BusinessLogic\TransactionLog\Listeners\LoadListener;
+use SeQura\Core\BusinessLogic\TransactionLog\Listeners\UpdateListener;
+use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
+use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogService;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
 use SeQura\Core\BusinessLogic\Webhook\Validator\WebhookValidator;
 use SeQura\Core\BusinessLogic\WebhookAPI\Controller\WebhookController;
@@ -81,6 +91,14 @@ use SeQura\Core\Infrastructure\Configuration\Configuration;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\ServiceRegister;
+use SeQura\Core\Infrastructure\TaskExecution\Events\BaseQueueItemEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemAbortedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemEnqueuedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFailedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFinishedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemRequeuedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStartedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStateTransitionEventBus;
 use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\TickEvent;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
@@ -98,6 +116,7 @@ class BootstrapComponent extends BaseBootstrapComponent
         static::initServices();
         static::initControllers();
         static::initProxies();
+        static::initEvents();
     }
 
     /**
@@ -171,6 +190,16 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new WidgetSettingsRepository(
                     RepositoryRegistry::getRepository(WidgetSettings::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            TransactionLogRepositoryInterface::class,
+            static function () {
+                return new TransactionLogRepository(
+                    RepositoryRegistry::getRepository(TransactionLog::getClassName()),
                     ServiceRegister::getService(StoreContext::class)
                 );
             }
@@ -383,6 +412,17 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+
+        ServiceRegister::registerService(
+            TransactionLogService::class,
+            static function () {
+                return new TransactionLogService(
+                    ServiceRegister::getService(TransactionLogRepositoryInterface::class),
+                    ServiceRegister::getService(OrderService::class),
+                    ServiceRegister::getService(OrderServiceInterface::class)
+                );
+            }
+        );
     }
 
     /**
@@ -562,5 +602,57 @@ class BootstrapComponent extends BaseBootstrapComponent
         parent::initEvents();
 
         EventBus::getInstance()->when(TickEvent::class, TickEventListener::class . '::handle');
+
+        /** @var QueueItemStateTransitionEventBus $queueBus */
+        $queueBus = ServiceRegister::getService(QueueItemStateTransitionEventBus::CLASS_NAME);
+
+        $queueBus->when(
+            QueueItemEnqueuedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new CreateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
+
+        $queueBus->when(
+            QueueItemRequeuedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new CreateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
+
+        $queueBus->when(
+            QueueItemStartedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new LoadListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
+
+        $queueBus->when(
+            QueueItemStartedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new UpdateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
+
+        $queueBus->when(
+            QueueItemFinishedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new UpdateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
+
+        $queueBus->when(
+            QueueItemFailedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new FailedListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
+
+        $queueBus->when(
+            QueueItemAbortedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new AbortedListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
     }
 }

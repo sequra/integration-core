@@ -24,6 +24,8 @@ use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSetti
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
+use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
+use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
@@ -35,6 +37,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\ShopPaymentMethodService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
@@ -68,6 +71,8 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
+use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
+use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogService;
 use SeQura\Core\BusinessLogic\Utility\EncryptorInterface;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
@@ -90,6 +95,7 @@ use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
+use SeQura\Core\Tests\BusinessLogic\TransactionLog\Mocks\MockShopLogRepository;
 use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestShopLogger;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\MemoryQueueItemRepository;
@@ -176,6 +182,12 @@ class BaseTestCase extends TestCase
                     StoreContext::getInstance()
                 );
             },
+            TransactionLogRepositoryInterface::class => function () {
+                return new TransactionLogRepository(
+                    TestRepositoryRegistry::getRepository(TransactionLog::getClassName()),
+                    StoreContext::getInstance()
+                );
+            },
             OrderService::class => static function () {
                 return new OrderService(
                     TestServiceRegister::getService(OrderProxyInterface::class),
@@ -218,6 +230,13 @@ class BaseTestCase extends TestCase
             GeneralSettingsService::class => static function () {
                 return new GeneralSettingsService(
                     TestServiceRegister::getService(GeneralSettingsRepositoryInterface::class)
+                );
+            },
+            TransactionLogService::class => static function () {
+                return new TransactionLogService(
+                    TestServiceRegister::getService(TransactionLogRepositoryInterface::class),
+                    TestServiceRegister::getService(OrderService::class),
+                    TestServiceRegister::getService(OrderServiceInterface::class)
                 );
             },
             SellingCountriesService::class => static function () {
@@ -449,6 +468,10 @@ class BaseTestCase extends TestCase
             MemoryRepository::getClassName()
         );
         TestRepositoryRegistry::registerRepository(WidgetSettings::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(
+            TransactionLog::getClassName(),
+            MockShopLogRepository::getClassName()
+        );
     }
 
     /**
