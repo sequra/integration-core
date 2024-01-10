@@ -6,8 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 # Unreleased
 **BREAKING CHANGES**
 - The `\SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService::updateStatus` method signature is changed.
-Now the whol `Webhook` instance is passed as first argument instead of shop order reference. Existing code can get
+Now the whole `Webhook` instance is passed as first argument instead of shop order reference. Existing code can get
 the shop order id directly from `Webhook` instance.
+- The `\SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy::updateOrderCarts` method has been removed since it is 
+the same as `updateOrder` method from the same class. Also 
+`\SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\UpdateOrderCartsHttpRequest` has been removed since it is the same 
+as `\SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\UpdateOrderHttpRequest`.
 
 # [v1.0.10](https://github.com/sequra/integration-core/tree/v1.0.10)
 ## Changed
