@@ -16,10 +16,12 @@ interface ShopOrderService
      *
      * @param Webhook $webhook
      * @param string $status
+     * @param int|null $reasonCode
+     * @param string|null $message
      *
      * @return mixed
      */
-    public function updateStatus(Webhook $webhook, string $status);
+    public function updateStatus(Webhook $webhook, string $status, ?int $reasonCode = null, ?string $message = null);
 
     /**
      * Provides ids of orders that should be included in the delivery report.

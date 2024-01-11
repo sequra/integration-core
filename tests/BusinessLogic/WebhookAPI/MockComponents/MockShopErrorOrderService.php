@@ -9,9 +9,17 @@ use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 class MockShopErrorOrderService implements ShopOrderService
 {
     /**
+     * @param Webhook $webhook
+     * @param string $status
+     * @param int|null $reasonCode
+     * @param string|null $message
      * @throws HttpRequestException
      */
-    public function updateStatus(Webhook $webhook, string $status): void
+    public function updateStatus(
+        Webhook $webhook,
+        string $status,
+        ?int $reasonCode = null,
+        ?string $message = null)
     {
         throw new HttpRequestException('Error updating shop order status.');
     }

@@ -66,11 +66,6 @@ class Merchant extends OrderRequestDTO
     private $approvedUrl;
 
     /**
-     * @var string|null Permanent identifier for the cashier operating the sales terminal.
-     */
-    private $operatorRef;
-
-    /**
      * @var Options|null Features activated by this merchant in this request.
      */
     private $options;
@@ -90,7 +85,6 @@ class Merchant extends OrderRequestDTO
      * @param string|null $rejectedCallback
      * @param string|null $partpaymentDetailsGetter
      * @param string|null $approvedUrl
-     * @param string|null $operatorRef
      * @param Options|null $options
      * @param EventsWebhook|null $eventsWebhook
      *
@@ -107,7 +101,6 @@ class Merchant extends OrderRequestDTO
         string $rejectedCallback = null,
         string $partpaymentDetailsGetter = null,
         string $approvedUrl = null,
-        string $operatorRef = null,
         Options $options = null,
         EventsWebhook $eventsWebhook = null
     )
@@ -126,7 +119,6 @@ class Merchant extends OrderRequestDTO
         $this->rejectedCallback = $rejectedCallback;
         $this->partpaymentDetailsGetter = $partpaymentDetailsGetter;
         $this->approvedUrl = $approvedUrl;
-        $this->operatorRef = $operatorRef;
         $this->options = $options;
         $this->eventsWebhook = $eventsWebhook;
     }
@@ -162,7 +154,6 @@ class Merchant extends OrderRequestDTO
             self::getDataValue($data, 'rejected_callback', null),
             self::getDataValue($data, 'partpayment_details_getter', null),
             self::getDataValue($data, 'approved_url', null),
-            self::getDataValue($data, 'operator_ref', null),
             $options,
             $eventsWebhook
         );
@@ -246,14 +237,6 @@ class Merchant extends OrderRequestDTO
     public function getApprovedUrl(): ?string
     {
         return $this->approvedUrl;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getOperatorRef(): ?string
-    {
-        return $this->operatorRef;
     }
 
     /**

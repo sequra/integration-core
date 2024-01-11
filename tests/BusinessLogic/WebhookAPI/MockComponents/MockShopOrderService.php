@@ -18,7 +18,12 @@ class MockShopOrderService implements ShopOrderService
     /**
      * @inheritDoc
      */
-    public function updateStatus(Webhook $webhook, string $status): void
+    public function updateStatus(
+        Webhook $webhook,
+        string $status,
+        ?int $reasonCode = null,
+        ?string $message = null
+    ): void
     {
     }
 

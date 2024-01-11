@@ -81,9 +81,9 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
     public function updateOrder(UpdateOrderRequest $request): bool
     {
         return $this->put(new UpdateOrderHttpRequest(
-            $request->getMerchant()->getId(),
-            $request->getMerchantReference()->getOrderRef1(),
-            $request)
+                $request->getMerchant()->getId(),
+                $request->getMerchantReference()->getOrderRef1(),
+                $request)
         )->isSuccessful();
     }
 
