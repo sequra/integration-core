@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsCo
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
+use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
@@ -304,6 +305,11 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(GeneralSettingsService::class),
                     TestServiceRegister::getService(CategoryService::class),
                     TestServiceRegister::getService(ShopPaymentMethodService::class)
+                );
+            },
+            TransactionLogsController::class => function () {
+                return new TransactionLogsController(
+                    TestServiceRegister::getService(TransactionLogService::class)
                 );
             },
             PaymentMethodsController::class => function () {

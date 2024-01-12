@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsCo
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
+use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
@@ -506,6 +507,15 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new PromotionalWidgetsController(
                     ServiceRegister::getService(WidgetSettingsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            TransactionLogsController::class,
+            static function () {
+                return new TransactionLogsController(
+                    ServiceRegister::getService(TransactionLogService::class)
                 );
             }
         );
