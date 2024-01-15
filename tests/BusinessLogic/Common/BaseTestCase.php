@@ -38,7 +38,6 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\ShopPaymentMethodService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
-use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
@@ -96,7 +95,6 @@ use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
-use SeQura\Core\Tests\BusinessLogic\TransactionLog\Mocks\MockShopLogRepository;
 use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestShopLogger;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\MemoryQueueItemRepository;
@@ -237,7 +235,7 @@ class BaseTestCase extends TestCase
                 return new TransactionLogService(
                     TestServiceRegister::getService(TransactionLogRepositoryInterface::class),
                     TestServiceRegister::getService(OrderService::class),
-                    TestServiceRegister::getService(OrderServiceInterface::class)
+                    TestServiceRegister::getService(ShopOrderService::class)
                 );
             },
             SellingCountriesService::class => static function () {
@@ -476,7 +474,7 @@ class BaseTestCase extends TestCase
         TestRepositoryRegistry::registerRepository(WidgetSettings::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(
             TransactionLog::getClassName(),
-            MockShopLogRepository::getClassName()
+            MemoryRepository::getClassName()
         );
     }
 

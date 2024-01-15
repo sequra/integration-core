@@ -6,10 +6,10 @@ use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\Responses\TransactionLogsResponse;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
-use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderServiceInterface;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
+use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderService;
+use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -29,8 +29,8 @@ class TransactionLogsControllerTest extends BaseTestCase
         parent::setUp();
 
         $this->transactionLogRepository = TestServiceRegister::getService(TransactionLogRepositoryInterface::class);
-        TestServiceRegister::registerService(OrderServiceInterface::class, static function () {
-            return new MockOrderService();
+        TestServiceRegister::registerService(ShopOrderService::class, static function () {
+            return new MockShopOrderService();
         });
     }
 

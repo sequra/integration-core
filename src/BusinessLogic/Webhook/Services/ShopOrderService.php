@@ -42,4 +42,11 @@ interface ShopOrderService
      * @return string[] | int[]
      */
     public function getStatisticsOrderIds(int $page, int $limit = 5000): array;
+
+    /**
+     * @param string $merchantReference
+     *
+     * @return string
+     */
+    public function getOrderUrl(string $merchantReference): string;
 }

@@ -5,11 +5,11 @@ namespace SeQura\Core\BusinessLogic\TransactionLog\Services;
 use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
-use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\TransactionLog\Contracts\TransactionLogAwareInterface;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
+use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueItemDeserializationException;
 use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
 use SeQura\Core\Infrastructure\TaskExecution\Task;
@@ -33,14 +33,14 @@ class TransactionLogService
      */
     private $orderService;
     /**
-     * @var OrderServiceInterface
+     * @var ShopOrderService
      */
     private $integrationOrderService;
 
     public function __construct(
         TransactionLogRepositoryInterface $transactionLogRepository,
         OrderService                      $orderService,
-        OrderServiceInterface             $integrationOrderService
+        ShopOrderService                  $integrationOrderService
     )
     {
         $this->transactionLogRepository = $transactionLogRepository;
@@ -230,7 +230,7 @@ class TransactionLogService
         $task = $item->getTask();
         $order = $this->orderService->getOrderByShopReference($task->getTransactionData()->getMerchantReference());
         $paymentMethod = '';
-        if($order->getPaymentMethod()) {
+        if ($order->getPaymentMethod()) {
             $paymentMethod = $order->getPaymentMethod()->getName();
         }
 

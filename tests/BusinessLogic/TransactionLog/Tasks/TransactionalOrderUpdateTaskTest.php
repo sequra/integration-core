@@ -3,7 +3,6 @@
 namespace SeQura\Core\Tests\BusinessLogic\TransactionLog\Tasks;
 
 use Exception;
-use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
@@ -11,12 +10,13 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\TransactionLog\Models\TransactionData;
 use SeQura\Core\BusinessLogic\TransactionLog\Tasks\TransactionalOrderUpdateTask;
+use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\Http\HttpResponse;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseSerializationTestCase;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderService;
 use SeQura\Core\Tests\BusinessLogic\TransactionLog\Mocks\MockOrderUpdateData;
+use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
@@ -48,8 +48,8 @@ class TransactionalOrderUpdateTaskTest extends BaseSerializationTestCase
     {
         parent::setUp();
 
-        TestServiceRegister::registerService(OrderServiceInterface::class, static function () {
-            return new MockOrderService();
+        TestServiceRegister::registerService(ShopOrderService::class, static function () {
+            return new MockShopOrderService();
         });
 
         $httpClient = TestServiceRegister::getService(HttpClient::class);

@@ -41,7 +41,6 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsSer
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\ShopPaymentMethodService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
-use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
@@ -85,6 +84,7 @@ use SeQura\Core\BusinessLogic\TransactionLog\Listeners\UpdateListener;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogService;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
+use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
 use SeQura\Core\BusinessLogic\Webhook\Validator\WebhookValidator;
 use SeQura\Core\BusinessLogic\WebhookAPI\Controller\WebhookController;
 use SeQura\Core\Infrastructure\BootstrapComponent as BaseBootstrapComponent;
@@ -420,7 +420,7 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new TransactionLogService(
                     ServiceRegister::getService(TransactionLogRepositoryInterface::class),
                     ServiceRegister::getService(OrderService::class),
-                    ServiceRegister::getService(OrderServiceInterface::class)
+                    ServiceRegister::getService(ShopOrderService::class)
                 );
             }
         );

@@ -3,7 +3,6 @@
 namespace SeQura\Core\Tests\BusinessLogic\TransactionLog\Listeners;
 
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
-use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\LoadListener;
@@ -11,13 +10,14 @@ use SeQura\Core\BusinessLogic\TransactionLog\Models\TransactionData;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogService;
 use SeQura\Core\BusinessLogic\TransactionLog\Tasks\TransactionalOrderUpdateTask;
+use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStartedEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueItemDeserializationException;
 use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderService;
 use SeQura\Core\Tests\BusinessLogic\TransactionLog\Mocks\MockOrderUpdateData;
+use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -46,8 +46,8 @@ class LoadListenerTest extends BaseTestCase
     {
         parent::setUp();
 
-        TestServiceRegister::registerService(OrderServiceInterface::class, static function () {
-            return new MockOrderService();
+        TestServiceRegister::registerService(ShopOrderService::class, static function () {
+            return new MockShopOrderService();
         });
 
         $this->listener = new LoadListener(TestServiceRegister::getService(TransactionLogService::class));

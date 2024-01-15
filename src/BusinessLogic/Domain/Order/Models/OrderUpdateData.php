@@ -166,10 +166,10 @@ class OrderUpdateData extends DataTransferObject
     public function toArray(): array
     {
         $data['order_shop_reference'] = $this->orderShopReference;
-        $data['shipped_cart'] = $this->shippedCart->toArray();
-        $data['unshipped_cart'] = $this->unshippedCart->toArray();
-        $data['delivery_address'] = $this->deliveryAddress->toArray();
-        $data['invoice_address'] = $this->invoiceAddress->toArray();
+        $data['shipped_cart'] = $this->shippedCart ? $this->shippedCart->toArray() : null;
+        $data['unshipped_cart'] = $this->unshippedCart ? $this->unshippedCart->toArray() : null;
+        $data['delivery_address'] = $this->deliveryAddress ? $this->deliveryAddress->toArray() : null;
+        $data['invoice_address'] = $this->invoiceAddress ? $this->invoiceAddress->toArray() : null;
 
         return $data;
     }

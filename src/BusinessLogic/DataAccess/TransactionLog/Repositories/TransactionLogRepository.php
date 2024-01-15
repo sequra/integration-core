@@ -5,9 +5,9 @@ namespace SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories;
 use DateTime;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
-use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\ShopLogRepositoryInterface;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 
@@ -19,7 +19,7 @@ use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 class TransactionLogRepository implements TransactionLogRepositoryInterface
 {
     /**
-     * @var ShopLogRepositoryInterface Transaction log repository.
+     * @var RepositoryInterface Transaction log repository.
      */
     protected $repository;
 
@@ -29,10 +29,10 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
     protected $storeContext;
 
     /**
-     * @param ShopLogRepositoryInterface $repository
+     * @param RepositoryInterface $repository
      * @param StoreContext $storeContext
      */
-    public function __construct(ShopLogRepositoryInterface $repository, StoreContext $storeContext)
+    public function __construct(RepositoryInterface $repository, StoreContext $storeContext)
     {
         $this->repository = $repository;
         $this->storeContext = $storeContext;
@@ -91,7 +91,6 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
             $queryFilter->where('timestamp', Operators::GREATER_THAN, $disconnectTime);
         }
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->repository->select($queryFilter);
     }
 
@@ -109,8 +108,10 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
             ->where('executionId', Operators::EQUALS, $executionId)
             ->orderBy('id', QueryFilter::ORDER_DESC);
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->repository->selectOne($queryFilter);
+        /** @var TransactionLog|null $transactionLog */
+        $transactionLog = $this->repository->selectOne($queryFilter);
+
+        return $transactionLog;
     }
 
     /**
@@ -128,7 +129,6 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
             $queryFilter->where('timestamp', Operators::GREATER_THAN, $disconnectTime);
         }
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->repository->count($queryFilter);
     }
 
@@ -142,8 +142,10 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
         $queryFilter = new QueryFilter();
         $queryFilter->where('merchantReference', Operators::EQUALS, $merchantReference);
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->repository->selectOne($queryFilter);
+        /** @var TransactionLog|null $transactionLog */
+        $transactionLog = $this->repository->selectOne($queryFilter);
+
+        return $transactionLog;
     }
 
     /**
@@ -189,7 +191,9 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
             ->where('merchantReference', Operators::EQUALS, $merchantReference);
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->repository->selectOne($queryFilter);
+        /** @var TransactionLog|null $transactionLog */
+        $transactionLog = $this->repository->selectOne($queryFilter);
+
+        return $transactionLog;
     }
 }
