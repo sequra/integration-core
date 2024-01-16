@@ -10,6 +10,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\TransactionLog\Contracts\TransactionLogAwareInterface;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
+use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueItemDeserializationException;
 use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
 use SeQura\Core\Infrastructure\TaskExecution\Task;
@@ -109,6 +110,20 @@ class TransactionLogService
     public function update(TransactionLog $transactionLog): void
     {
         $this->transactionLogRepository->updateTransactionLog($transactionLog);
+    }
+
+    /**
+     * Delete transaction log.
+     *
+     * @param int $transactionLogId
+     *
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function delete(int $transactionLogId): void
+    {
+        $this->transactionLogRepository->deleteTransactionLogById($transactionLogId);
     }
 
     /**
@@ -244,10 +259,7 @@ class TransactionLogService
         $transactionLog->setTimestamp($task->getTransactionData()->getTimestamp());
         $transactionLog->setPaymentMethod($paymentMethod);
         $transactionLog->setQueueStatus(QueueItem::QUEUED);
-        $transactionLog->setSequraLink(
-            self::SEQURA_PORTAL_URL . urlencode($task->getTransactionData()->getMerchantReference())
-        );
-
+        $transactionLog->setSequraLink(self::SEQURA_PORTAL_URL . urlencode($order->getReference()));
         $transactionLog->setShopLink(
             $this->integrationOrderService->getOrderUrl($task->getTransactionData()->getMerchantReference())
         );

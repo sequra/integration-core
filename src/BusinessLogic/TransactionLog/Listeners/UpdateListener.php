@@ -2,8 +2,11 @@
 
 namespace SeQura\Core\BusinessLogic\TransactionLog\Listeners;
 
+use DateTime;
+use Exception;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\TransactionLog\Contracts\TransactionLogAwareInterface;
+use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use SeQura\Core\Infrastructure\TaskExecution\Events\BaseQueueItemEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueItemDeserializationException;
 use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
@@ -33,14 +36,20 @@ class UpdateListener extends Listener
     /**
      * @inheritDoc
      *
-     * @throws QueueItemDeserializationException
+     * @throws Exception
      */
     protected function doHandle(BaseQueueItemEvent $event): void
     {
+        $this->deleteOldLogs();
         $this->init($event);
 
-        $this->transactionLog->setQueueStatus($this->queueItem->getStatus());
+        if ($this->queueItem->getStatus() === QueueItem::COMPLETED) {
+            $this->delete();
 
+            return;
+        }
+
+        $this->transactionLog->setQueueStatus($this->queueItem->getStatus());
         $this->save();
     }
 
@@ -83,10 +92,33 @@ class UpdateListener extends Listener
     }
 
     /**
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    protected function delete(): void
+    {
+        $this->getService()->delete($this->transactionLog->getId());
+    }
+
+    /**
      * @return QueueItem
      */
     protected function extractQueueItem(): QueueItem
     {
         return $this->event->getQueueItem();
+    }
+
+    /**
+     * Deletes TransactionLogs that are older than one month.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    protected function deleteOldLogs(): void
+    {
+        $currentDate = new DateTime();
+        $this->getService()->deleteLogs($currentDate->modify('-1 month'), 5000);
     }
 }

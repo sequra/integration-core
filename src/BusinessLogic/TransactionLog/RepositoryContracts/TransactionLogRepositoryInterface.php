@@ -97,4 +97,15 @@ interface TransactionLogRepositoryInterface
      * @throws Exception
      */
     public function deleteLogs(DateTime $beforeDate, int $limit): void;
+
+    /**
+     * Deletes log for given id.
+     *
+     * @param int $id
+     *
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteTransactionLogById(int $id): void;
 }

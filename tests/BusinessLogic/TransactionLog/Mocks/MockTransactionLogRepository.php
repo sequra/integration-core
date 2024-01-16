@@ -70,4 +70,8 @@ class MockTransactionLogRepository implements TransactionLogRepositoryInterface
     public function deleteLogs(DateTime $beforeDate, int $limit): void
     {
     }
+
+    public function deleteTransactionLogById(int $id): void
+    {
+    }
 }

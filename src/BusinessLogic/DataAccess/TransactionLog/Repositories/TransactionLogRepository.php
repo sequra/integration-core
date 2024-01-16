@@ -179,6 +179,19 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
     }
 
     /**
+     * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteTransactionLogById(int $id): void
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('id', Operators::EQUALS, $id);
+
+        $this->repository->deleteWhere($queryFilter);
+    }
+
+    /**
      * @param string $merchantReference
      *
      * @return TransactionLog|null

@@ -82,7 +82,7 @@ class UpdateListenerTest extends BaseTestCase
         $orderUpdateTask = new TransactionalOrderUpdateTask(MockOrderUpdateData::getOrderUpdateData(), $this->transactionData);
         $orderUpdateTask->setTransactionLog($log);
         $item = new QueueItem($orderUpdateTask);
-        $item->setStatus(QueueItem::COMPLETED);
+        $item->setStatus(QueueItem::IN_PROGRESS);
         $item->setId(1);
         $event = new QueueItemFinishedEvent($item);
 
@@ -90,6 +90,6 @@ class UpdateListenerTest extends BaseTestCase
         $this->listener->handle($event);
 
         // assert
-        self::assertEquals(QueueItem::COMPLETED, $orderUpdateTask->getTransactionLog()->getQueueStatus());
+        self::assertEquals(QueueItem::IN_PROGRESS, $orderUpdateTask->getTransactionLog()->getQueueStatus());
     }
 }
