@@ -45,7 +45,7 @@ class GeneralSettings extends Entity
             static::getDataValue($generalSettings, 'allowedIPAddresses', []),
             static::getDataValue($generalSettings, 'excludedProducts', []),
             static::getDataValue($generalSettings, 'excludedCategories', []),
-            static::getDataValue($generalSettings, 'replacementPaymentMethod', [])
+            static::getDataValue($generalSettings, 'replacementPaymentMethod', null)
         );
     }
 
