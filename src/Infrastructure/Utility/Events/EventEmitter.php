@@ -30,6 +30,20 @@ abstract class EventEmitter
     }
 
     /**
+     * Unregisters event handler for a given event.
+     *
+     * @param string $eventClass Fully qualified class name of desired event.
+     * @param callable $handler Callback that is invoked when event occurs.
+     */
+    public function remove($eventClass, $handler)
+    {
+        $index = array_search($handler, $this->handlers[$eventClass]);
+        if ($index !== false) {
+            unset($this->handlers[$eventClass][$index]);
+        }
+    }
+
+    /**
      * Fires requested event by calling all its registered handlers.
      *
      * @param Event $event Event to fire.
