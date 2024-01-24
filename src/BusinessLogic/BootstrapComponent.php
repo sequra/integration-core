@@ -24,6 +24,7 @@ use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusSetti
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSettings;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
+use SeQura\Core\BusinessLogic\DataAccess\SendReport\Entities\SendReport;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
@@ -63,6 +64,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsServic
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
+use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
@@ -100,7 +102,6 @@ use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFinishedEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemRequeuedEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStartedEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStateTransitionEventBus;
-use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\TickEvent;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 
@@ -205,6 +206,16 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+
+        ServiceRegister::registerService(
+            SendReportRepositoryInterface::class,
+            static function () {
+                return new ConnectionDataRepository(
+                    RepositoryRegistry::getRepository(SendReport::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
     }
 
     /**
@@ -238,9 +249,7 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             ConnectionService::class,
             static function () {
-                return new ConnectionService(
-                    ServiceRegister::getService(ConnectionProxyInterface::class)
-                );
+                return new ConnectionService(ServiceRegister::getService(ConnectionProxyInterface::class));
             }
         );
 
@@ -248,7 +257,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             StatisticalDataService::class,
             static function () {
                 return new StatisticalDataService(
-                    ServiceRegister::getService(StatisticalDataRepositoryInterface::class)
+                    ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
+                    ServiceRegister::getService(SendReportRepositoryInterface::class)
                 );
             }
         );
@@ -352,7 +362,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             DisconnectService::class,
             static function () {
                 return new DisconnectService(
-                    ServiceRegister::getService(DisconnectServiceInterface::class)
+                    ServiceRegister::getService(DisconnectServiceInterface::class),
+                    ServiceRegister::getService(SendReportRepositoryInterface::class)
                 );
             }
         );
@@ -360,10 +371,7 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             WebhookHandler::class,
             static function () {
-                return new WebhookHandler(
-                    ServiceRegister::getService(QueueService::class),
-                    ServiceRegister::getService(QueueNameProviderInterface::class)
-                );
+                return new WebhookHandler();
             }
         );
 
@@ -396,7 +404,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new OrderReportService(
                     ServiceRegister::getService(OrderReportProxyInterface::class),
-                    ServiceRegister::getService(OrderReportServiceInterface::class)
+                    ServiceRegister::getService(OrderReportServiceInterface::class),
+                    ServiceRegister::getService(SendReportRepositoryInterface::class)
                 );
             }
         );

@@ -23,6 +23,8 @@ use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusSetti
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSettings;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
+use SeQura\Core\BusinessLogic\DataAccess\SendReport\Entities\SendReport;
+use SeQura\Core\BusinessLogic\DataAccess\SendReport\Repositories\SendReportRepository;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
@@ -59,6 +61,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsServic
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
+use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
@@ -197,7 +200,8 @@ class BaseTestCase extends TestCase
             OrderReportService::class => static function () {
                 return new OrderReportService(
                     TestServiceRegister::getService(OrderReportProxyInterface::class),
-                    TestServiceRegister::getService(OrderReportServiceInterface::class)
+                    TestServiceRegister::getService(OrderReportServiceInterface::class),
+                    TestServiceRegister::getService(SendReportRepositoryInterface::class)
                 );
             },
             OrderStatusSettingsService::class => static function () {
@@ -218,7 +222,8 @@ class BaseTestCase extends TestCase
             },
             StatisticalDataService::class => static function () {
                 return new StatisticalDataService(
-                    TestServiceRegister::getService(StatisticalDataRepositoryInterface::class)
+                    TestServiceRegister::getService(StatisticalDataRepositoryInterface::class)                    ,
+                    TestServiceRegister::getService(SendReportRepositoryInterface::class)
                 );
             },
             CountryConfigurationService::class => static function () {
@@ -458,16 +463,30 @@ class BaseTestCase extends TestCase
             }
         );
 
+        TestServiceRegister::registerService(
+            SendReportRepositoryInterface::class,
+            static function () {
+                return new SendReportRepository(
+                    TestRepositoryRegistry::getRepository(SendReport::getClassName()),
+                    TestServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
         TestRepositoryRegistry::registerRepository(ConfigEntity::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(
             QueueItem::getClassName(),
             MemoryQueueItemRepository::getClassName()
         );
         TestRepositoryRegistry::registerRepository(SeQuraOrder::getClassName(), MemoryRepository::getClassName());
-        TestRepositoryRegistry::registerRepository(OrderStatusSettings::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(
+            OrderStatusSettings::getClassName(),
+            MemoryRepository::getClassName()
+        );
         TestRepositoryRegistry::registerRepository(ConnectionData::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(StatisticalData::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(GeneralSettings::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(SendReport::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(
             CountryConfiguration::getClassName(),
             MemoryRepository::getClassName()

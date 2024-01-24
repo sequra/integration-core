@@ -24,23 +24,9 @@ abstract class EventEmitter
      * @param callable $handler Callback to invoke when event occurs.
      *      Observable will pass observed event instance as a handler parameter.
      */
-    public function when($eventClass, $handler)
+    public function when(string $eventClass, callable $handler)
     {
         $this->handlers[$eventClass][] = $handler;
-    }
-
-    /**
-     * Unregisters event handler for a given event.
-     *
-     * @param string $eventClass Fully qualified class name of desired event.
-     * @param callable $handler Callback that is invoked when event occurs.
-     */
-    public function remove($eventClass, $handler)
-    {
-        $index = array_search($handler, $this->handlers[$eventClass]);
-        if ($index !== false) {
-            unset($this->handlers[$eventClass][$index]);
-        }
     }
 
     /**

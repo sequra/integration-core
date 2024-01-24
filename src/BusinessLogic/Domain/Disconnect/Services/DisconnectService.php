@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\Disconnect\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 
 /**
  * Class DisconnectService
@@ -17,11 +18,20 @@ class DisconnectService
     private $integrationDisconnectService;
 
     /**
-     * @param DisconnectServiceInterface $integrationDisconnectService
+     * @var SendReportRepositoryInterface
      */
-    public function __construct(DisconnectServiceInterface $integrationDisconnectService)
-    {
+    private $sendReportRepository;
+
+    /**
+     * @param DisconnectServiceInterface $integrationDisconnectService
+     * @param SendReportRepositoryInterface $sendReportRepository
+     */
+    public function __construct(
+        DisconnectServiceInterface $integrationDisconnectService,
+        SendReportRepositoryInterface $sendReportRepository
+    ) {
         $this->integrationDisconnectService = $integrationDisconnectService;
+        $this->sendReportRepository = $sendReportRepository;
     }
 
     /**
@@ -32,5 +42,6 @@ class DisconnectService
     public function disconnect(): void
     {
         $this->integrationDisconnectService->disconnect();
+        $this->sendReportRepository->deleteSendReport();
     }
 }
