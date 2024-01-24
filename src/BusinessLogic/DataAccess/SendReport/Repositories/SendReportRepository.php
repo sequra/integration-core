@@ -77,13 +77,15 @@ class SendReportRepository implements SendReportRepositoryInterface
     }
 
     /**
+     * @param string $context
+     *
      * @return void
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function deleteSendReport(): void
+    public function deleteSendReportForContext(string $context): void
     {
-        $entity = $this->getSendReportEntity();
+        $entity = $this->getSendReportEntity($context);
 
         if (!$entity) {
             return;
@@ -115,14 +117,16 @@ class SendReportRepository implements SendReportRepositoryInterface
     /**
      * Gets the statistical data entity from the database.
      *
+     * @param string|null $context
+     *
      * @return SendReportEntity|null
      *
      * @throws QueryFilterInvalidParamException
      */
-    protected function getSendReportEntity(): ?SendReportEntity
+    protected function getSendReportEntity(?string $context = null): ?SendReportEntity
     {
         $queryFilter = new QueryFilter();
-        $queryFilter->where('context', Operators::EQUALS, $this->storeContext->getStoreId());
+        $queryFilter->where('context', Operators::EQUALS, $context ?? $this->storeContext->getStoreId());
 
         /** @var SendReportEntity $statisticalData */
         $statisticalData = $this->repository->selectOne($queryFilter);

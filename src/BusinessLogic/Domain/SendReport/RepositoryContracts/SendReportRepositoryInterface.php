@@ -28,9 +28,11 @@ interface SendReportRepositoryInterface
     public function getSendReport(): ?SendReport;
 
     /**
+     * @param string $context
+     *
      * @return void
      */
-    public function deleteSendReport(): void;
+    public function deleteSendReportForContext(string $context): void;
 
     /**
      * Return array of contexts that report needs to be sent to.

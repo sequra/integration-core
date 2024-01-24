@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\Disconnect\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 
 /**
@@ -42,6 +43,6 @@ class DisconnectService
     public function disconnect(): void
     {
         $this->integrationDisconnectService->disconnect();
-        $this->sendReportRepository->deleteSendReport();
+        $this->sendReportRepository->deleteSendReportForContext(StoreContext::getInstance()->getStoreId());
     }
 }
