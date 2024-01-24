@@ -25,6 +25,7 @@ use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusM
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSettings;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\SendReport\Entities\SendReport;
+use SeQura\Core\BusinessLogic\DataAccess\SendReport\Repositories\SendReportRepository;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
@@ -210,7 +211,7 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             SendReportRepositoryInterface::class,
             static function () {
-                return new ConnectionDataRepository(
+                return new SendReportRepository(
                     RepositoryRegistry::getRepository(SendReport::getClassName()),
                     ServiceRegister::getService(StoreContext::class)
                 );
