@@ -22,7 +22,7 @@ use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableE
 class OrderReporter extends Orchestrator
 {
     protected const ORDERS_PER_BACH = 5000;
-    protected $page = 0;
+    protected $page = 1;
 
     private $storeId;
 

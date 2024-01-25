@@ -222,8 +222,9 @@ class BaseTestCase extends TestCase
             },
             StatisticalDataService::class => static function () {
                 return new StatisticalDataService(
-                    TestServiceRegister::getService(StatisticalDataRepositoryInterface::class)                    ,
-                    TestServiceRegister::getService(SendReportRepositoryInterface::class)
+                    TestServiceRegister::getService(StatisticalDataRepositoryInterface::class),
+                    TestServiceRegister::getService(SendReportRepositoryInterface::class),
+                    TestServiceRegister::getService(TimeProvider::class)
                 );
             },
             CountryConfigurationService::class => static function () {

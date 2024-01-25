@@ -12,7 +12,6 @@ use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Task;
-use SeQura\Core\Infrastructure\Utility\TimeProvider;
 
 /**
  * Class OrderReportTask
@@ -157,15 +156,9 @@ class OrderReportTask extends Task
      */
     private function doExecute(): void
     {
-        $sendReportStatus = $this->getOrderReportService()->sendReport(
+        $this->getOrderReportService()->sendReport(
             new ReportData($this->merchantId, $this->reportOrderIds, $this->statisticsOrderIds)
         );
-
-        if ($sendReportStatus) {
-            $this->getOrderReportService()->setSendReportTime(
-                $this->getTimeProvider()->getCurrentLocalTime()->getTimestamp()
-            );
-        }
 
         $this->reportProgress(100);
     }
@@ -178,15 +171,5 @@ class OrderReportTask extends Task
     private function getOrderReportService(): OrderReportService
     {
         return ServiceRegister::getService(OrderReportService::class);
-    }
-
-    /**
-     * Returns an instance of the TimeProvider.
-     *
-     * @return TimeProvider
-     */
-    private function getTimeProvider(): TimeProvider
-    {
-        return ServiceRegister::getService(TimeProvider::class);
     }
 }

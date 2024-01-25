@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\Domain\SendReport\Models\SendReport;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
+use SeQura\Core\Infrastructure\Utility\TimeProvider;
 
 /**
  * Class StatisticalDataService
@@ -26,15 +27,23 @@ class StatisticalDataService
     private $sendReportRepository;
 
     /**
+     * @var TimeProvider
+     */
+    private $timeProvider;
+
+    /**
      * @param StatisticalDataRepositoryInterface $statisticalDataRepository
      * @param SendReportRepositoryInterface $sendReportRepository
+     * @param TimeProvider $timeProvider
      */
     public function __construct(
         StatisticalDataRepositoryInterface $statisticalDataRepository,
-        SendReportRepositoryInterface $sendReportRepository
+        SendReportRepositoryInterface $sendReportRepository,
+        TimeProvider $timeProvider
     ) {
         $this->statisticalDataRepository = $statisticalDataRepository;
         $this->sendReportRepository = $sendReportRepository;
+        $this->timeProvider = $timeProvider;
     }
 
     /**
@@ -71,5 +80,14 @@ class StatisticalDataService
     public function getContextsForSendingReport(): array
     {
         return $this->sendReportRepository->getReportSendingContexts();
+    }
+
+    /**
+     * @return void
+     */
+    public function setSendReportTime(): void
+    {
+        $time = $this->timeProvider->getCurrentLocalTime()->modify('+1 day')->getTimestamp();
+        $this->sendReportRepository->setSendReport(new SendReport($time));
     }
 }

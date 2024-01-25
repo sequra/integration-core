@@ -105,6 +105,7 @@ use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStartedEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStateTransitionEventBus;
 use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\TickEvent;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
+use SeQura\Core\Infrastructure\Utility\TimeProvider;
 
 class BootstrapComponent extends BaseBootstrapComponent
 {
@@ -259,7 +260,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new StatisticalDataService(
                     ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
-                    ServiceRegister::getService(SendReportRepositoryInterface::class)
+                    ServiceRegister::getService(SendReportRepositoryInterface::class),
+                    ServiceRegister::getService(TimeProvider::class)
                 );
             }
         );
@@ -406,7 +408,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new OrderReportService(
                     ServiceRegister::getService(OrderReportProxyInterface::class),
                     ServiceRegister::getService(OrderReportServiceInterface::class),
-                    ServiceRegister::getService(SendReportRepositoryInterface::class)
+                    ServiceRegister::getService(SendReportRepositoryInterface::class),
+                    ServiceRegister::getService(TimeProvider::class)
                 );
             }
         );
