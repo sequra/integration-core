@@ -7,16 +7,12 @@ use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Requests\GeneralSettingsRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\GeneralSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\ShopCategoriesResponse;
-use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\ShopPaymentMethodsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\SuccessfulGeneralSettingsResponse;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\FailedToRetrieveCategoriesException;
-use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\FailedToRetrieveShopPaymentMethodsException;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\Category;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
-use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\ShopPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
-use SeQura\Core\BusinessLogic\Domain\Integration\ShopPaymentMethods\ShopPaymentMethodsServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCategoryService;
@@ -41,10 +37,6 @@ class GeneralSettingsControllerTest extends BaseTestCase
 
         TestServiceRegister::registerService(CategoryServiceInterface::class, static function () {
             return new MockCategoryService();
-        });
-
-        TestServiceRegister::registerService(ShopPaymentMethodsServiceInterface::class, static function () {
-            return new MockShopPaymentMethodsService();
         });
 
         $this->generalSettingsRepository = TestServiceRegister::getService(GeneralSettingsRepositoryInterface::class);
@@ -94,50 +86,6 @@ class GeneralSettingsControllerTest extends BaseTestCase
         self::assertEquals($this->expectedCategoriesToArrayResponse(), $response->toArray());
     }
 
-    /**
-     * @throws FailedToRetrieveShopPaymentMethodsException
-     */
-    public function testIsGetShopPaymentMethodsResponseSuccessful(): void
-    {
-        // Act
-        $response = AdminAPI::get()->generalSettings('1')->getShopPaymentMethods();
-
-        // Assert
-        self::assertTrue($response->isSuccessful());
-    }
-
-    /**
-     * @throws FailedToRetrieveShopPaymentMethodsException
-     */
-    public function testGetShopPaymentMethodsResponse(): void
-    {
-        // Arrange
-        $paymentMethods = [
-            new ShopPaymentMethod('card', 'Credit Card'),
-            new ShopPaymentMethod('cash', 'Cash')
-        ];
-
-        // Act
-        $response = AdminAPI::get()->generalSettings('1')->getShopPaymentMethods();
-        $expectedResponse = new ShopPaymentMethodsResponse($paymentMethods);
-
-        // Assert
-        self::assertEquals($expectedResponse, $response);
-    }
-
-    /**
-     * @throws FailedToRetrieveShopPaymentMethodsException
-     */
-    public function testGetShopPaymentMethodsResponseToArray(): void
-    {
-        // Act
-        $response = AdminAPI::get()->generalSettings('1')->getShopPaymentMethods();
-
-        // Assert
-        self::assertEquals($this->expectedShopPaymentMethodsToArrayResponse(), $response->toArray());
-    }
-
-
     public function testIsGetGeneralSettingsResponseSuccessful(): void
     {
         // Arrange
@@ -146,8 +94,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            ['1', '2'],
-            '1'
+            ['1', '2']
         ));
 
         // Act
@@ -168,8 +115,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            ['1', '2'],
-            '1'
+            ['1', '2']
         );
 
         StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
@@ -193,8 +139,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            ['1', '2'],
-            '1'
+            ['1', '2']
         );
 
         StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
@@ -226,8 +171,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            ['1', '2'],
-            '1'
+            ['1', '2']
         );
 
         // Act
@@ -245,8 +189,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            ['1', '2'],
-            '1'
+            ['1', '2']
         );
 
         // Act
@@ -265,8 +208,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            ['1', '2'],
-            '1'
+            ['1', '2']
         );
 
         // Act
@@ -287,8 +229,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            ['1', '2'],
-            '1'
+            ['1', '2']
         );
 
         StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
@@ -298,8 +239,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             false,
             ['address 3', 'address 4'],
             ['sku 3', 'sku 4'],
-            ['1', '2'],
-            '2'
+            ['1', '2']
         );
 
         // Act
@@ -320,8 +260,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            ['1', '2'],
-            '1'
+            ['1', '2']
         );
 
         StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
@@ -331,8 +270,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             false,
             ['address 3', 'address 4'],
             ['sku 3', 'sku 4'],
-            ['1', '2'],
-            '2'
+            ['1', '2']
         );
 
         // Act
@@ -354,8 +292,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            ['1', '2'],
-            '1'
+            ['1', '2']
         );
 
         StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
@@ -365,8 +302,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             false,
             ['address 3', 'address 4'],
             ['sku 3', 'sku 4'],
-            ['1', '2'],
-            '2'
+            ['1', '2']
         );
 
         // Act
@@ -386,8 +322,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
             'showSeQuraCheckoutAsHostedPage' => true,
             'allowedIPAddresses' => ['address 1', 'address 2'],
             'excludedProducts' => ['sku 1', 'sku 2'],
-            'excludedCategories' => ['1', '2'],
-            'replacementPaymentMethod' => '1'
+            'excludedCategories' => ['1', '2']
         ];
     }
 

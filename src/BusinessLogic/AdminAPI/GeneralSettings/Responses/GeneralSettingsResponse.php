@@ -39,7 +39,6 @@ class GeneralSettingsResponse extends Response
             'allowedIPAddresses' => $this->generalSettings->getAllowedIPAddresses(),
             'excludedProducts' => $this->generalSettings->getExcludedProducts(),
             'excludedCategories' => $this->generalSettings->getExcludedCategories(),
-            'replacementPaymentMethod' => $this->generalSettings->getReplacementPaymentMethod()
         ];
     }
 }

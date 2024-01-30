@@ -44,8 +44,7 @@ class GeneralSettings extends Entity
             self::getArrayValue($generalSettings, 'showSeQuraCheckoutAsHostedPage'),
             static::getDataValue($generalSettings, 'allowedIPAddresses', []),
             static::getDataValue($generalSettings, 'excludedProducts', []),
-            static::getDataValue($generalSettings, 'excludedCategories', []),
-            static::getDataValue($generalSettings, 'replacementPaymentMethod', null)
+            static::getDataValue($generalSettings, 'excludedCategories', [])
         );
     }
 
@@ -62,7 +61,6 @@ class GeneralSettings extends Entity
             'allowedIPAddresses' => $this->generalSettings->getAllowedIPAddresses(),
             'excludedProducts' => $this->generalSettings->getExcludedProducts(),
             'excludedCategories' => $this->generalSettings->getExcludedCategories(),
-            'replacementPaymentMethod' => $this->generalSettings->getReplacementPaymentMethod()
         ];
 
         return $data;

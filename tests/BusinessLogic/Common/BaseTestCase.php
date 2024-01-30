@@ -38,12 +38,10 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountr
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
-use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\ShopPaymentMethodService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
-use SeQura\Core\BusinessLogic\Domain\Integration\ShopPaymentMethods\ShopPaymentMethodsServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
@@ -265,11 +263,6 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(CategoryServiceInterface::class)
                 );
             },
-            ShopPaymentMethodService::class => static function () {
-                return new ShopPaymentMethodService(
-                    TestServiceRegister::getService(ShopPaymentMethodsServiceInterface::class)
-                );
-            },
             StoreService::class => static function () {
                 return new StoreService(
                     TestServiceRegister::getService(StoreServiceInterface::class),
@@ -308,8 +301,7 @@ class BaseTestCase extends TestCase
             GeneralSettingsController::class => function () {
                 return new GeneralSettingsController(
                     TestServiceRegister::getService(GeneralSettingsService::class),
-                    TestServiceRegister::getService(CategoryService::class),
-                    TestServiceRegister::getService(ShopPaymentMethodService::class)
+                    TestServiceRegister::getService(CategoryService::class)
                 );
             },
             TransactionLogsController::class => function () {

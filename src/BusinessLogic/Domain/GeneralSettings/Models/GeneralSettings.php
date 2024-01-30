@@ -35,25 +35,18 @@ class GeneralSettings
     private $excludedProducts;
 
     /**
-     * @var string|null
-     */
-    private $replacementPaymentMethod;
-
-    /**
      * @param bool $sendOrderReportsPeriodicallyToSeQura
      * @param bool|null $showSeQuraCheckoutAsHostedPage
      * @param string[]|null $allowedIPAddresses
      * @param string[]|null $excludedProducts
      * @param string[]|null $excludedCategories
-     * @param string|null $replacementPaymentMethod
      */
     public function __construct(
         bool    $sendOrderReportsPeriodicallyToSeQura,
         ?bool   $showSeQuraCheckoutAsHostedPage,
         ?array  $allowedIPAddresses,
         ?array  $excludedProducts,
-        ?array  $excludedCategories,
-        ?string $replacementPaymentMethod
+        ?array  $excludedCategories
     )
     {
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
@@ -61,7 +54,6 @@ class GeneralSettings
         $this->allowedIPAddresses = $allowedIPAddresses;
         $this->excludedProducts = $excludedProducts;
         $this->excludedCategories = $excludedCategories;
-        $this->replacementPaymentMethod = $replacementPaymentMethod;
     }
 
     /**
@@ -142,21 +134,5 @@ class GeneralSettings
     public function setExcludedProducts(?array $excludedProducts): void
     {
         $this->excludedProducts = $excludedProducts;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getReplacementPaymentMethod(): ?string
-    {
-        return $this->replacementPaymentMethod;
-    }
-
-    /**
-     * @param string|null $replacementPaymentMethod
-     */
-    public function setReplacementPaymentMethod(?string $replacementPaymentMethod): void
-    {
-        $this->replacementPaymentMethod = $replacementPaymentMethod;
     }
 }

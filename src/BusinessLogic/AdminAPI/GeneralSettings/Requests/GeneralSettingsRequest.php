@@ -38,25 +38,18 @@ class GeneralSettingsRequest extends Request
     private $excludedProducts;
 
     /**
-     * @var string|null
-     */
-    private $replacementPaymentMethod;
-
-    /**
      * @param bool $sendOrderReportsPeriodicallyToSeQura
      * @param bool|null $showSeQuraCheckoutAsHostedPage
      * @param string[]|null $allowedIPAddresses
      * @param string[]|null $excludedProducts
      * @param string[]|null $excludedCategories
-     * @param string|null $replacementPaymentMethod
      */
     public function __construct(
         bool $sendOrderReportsPeriodicallyToSeQura,
         ?bool $showSeQuraCheckoutAsHostedPage,
         ?array $allowedIPAddresses,
         ?array $excludedProducts,
-        ?array $excludedCategories,
-        ?string $replacementPaymentMethod
+        ?array $excludedCategories
     )
     {
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
@@ -64,7 +57,6 @@ class GeneralSettingsRequest extends Request
         $this->allowedIPAddresses = $allowedIPAddresses;
         $this->excludedProducts = $excludedProducts;
         $this->excludedCategories = $excludedCategories;
-        $this->replacementPaymentMethod = $replacementPaymentMethod;
     }
 
     /**
@@ -79,8 +71,7 @@ class GeneralSettingsRequest extends Request
             $this->showSeQuraCheckoutAsHostedPage,
             $this->allowedIPAddresses,
             $this->excludedProducts,
-            $this->excludedCategories,
-            $this->replacementPaymentMethod
+            $this->excludedCategories
         );
     }
 }
