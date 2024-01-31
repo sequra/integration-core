@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
@@ -17,6 +18,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethodCategory;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -189,11 +191,25 @@ class OrderService
         }
 
         if ($hasChanges) {
-            $this->proxy->updateOrder($this->getUpdateOrderRequest($order));
-            $this->orderRepository->setSeQuraOrder($order);
+            $this->tryOrderUpdate($order);
         }
 
         return $order;
+    }
+
+    private function tryOrderUpdate(SeQuraOrder $order)
+    {
+        try {
+            $this->proxy->updateOrder($this->getUpdateOrderRequest($order));
+        } catch (HttpApiNotFoundException $exception) {
+            // Ignore not found errors for cancellation actions because SeQura returns
+            // not found response for on-hold to cancel transitions (immediate cancelations from checkout)
+            if (!in_array($order->getState(), [OrderRequestStates::CANCELLED, OrderRequestStates::ON_HOLD])) {
+                throw $exception;
+            }
+        }
+
+        $this->orderRepository->setSeQuraOrder($order);
     }
 
     private function getExistingOrderFor(CreateOrderRequest $request): ?SeQuraOrder
