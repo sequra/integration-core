@@ -90,6 +90,6 @@ class AbortedListenerTest extends BaseTestCase
         $this->listener->handle($event);
 
         // assert
-        self::assertEquals('Aborted!', $log->getFailureDescription());
+        self::assertEquals('Order update action not supported on SeQura.', $log->getFailureDescription());
     }
 }

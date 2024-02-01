@@ -11,6 +11,9 @@ use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemAbortedEvent;
  */
 class AbortedListener extends UpdateListener
 {
+    /** @var string  */
+    private const ABORT_DESCRIPTION = 'Order update action not supported on SeQura.';
+
     /**
      * @var QueueItemAbortedEvent
      */
@@ -21,7 +24,8 @@ class AbortedListener extends UpdateListener
      */
     protected function save(): void
     {
-        $this->transactionLog->setFailureDescription($this->event->getAbortDescription());
+        $this->transactionLog->setReason($this->event->getAbortDescription());
+        $this->transactionLog->setFailureDescription(self::ABORT_DESCRIPTION);
 
         parent::save();
     }

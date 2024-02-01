@@ -68,6 +68,7 @@ class TransactionalOrderUpdateTask extends TransactionalTask
     private function doExecute(): void
     {
         $this->getOrderService()->updateOrder($this->orderUpdateData);
+        $this->transactionData->setIsSuccessful(true);
         $this->reportProgress(100);
     }
 
