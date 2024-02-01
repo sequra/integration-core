@@ -5,10 +5,13 @@ namespace SeQura\Core\BusinessLogic\Domain\Order\Service;
 use Exception;
 use InvalidArgumentException;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ItemType;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
@@ -139,9 +142,8 @@ class OrderService
         string $cartId,
         string $product = null,
         string $campaign = null,
-        bool   $ajax = true
-    ): SeQuraForm
-    {
+        bool $ajax = true
+    ): SeQuraForm {
         $existingOrder = $this->orderRepository->getByCartId($cartId);
         if (!$existingOrder) {
             throw new InvalidArgumentException(
@@ -167,12 +169,16 @@ class OrderService
         $hasChanges = false;
 
         $newShippedCart = $orderUpdateData->getShippedCart();
+        $newUnshippedCart = $orderUpdateData->getUnshippedCart();
+        $this->validateCart($newShippedCart);
+        $this->validateCart($newUnshippedCart);
+
         if ($newShippedCart && !$this->areObjectsEqual($order->getShippedCart(), $newShippedCart)) {
             $order->setShippedCart($newShippedCart);
             $hasChanges = true;
         }
 
-        $newUnshippedCart = $orderUpdateData->getUnshippedCart();
+
         if ($newUnshippedCart && !$this->areObjectsEqual($order->getUnshippedCart(), $newUnshippedCart)) {
             $order->setUnshippedCart($newUnshippedCart);
             $hasChanges = true;
@@ -197,6 +203,15 @@ class OrderService
         return $order;
     }
 
+    /**
+     * @param SeQuraOrder $order
+     *
+     * @return void
+     *
+     * @throws HttpApiNotFoundException
+     * @throws HttpRequestException
+     * @throws Exception
+     */
     private function tryOrderUpdate(SeQuraOrder $order)
     {
         try {
@@ -212,6 +227,11 @@ class OrderService
         $this->orderRepository->setSeQuraOrder($order);
     }
 
+    /**
+     * @param CreateOrderRequest $request
+     *
+     * @return SeQuraOrder|null
+     */
     private function getExistingOrderFor(CreateOrderRequest $request): ?SeQuraOrder
     {
         $existingOrder = null;
@@ -220,7 +240,9 @@ class OrderService
         }
 
         if (!$existingOrder && $request->getMerchantReference()) {
-            $existingOrder = $this->orderRepository->getByShopReference($request->getMerchantReference()->getOrderRef1());
+            $existingOrder = $this->orderRepository->getByShopReference(
+                $request->getMerchantReference()->getOrderRef1()
+            );
         }
 
         return $existingOrder;
@@ -266,5 +288,25 @@ class OrderService
         }
 
         return json_encode($object1) === json_encode($object2);
+    }
+
+    /**
+     * Validates if items quantities are valid for each product item in cart.
+     *
+     * @param Cart $cart
+     *
+     * @return void
+     *
+     * @throws InvalidQuantityException
+     */
+    private function validateCart(Cart $cart): void
+    {
+        foreach ($cart->getItems() as $item) {
+            if ($item->getType() === ItemType::TYPE_PRODUCT && $item->getQuantity() <= 0) {
+                throw new InvalidQuantityException(
+                    'Unsupported order update action detected. The combined quantities of returned and shipped items exceed the total available quantity for the item.'
+                );
+            }
+        }
     }
 }
