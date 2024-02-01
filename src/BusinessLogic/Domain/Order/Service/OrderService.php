@@ -5,7 +5,6 @@ namespace SeQura\Core\BusinessLogic\Domain\Order\Service;
 use Exception;
 use InvalidArgumentException;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
@@ -23,6 +22,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethodCategory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Infrastructure\TaskExecution\Exceptions\AbortTaskExecutionException;
 
 /**
  * Class OrderService
@@ -297,13 +297,13 @@ class OrderService
      *
      * @return void
      *
-     * @throws InvalidQuantityException
+     * @throws AbortTaskExecutionException
      */
     private function validateCart(Cart $cart): void
     {
         foreach ($cart->getItems() as $item) {
             if ($item->getType() === ItemType::TYPE_PRODUCT && $item->getQuantity() <= 0) {
-                throw new InvalidQuantityException(
+                throw new AbortTaskExecutionException(
                     'Unsupported order update action detected. The combined quantities of returned and shipped items exceed the total available quantity for the item.'
                 );
             }
