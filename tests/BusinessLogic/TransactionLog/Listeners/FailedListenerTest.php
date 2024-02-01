@@ -90,6 +90,6 @@ class FailedListenerTest extends BaseTestCase
         $this->listener->handle($event);
 
         // assert
-        self::assertEquals('Failed!', $log->getFailureDescription());
+        self::assertEquals('Order update action not supported on SeQura.', $log->getFailureDescription());
     }
 }

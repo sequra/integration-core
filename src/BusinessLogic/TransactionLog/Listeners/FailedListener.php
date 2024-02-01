@@ -11,6 +11,9 @@ use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFailedEvent;
  */
 class FailedListener extends UpdateListener
 {
+    /** @var string  */
+    private const FAILURE_DESCRIPTION = 'Order update action not supported on SeQura.';
+
     /**
      * @var QueueItemFailedEvent
      */
@@ -21,7 +24,8 @@ class FailedListener extends UpdateListener
      */
     protected function save(): void
     {
-        $this->transactionLog->setFailureDescription($this->event->getFailureDescription());
+        $this->transactionLog->setReason($this->event->getFailureDescription());
+        $this->transactionLog->setFailureDescription(self::FAILURE_DESCRIPTION);
 
         parent::save();
     }
