@@ -28,7 +28,7 @@ class TickEventListener
         foreach ($contexts as $context) {
             StoreContext::doWithStore($context, static function () use ($context) {
                 static::getStatisticalDataService()->setSendReportTime();
-                static::getQueueService()->enqueue('order-reports', new OrderReporter(), $context);
+                static::getQueueService()->enqueue('order-reports-' . $context, new OrderReporter(), $context);
             });
         }
     }
