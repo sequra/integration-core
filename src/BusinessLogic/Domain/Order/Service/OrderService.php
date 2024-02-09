@@ -170,8 +170,6 @@ class OrderService
 
         $newShippedCart = $orderUpdateData->getShippedCart();
         $newUnshippedCart = $orderUpdateData->getUnshippedCart();
-        $this->validateCart($newShippedCart);
-        $this->validateCart($newUnshippedCart);
 
         if ($newShippedCart && !$this->areObjectsEqual($order->getShippedCart(), $newShippedCart)) {
             $order->setShippedCart($newShippedCart);
@@ -288,25 +286,5 @@ class OrderService
         }
 
         return json_encode($object1) === json_encode($object2);
-    }
-
-    /**
-     * Validates if items quantities are valid for each product item in cart.
-     *
-     * @param Cart $cart
-     *
-     * @return void
-     *
-     * @throws AbortTaskExecutionException
-     */
-    private function validateCart(Cart $cart): void
-    {
-        foreach ($cart->getItems() as $item) {
-            if ($item->getType() === ItemType::TYPE_PRODUCT && $item->getQuantity() <= 0) {
-                throw new AbortTaskExecutionException(
-                    'Unsupported order update action detected. The combined quantities of returned and shipped items exceed the total available quantity for the item.'
-                );
-            }
-        }
     }
 }
