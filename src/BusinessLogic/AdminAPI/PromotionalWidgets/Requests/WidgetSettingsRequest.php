@@ -16,39 +16,39 @@ class WidgetSettingsRequest extends Request
     /**
      * @var bool
      */
-    private $enabled;
+    protected $enabled;
     /**
      * @var string|null
      */
-    private $assetsKey;
+    protected $assetsKey;
     /**
      * @var bool
      */
-    private $displayOnProductPage;
+    protected $displayOnProductPage;
     /**
      * @var bool
      */
-    private $showInstallmentsInProductListing;
+    protected $showInstallmentsInProductListing;
     /**
      * @var bool
      */
-    private $showInstallmentsInCartPage;
+    protected $showInstallmentsInCartPage;
     /**
      * @var string
      */
-    private $miniWidgetSelector;
+    protected $miniWidgetSelector;
     /**
      * @var string
      */
-    private $widgetConfiguration;
+    protected $widgetConfiguration;
     /**
      * @var string[]
      */
-    private $messages;
+    protected $messages;
     /**
      * @var string[]
      */
-    private $messagesBelowLimit;
+    protected $messagesBelowLimit;
 
 
     /**
@@ -59,6 +59,8 @@ class WidgetSettingsRequest extends Request
      * @param bool $showInstallmentsInCartPage
      * @param string $miniWidgetSelector
      * @param string $widgetConfiguration
+     * @param array $messages
+     * @param array $messagesBelowLimit
      */
     public function __construct(
         bool    $enabled,
