@@ -23,7 +23,7 @@ use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspects;
  */
 class AdminAPI
 {
-    private function __construct()
+    protected function __construct()
     {
     }
 
