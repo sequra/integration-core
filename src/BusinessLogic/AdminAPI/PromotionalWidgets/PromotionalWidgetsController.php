@@ -19,7 +19,7 @@ class PromotionalWidgetsController
     /**
      * @var WidgetSettingsService
      */
-    private $widgetSettingsService;
+    protected $widgetSettingsService;
 
     /**
      * @param WidgetSettingsService $widgetSettingsService
