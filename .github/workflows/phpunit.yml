@@ -1,4 +1,4 @@
-name: CI
+name: phpunit
 on: push
 jobs:
   build-test:
@@ -7,4 +7,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: php-actions/composer@v6 # or alternative dependency management
-    - uses: php-actions/phpunit@v3
+    # - uses: php-actions/phpunit@v3
+    #   with:
+    #     vendored_phpunit_path: "vendor/bin/phpunit"
+    #     php_version: "7.2"
+    #     configuration: "phpunit.xml"
+    - name: Setup PHP with PECL extension
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.2'
+    - run: php vendor/bin/phpunit
