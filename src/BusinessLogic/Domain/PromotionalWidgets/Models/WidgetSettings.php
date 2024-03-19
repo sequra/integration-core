@@ -12,35 +12,35 @@ class WidgetSettings
     /**
      * @var bool
      */
-    private $enabled;
+    protected $enabled;
     /**
      * @var string
      */
-    private $assetsKey;
+    protected $assetsKey;
     /**
      * @var bool
      */
-    private $displayOnProductPage;
+    protected $displayOnProductPage;
     /**
      * @var bool
      */
-    private $showInstallmentsInProductListing;
+    protected $showInstallmentsInProductListing;
     /**
      * @var bool
      */
-    private $showInstallmentsInCartPage;
+    protected $showInstallmentsInCartPage;
     /**
      * @var string
      */
-    private $miniWidgetSelector;
+    protected $miniWidgetSelector;
     /**
      * @var string
      */
-    private $widgetConfig;
+    protected $widgetConfig;
     /**
      * @var WidgetLabels
      */
-    private $widgetLabels;
+    protected $widgetLabels;
 
     /**
      * @param bool $enabled

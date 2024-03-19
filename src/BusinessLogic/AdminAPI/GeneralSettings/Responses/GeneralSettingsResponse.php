@@ -34,11 +34,11 @@ class GeneralSettingsResponse extends Response
         }
 
         return[
-            'showSeQuraCheckoutAsHostedPage' => $this->generalSettings->isShowSeQuraCheckoutAsHostedPage(),
             'sendOrderReportsPeriodicallyToSeQura' => $this->generalSettings->isSendOrderReportsPeriodicallyToSeQura(),
+            'showSeQuraCheckoutAsHostedPage' => $this->generalSettings->isShowSeQuraCheckoutAsHostedPage(),
             'allowedIPAddresses' => $this->generalSettings->getAllowedIPAddresses(),
             'excludedProducts' => $this->generalSettings->getExcludedProducts(),
-            'excludedCategories' => $this->generalSettings->getExcludedCategories()
+            'excludedCategories' => $this->generalSettings->getExcludedCategories(),
         ];
     }
 }

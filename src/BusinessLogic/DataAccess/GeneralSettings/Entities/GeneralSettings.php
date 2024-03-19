@@ -40,8 +40,8 @@ class GeneralSettings extends Entity
         $this->storeId = $data['storeId'] ?? '';
 
         $this->generalSettings = new DomainGeneralSettings(
-            self::getArrayValue($generalSettings, 'showSeQuraCheckoutAsHostedPage'),
             self::getArrayValue($generalSettings, 'sendOrderReportsPeriodicallyToSeQura'),
+            self::getArrayValue($generalSettings, 'showSeQuraCheckoutAsHostedPage'),
             static::getDataValue($generalSettings, 'allowedIPAddresses', []),
             static::getDataValue($generalSettings, 'excludedProducts', []),
             static::getDataValue($generalSettings, 'excludedCategories', [])
@@ -56,11 +56,11 @@ class GeneralSettings extends Entity
         $data = parent::toArray();
         $data['storeId'] = $this->storeId;
         $data['generalSettings'] = [
-            'showSeQuraCheckoutAsHostedPage' => $this->generalSettings->isShowSeQuraCheckoutAsHostedPage(),
             'sendOrderReportsPeriodicallyToSeQura' => $this->generalSettings->isSendOrderReportsPeriodicallyToSeQura(),
+            'showSeQuraCheckoutAsHostedPage' => $this->generalSettings->isShowSeQuraCheckoutAsHostedPage(),
             'allowedIPAddresses' => $this->generalSettings->getAllowedIPAddresses(),
             'excludedProducts' => $this->generalSettings->getExcludedProducts(),
-            'excludedCategories' => $this->generalSettings->getExcludedCategories()
+            'excludedCategories' => $this->generalSettings->getExcludedCategories(),
         ];
 
         return $data;

@@ -9,7 +9,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 /**
  * Class CaptureResponse
  *
- * @package Adyen\Core\BusinessLogic\AdminAPI\Capture\Response
+ * @package SeQura\Core\BusinessLogic\AdminAPI\Capture\Response
  */
 class SolicitationResponse extends Response
 {

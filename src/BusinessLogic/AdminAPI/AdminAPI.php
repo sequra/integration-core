@@ -13,6 +13,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsCo
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
+use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
 use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspects;
 
 /**
@@ -22,7 +23,7 @@ use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspects;
  */
 class AdminAPI
 {
-    private function __construct()
+    protected function __construct()
     {
     }
 
@@ -140,6 +141,21 @@ class AdminAPI
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
             ->beforeEachMethodOfService(OrderStatusSettingsController::class);
+    }
+
+    /**
+     * Returns a TransactionLogsController instance.
+     *
+     * @param string $storeId
+     *
+     * @return TransactionLogsController
+     */
+    public function transactionLogs(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(TransactionLogsController::class);
     }
 
     /**

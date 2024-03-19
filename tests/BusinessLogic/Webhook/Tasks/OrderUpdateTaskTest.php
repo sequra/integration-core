@@ -2,19 +2,27 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Webhook\Tasks;
 
+use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
+use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseSerializationTestCase;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use SeQura\Core\BusinessLogic\Webhook\Tasks\OrderUpdateTask;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockShopOrderStatusesService;
+use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 class OrderUpdateTaskTest extends BaseSerializationTestCase
 {
     /**
      * @return void
-     * @throws \SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws RepositoryClassException
      */
     protected function setUp(): void
     {
         parent::setUp();
+
+        TestServiceRegister::registerService(ShopOrderStatusesServiceInterface::class, static function () {
+            return new MockShopOrderStatusesService();
+        });
 
         $webhook = Webhook::fromArray([
             'cart' => '5678',

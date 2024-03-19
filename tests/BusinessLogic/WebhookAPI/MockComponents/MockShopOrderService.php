@@ -42,4 +42,12 @@ class MockShopOrderService implements ShopOrderService
     {
         return array_slice($this->statisticsOrderIds, $page * $limit, $limit);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOrderUrl(string $merchantReference): string
+    {
+        return 'https.test.url/' . $merchantReference;
+    }
 }

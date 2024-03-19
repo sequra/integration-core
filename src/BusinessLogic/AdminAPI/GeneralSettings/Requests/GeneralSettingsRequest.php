@@ -15,12 +15,12 @@ class GeneralSettingsRequest extends Request
     /**
      * @var bool
      */
-    private $showSeQuraCheckoutAsHostedPage;
+    private $sendOrderReportsPeriodicallyToSeQura;
 
     /**
-     * @var bool
+     * @var bool|null
      */
-    private $sendOrderReportsPeriodicallyToSeQura;
+    private $showSeQuraCheckoutAsHostedPage;
 
     /**
      * @var string[]|null
@@ -38,22 +38,22 @@ class GeneralSettingsRequest extends Request
     private $excludedProducts;
 
     /**
-     * @param bool $showSeQuraCheckoutAsHostedPage
      * @param bool $sendOrderReportsPeriodicallyToSeQura
+     * @param bool|null $showSeQuraCheckoutAsHostedPage
      * @param string[]|null $allowedIPAddresses
      * @param string[]|null $excludedProducts
      * @param string[]|null $excludedCategories
      */
     public function __construct(
-        bool $showSeQuraCheckoutAsHostedPage,
         bool $sendOrderReportsPeriodicallyToSeQura,
+        ?bool $showSeQuraCheckoutAsHostedPage,
         ?array $allowedIPAddresses,
         ?array $excludedProducts,
         ?array $excludedCategories
     )
     {
-        $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
+        $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
         $this->allowedIPAddresses = $allowedIPAddresses;
         $this->excludedProducts = $excludedProducts;
         $this->excludedCategories = $excludedCategories;
@@ -67,8 +67,8 @@ class GeneralSettingsRequest extends Request
     public function transformToDomainModel(): object
     {
         return new GeneralSettings(
-            $this->showSeQuraCheckoutAsHostedPage,
             $this->sendOrderReportsPeriodicallyToSeQura,
+            $this->showSeQuraCheckoutAsHostedPage,
             $this->allowedIPAddresses,
             $this->excludedProducts,
             $this->excludedCategories

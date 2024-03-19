@@ -8,7 +8,6 @@ use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Requests\GeneralSettingsR
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\GeneralSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\ShopCategoriesResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\SuccessfulGeneralSettingsResponse;
-use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\EmptyCategoryParameterException;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\FailedToRetrieveCategoriesException;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\Category;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
@@ -17,6 +16,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterfa
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCategoryService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockShopPaymentMethodsService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -85,7 +85,6 @@ class GeneralSettingsControllerTest extends BaseTestCase
         // Assert
         self::assertEquals($this->expectedCategoriesToArrayResponse(), $response->toArray());
     }
-
 
     public function testIsGetGeneralSettingsResponseSuccessful(): void
     {
@@ -164,9 +163,6 @@ class GeneralSettingsControllerTest extends BaseTestCase
         self::assertEquals([], $response->toArray());
     }
 
-    /**
-     * @throws EmptyCategoryParameterException
-     */
     public function testIsSaveResponseSuccessful(): void
     {
         // Arrange
@@ -185,9 +181,6 @@ class GeneralSettingsControllerTest extends BaseTestCase
         self::assertTrue($response->isSuccessful());
     }
 
-    /**
-     * @throws EmptyCategoryParameterException
-     */
     public function testSaveResponse(): void
     {
         // Arrange
@@ -207,9 +200,6 @@ class GeneralSettingsControllerTest extends BaseTestCase
         self::assertEquals($expectedResponse, $response);
     }
 
-    /**
-     * @throws EmptyCategoryParameterException
-     */
     public function testSaveResponseToArray(): void
     {
         // Arrange
@@ -328,8 +318,8 @@ class GeneralSettingsControllerTest extends BaseTestCase
     private function expectedToArrayResponse(): array
     {
         return [
-            'showSeQuraCheckoutAsHostedPage' => true,
             'sendOrderReportsPeriodicallyToSeQura' => true,
+            'showSeQuraCheckoutAsHostedPage' => true,
             'allowedIPAddresses' => ['address 1', 'address 2'],
             'excludedProducts' => ['sku 1', 'sku 2'],
             'excludedCategories' => ['1', '2']
@@ -350,6 +340,20 @@ class GeneralSettingsControllerTest extends BaseTestCase
             [
                 'id' => '3',
                 'name' => 'Test 3',
+            ]
+        ];
+    }
+
+    private function expectedShopPaymentMethodsToArrayResponse(): array
+    {
+        return [
+            [
+                'code' => 'card',
+                'name' => 'Credit Card',
+            ],
+            [
+                'code' => 'cash',
+                'name' => 'Cash',
             ]
         ];
     }

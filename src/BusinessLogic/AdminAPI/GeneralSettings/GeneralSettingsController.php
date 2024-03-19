@@ -6,7 +6,6 @@ use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Requests\GeneralSettingsR
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\GeneralSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\ShopCategoriesResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\SuccessfulGeneralSettingsResponse;
-use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\EmptyCategoryParameterException;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\FailedToRetrieveCategoriesException;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
@@ -32,7 +31,10 @@ class GeneralSettingsController
      * @param GeneralSettingsService $generalSettingsService
      * @param CategoryService $categoryService
      */
-    public function __construct(GeneralSettingsService $generalSettingsService, CategoryService $categoryService)
+    public function __construct(
+        GeneralSettingsService   $generalSettingsService,
+        CategoryService          $categoryService
+    )
     {
         $this->generalSettingsService = $generalSettingsService;
         $this->categoryService = $categoryService;
@@ -54,8 +56,6 @@ class GeneralSettingsController
      * @param GeneralSettingsRequest $request
      *
      * @return SuccessfulGeneralSettingsResponse
-     *
-     * @throws EmptyCategoryParameterException
      */
     public function saveGeneralSettings(GeneralSettingsRequest $request): SuccessfulGeneralSettingsResponse
     {

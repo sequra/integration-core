@@ -11,6 +11,8 @@ use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\ReportData;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\SendOrderReportRequest;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\Statistics;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\SendReport\Models\SendReport;
+use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -30,18 +32,24 @@ class OrderReportService
      */
     private $integrationOrderReportService;
 
+    /**
+     * @var SendReportRepositoryInterface
+     */
+    private $sendReportRepository;
 
     /**
      * @param OrderReportProxyInterface $proxy
      * @param OrderReportServiceInterface $integrationOrderReportService
+     * @param SendReportRepositoryInterface $sendReportRepository
      */
     public function __construct(
-        OrderReportProxyInterface   $proxy,
-        OrderReportServiceInterface $integrationOrderReportService
-    )
-    {
+        OrderReportProxyInterface $proxy,
+        OrderReportServiceInterface $integrationOrderReportService,
+        SendReportRepositoryInterface $sendReportRepository
+    ) {
         $this->proxy = $proxy;
         $this->integrationOrderReportService = $integrationOrderReportService;
+        $this->sendReportRepository = $sendReportRepository;
     }
 
     /**
@@ -78,6 +86,16 @@ class OrderReportService
     }
 
     /**
+     * @param int $time
+     *
+     * @return void
+     */
+    public function setSendReportTime(int $time): void
+    {
+        $this->sendReportRepository->setSendReport(new SendReport($time));
+    }
+
+    /**
      * Creates a SendOrderReportRequest instance.
      *
      * @param string $merchantId
@@ -90,10 +108,9 @@ class OrderReportService
      */
     private function createSendOrderReportRequest(
         string $merchantId,
-        array  $orderReports,
-        array  $orderStatistics = null
-    ): SendOrderReportRequest
-    {
+        array $orderReports,
+        array $orderStatistics = null
+    ): SendOrderReportRequest {
         return new SendOrderReportRequest(
             new Merchant($merchantId),
             $orderReports,

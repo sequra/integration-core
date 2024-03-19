@@ -2,8 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item;
 
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
-
 /**
  * Class ProductItem
  *
@@ -104,8 +102,6 @@ class ProductItem extends Item
      * @param int|string|null $productId
      * @param string|null $url
      * @param string|null $trackingReference
-     *
-     * @throws InvalidQuantityException
      */
     public function __construct(
         $reference,
@@ -124,12 +120,7 @@ class ProductItem extends Item
         $productId = null,
         string $url = null,
         string $trackingReference = null
-    )
-    {
-        if($quantity < 0) {
-            throw new InvalidQuantityException('Quantity cannot be a negative value.');
-        }
-
+    ) {
         parent::__construct($totalWithTax, ItemType::TYPE_PRODUCT);
 
         $this->reference = $reference;
@@ -154,7 +145,6 @@ class ProductItem extends Item
      * @param array $data
      *
      * @return ProductItem
-     * @throws InvalidQuantityException
      */
     public static function fromArray(array $data): Item
     {

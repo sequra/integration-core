@@ -39,4 +39,12 @@ class MockShopErrorOrderService implements ShopOrderService
     {
         return [];
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOrderUrl(string $merchantReference): string
+    {
+        return  '';
+    }
 }

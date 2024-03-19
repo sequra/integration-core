@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\AdminAPI\Integration;
 
+use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationShopNameResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationUIStateResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\Responses\IntegrationVersionResponse;
@@ -51,11 +52,15 @@ class IntegrationController
     /**
      * Gets the UI state for the integration.
      *
+     * @param bool $useWidgets
+     *
      * @return IntegrationUIStateResponse
+     *
+     * @throws Exception
      */
-    public function getUIState(): IntegrationUIStateResponse
+    public function getUIState(bool $useWidgets = true): IntegrationUIStateResponse
     {
-        return $this->stateService->isOnboardingState() ?
+        return $this->stateService->isOnboardingState($useWidgets) ?
             IntegrationUIStateResponse::onboarding() :
             IntegrationUIStateResponse::dashboard();
     }

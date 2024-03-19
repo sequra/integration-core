@@ -12,12 +12,12 @@ class GeneralSettings
     /**
      * @var bool
      */
-    private $showSeQuraCheckoutAsHostedPage;
+    private $sendOrderReportsPeriodicallyToSeQura;
 
     /**
-     * @var bool
+     * @var bool|null
      */
-    private $sendOrderReportsPeriodicallyToSeQura;
+    private $showSeQuraCheckoutAsHostedPage;
 
     /**
      * @var string[]|null
@@ -35,39 +35,39 @@ class GeneralSettings
     private $excludedProducts;
 
     /**
-     * @param bool $showSeQuraCheckoutAsHostedPage
      * @param bool $sendOrderReportsPeriodicallyToSeQura
+     * @param bool|null $showSeQuraCheckoutAsHostedPage
      * @param string[]|null $allowedIPAddresses
      * @param string[]|null $excludedProducts
      * @param string[]|null $excludedCategories
      */
     public function __construct(
-        bool $showSeQuraCheckoutAsHostedPage,
-        bool $sendOrderReportsPeriodicallyToSeQura,
-        ?array $allowedIPAddresses,
-        ?array $excludedProducts,
-        ?array $excludedCategories
+        bool    $sendOrderReportsPeriodicallyToSeQura,
+        ?bool   $showSeQuraCheckoutAsHostedPage,
+        ?array  $allowedIPAddresses,
+        ?array  $excludedProducts,
+        ?array  $excludedCategories
     )
     {
-        $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
+        $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
         $this->allowedIPAddresses = $allowedIPAddresses;
         $this->excludedProducts = $excludedProducts;
         $this->excludedCategories = $excludedCategories;
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
-    public function isShowSeQuraCheckoutAsHostedPage(): bool
+    public function isShowSeQuraCheckoutAsHostedPage(): ?bool
     {
         return $this->showSeQuraCheckoutAsHostedPage;
     }
 
     /**
-     * @param bool $showSeQuraCheckoutAsHostedPage
+     * @param bool|null $showSeQuraCheckoutAsHostedPage
      */
-    public function setShowSeQuraCheckoutAsHostedPage(bool $showSeQuraCheckoutAsHostedPage): void
+    public function setShowSeQuraCheckoutAsHostedPage(?bool $showSeQuraCheckoutAsHostedPage): void
     {
         $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
     }

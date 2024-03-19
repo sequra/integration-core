@@ -15,7 +15,7 @@ class WidgetSettingsResponse extends Response
     /**
      * @var WidgetSettings
      */
-    private $widgetSettings;
+    protected $widgetSettings;
 
     /**
      * @param WidgetSettings|null $widgetSettings

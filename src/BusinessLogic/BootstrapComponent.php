@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsCo
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
+use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
@@ -19,12 +20,16 @@ use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\Count
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
-use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusMapping;
+use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusSettings;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSettings;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
+use SeQura\Core\BusinessLogic\DataAccess\SendReport\Entities\SendReport;
+use SeQura\Core\BusinessLogic\DataAccess\SendReport\Repositories\SendReportRepository;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
+use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
+use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
@@ -39,6 +44,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterfa
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
@@ -50,10 +56,14 @@ use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Listeners\TickEventListener;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\ShopOrderStatusesService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
+use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
@@ -67,19 +77,33 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
+use SeQura\Core\BusinessLogic\TransactionLog\Listeners\AbortedListener;
+use SeQura\Core\BusinessLogic\TransactionLog\Listeners\CreateListener;
+use SeQura\Core\BusinessLogic\TransactionLog\Listeners\FailedListener;
+use SeQura\Core\BusinessLogic\TransactionLog\Listeners\LoadListener;
+use SeQura\Core\BusinessLogic\TransactionLog\Listeners\UpdateListener;
+use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
+use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogService;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
-use SeQura\Core\BusinessLogic\Webhook\Services\StatusMappingService;
+use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
 use SeQura\Core\BusinessLogic\Webhook\Validator\WebhookValidator;
 use SeQura\Core\BusinessLogic\WebhookAPI\Controller\WebhookController;
 use SeQura\Core\Infrastructure\BootstrapComponent as BaseBootstrapComponent;
-use SeQura\Core\BusinessLogic\Webhook\Repositories\OrderStatusMappingRepository as OrderStatusMappingRepositoryInterface;
 use SeQura\Core\Infrastructure\Configuration\Configuration;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\ServiceRegister;
-use SeQura\Core\Infrastructure\TaskExecution\QueueService;
+use SeQura\Core\Infrastructure\TaskExecution\Events\BaseQueueItemEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemAbortedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemEnqueuedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFailedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFinishedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemRequeuedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStartedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStateTransitionEventBus;
 use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\TickEvent;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
+use SeQura\Core\Infrastructure\Utility\TimeProvider;
 
 class BootstrapComponent extends BaseBootstrapComponent
 {
@@ -94,6 +118,7 @@ class BootstrapComponent extends BaseBootstrapComponent
         static::initServices();
         static::initControllers();
         static::initProxies();
+        static::initEvents();
     }
 
     /**
@@ -104,10 +129,10 @@ class BootstrapComponent extends BaseBootstrapComponent
         parent::initRepositories();
 
         ServiceRegister::registerService(
-            OrderStatusMappingRepositoryInterface::class,
+            OrderStatusSettingsRepositoryInterface::class,
             static function () {
                 return new OrderStatusMappingRepository(
-                    RepositoryRegistry::getRepository(OrderStatusMapping::getClassName()),
+                    RepositoryRegistry::getRepository(OrderStatusSettings::getClassName()),
                     ServiceRegister::getService(StoreContext::class)
                 );
             }
@@ -171,6 +196,26 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+
+        ServiceRegister::registerService(
+            TransactionLogRepositoryInterface::class,
+            static function () {
+                return new TransactionLogRepository(
+                    RepositoryRegistry::getRepository(TransactionLog::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            SendReportRepositoryInterface::class,
+            static function () {
+                return new SendReportRepository(
+                    RepositoryRegistry::getRepository(SendReport::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
     }
 
     /**
@@ -192,10 +237,11 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
-            StatusMappingService::class,
+            OrderStatusSettingsService::class,
             static function () {
-                return new StatusMappingService(
-                    ServiceRegister::getService(OrderStatusMappingRepositoryInterface::class)
+                return new OrderStatusSettingsService(
+                    ServiceRegister::getService(OrderStatusSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(ShopOrderStatusesServiceInterface::class)
                 );
             }
         );
@@ -203,9 +249,7 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             ConnectionService::class,
             static function () {
-                return new ConnectionService(
-                    ServiceRegister::getService(ConnectionProxyInterface::class)
-                );
+                return new ConnectionService(ServiceRegister::getService(ConnectionProxyInterface::class));
             }
         );
 
@@ -213,7 +257,9 @@ class BootstrapComponent extends BaseBootstrapComponent
             StatisticalDataService::class,
             static function () {
                 return new StatisticalDataService(
-                    ServiceRegister::getService(StatisticalDataRepositoryInterface::class)
+                    ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
+                    ServiceRegister::getService(SendReportRepositoryInterface::class),
+                    ServiceRegister::getService(TimeProvider::class)
                 );
             }
         );
@@ -296,10 +342,20 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            ShopOrderStatusesService::class,
+            static function () {
+                return new ShopOrderStatusesService(
+                    ServiceRegister::getService(ShopOrderStatusesServiceInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             DisconnectService::class,
             static function () {
                 return new DisconnectService(
-                    ServiceRegister::getService(DisconnectServiceInterface::class)
+                    ServiceRegister::getService(DisconnectServiceInterface::class),
+                    ServiceRegister::getService(SendReportRepositoryInterface::class)
                 );
             }
         );
@@ -307,17 +363,14 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             WebhookHandler::class,
             static function () {
-                return new WebhookHandler(
-                    ServiceRegister::getService(QueueService::class),
-                    ServiceRegister::getService(QueueNameProviderInterface::class)
-                );
+                return new WebhookHandler();
             }
         );
 
         ServiceRegister::registerService(
             OrderStatusProvider::class,
             static function () {
-                return ServiceRegister::getService(StatusMappingService::class);
+                return ServiceRegister::getService(OrderStatusSettingsService::class);
             }
         );
 
@@ -343,7 +396,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new OrderReportService(
                     ServiceRegister::getService(OrderReportProxyInterface::class),
-                    ServiceRegister::getService(OrderReportServiceInterface::class)
+                    ServiceRegister::getService(OrderReportServiceInterface::class),
+                    ServiceRegister::getService(SendReportRepositoryInterface::class)
                 );
             }
         );
@@ -357,6 +411,17 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(CountryConfigurationService::class),
                     ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(WidgetsProxyInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            TransactionLogService::class,
+            static function () {
+                return new TransactionLogService(
+                    ServiceRegister::getService(TransactionLogRepositoryInterface::class),
+                    ServiceRegister::getService(OrderService::class),
+                    ServiceRegister::getService(ShopOrderService::class)
                 );
             }
         );
@@ -421,7 +486,10 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             OrderStatusSettingsController::class,
             static function () {
-                return new OrderStatusSettingsController();
+                return new OrderStatusSettingsController(
+                    ServiceRegister::getService(OrderStatusSettingsService::class),
+                    ServiceRegister::getService(ShopOrderStatusesService::class)
+                );
             }
         );
 
@@ -439,6 +507,15 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new PromotionalWidgetsController(
                     ServiceRegister::getService(WidgetSettingsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            TransactionLogsController::class,
+            static function () {
+                return new TransactionLogsController(
+                    ServiceRegister::getService(TransactionLogService::class)
                 );
             }
         );
@@ -530,10 +607,62 @@ class BootstrapComponent extends BaseBootstrapComponent
     /**
      * @inheritDoc
      */
-    protected static function initEvents()
+    protected static function initEvents(): void
     {
         parent::initEvents();
 
         EventBus::getInstance()->when(TickEvent::class, TickEventListener::class . '::handle');
+
+        /** @var QueueItemStateTransitionEventBus $queueBus */
+        $queueBus = ServiceRegister::getService(QueueItemStateTransitionEventBus::CLASS_NAME);
+
+        $queueBus->when(
+            QueueItemEnqueuedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new CreateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
+
+        $queueBus->when(
+            QueueItemRequeuedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new CreateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
+
+        $queueBus->when(
+            QueueItemStartedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new LoadListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
+
+        $queueBus->when(
+            QueueItemStartedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new UpdateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
+
+        $queueBus->when(
+            QueueItemFinishedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new UpdateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
+
+        $queueBus->when(
+            QueueItemFailedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new FailedListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
+
+        $queueBus->when(
+            QueueItemAbortedEvent::class,
+            static function (BaseQueueItemEvent $event) {
+                (new AbortedListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
+            }
+        );
     }
 }

@@ -5,10 +5,9 @@ namespace SeQura\Core\BusinessLogic\Domain\OrderReport\Listeners;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\OrderReporter;
-use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\QueueService;
-use SeQura\Core\Infrastructure\Utility\TimeProvider;
 
 /**
  * Class TickEventListener
@@ -17,8 +16,6 @@ use SeQura\Core\Infrastructure\Utility\TimeProvider;
  */
 class TickEventListener
 {
-    private const SCHEDULE_TIME = '4 am';
-
     /**
      * @return void
      *
@@ -26,26 +23,22 @@ class TickEventListener
      */
     public static function handle(): void
     {
-        if (static::getTimeProvider()->getCurrentLocalTime()->getTimestamp()
-            !== strtotime(self::SCHEDULE_TIME)) {
-            return;
-        }
+        $contexts = static::getStatisticalDataService()->getContextsForSendingReport();
 
-        $connectedStores = static::getStoreService()->getConnectedStores();
-
-        foreach ($connectedStores as $store) {
-            StoreContext::doWithStore($store, static function () use ($store) {
-                static::getQueueService()->enqueue('order-reports', new OrderReporter(), $store);
+        foreach ($contexts as $context) {
+            StoreContext::doWithStore($context, static function () use ($context) {
+                static::getStatisticalDataService()->setSendReportTime();
+                static::getQueueService()->enqueue('order-reports-' . $context, new OrderReporter(), $context);
             });
         }
     }
 
     /**
-     * @return StoreService
+     * @return StatisticalDataService
      */
-    private static function getStoreService(): StoreService
+    private static function getStatisticalDataService(): StatisticalDataService
     {
-        return ServiceRegister::getService(StoreService::class);
+        return ServiceRegister::getService(StatisticalDataService::class);
     }
 
     /**
@@ -54,13 +47,5 @@ class TickEventListener
     private static function getQueueService(): QueueService
     {
         return ServiceRegister::getService(QueueService::class);
-    }
-
-    /**
-     * @return TimeProvider
-     */
-    private static function getTimeProvider(): TimeProvider
-    {
-        return ServiceRegister::getService(TimeProvider::class);
     }
 }
