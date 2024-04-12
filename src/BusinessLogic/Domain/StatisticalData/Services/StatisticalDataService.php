@@ -19,17 +19,17 @@ class StatisticalDataService
     /**
      * @var StatisticalDataRepositoryInterface
      */
-    private $statisticalDataRepository;
+    protected $statisticalDataRepository;
 
     /**
      * @var SendReportRepositoryInterface
      */
-    private $sendReportRepository;
+    protected $sendReportRepository;
 
     /**
      * @var TimeProvider
      */
-    private $timeProvider;
+    protected $timeProvider;
 
     /**
      * @param StatisticalDataRepositoryInterface $statisticalDataRepository
