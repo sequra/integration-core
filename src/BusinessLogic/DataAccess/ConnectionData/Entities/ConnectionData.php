@@ -32,6 +32,10 @@ class ConnectionData extends Entity
      * @var DomainConnectionData
      */
     protected $connectionData;
+    /**
+     * @var EncryptorInterface
+     */
+    protected $encryptor;
 
     /**
      * @inheritDoc
@@ -66,8 +70,8 @@ class ConnectionData extends Entity
 
         $data['storeId'] = $this->storeId;
         $data['connectionData'] = [
-          'environment' => $this->connectionData->getEnvironment(),
-          'merchantId' => $this->connectionData->getMerchantId(),
+            'environment' => $this->connectionData->getEnvironment(),
+            'merchantId' => $this->connectionData->getMerchantId(),
             'authorizationCredentials' => [
                 'username' => $this->connectionData->getAuthorizationCredentials()->getUsername(),
                 'password' => $this->getEncryptorUtility()->encrypt(
