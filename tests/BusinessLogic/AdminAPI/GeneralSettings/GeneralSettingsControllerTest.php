@@ -31,6 +31,9 @@ class GeneralSettingsControllerTest extends BaseTestCase
      */
     private $generalSettingsRepository;
 
+    private $dummyGeneralSettings;
+    private $dummyGeneralSettingsRequest;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -40,6 +43,30 @@ class GeneralSettingsControllerTest extends BaseTestCase
         });
 
         $this->generalSettingsRepository = TestServiceRegister::getService(GeneralSettingsRepositoryInterface::class);
+
+        $this->dummyGeneralSettings = new GeneralSettings(
+            true,
+            true,
+            ['address 1', 'address 2'],
+            ['sku 1', 'sku 2'],
+            ['1', '2'],
+            false,
+            true,
+            true,
+            'P1Y'
+        );
+
+        $this->dummyGeneralSettingsRequest = new GeneralSettingsRequest(
+            true,
+            true,
+            ['address 1', 'address 2'],
+            ['sku 1', 'sku 2'],
+            ['1', '2'],
+            false,
+            true,
+            true,
+            'P1Y'
+        );
     }
 
     /**
@@ -89,13 +116,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
     public function testIsGetGeneralSettingsResponseSuccessful(): void
     {
         // Arrange
-        $this->generalSettingsRepository->setGeneralSettings(new GeneralSettings(
-            true,
-            true,
-            ['address 1', 'address 2'],
-            ['sku 1', 'sku 2'],
-            ['1', '2']
-        ));
+        $this->generalSettingsRepository->setGeneralSettings($this->dummyGeneralSettings);
 
         // Act
         $response = AdminAPI::get()->generalSettings('1')->getGeneralSettings();
@@ -110,13 +131,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
     public function testGetCountryConfigurationResponse(): void
     {
         // Arrange
-        $generalSettings = new GeneralSettings(
-            true,
-            true,
-            ['address 1', 'address 2'],
-            ['sku 1', 'sku 2'],
-            ['1', '2']
-        );
+        $generalSettings = $this->dummyGeneralSettings;
 
         StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
         $expectedResponse = new GeneralSettingsResponse($generalSettings);
@@ -134,13 +149,7 @@ class GeneralSettingsControllerTest extends BaseTestCase
     public function testGetGeneralSettingsResponseToArray(): void
     {
         // Arrange
-        $generalSettings = new GeneralSettings(
-            true,
-            true,
-            ['address 1', 'address 2'],
-            ['sku 1', 'sku 2'],
-            ['1', '2']
-        );
+        $generalSettings = $this->dummyGeneralSettings;
 
         StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
 
@@ -165,17 +174,8 @@ class GeneralSettingsControllerTest extends BaseTestCase
 
     public function testIsSaveResponseSuccessful(): void
     {
-        // Arrange
-        $generalSettings = new GeneralSettingsRequest(
-            true,
-            true,
-            ['address 1', 'address 2'],
-            ['sku 1', 'sku 2'],
-            ['1', '2']
-        );
-
         // Act
-        $response = AdminAPI::get()->generalSettings('1')->saveGeneralSettings($generalSettings);
+        $response = AdminAPI::get()->generalSettings('1')->saveGeneralSettings($this->dummyGeneralSettingsRequest);
 
         // Assert
         self::assertTrue($response->isSuccessful());
@@ -183,17 +183,8 @@ class GeneralSettingsControllerTest extends BaseTestCase
 
     public function testSaveResponse(): void
     {
-        // Arrange
-        $generalSettings = new GeneralSettingsRequest(
-            true,
-            true,
-            ['address 1', 'address 2'],
-            ['sku 1', 'sku 2'],
-            ['1', '2']
-        );
-
         // Act
-        $response = AdminAPI::get()->generalSettings('1')->saveGeneralSettings($generalSettings);
+        $response = AdminAPI::get()->generalSettings('1')->saveGeneralSettings($this->dummyGeneralSettingsRequest);
         $expectedResponse = new SuccessfulGeneralSettingsResponse();
 
         // Assert
@@ -202,17 +193,8 @@ class GeneralSettingsControllerTest extends BaseTestCase
 
     public function testSaveResponseToArray(): void
     {
-        // Arrange
-        $generalSettings = new GeneralSettingsRequest(
-            true,
-            true,
-            ['address 1', 'address 2'],
-            ['sku 1', 'sku 2'],
-            ['1', '2']
-        );
-
         // Act
-        $response = AdminAPI::get()->generalSettings('1')->saveGeneralSettings($generalSettings);
+        $response = AdminAPI::get()->generalSettings('1')->saveGeneralSettings($this->dummyGeneralSettingsRequest);
 
         // Assert
         self::assertEquals([], $response->toArray());
@@ -223,23 +205,18 @@ class GeneralSettingsControllerTest extends BaseTestCase
      */
     public function testIsUpdateResponseSuccessful(): void
     {
-        // Arrange
-        $generalSettings = new GeneralSettings(
-            true,
-            true,
-            ['address 1', 'address 2'],
-            ['sku 1', 'sku 2'],
-            ['1', '2']
-        );
-
-        StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
+        StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$this->dummyGeneralSettings]);
 
         $generalSettingsRequest = new GeneralSettingsRequest(
             false,
             false,
             ['address 3', 'address 4'],
             ['sku 3', 'sku 4'],
-            ['1', '2']
+            ['1', '2'],
+            true,
+            false,
+            false,
+            'P2Y'
         );
 
         // Act
@@ -254,23 +231,18 @@ class GeneralSettingsControllerTest extends BaseTestCase
      */
     public function testUpdateResponse(): void
     {
-        // Arrange
-        $generalSettings = new GeneralSettings(
-            true,
-            true,
-            ['address 1', 'address 2'],
-            ['sku 1', 'sku 2'],
-            ['1', '2']
-        );
-
-        StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
+        StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$this->dummyGeneralSettings]);
 
         $generalSettingsRequest = new GeneralSettingsRequest(
             false,
             false,
             ['address 3', 'address 4'],
             ['sku 3', 'sku 4'],
-            ['1', '2']
+            ['1', '2'],
+            true,
+            false,
+            false,
+            'P2Y'
         );
 
         // Act
@@ -286,23 +258,18 @@ class GeneralSettingsControllerTest extends BaseTestCase
      */
     public function testUpdateResponseToArray(): void
     {
-        // Arrange
-        $generalSettings = new GeneralSettings(
-            true,
-            true,
-            ['address 1', 'address 2'],
-            ['sku 1', 'sku 2'],
-            ['1', '2']
-        );
-
-        StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
+        StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$this->dummyGeneralSettings]);
 
         $generalSettingsRequest = new GeneralSettingsRequest(
             false,
             false,
             ['address 3', 'address 4'],
             ['sku 3', 'sku 4'],
-            ['1', '2']
+            ['1', '2'],
+            true,
+            false,
+            false,
+            'P2Y'
         );
 
         // Act
@@ -322,7 +289,11 @@ class GeneralSettingsControllerTest extends BaseTestCase
             'showSeQuraCheckoutAsHostedPage' => true,
             'allowedIPAddresses' => ['address 1', 'address 2'],
             'excludedProducts' => ['sku 1', 'sku 2'],
-            'excludedCategories' => ['1', '2']
+            'excludedCategories' => ['1', '2'],
+            'enabledForServices' => false,
+            'allowFirstServicePaymentDelay' => true,
+            'allowServiceRegItems' => true,
+            'defaultServicesEndDate' => 'P1Y'
         ];
     }
 
