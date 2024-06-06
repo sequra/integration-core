@@ -287,7 +287,8 @@ class BaseProxyTest extends BaseTestCase
 
         try {
             $this->proxy->get($request);
-        } catch (HttpApiRequestException $exception) {}
+        } catch (HttpApiRequestException $exception) {
+        }
 
         self::assertNotNull($exception);
         self::assertEquals(400, $exception->getCode());

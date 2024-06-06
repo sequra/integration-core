@@ -18,7 +18,8 @@ class StringValidator
      *
      * @return bool
      */
-    public static function isISO8601Date(string $string): bool {
+    public static function isISO8601Date(string $string): bool
+    {
         return (bool)DateTime::createFromFormat('Y-m-d', $string);
     }
 
@@ -29,7 +30,8 @@ class StringValidator
      *
      * @return bool
      */
-    public static function isISO8601Timestamp(string $string): bool {
+    public static function isISO8601Timestamp(string $string): bool
+    {
         return (bool)DateTime::createFromFormat('Y-m-d\TH:i:sP', $string);
     }
 
@@ -40,7 +42,8 @@ class StringValidator
      *
      * @return bool
      */
-    public static function isISO8601Duration(string $string): bool {
+    public static function isISO8601Duration(string $string): bool
+    {
         return (bool)preg_match('/^P(\d+Y)?(\d+M)?(\d+D)?(T(\d+H)?(\d+M)?(\d+S)?)?$/', $string);
     }
 
@@ -53,7 +56,8 @@ class StringValidator
      *
      * @return bool
      */
-    public static function isStringLengthBetween(string $string, int $minLength, int $maxLength): bool {
+    public static function isStringLengthBetween(string $string, int $minLength, int $maxLength): bool
+    {
         return strlen($string) >= $minLength && strlen($string) <= $maxLength;
     }
 
@@ -64,7 +68,8 @@ class StringValidator
      *
      * @return bool
      */
-    public static function isValidUrl(string $string): bool {
+    public static function isValidUrl(string $string): bool
+    {
         return (bool)filter_var($string, FILTER_VALIDATE_URL);
     }
 }

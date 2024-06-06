@@ -25,7 +25,7 @@ abstract class HttpClient
     /**
      * Forbidden HTTP status code.
      */
-   public const HTTP_STATUS_CODE_FORBIDDEN = 403;
+    public const HTTP_STATUS_CODE_FORBIDDEN = 403;
     /**
      * Not found HTTP status code.
      */
@@ -97,7 +97,6 @@ abstract class HttpClient
      * @param string $url Request URL. Full URL where request should be sent.
      * @param array|null $headers Request headers to send. Key as header name and value as header content. Optional.
      * @param string $body Request payload. String data to send as HTTP request payload. Optional.
-     *
      */
     public function requestAsync(string $method, string $url, ?array $headers = array(), string $body = ''): void
     {
@@ -255,8 +254,7 @@ abstract class HttpClient
         string $url,
         ?array $headers = array(),
         string $body = ''
-    ): bool
-    {
+    ): bool {
         try {
             $response = $this->request($method, $url, $headers, $body);
         } catch (HttpCommunicationException $ex) {

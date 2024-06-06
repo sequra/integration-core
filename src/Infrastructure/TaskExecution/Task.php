@@ -18,6 +18,7 @@ use RuntimeException;
 
 /**
  * Class Task
+ *
  * @package SeQura\Core\Infrastructure\TaskExecution
  */
 abstract class Task extends EventEmitter implements Serializable
@@ -106,8 +107,7 @@ abstract class Task extends EventEmitter implements Serializable
      *   equal to 2358 base points
      *
      * @throws InvalidArgumentException In case when progress percent is outside of 0 - 100 boundaries or not an float
-     * @see TaskProgressEvent and defers next @see AliveAnnouncedTaskEvent.
-     *
+     * @see    TaskProgressEvent and defers next @see AliveAnnouncedTaskEvent.
      */
     public function reportProgress($progressPercent)
     {
@@ -115,7 +115,9 @@ abstract class Task extends EventEmitter implements Serializable
             throw new InvalidArgumentException('Progress percentage must be value integer or float value');
         }
 
-        /** @var TimeProvider $timeProvider */
+        /**
+         * @var TimeProvider $timeProvider
+        */
         $timeProvider = ServiceRegister::getService(TimeProvider::CLASS_NAME);
         $this->lastAliveSignalTime = $timeProvider->getCurrentLocalTime();
 
@@ -124,16 +126,20 @@ abstract class Task extends EventEmitter implements Serializable
 
     /**
      * Reports that task is alive by emitting
+     *
      * @param boolean $force
      *
      * @see AliveAnnouncedTaskEvent.
      */
     public function reportAlive($force = false)
     {
-        /** @var TimeProvider $timeProvider */
+        /**
+         * @var TimeProvider $timeProvider
+        */
         $timeProvider = ServiceRegister::getService(TimeProvider::CLASS_NAME);
         $currentTime = $timeProvider->getCurrentLocalTime();
-        if ($force || $this->lastAliveSignalTime === null
+        if (
+            $force || $this->lastAliveSignalTime === null
             || $this->lastAliveSignalTime->getTimestamp() + self::ALIVE_SIGNAL_FREQUENCY < $currentTime->getTimestamp()
         ) {
             $this->fire(new AliveAnnouncedTaskEvent());
@@ -145,7 +151,6 @@ abstract class Task extends EventEmitter implements Serializable
      * Gets max inactivity period for a task.
      *
      * @return int Max inactivity period for a task in seconds.
-     *
      */
     public function getMaxInactivityPeriod()
     {

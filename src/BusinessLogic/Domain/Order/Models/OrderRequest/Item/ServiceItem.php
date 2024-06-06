@@ -88,21 +88,20 @@ class ServiceItem extends Item
         ?string $endsIn,
         ?string $supplier,
         ?bool $rendered
-    )
-    {
-        if((!$endsOn && !$endsIn) || ($endsOn && $endsIn)){
+    ) {
+        if ((!$endsOn && !$endsIn) || ($endsOn && $endsIn)) {
             throw new InvalidServiceEndTimeException('Exactly one of endsOn or endsIn should be set.');
         }
 
-        if($endsIn && !StringValidator::isISO8601Duration($endsIn)) {
+        if ($endsIn && !StringValidator::isISO8601Duration($endsIn)) {
             throw new InvalidDurationException('EndsIn must be a valid ISO 8601 formatted duration.');
         }
 
-        if($endsOn && !StringValidator::isISO8601Date($endsOn)) {
+        if ($endsOn && !StringValidator::isISO8601Date($endsOn)) {
             throw new InvalidDateException('EndsOn must be a valid ISO 8601 formatted date.');
         }
 
-        if($quantity < 0) {
+        if ($quantity < 0) {
             throw new InvalidQuantityException('Quantity cannot be a negative value.');
         }
 

@@ -50,7 +50,7 @@ class MockCreateOrderRequestBuilder implements CreateOrderRequestBuilder
         $merchant = new Merchant('testMerchantId');
         $merchantReference = new MerchantReference('test123');
         $cart = new Cart('testCurrency', false, [
-            new ProductItem('testItemReference','testName', 5,2, 10, false)
+            new ProductItem('testItemReference', 'testName', 5, 2, 10, false)
         ], $this->cartId);
 
         $deliveryMethod = new DeliveryMethod('testDeliveryMethodName');
@@ -72,8 +72,8 @@ class MockCreateOrderRequestBuilder implements CreateOrderRequestBuilder
             'ES'
         );
 
-        $customer = new Customer('test@test.test','testCode','testIpNum','testAgent');
-        $platform = new Platform('testName','testVersion','testUName','testDbName','testDbVersion');
+        $customer = new Customer('test@test.test', 'testCode', 'testIpNum', 'testAgent');
+        $platform = new Platform('testName', 'testVersion', 'testUName', 'testDbName', 'testDbVersion');
         $gui = new Gui(Gui::ALLOWED_VALUES['desktop']);
 
         return new CreateOrderRequest(

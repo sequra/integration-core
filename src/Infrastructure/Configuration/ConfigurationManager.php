@@ -87,7 +87,9 @@ class ConfigurationManager extends Singleton
      */
     public function saveConfigValue($name, $value, $isContextSpecific = true)
     {
-        /** @var ConfigEntity $config */
+        /**
+        * @var ConfigEntity $config
+        */
         $config = $this->getConfigEntity($name, $isContextSpecific) ?: new ConfigEntity();
         if ($isContextSpecific) {
             $config->setContext($this->getContext());
@@ -116,20 +118,28 @@ class ConfigurationManager extends Singleton
     protected function getConfigEntity($name, $isContextSpecific = true)
     {
         $filter = new QueryFilter();
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /**
+        * @noinspection PhpUnhandledExceptionInspection
+        */
         $filter->where('name', '=', $name);
         if ($isContextSpecific) {
-            /** @noinspection PhpUnhandledExceptionInspection */
+            /**
+            * @noinspection PhpUnhandledExceptionInspection
+            */
             $filter->where('context', '=', $this->getContext());
         }
 
-        /** @var ConfigEntity $config */
+        /**
+        * @var ConfigEntity $config
+        */
         $config = $this->getRepository()->selectOne($filter);
 
         return $config;
     }
 
-    /** @noinspection PhpDocMissingThrowsInspection */
+    /**
+    * @noinspection PhpDocMissingThrowsInspection
+    */
     /**
      * Returns repository instance.
      *
@@ -137,7 +147,9 @@ class ConfigurationManager extends Singleton
      */
     protected function getRepository()
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /**
+        * @noinspection PhpUnhandledExceptionInspection
+        */
         return RepositoryRegistry::getRepository(ConfigEntity::getClassName());
     }
 }

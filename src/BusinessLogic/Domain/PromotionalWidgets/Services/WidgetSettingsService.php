@@ -49,12 +49,11 @@ class WidgetSettingsService
      */
     public function __construct(
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
-        PaymentMethodsService             $paymentMethodsService,
-        CountryConfigurationService       $countryConfigService,
-        ConnectionService                 $connectionService,
-        WidgetsProxyInterface             $widgetsProxy
-    )
-    {
+        PaymentMethodsService $paymentMethodsService,
+        CountryConfigurationService $countryConfigService,
+        ConnectionService $connectionService,
+        WidgetsProxyInterface $widgetsProxy
+    ) {
         $this->widgetSettingsRepository = $widgetSettingsRepository;
         $this->paymentMethodsService = $paymentMethodsService;
         $this->countryConfigService = $countryConfigService;

@@ -165,7 +165,8 @@ class TaskRunner
                 // If task can't be deserialized we should fail it immediately since there is nothing we can dao to recover
                 $this->getQueue()->fail(
                     $runningItem,
-                    sprintf('Task %s is invalid or corrupted. Task deserialization failed.',
+                    sprintf(
+                        'Task %s is invalid or corrupted. Task deserialization failed.',
                         $runningItem->getId()
                     ),
                     true
@@ -306,7 +307,6 @@ class TaskRunner
     {
         $currentTime = $this->getTimeProvider()->getCurrentLocalTime()->getTimestamp();
         if (($currentTime - $this->aliveSinceUpdatedAt) < self::TASK_RUNNER_KEEP_ALIVE_PERIOD) {
-
             return;
         }
 
@@ -371,8 +371,8 @@ class TaskRunner
 
     /**
      * Gets @return QueueService Queue service instance.
-     * @see QueueService service instance.
      *
+     * @see QueueService service instance.
      */
     private function getQueue()
     {
@@ -385,8 +385,8 @@ class TaskRunner
 
     /**
      * Gets @return TaskRunnerStatusStorage Service instance.
-     * @see TaskRunnerStatusStorageInterface service instance.
      *
+     * @see TaskRunnerStatusStorageInterface service instance.
      */
     private function getRunnerStorage()
     {
@@ -413,8 +413,8 @@ class TaskRunner
 
     /**
      * Gets @return Configuration Service instance.
-     * @see Configuration service instance.
      *
+     * @see Configuration service instance.
      */
     private function getConfigurationService()
     {
@@ -427,8 +427,8 @@ class TaskRunner
 
     /**
      * Gets @return TimeProvider Service instance.
-     * @see TimeProvider instance.
      *
+     * @see TimeProvider instance.
      */
     private function getTimeProvider()
     {
@@ -441,8 +441,8 @@ class TaskRunner
 
     /**
      * Gets @return TaskRunnerWakeup Service instance.
-     * @see TaskRunnerWakeupInterface service instance.
      *
+     * @see TaskRunnerWakeupInterface service instance.
      */
     private function getTaskWakeup()
     {

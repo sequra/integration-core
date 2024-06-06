@@ -48,8 +48,7 @@ class OnboardingRequest extends Request
         string $password,
         bool $sendStatisticalData,
         ?string $merchantId = null
-    )
-    {
+    ) {
         $this->environment = $environment;
         $this->merchantId = $merchantId;
         $this->username = $username;

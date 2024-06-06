@@ -42,7 +42,7 @@ class WidgetLabels
     }
 
     /**
-     * @param array $messages
+     * @param  array $messages
      * @return void
      */
     public function setMessages(array $messages): void
@@ -59,7 +59,7 @@ class WidgetLabels
     }
 
     /**
-     * @param array $messagesBelowLimit
+     * @param  array $messagesBelowLimit
      * @return void
      */
     public function setMessagesBelowLimit(array $messagesBelowLimit): void

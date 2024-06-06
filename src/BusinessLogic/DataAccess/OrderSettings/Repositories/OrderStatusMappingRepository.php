@@ -84,7 +84,9 @@ class OrderStatusMappingRepository implements OrderStatusSettingsRepositoryInter
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /**
+        * @noinspection PhpIncompatibleReturnTypeInspection
+        */
         return $this->repository->selectOne($queryFilter);
     }
 }

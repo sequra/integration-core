@@ -63,17 +63,16 @@ class WidgetSettingsRequest extends Request
      * @param array $messagesBelowLimit
      */
     public function __construct(
-        bool    $enabled,
+        bool $enabled,
         ?string $assetsKey,
-        bool    $displayOnProductPage,
-        bool    $showInstallmentsInProductListing,
-        bool    $showInstallmentsInCartPage,
-        string  $miniWidgetSelector,
-        string   $widgetConfiguration,
-        array   $messages = [],
-        array   $messagesBelowLimit = []
-    )
-    {
+        bool $displayOnProductPage,
+        bool $showInstallmentsInProductListing,
+        bool $showInstallmentsInCartPage,
+        string $miniWidgetSelector,
+        string $widgetConfiguration,
+        array $messages = [],
+        array $messagesBelowLimit = []
+    ) {
         $this->enabled = $enabled;
         $this->assetsKey = $assetsKey;
         $this->displayOnProductPage = $displayOnProductPage;

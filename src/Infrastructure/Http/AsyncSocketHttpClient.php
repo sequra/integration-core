@@ -46,8 +46,7 @@ class AsyncSocketHttpClient extends CurlHttpClient
         string $url,
         ?array $headers = array(),
         string $body = ''
-    ): void
-    {
+    ): void {
         $url = $this->adjustUrlIfNeeded($url);
         $urlDetails = parse_url($url);
 
@@ -145,8 +144,7 @@ class AsyncSocketHttpClient extends CurlHttpClient
         string $path,
         array $headers,
         string $body
-    ): string
-    {
+    ): string {
         $payload = "$method $path HTTP/1.1\r\n";
         $payload .= "Host: $host\r\n";
 
@@ -182,8 +180,7 @@ class AsyncSocketHttpClient extends CurlHttpClient
         int $port,
         int $timeOut,
         string $payload
-    ): void
-    {
+    ): void {
         $socket = pfsockopen($transferProtocol . $host, $port, $errorCode, $errorMsg, $timeOut);
         if ($socket === false) {
             throw new HttpRequestException($errorMsg, $errorCode);

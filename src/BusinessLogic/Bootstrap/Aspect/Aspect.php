@@ -11,4 +11,3 @@ interface Aspect
 {
     public function applyOn(callable $callee, array $params = []);
 }
-

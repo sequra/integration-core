@@ -31,7 +31,7 @@ abstract class OrderRequestDTO extends DataTransferObject
                     lcfirst(preg_replace('/\d+/', '_$0', $propertyName))
                 ));
 
-                if(is_array($propertyValue)) {
+                if (is_array($propertyValue)) {
                     $snakeCaseProperties = $this->handleArrayProperty(
                         $snakeCaseProperties,
                         $snakeCasePropertyName,

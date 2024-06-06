@@ -106,7 +106,9 @@ class SendReportRepository implements SendReportRepositoryInterface
         $queryFilter = new QueryFilter();
         $queryFilter->where('sendReportTime', Operators::LESS_OR_EQUAL_THAN, $now);
 
-        /** @var SendReportEntity[] $result */
+        /**
+        * @var SendReportEntity[] $result
+        */
         $result = $this->repository->select($queryFilter);
 
         return $result ? array_map(function ($entity) {
@@ -128,7 +130,9 @@ class SendReportRepository implements SendReportRepositoryInterface
         $queryFilter = new QueryFilter();
         $queryFilter->where('context', Operators::EQUALS, $context ?? $this->storeContext->getStoreId());
 
-        /** @var SendReportEntity $statisticalData */
+        /**
+        * @var SendReportEntity $statisticalData
+        */
         $statisticalData = $this->repository->selectOne($queryFilter);
 
         return $statisticalData;

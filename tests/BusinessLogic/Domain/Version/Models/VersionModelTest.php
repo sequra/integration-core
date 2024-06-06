@@ -14,7 +14,7 @@ class VersionModelTest extends BaseTestCase
 {
     public function testSettersAndGetters(): void
     {
-        $version = new Version('v1.0.0','v1.1.1', 'test');
+        $version = new Version('v1.0.0', 'v1.1.1', 'test');
 
         $version->setCurrent('v2.2.2');
         $version->setNew('v.3.2.1');

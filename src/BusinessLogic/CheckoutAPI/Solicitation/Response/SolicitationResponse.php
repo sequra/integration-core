@@ -24,6 +24,7 @@ class SolicitationResponse extends Response
 
     /**
      * SolicitationResponse constructor.
+     *
      * @param SeQuraOrder $order
      * @param SeQuraPaymentMethod[] $availablePaymentMethods
      */
@@ -53,7 +54,7 @@ class SolicitationResponse extends Response
     {
         return [
             'order' => $this->order->toArray(),
-            'availablePaymentMethods' => array_map(static function(SeQuraPaymentMethod $paymentMethod) {
+            'availablePaymentMethods' => array_map(static function (SeQuraPaymentMethod $paymentMethod) {
                 return [
                     'product' => $paymentMethod->getProduct(),
                     'title' => $paymentMethod->getTitle(),

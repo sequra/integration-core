@@ -59,7 +59,6 @@ class MockTransactionLogRepository implements TransactionLogRepositoryInterface
 
     public function updateTransactionLog(TransactionLog $transactionLog): void
     {
-
     }
 
     public function logsExist(DateTime $beforeDate): bool

@@ -15,7 +15,6 @@ class Transformer
      * @param DataTransferObject $transformable Object to be transformed.
      *
      * @return array Transformed result.
-     *
      */
     public static function transform(DataTransferObject $transformable)
     {

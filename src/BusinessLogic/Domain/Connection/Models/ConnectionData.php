@@ -39,8 +39,7 @@ class ConnectionData extends DataTransferObject
         string $environment,
         ?string $merchantId,
         AuthorizationCredentials $authorizationCredentials
-    )
-    {
+    ) {
         if (!in_array($environment, [BaseProxy::LIVE_MODE,BaseProxy::TEST_MODE], true)) {
             throw new InvalidEnvironmentException();
         }

@@ -11,5 +11,4 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\ErrorResponse;
  */
 class WebhookErrorResponse extends ErrorResponse
 {
-
 }

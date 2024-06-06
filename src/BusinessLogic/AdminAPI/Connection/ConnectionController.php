@@ -112,7 +112,7 @@ class ConnectionController
     {
         try {
             $this->connectionService->isConnectionDataValid($connectionRequest->transformToDomainModel());
-        } catch (BadMerchantIdException|InvalidEnvironmentException|WrongCredentialsException|HttpRequestException $e) {
+        } catch (BadMerchantIdException | InvalidEnvironmentException | WrongCredentialsException | HttpRequestException $e) {
             return new ErrorResponse($e);
         }
 

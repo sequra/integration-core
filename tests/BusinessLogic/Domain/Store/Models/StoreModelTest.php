@@ -17,19 +17,19 @@ class StoreModelTest extends BaseTestCase
     {
         $this->expectException(EmptyStoreParameterException::class);
 
-        new Store('','test');
+        new Store('', 'test');
     }
 
     public function testEmptyStoreName(): void
     {
         $this->expectException(EmptyStoreParameterException::class);
 
-        new Store('test','');
+        new Store('test', '');
     }
 
     public function testSettersAndGetters(): void
     {
-        $store = new Store('3','Test store 3');
+        $store = new Store('3', 'Test store 3');
 
         $store->setStoreId('1');
         $store->setStoreName('Test store 1');

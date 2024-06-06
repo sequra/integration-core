@@ -36,8 +36,7 @@ class CountryConfigurationController
     public function __construct(
         CountryConfigurationService $countryConfigurationService,
         SellingCountriesService $sellingCountriesService
-    )
-    {
+    ) {
         $this->countryConfigurationService = $countryConfigurationService;
         $this->sellingCountriesService = $sellingCountriesService;
     }

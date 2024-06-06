@@ -613,7 +613,9 @@ class BootstrapComponent extends BaseBootstrapComponent
 
         EventBus::getInstance()->when(TickEvent::class, TickEventListener::class . '::handle');
 
-        /** @var QueueItemStateTransitionEventBus $queueBus */
+        /**
+        * @var QueueItemStateTransitionEventBus $queueBus
+        */
         $queueBus = ServiceRegister::getService(QueueItemStateTransitionEventBus::CLASS_NAME);
 
         $queueBus->when(

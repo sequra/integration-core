@@ -1,8 +1,12 @@
 <?php
 
-/** @noinspection PhpDocMissingThrowsInspection */
+/**
+ * @noinspection PhpDocMissingThrowsInspection
+*/
 
-/** @noinspection PhpUnusedParameterInspection */
+/**
+ * @noinspection PhpUnusedParameterInspection
+*/
 
 namespace SeQura\Core\Infrastructure\Configuration;
 
@@ -488,7 +492,9 @@ abstract class Configuration extends Singleton
      */
     protected function saveConfigValue($name, $value)
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /**
+        * @noinspection PhpUnhandledExceptionInspection
+        */
         return $this->getConfigurationManager()->saveConfigValue($name, $value, $this->isContextSpecific($name));
     }
 
@@ -502,7 +508,9 @@ abstract class Configuration extends Singleton
      */
     protected function getConfigValue($name, $default = null)
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /**
+        * @noinspection PhpUnhandledExceptionInspection
+        */
         return $this->getConfigurationManager()->getConfigValue($name, $default, $this->isContextSpecific($name));
     }
 

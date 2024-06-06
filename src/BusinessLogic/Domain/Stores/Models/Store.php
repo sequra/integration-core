@@ -30,7 +30,7 @@ class Store
      */
     public function __construct(string $storeId, string $storeName)
     {
-        if(empty($storeId) || empty($storeName)) {
+        if (empty($storeId) || empty($storeName)) {
             throw new EmptyStoreParameterException(
                 new TranslatableLabel('No parameter can be an empty string.', 'general.errors.empty')
             );

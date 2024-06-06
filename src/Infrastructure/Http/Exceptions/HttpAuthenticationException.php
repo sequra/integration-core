@@ -9,5 +9,4 @@ namespace SeQura\Core\Infrastructure\Http\Exceptions;
  */
 class HttpAuthenticationException extends HttpBaseException
 {
-
 }

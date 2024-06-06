@@ -305,7 +305,8 @@ class OrderReportProxyTest extends BaseTestCase
                 'testPostalCode2' . $id,
                 'testCity2' . $id,
                 'testState2' . $id,
-                'ES'),
+                'ES'
+            ),
             new TrackingPostal(
                 'testReference3' . $id,
                 'testCarrier3' . $id,

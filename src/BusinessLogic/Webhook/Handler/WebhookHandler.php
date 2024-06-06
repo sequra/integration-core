@@ -66,7 +66,9 @@ class WebhookHandler
      */
     protected function acknowledgeOrder(string $orderReference, string $state): void
     {
-        /** @var OrderProxy $orderProxy */
+        /**
+        * @var OrderProxy $orderProxy
+        */
         $orderProxy = ServiceRegister::getService(OrderProxyInterface::class);
         $order = $this->getSeQuraOrderByOrderReference($orderReference);
 
@@ -103,7 +105,9 @@ class WebhookHandler
         $filter = new QueryFilter();
         $filter->where('reference', Operators::EQUALS, $orderRef);
 
-        /** @var SeQuraOrder $order */
+        /**
+        * @var SeQuraOrder $order
+        */
         $order = $repository->selectOne($filter);
 
         return $order;

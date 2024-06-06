@@ -1,0 +1,40 @@
+name: CI
+on: push
+
+concurrency:
+  # For pull requests, cancel all currently-running jobs for this workflow
+  # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#concurrency
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  # Force terminal colors. @see https://www.npmjs.com/package/colors
+  FORCE_COLOR: 1
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Cache Composer dependencies
+      uses: actions/cache@v4
+      id: cache-composer
+      with:
+        path: |
+          vendor
+        key: composer-${{ hashFiles('composer.json') }}
+
+    - name: Install Composer dependencies
+      if: steps.cache-composer.outputs.cache-hit != 'true'
+      run: docker run --rm -v "$(pwd)":/app -w /app composer:latest composer install
+
+    - name: PHP_CodeSniffer
+        run: docker run --rm -v "$(pwd)":/app -w /app php:7.2-cli-alpine php vendor/bin/phpcs --standard=.phpcs.xml.dist .
+
+    # - name: PHPStan
+    #   run: docker run --rm -v "$(pwd)":/app -w /app php:7.2-cli-alpine php vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=512M
+
+    - name: Run Tests
+      run: docker run --rm -v "$(pwd)":/app -w /app php:7.2-cli-alpine php vendor/bin/phpunit --configuration phpunit.xml --testdox

@@ -60,8 +60,7 @@ class CreateOrderRequest extends BaseOrderRequest
         Gui $gui,
         MerchantReference $merchantReference = null,
         array $trackings = null
-    )
-    {
+    ) {
         $this->state = $state;
         $this->merchant = $merchant;
         $this->cart = $cart;
@@ -78,7 +77,7 @@ class CreateOrderRequest extends BaseOrderRequest
     /**
      * Create a CreateOrderRequest instance from an array.
      *
-     * @param array $data
+     * @param  array $data
      * @return CreateOrderRequest
      * @throws InvalidCartItemsException
      * @throws InvalidGuiLayoutValueException
@@ -185,11 +184,11 @@ class CreateOrderRequest extends BaseOrderRequest
             ->setPlatform($this->getPlatform())
             ->setGui($this->getGui());
 
-        if($this->getCart()->getCartRef()) {
+        if ($this->getCart()->getCartRef()) {
             $order->setCartId($this->getCart()->getCartRef());
         }
 
-        if($this->getMerchantReference()) {
+        if ($this->getMerchantReference()) {
             $order->setMerchantReference($this->getMerchantReference());
             $order->setOrderRef1($this->getMerchantReference()->getOrderRef1());
         }

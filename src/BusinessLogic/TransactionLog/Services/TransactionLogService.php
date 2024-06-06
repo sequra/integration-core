@@ -22,7 +22,9 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  */
 class TransactionLogService
 {
-    /** @var string Base URL for sequra portal */
+    /**
+    * @var string Base URL for sequra portal
+    */
     public const SEQURA_PORTAL_URL = 'https://simbox.sequrapi.com/orders/';
 
     /**
@@ -40,10 +42,9 @@ class TransactionLogService
 
     public function __construct(
         TransactionLogRepositoryInterface $transactionLogRepository,
-        OrderService                      $orderService,
-        ShopOrderService                  $integrationOrderService
-    )
-    {
+        OrderService $orderService,
+        ShopOrderService $integrationOrderService
+    ) {
         $this->transactionLogRepository = $transactionLogRepository;
         $this->orderService = $orderService;
         $this->integrationOrderService = $integrationOrderService;
@@ -61,7 +62,9 @@ class TransactionLogService
      */
     public function create(QueueItem $item): void
     {
-        /** @var Task | TransactionLogAwareInterface $task */
+        /**
+ * @var Task | TransactionLogAwareInterface $task
+*/
         $task = $item->getTask();
         if ($task === null) {
             return;
@@ -92,7 +95,6 @@ class TransactionLogService
      * @param TransactionLog $transactionLog
      *
      * @return void
-     *
      */
     public function save(TransactionLog $transactionLog): void
     {
@@ -105,7 +107,6 @@ class TransactionLogService
      * @param TransactionLog $transactionLog
      *
      * @return void
-     *
      */
     public function update(TransactionLog $transactionLog): void
     {
@@ -137,7 +138,9 @@ class TransactionLogService
      */
     public function load(QueueItem $item): void
     {
-        /** @var TransactionLogAwareInterface $task */
+        /**
+        * @var TransactionLogAwareInterface $task
+        */
         $task = $item->getTask();
 
         if ($task === null) {
@@ -241,7 +244,9 @@ class TransactionLogService
     private function createTransactionLogInstance(QueueItem $item): TransactionLog
     {
 
-        /** @var TransactionLogAwareInterface $task */
+        /**
+        * @var TransactionLogAwareInterface $task
+        */
         $task = $item->getTask();
         $order = $this->orderService->getOrderByShopReference($task->getTransactionData()->getMerchantReference());
         $paymentMethod = '';

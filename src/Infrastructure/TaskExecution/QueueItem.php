@@ -289,18 +289,20 @@ class QueueItem extends Entity
      */
     public function setStatus($status)
     {
-        if (!in_array(
-            $status,
-            array(
+        if (
+            !in_array(
+                $status,
+                array(
                 self::CREATED,
                 self::QUEUED,
                 self::IN_PROGRESS,
                 self::COMPLETED,
                 self::FAILED,
                 self::ABORTED,
-            ),
-            false
-        )) {
+                ),
+                false
+            )
+        ) {
             throw new InvalidArgumentException(
                 sprintf(
                     'Invalid QueueItem status: "%s". '
@@ -362,9 +364,11 @@ class QueueItem extends Entity
      */
     public function setLastExecutionProgressBasePoints($lastExecutionProgressBasePoints)
     {
-        if (!is_int($lastExecutionProgressBasePoints) ||
+        if (
+            !is_int($lastExecutionProgressBasePoints) ||
             $lastExecutionProgressBasePoints < 0 ||
-            10000 < $lastExecutionProgressBasePoints) {
+            10000 < $lastExecutionProgressBasePoints
+        ) {
             throw new InvalidArgumentException('Last execution progress percentage must be value between 0 and 100.');
         }
 
@@ -872,7 +876,7 @@ class QueueItem extends Entity
         $self = $this;
 
         $this->task->setExecutionId($this->getId());
-        $this->task->when(TaskProgressEvent::CLASS_NAME, static function(TaskProgressEvent $e) use ($self) {
+        $this->task->when(TaskProgressEvent::CLASS_NAME, static function (TaskProgressEvent $e) use ($self) {
             OnReportProgress::handle($self, $e->getProgressBasePoints());
         });
 

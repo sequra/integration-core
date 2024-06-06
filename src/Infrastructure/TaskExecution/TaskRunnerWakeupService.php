@@ -119,8 +119,8 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
 
     /**
      * Gets instance of @return TaskRunnerStatusStorage Service instance.
-     * @see TaskRunnerStatusStorageInterface.
      *
+     * @see TaskRunnerStatusStorageInterface.
      */
     private function getRunnerStorage()
     {
@@ -133,8 +133,8 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
 
     /**
      * Gets instance of @return GuidProvider Service instance.
-     * @see GuidProvider.
      *
+     * @see GuidProvider.
      */
     private function getGuidProvider()
     {
@@ -147,8 +147,8 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
 
     /**
      * Gets instance of @return TimeProvider Service instance.
-     * @see TimeProvider.
      *
+     * @see TimeProvider.
      */
     private function getTimeProvider()
     {
@@ -161,8 +161,8 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
 
     /**
      * Gets instance of @return AsyncProcessStarterService Service instance.
-     * @see AsyncProcessStarterService.
      *
+     * @see AsyncProcessStarterService.
      */
     private function getAsyncProcessStarter()
     {

@@ -78,7 +78,9 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
      */
     public function getOldestConnectionSettingsStoreId(): ?string
     {
-        /** @var ConnectionDataEntity $connectionData */
+        /**
+        * @var ConnectionDataEntity $connectionData
+        */
         $connectionData = $this->repository->selectOne(new QueryFilter());
 
         return $connectionData ? $connectionData->getStoreId() : null;
@@ -89,7 +91,9 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
      */
     public function getAllConnectionSettingsStores(): array
     {
-        /** @var ConnectionDataEntity[] $entities */
+        /**
+        * @var ConnectionDataEntity[] $entities
+        */
         $entities = $this->repository->select();
 
         return $entities ? array_map(function ($entity) {
@@ -110,7 +114,7 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
         /**
-         * @var  ConnectionDataEntity $connectionData
+         * @var ConnectionDataEntity $connectionData
          */
         $connectionData = $this->repository->selectOne($queryFilter);
 

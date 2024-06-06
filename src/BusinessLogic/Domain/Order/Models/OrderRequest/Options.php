@@ -41,8 +41,7 @@ class Options extends OrderRequestDTO
         bool $usesShippedCart = null,
         bool $addressesMayBeMissing = null,
         bool $immutableCustomerData = null
-    )
-    {
+    ) {
         $this->hasJquery = $hasJquery;
         $this->usesShippedCart = $usesShippedCart;
         $this->addressesMayBeMissing = $addressesMayBeMissing;

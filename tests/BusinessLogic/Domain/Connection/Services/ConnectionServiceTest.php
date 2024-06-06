@@ -23,7 +23,6 @@ use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
  */
 class ConnectionServiceTest extends BaseTestCase
 {
-
     /**
      * @var ConnectionService
      */

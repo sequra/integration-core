@@ -39,7 +39,7 @@ class SolicitationGetFormCheckoutApiTest extends BaseTestCase
 
         TestServiceRegister::registerService(
             SolicitationController::class,
-            function() {
+            function () {
                 return new SolicitationController(new OrderService(
                     $this->orderProxy,
                     $this->orderRepository

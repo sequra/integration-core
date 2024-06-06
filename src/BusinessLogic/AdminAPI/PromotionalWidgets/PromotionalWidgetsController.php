@@ -26,8 +26,7 @@ class PromotionalWidgetsController
      */
     public function __construct(
         WidgetSettingsService $widgetSettingsService
-    )
-    {
+    ) {
         $this->widgetSettingsService = $widgetSettingsService;
     }
 

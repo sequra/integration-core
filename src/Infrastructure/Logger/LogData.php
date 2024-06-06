@@ -77,8 +77,7 @@ class LogData extends Entity
         $component = '',
         $message = '',
         array $context = array()
-    )
-    {
+    ) {
         $this->integration = $integration;
         $this->logLevel = $logLevel;
         $this->component = $component;

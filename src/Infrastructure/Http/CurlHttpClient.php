@@ -70,8 +70,7 @@ class CurlHttpClient extends HttpClient
         string $url,
         ?array $headers = array(),
         string $body = ''
-    ): HttpResponse
-    {
+    ): HttpResponse {
         $this->setCurlFollowLocationFlag();
         $this->setCurlSessionAndCommonRequestParts($method, $url, $headers, $body);
         $this->setCurlSessionOptionsForSynchronousRequest();
@@ -137,7 +136,8 @@ class CurlHttpClient extends HttpClient
         [$result, $statusCode] = $this->executeCurlRequest();
 
         // 0 status code is set when timeout is reached
-        if (!in_array($statusCode, array(0, 200), true)
+        if (
+            !in_array($statusCode, array(0, 200), true)
             && curl_errno($this->curlSession) !== CURLE_OPERATION_TIMEOUTED
         ) {
             $curlError = '';
@@ -167,8 +167,7 @@ class CurlHttpClient extends HttpClient
         string $url,
         array $headers,
         string $body
-    ): void
-    {
+    ): void {
         $this->initializeCurlSession();
         $this->setCurlSessionOptionsBasedOnMethod($method);
         $this->setCurlSessionUrlHeadersAndBody($method, $url, $headers, $body);
@@ -231,6 +230,7 @@ class CurlHttpClient extends HttpClient
 
     /**
      * Sets common options for cURL session.
+     *
      * @noinspection CurlSslServerSpoofingInspection
      *
      * @return void

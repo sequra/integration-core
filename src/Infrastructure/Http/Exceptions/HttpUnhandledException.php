@@ -9,5 +9,4 @@ namespace SeQura\Core\Infrastructure\Http\Exceptions;
  */
 class HttpUnhandledException extends HttpBaseException
 {
-
 }

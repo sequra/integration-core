@@ -28,7 +28,7 @@ class PaymentMethodsResponse extends Response
     /**
      * @inheritDoc
      */
-    public function toArray():array
+    public function toArray(): array
     {
         $methods = [];
         foreach ($this->paymentMethods as $paymentMethod) {

@@ -14,7 +14,7 @@ interface SeQuraOrderRepositoryInterface
     /**
      * Gets Sequra order by shop order reference
      *
-     * @param string $shopOrderReference
+     * @param  string $shopOrderReference
      * @return SeQuraOrder|null
      */
     public function getByShopReference(string $shopOrderReference): ?SeQuraOrder;
@@ -22,7 +22,7 @@ interface SeQuraOrderRepositoryInterface
     /**
      * Gets Sequra orders by shop order references
      *
-     * @param string[] $shopOrderReferences
+     * @param  string[] $shopOrderReferences
      * @return SeQuraOrder[]
      */
     public function getOrderBatchByShopReferences(array $shopOrderReferences): array;
@@ -30,7 +30,7 @@ interface SeQuraOrderRepositoryInterface
     /**
      * Gets Sequra order by shop cart/quote reference
      *
-     * @param string $cartId
+     * @param  string $cartId
      * @return SeQuraOrder|null
      */
     public function getByCartId(string $cartId): ?SeQuraOrder;
@@ -38,7 +38,7 @@ interface SeQuraOrderRepositoryInterface
     /**
      * Gets Sequra order by Sequra order reference
      *
-     * @param string $sequraOrderReference
+     * @param  string $sequraOrderReference
      * @return SeQuraOrder|null
      */
     public function getByOrderReference(string $sequraOrderReference): ?SeQuraOrder;
@@ -46,7 +46,7 @@ interface SeQuraOrderRepositoryInterface
     /**
      * Insert/update SeQuraOrder for current store context.
      *
-     * @param SeQuraOrder $order
+     * @param  SeQuraOrder $order
      * @return void
      */
     public function setSeQuraOrder(SeQuraOrder $order): void;
@@ -54,7 +54,7 @@ interface SeQuraOrderRepositoryInterface
     /**
      * Deletes Sequra order form storage
      *
-     * @param SeQuraOrder $existingOrder
+     * @param  SeQuraOrder $existingOrder
      * @return void
      */
     public function deleteOrder(SeQuraOrder $existingOrder): void;

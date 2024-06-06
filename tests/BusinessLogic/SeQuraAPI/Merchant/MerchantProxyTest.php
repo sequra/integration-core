@@ -134,7 +134,7 @@ class MerchantProxyTest extends BaseTestCase
             __DIR__ . '/../../Common/ApiResponses/Merchant/GetPaymentMethodsResponses/SuccessfulResponse.json'
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody)]);
         $response = $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('testId'));
         $responseBody = json_decode($rawResponseBody, true);
         $paymentMethods = [];
@@ -145,7 +145,7 @@ class MerchantProxyTest extends BaseTestCase
             }
         }
 
-        for ($i = 0, $iMax = count($paymentMethods); $i < $iMax; $i++){
+        for ($i = 0, $iMax = count($paymentMethods); $i < $iMax; $i++) {
             self::assertEquals($paymentMethods[$i]['product'], $response[$i]->getProduct());
             self::assertEquals($paymentMethods[$i]['campaign'], $response[$i]->getCampaign());
             self::assertEquals($paymentMethods[$i]['title'], $response[$i]->getTitle());
@@ -177,11 +177,12 @@ class MerchantProxyTest extends BaseTestCase
             __DIR__ . '/../../Common/ApiResponses/Merchant/GetPaymentMethodsResponses/InvalidMerchantIdResponse.json'
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody)]);
 
         try {
             $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('test'));
-        } catch (HttpApiInvalidUrlParameterException $exception) {}
+        } catch (HttpApiInvalidUrlParameterException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);
@@ -199,11 +200,12 @@ class MerchantProxyTest extends BaseTestCase
     {
         $exception = null;
         $rawResponseBody = file_get_contents(__DIR__ . '/../../Common/ApiResponses/InvalidCredentialsResponse.txt');
-        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody)]);
 
         try {
             $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('test'));
-        } catch (HttpApiUnauthorizedException $exception) {}
+        } catch (HttpApiUnauthorizedException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);

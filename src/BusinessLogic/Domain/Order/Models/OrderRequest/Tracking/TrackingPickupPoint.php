@@ -88,13 +88,12 @@ class TrackingPickupPoint extends Tracking
         string $city = null,
         string $state = null,
         string $countryCode = null
-    )
-    {
-        if($countryCode && !StringValidator::isStringLengthBetween($countryCode, 2, 3)){
+    ) {
+        if ($countryCode && !StringValidator::isStringLengthBetween($countryCode, 2, 3)) {
             throw new InvalidCodeException('Country code must be ISO 3166 formatted code.');
         }
 
-        if($availableAt && !StringValidator::isISO8601Timestamp($availableAt)){
+        if ($availableAt && !StringValidator::isISO8601Timestamp($availableAt)) {
             throw new InvalidTimestampException('Available at must be ISO 8601 formatted timestamp.');
         }
 

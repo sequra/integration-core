@@ -42,13 +42,12 @@ class GeneralSettings
      * @param string[]|null $excludedCategories
      */
     public function __construct(
-        bool    $sendOrderReportsPeriodicallyToSeQura,
-        ?bool   $showSeQuraCheckoutAsHostedPage,
-        ?array  $allowedIPAddresses,
-        ?array  $excludedProducts,
-        ?array  $excludedCategories
-    )
-    {
+        bool $sendOrderReportsPeriodicallyToSeQura,
+        ?bool $showSeQuraCheckoutAsHostedPage,
+        ?array $allowedIPAddresses,
+        ?array $excludedProducts,
+        ?array $excludedCategories
+    ) {
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
         $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
         $this->allowedIPAddresses = $allowedIPAddresses;

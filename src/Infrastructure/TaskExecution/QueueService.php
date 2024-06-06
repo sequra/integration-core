@@ -84,11 +84,11 @@ class QueueService
     /**
      * Creates queue item.
      *
-     * @param $queueName
-     * @param Task $task
-     * @param string $context
-     * @param int $priority
-     * @param int $parent
+     * @param  $queueName
+     * @param  Task $task
+     * @param  string $context
+     * @param  int $priority
+     * @param  int $parent
      * @return QueueItem
      *
      * @throws QueueStorageUnavailableException
@@ -140,7 +140,6 @@ class QueueService
      */
     public function validateExecutionRequirements(QueueItem $queueItem)
     {
-
     }
 
     /**
@@ -427,7 +426,9 @@ class QueueService
     public function find($id)
     {
         $filter = new QueryFilter();
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /**
+         * @noinspection PhpUnhandledExceptionInspection
+        */
         $filter->where('id', '=', $id);
 
         return $this->getStorage()->selectOne($filter);
@@ -446,14 +447,20 @@ class QueueService
     public function findLatestByType($type, $context = '')
     {
         $filter = new QueryFilter();
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /**
+         * @noinspection PhpUnhandledExceptionInspection
+        */
         $filter->where('taskType', '=', $type);
         if (!empty($context)) {
-            /** @noinspection PhpUnhandledExceptionInspection */
+            /**
+             * @noinspection PhpUnhandledExceptionInspection
+            */
             $filter->where('context', '=', $context);
         }
 
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /**
+         * @noinspection PhpUnhandledExceptionInspection
+        */
         $filter->orderBy('queueTime', 'DESC');
 
         return $this->getStorage()->selectOne($filter);
@@ -469,7 +476,9 @@ class QueueService
     public function findRunningItems()
     {
         $filter = new QueryFilter();
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /**
+         * @noinspection PhpUnhandledExceptionInspection
+        */
         $filter->where('status', '=', QueueItem::IN_PROGRESS);
 
         return $this->getStorage()->select($filter);
@@ -530,8 +539,7 @@ class QueueService
         array $additionalWhere = array(),
         $reportStateChange = false,
         $previousState = ''
-    )
-    {
+    ) {
         try {
             if ($reportStateChange) {
                 $this->reportBeforeStatusChange($queueItem, $previousState);
@@ -558,7 +566,9 @@ class QueueService
      */
     private function reportBeforeStatusChange(QueueItem $queueItem, $previousState)
     {
-        /** @var EventBus $eventBus */
+        /**
+         * @var EventBus $eventBus
+        */
         $eventBus = ServiceRegister::getService(EventBus::CLASS_NAME);
         $eventBus->fire(new BeforeQueueStatusChangeEvent($queueItem, $previousState));
     }
@@ -571,7 +581,9 @@ class QueueService
      */
     private function reportStatusChange(QueueItem $queueItem, $previousState)
     {
-        /** @var EventBus $eventBus */
+        /**
+         * @var EventBus $eventBus
+        */
         $eventBus = ServiceRegister::getService(EventBus::CLASS_NAME);
         $eventBus->fire(new QueueStatusChangedEvent($queueItem, $previousState));
     }
@@ -586,7 +598,9 @@ class QueueService
     private function getStorage()
     {
         if ($this->storage === null) {
-            /** @noinspection PhpUnhandledExceptionInspection */
+            /**
+             * @noinspection PhpUnhandledExceptionInspection
+            */
             $this->storage = RepositoryRegistry::getQueueItemRepository();
         }
 
