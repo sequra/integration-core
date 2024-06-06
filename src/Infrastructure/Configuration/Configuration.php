@@ -367,7 +367,6 @@ abstract class Configuration extends Singleton
      * Sets HTTP configuration options for given domain.
      *
      * @param string $domain A domain for which to save configuration options.
-     *
      * @param Options[] $options HTTP configuration options
      */
     public function setHttpConfigurationOptions($domain, array $options)

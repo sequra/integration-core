@@ -34,7 +34,7 @@ class CurlHttpClient extends HttpClient
      */
     public const SSL_STRICT_MODE = false;
     /**
-     * cURL options for the request.
+     * CURL options for the request.
      *
      * @var array
      */
@@ -46,7 +46,7 @@ class CurlHttpClient extends HttpClient
      */
     protected $followLocation = true;
     /**
-     * cURL handler.
+     * CURL handler.
      *
      * @var resource
      */

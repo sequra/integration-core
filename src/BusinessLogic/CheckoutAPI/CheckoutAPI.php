@@ -29,7 +29,8 @@ class CheckoutAPI
     }
 
     /**
-     * @param  string $storeId
+     * @param string $storeId
+     *
      * @return SolicitationController
      */
     public function solicitation(string $storeId): object

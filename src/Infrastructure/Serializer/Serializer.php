@@ -12,7 +12,9 @@ use SeQura\Core\Infrastructure\ServiceRegister;
 abstract class Serializer
 {
     /**
-     * string CLASS_NAME Class name identifier.
+     * Class name identifier.
+     *
+     * @var string CLASS_NAME
      */
     const CLASS_NAME = __CLASS__;
 

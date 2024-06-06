@@ -77,7 +77,8 @@ class CreateOrderRequest extends BaseOrderRequest
     /**
      * Create a CreateOrderRequest instance from an array.
      *
-     * @param  array $data
+     * @param array $data
+     *
      * @return CreateOrderRequest
      * @throws InvalidCartItemsException
      * @throws InvalidGuiLayoutValueException

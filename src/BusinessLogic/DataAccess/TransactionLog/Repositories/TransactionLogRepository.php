@@ -117,7 +117,8 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
     }
 
     /**
-     * @param  DateTime|null $disconnectTime
+     * @param DateTime|null $disconnectTime
+     *
      * @return int
      *
      * @throws QueryFilterInvalidParamException

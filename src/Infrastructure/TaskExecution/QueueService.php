@@ -84,11 +84,12 @@ class QueueService
     /**
      * Creates queue item.
      *
-     * @param  $queueName
-     * @param  Task $task
-     * @param  string $context
-     * @param  int $priority
-     * @param  int $parent
+     * @param $queueName
+     * @param Task $task
+     * @param string $context
+     * @param int $priority
+     * @param int $parent
+     *
      * @return QueueItem
      *
      * @throws QueueStorageUnavailableException
@@ -110,7 +111,6 @@ class QueueService
      * @param string $context Task execution context. If integration supports multiple accounts (middleware
      *     integration) context based on account id should be provided. Failing to do this will result in global task
      *     context and unpredictable task execution.
-     *
      * @param int $priority
      *
      * @return QueueItem Created queue item.
@@ -415,11 +415,11 @@ class QueueService
     }
 
     /**
-     * @noinspection PhpDocMissingThrowsInspection
-     *
      * Finds queue item by Id.
      *
      * @param int $id Id of a queue item to find.
+     *
+     * @noinspection PhpDocMissingThrowsInspection
      *
      * @return QueueItem|null Queue item if found; otherwise, NULL.
      */
@@ -435,12 +435,12 @@ class QueueService
     }
 
     /**
-     * @noinspection PhpDocMissingThrowsInspection
-     *
      * Finds latest queue item by type.
      *
      * @param string $type Type of a queue item to find.
      * @param string $context Task scope restriction, default is global scope.
+     *
+     * @noinspection PhpDocMissingThrowsInspection
      *
      * @return QueueItem|null Queue item if found; otherwise, NULL.
      */

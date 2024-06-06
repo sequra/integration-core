@@ -60,12 +60,13 @@ class Cart extends OrderRequestDTO
     private $items;
 
     /**
-     * @param  string $currency
-     * @param  bool $gift
-     * @param  array $items
-     * @param  string|int|null $cartRef
-     * @param  string|null $createdAt
-     * @param  string|null $updatedAt
+     * @param string $currency
+     * @param bool $gift
+     * @param array $items
+     * @param string|int|null $cartRef
+     * @param string|null $createdAt
+     * @param string|null $updatedAt
+     *
      * @throws InvalidCartItemsException
      */
     public function __construct(

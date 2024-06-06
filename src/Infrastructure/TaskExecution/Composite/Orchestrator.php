@@ -172,8 +172,9 @@ abstract class Orchestrator extends Task
     /**
      * Creates sub-job.
      *
-     * @param  Task $task
-     * @param  int $weight
+     * @param Task $task
+     * @param int $weight
+     *
      * @return ExecutionDetails
      *
      * @throws QueueStorageUnavailableException
