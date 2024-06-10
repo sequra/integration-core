@@ -64,8 +64,8 @@ class GeneralSettingsRequest extends Request
      * @param string[]|null $excludedProducts
      * @param string[]|null $excludedCategories
      * @param bool $enabledForServices Default value is false
-     * @param bool $allowFirstServicePaymentDelay Default value is true
-     * @param bool $allowServiceRegItems Default value is true
+     * @param bool $allowFirstServicePaymentDelay Default value is false
+     * @param bool $allowServiceRegItems Default value is false
      * @param string $defaultServicesEndDate Default value is 'P1Y'
      */
     public function __construct(
@@ -75,8 +75,8 @@ class GeneralSettingsRequest extends Request
         ?array $excludedProducts,
         ?array $excludedCategories,
         bool $enabledForServices = false,
-        bool $allowFirstServicePaymentDelay = true,
-        bool $allowServiceRegItems = true,
+        bool $allowFirstServicePaymentDelay = false,
+        bool $allowServiceRegItems = false,
         string $defaultServicesEndDate = 'P1Y'
     ) {
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
