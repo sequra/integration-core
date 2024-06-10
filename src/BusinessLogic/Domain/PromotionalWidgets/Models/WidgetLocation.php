@@ -33,7 +33,7 @@ class WidgetLocation
     /**
      * Constructor.
      */
-    public function __construct(string $selForTarget, string $product, string $country)
+    public function __construct(string $selForTarget, string $product = null, string $country = null)
     {
         $this->selForTarget = $selForTarget;
         $this->product = $product;
@@ -72,14 +72,14 @@ class WidgetLocation
 
     public static function fromArray(array $data): ?self
     {
-        if (!isset($data['selForTarget']) || !isset($data['product']) || !isset($data['country'])) {
+        if (!isset($data['selForTarget'])) {
             return null;
         }
 
         return new self(
             $data['selForTarget'],
-            $data['product'],
-            $data['country']
+            isset($data['product']) ? $data['product'] : null,
+            isset($data['country']) ? $data['country'] : null
         );
     }
 
@@ -90,5 +90,10 @@ class WidgetLocation
             'product' => $this->product,
             'country' => $this->country
         ];
+    }
+
+    public function isDefaultLocation(): bool
+    {
+        return $this->product === null && $this->country === null;
     }
 }

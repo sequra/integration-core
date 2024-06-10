@@ -38,7 +38,7 @@ class WidgetLocationConfig
      */
     private $locations;
 
-    public function __construct(string $selForPrice, string $selForAltPrice, string $selForAltPriceTrigger, array $locations = [])
+    public function __construct(string $selForPrice, string $selForAltPrice, string $selForAltPriceTrigger, array $locations)
     {
         $this->selForPrice = $selForPrice;
         $this->selForAltPrice = $selForAltPrice;
@@ -61,6 +61,9 @@ class WidgetLocationConfig
         return $this->selForAltPriceTrigger;
     }
 
+    /**
+     * @return WidgetLocation[]
+     */
     public function getLocations(): array
     {
         return $this->locations;
@@ -105,6 +108,11 @@ class WidgetLocationConfig
             }
         }
 
+        if (empty($locations)) {
+            // At least one location is required with the default selector.
+            return null;
+        }
+
         return new self(
             $data['selForPrice'],
             $data['selForAltPrice'],
@@ -126,5 +134,19 @@ class WidgetLocationConfig
             'selForAltPriceTrigger' => $this->selForAltPriceTrigger,
             'locations' => $locations
         ];
+    }
+
+    /**
+     * Get the default location. That is, the location where only the CSS selector is defined.
+     */
+    public function getDefaultLocation(): ?WidgetLocation
+    {
+        foreach ($this->locations as $location) {
+            if ($location->isDefaultLocation()) {
+                return $location;
+            }
+        }
+
+        return null;
     }
 }

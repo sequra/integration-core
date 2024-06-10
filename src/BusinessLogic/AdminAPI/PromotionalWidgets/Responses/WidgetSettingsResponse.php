@@ -34,6 +34,16 @@ class WidgetSettingsResponse extends Response
             return [];
         }
 
+        $locationConfig = $this->widgetSettings->getLocationConfig();
+        $nonDefaultLocations = [];
+        if ($locationConfig?->getLocations()) {
+            foreach ($locationConfig->getLocations() as $location) {
+                if (!$location->isDefaultLocation()) {
+                    $nonDefaultLocations[] = $location->toArray();
+                }
+            }
+        }
+
         return [
             'useWidgets' => $this->widgetSettings->isEnabled(),
             'displayWidgetOnProductPage' => $this->widgetSettings->isDisplayOnProductPage(),
@@ -46,6 +56,11 @@ class WidgetSettingsResponse extends Response
                 'messages' => $this->widgetSettings->getWidgetLabels()->getMessages(),
                 'messagesBelowLimit' => $this->widgetSettings->getWidgetLabels()->getMessagesBelowLimit(),
             ] : [],
+            'selForPrice' => $locationConfig?->getSelForPrice(),
+            'selForAltPrice' => $locationConfig?->getSelForAltPrice(),
+            'selForAltPriceTrigger' => $locationConfig?->getSelForAltPriceTrigger(),
+            'defaultLocationSel' => $locationConfig?->getDefaultLocation()?->getSelForTarget(),
+            'locations' => $nonDefaultLocations,
         ];
     }
 }
