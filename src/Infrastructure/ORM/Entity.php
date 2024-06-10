@@ -142,7 +142,7 @@ abstract class Entity extends DataTransferObject
      * @param string $key Key to get value for.
      * @param mixed $default Default value if key is not present. NULL by default.
      *
-     * @return string Value from the array for given key if key exists; otherwise, $default value.
+     * @return mixed Value from the array for given key if key exists; otherwise, $default value.
      */
     protected static function getArrayValue($search, $key, $default = null)
     {
