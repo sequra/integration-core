@@ -35,12 +35,10 @@ class WidgetSettingsResponse extends Response
         }
 
         $locationConfig = $this->widgetSettings->getLocationConfig();
-        $nonDefaultLocations = [];
-        if ($locationConfig?->getLocations()) {
-            foreach ($locationConfig->getLocations() as $location) {
-                if (!$location->isDefaultLocation()) {
-                    $nonDefaultLocations[] = $location->toArray();
-                }
+        $customLocations = [];
+        if ($locationConfig) {
+            foreach ($locationConfig->getCustomLocations() as $loc) {
+                $customLocations[] = $loc->toArray();
             }
         }
 
@@ -56,11 +54,11 @@ class WidgetSettingsResponse extends Response
                 'messages' => $this->widgetSettings->getWidgetLabels()->getMessages(),
                 'messagesBelowLimit' => $this->widgetSettings->getWidgetLabels()->getMessagesBelowLimit(),
             ] : [],
-            'selForPrice' => $locationConfig?->getSelForPrice(),
-            'selForAltPrice' => $locationConfig?->getSelForAltPrice(),
-            'selForAltPriceTrigger' => $locationConfig?->getSelForAltPriceTrigger(),
-            'defaultLocationSel' => $locationConfig?->getDefaultLocation()?->getSelForTarget(),
-            'locations' => $nonDefaultLocations,
+            'selForPrice' => $locationConfig ? $locationConfig->getSelForPrice() : null,
+            'selForAltPrice' => $locationConfig ? $locationConfig->getSelForAltPrice() : null,
+            'selForAltPriceTrigger' => $locationConfig ? $locationConfig->getSelForAltPriceTrigger() : null,
+            'selForDefaultLocation' => $locationConfig ? $locationConfig->getSelForDefaultLocation() : null,
+            'customLocations' => $customLocations,
         ];
     }
 }

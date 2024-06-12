@@ -69,12 +69,12 @@ class WidgetSettingsRequest extends Request
     /**
      * @var string|null
      */
-    protected $defaultLocationSel;
+    protected $selForDefaultLocation;
 
     /**
      * @var array
      */
-    protected $locations;
+    protected $customLocations;
 
     /**
      * @param bool $enabled
@@ -89,8 +89,8 @@ class WidgetSettingsRequest extends Request
      * @param string|null $selForPrice
      * @param string|null $selForAltPrice
      * @param string|null $selForAltPriceTrigger
-     * @param string|null $defaultLocationSel CSS selector for the default location.
-     * @param array $locations Must be an array with the same structure defined at WidgetLocation::toArray().
+     * @param string|null $selForDefaultLocation CSS selector for the default location.
+     * @param array $customLocations Must be an array with the same structure defined at WidgetLocation::toArray().
      */
     public function __construct(
         bool $enabled,
@@ -105,8 +105,8 @@ class WidgetSettingsRequest extends Request
         ?string $selForPrice = null,
         ?string $selForAltPrice = null,
         ?string $selForAltPriceTrigger = null,
-        ?string $defaultLocationSel = null,
-        array $locations = []
+        ?string $selForDefaultLocation = null,
+        array $customLocations = []
     ) {
         $this->enabled = $enabled;
         $this->assetsKey = $assetsKey;
@@ -120,8 +120,8 @@ class WidgetSettingsRequest extends Request
         $this->selForPrice = $selForPrice;
         $this->selForAltPrice = $selForAltPrice;
         $this->selForAltPriceTrigger = $selForAltPriceTrigger;
-        $this->defaultLocationSel = $defaultLocationSel;
-        $this->locations = $locations;
+        $this->selForDefaultLocation = $selForDefaultLocation;
+        $this->customLocations = $customLocations;
     }
 
     /**
@@ -148,16 +148,8 @@ class WidgetSettingsRequest extends Request
                 'selForPrice' => $this->selForPrice,
                 'selForAltPrice' => $this->selForAltPrice,
                 'selForAltPriceTrigger' => $this->selForAltPriceTrigger,
-                'locations' => array_merge(
-                    [
-                        [
-                            'selForTarget' => $this->defaultLocationSel,
-                            'product' => null,
-                            'country' => null
-                        ]
-                    ],
-                    $this->locations
-                )
+                'selForDefaultLocation' => $this->selForDefaultLocation,
+                'customLocations' => $this->customLocations
             ])
         );
     }
