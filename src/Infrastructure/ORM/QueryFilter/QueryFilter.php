@@ -4,6 +4,7 @@ namespace SeQura\Core\Infrastructure\ORM\QueryFilter;
 
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use DateTime;
+
 use function in_array;
 
 /**

@@ -18,14 +18,15 @@ class GetFormHttpRequest extends HttpRequest
     public function __construct(GetFormRequest $request)
     {
         parent::__construct(
-            '/orders/'. $request->getOrderId() .'/form_v2',
+            '/orders/' . $request->getOrderId() . '/form_v2',
             [],
             $this->transformQueryParameters($request),
             ['Accept' => 'Accept: text/html']
         );
     }
 
-    private function transformQueryParameters(GetFormRequest $request): array {
+    private function transformQueryParameters(GetFormRequest $request): array
+    {
         $request->getProduct() && $params['product'] = $request->getProduct();
         $request->getCampaign() && $params['campaign'] = $request->getCampaign();
         $request->getAjax() && $params['ajax'] = $request->getAjax();

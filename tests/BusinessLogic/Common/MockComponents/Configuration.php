@@ -4,7 +4,6 @@ namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
 class Configuration extends \SeQura\Core\Infrastructure\Configuration\Configuration
 {
-
     /**
      * @inheritDoc
      */

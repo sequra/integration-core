@@ -42,12 +42,11 @@ class UIStateService
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
      */
     public function __construct(
-        ConnectionService                       $connectionService,
-        ConnectionDataRepositoryInterface       $connectionDataRepository,
+        ConnectionService $connectionService,
+        ConnectionDataRepositoryInterface $connectionDataRepository,
         CountryConfigurationRepositoryInterface $countryConfigurationRepository,
-        WidgetSettingsRepositoryInterface       $widgetSettingsRepository
-    )
-    {
+        WidgetSettingsRepositoryInterface $widgetSettingsRepository
+    ) {
         $this->connectionService = $connectionService;
         $this->connectionDataRepository = $connectionDataRepository;
         $this->countryConfigurationRepository = $countryConfigurationRepository;

@@ -85,7 +85,9 @@ class GeneralSettingsRepository implements GeneralSettingsRepositoryInterface
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
-        /** @var  GeneralSettingsEntity $generalSettings */
+        /**
+        * @var GeneralSettingsEntity $generalSettings
+        */
         $generalSettings = $this->repository->selectOne($queryFilter);
 
         return $generalSettings;

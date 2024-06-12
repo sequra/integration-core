@@ -50,8 +50,7 @@ class GeneralSettingsRequest extends Request
         ?array $allowedIPAddresses,
         ?array $excludedProducts,
         ?array $excludedCategories
-    )
-    {
+    ) {
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
         $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
         $this->allowedIPAddresses = $allowedIPAddresses;

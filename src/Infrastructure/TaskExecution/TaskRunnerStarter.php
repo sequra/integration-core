@@ -188,7 +188,9 @@ class TaskRunnerStarter implements Runnable
         $this->getTaskRunner()->setGuid($this->guid);
         $this->getTaskRunner()->run();
 
-        /** @var EventBus $eventBus */
+        /**
+         * @var EventBus $eventBus
+        */
         $eventBus = ServiceRegister::getService(EventBus::CLASS_NAME);
         $eventBus->fire(new TickEvent());
 

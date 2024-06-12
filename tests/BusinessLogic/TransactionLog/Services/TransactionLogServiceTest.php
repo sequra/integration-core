@@ -62,7 +62,7 @@ class TransactionLogServiceTest extends BaseTestCase
         $this->repository = new MockTransactionLogRepository();
         TestServiceRegister::registerService(
             TransactionLogRepositoryInterface::class,
-            function (){
+            function () {
                 return $this->repository;
             }
         );

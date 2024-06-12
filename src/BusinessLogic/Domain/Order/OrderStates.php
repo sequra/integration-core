@@ -19,7 +19,8 @@ class OrderStates
      *
      * @return string[]
      */
-    public static function toArray(): array {
+    public static function toArray(): array
+    {
         return [
             self::STATE_SOLICITED,
             self::STATE_APPROVED,

@@ -35,6 +35,7 @@ class ExecutionDetails implements Serializable
 
     /**
      * ExecutionDetails constructor.
+     *
      * @param int $executionId
      * @param int $weight
      */

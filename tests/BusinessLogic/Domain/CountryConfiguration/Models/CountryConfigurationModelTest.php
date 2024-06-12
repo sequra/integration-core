@@ -18,26 +18,26 @@ class CountryConfigurationModelTest extends BaseTestCase
     {
         $this->expectException(EmptyCountryConfigurationParameterException::class);
 
-        new CountryConfiguration('test','');
+        new CountryConfiguration('test', '');
     }
 
     public function testEmptyCountryCode(): void
     {
         $this->expectException(EmptyCountryConfigurationParameterException::class);
 
-        new CountryConfiguration('','test');
+        new CountryConfiguration('', 'test');
     }
 
     public function testInvalidCountryCode(): void
     {
         $this->expectException(InvalidCountryCodeForConfigurationException::class);
 
-        new CountryConfiguration('test','test');
+        new CountryConfiguration('test', 'test');
     }
 
     public function testSettersAndGetters(): void
     {
-        $countryConfiguration = new CountryConfiguration('CO','logeecom');
+        $countryConfiguration = new CountryConfiguration('CO', 'logeecom');
 
         $countryConfiguration->setCountryCode('ES');
         $countryConfiguration->setMerchantId('logeecom2');

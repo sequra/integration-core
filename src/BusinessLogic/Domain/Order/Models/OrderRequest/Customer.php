@@ -146,8 +146,7 @@ class Customer extends OrderRequestDTO
         array $previousOrders = null,
         Vehicle $vehicle = null,
         $loggedIn = 'unknown'
-    )
-    {
+    ) {
         $this->givenNames = $givenNames;
         $this->surnames = $surnames;
         $this->email = $email;

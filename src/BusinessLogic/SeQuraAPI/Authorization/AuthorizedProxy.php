@@ -30,8 +30,7 @@ class AuthorizedProxy extends BaseProxy
     public function __construct(
         HttpClient $client,
         ConnectionDataRepositoryInterface $connectionDataRepository
-    )
-    {
+    ) {
         $connectionData = $connectionDataRepository->getConnectionData();
         parent::__construct($client, $connectionData ? $connectionData->getEnvironment() : self::TEST_MODE);
 
@@ -47,7 +46,7 @@ class AuthorizedProxy extends BaseProxy
     {
         $connectionData = $this->connectionDataRepository->getConnectionData();
 
-        if(!$connectionData) {
+        if (!$connectionData) {
             return parent::getHeaders();
         }
 

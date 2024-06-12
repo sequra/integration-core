@@ -53,7 +53,9 @@ class AutoTestService
 
         $this->logHttpOptions();
 
-        /** @var QueueService $queueService */
+        /**
+        * @var QueueService $queueService
+        */
         $queueService = ServiceRegister::getService(QueueService::CLASS_NAME);
         $queueItem = $queueService->enqueue('Auto-test', new AutoTestTask('DUMMY TEST DATA'));
 

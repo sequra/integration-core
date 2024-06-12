@@ -89,18 +89,17 @@ class OrderReport extends OrderRequestDTO
      * @throws InvalidOrderDeliveryStateException
      */
     public function __construct(
-        string            $state,
+        string $state,
         MerchantReference $merchantReference,
-        Cart              $cart,
-        DeliveryMethod    $deliveryMethod,
-        Customer          $customer,
-        ?string           $sentAt = null,
-        ?array            $trackings = null,
-        ?Cart             $remainingCart = null,
-        ?Address          $deliveryAddress = null,
-        ?Address          $invoiceAddress = null
-    )
-    {
+        Cart $cart,
+        DeliveryMethod $deliveryMethod,
+        Customer $customer,
+        ?string $sentAt = null,
+        ?array $trackings = null,
+        ?Cart $remainingCart = null,
+        ?Address $deliveryAddress = null,
+        ?Address $invoiceAddress = null
+    ) {
         if (!in_array($state, OrderDeliveryStates::toArray(), true)) {
             throw new InvalidOrderDeliveryStateException('Invalid order delivery state: ' . $state);
         }

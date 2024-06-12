@@ -67,6 +67,6 @@ class OrderReportServiceTest extends BaseTestCase
      */
     private function getSendReportRequest(): ReportData
     {
-        return new ReportData('testMerchantId', [],[]);
+        return new ReportData('testMerchantId', [], []);
     }
 }

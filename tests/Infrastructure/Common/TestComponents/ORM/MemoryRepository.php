@@ -40,7 +40,7 @@ class MemoryRepository implements RepositoryInterface, MassInsert
     public function select(QueryFilter $filter = null)
     {
         /** @var Entity $entity */
-        $entity = new $this->entityClass;
+        $entity = new $this->entityClass();
         $type = $entity->getConfig()->getType();
 
         $fieldIndexMap = IndexHelper::mapFieldsToIndexes($entity);

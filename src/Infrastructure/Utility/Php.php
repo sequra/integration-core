@@ -13,7 +13,9 @@ class Php
         $results = [];
 
         foreach (array_reverse(class_parents($class)) + [$class => $class] as $c) {
-            /** @noinspection SlowArrayOperationsInLoopInspection */
+            /**
+             * @noinspection SlowArrayOperationsInLoopInspection
+            */
             $results = array_merge($results, static::traitUsesRecursive($c));
         }
 
@@ -25,7 +27,9 @@ class Php
         $traits = class_uses($trait) ?: [];
 
         foreach ($traits as $t) {
-            /** @noinspection SlowArrayOperationsInLoopInspection */
+            /**
+             * @noinspection SlowArrayOperationsInLoopInspection
+            */
             $traits = array_merge($traits, static::traitUsesRecursive($t));
         }
 

@@ -11,6 +11,7 @@ use InvalidArgumentException;
 
 /**
  * Class Process
+ *
  * @package SeQura\Core\Infrastructure\ORM\Entities
  */
 class Process extends Entity

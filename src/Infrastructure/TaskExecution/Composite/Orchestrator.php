@@ -58,8 +58,7 @@ abstract class Orchestrator extends Task
     public static function fromArray(array $array)
     {
         $entity = new static();
-        foreach ($array['taskList'] as $data)
-        {
+        foreach ($array['taskList'] as $data) {
             $entity->taskList[] = ExecutionDetails::fromArray($data);
         }
 
@@ -175,6 +174,7 @@ abstract class Orchestrator extends Task
      *
      * @param Task $task
      * @param int $weight
+     *
      * @return ExecutionDetails
      *
      * @throws QueueStorageUnavailableException
@@ -231,7 +231,9 @@ abstract class Orchestrator extends Task
      */
     private function getContext()
     {
-        /** @var ConfigurationManager $configManager */
+        /**
+         * @var ConfigurationManager $configManager
+        */
         $configManager = ServiceRegister::getService(ConfigurationManager::class);
 
         return $configManager->getContext();
@@ -278,7 +280,9 @@ abstract class Orchestrator extends Task
      */
     private function startSubJobs()
     {
-        $ids = array_map(static function (ExecutionDetails $d) {return $d->getExecutionId();}, $this->taskList);
+        $ids = array_map(static function (ExecutionDetails $d) {
+            return $d->getExecutionId();
+        }, $this->taskList);
         if (empty($ids)) {
             return;
         }

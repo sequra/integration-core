@@ -9,5 +9,4 @@ namespace SeQura\Core\BusinessLogic\Webhook\Exceptions;
  */
 class OrderNotFoundException extends \Exception
 {
-
 }

@@ -58,6 +58,7 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
 
     /**
      * AsyncProcessStarterService constructor.
+     *
      * @throws RepositoryNotRegisteredException
      */
     protected function __construct()
@@ -97,7 +98,9 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
             $filter = new QueryFilter();
             $filter->where('guid', '=', $guid);
 
-            /** @var Process $process */
+            /**
+             * @var Process $process
+            */
             $process = $this->processRepository->selectOne($filter);
             if ($process !== null) {
                 $process->getRunner()->run();

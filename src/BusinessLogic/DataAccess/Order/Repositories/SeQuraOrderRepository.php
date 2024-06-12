@@ -33,7 +33,9 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         $filter = new QueryFilter();
         $filter->where('orderRef1', Operators::EQUALS, $shopOrderReference);
 
-        /** @var SeQuraOrder|null $result */
+        /**
+        * @var SeQuraOrder|null $result
+        */
         $result =  $this->repository->selectOne($filter);
 
         return $result;
@@ -44,7 +46,9 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         $filter = new QueryFilter();
         $filter->where('orderRef1', Operators::IN, $shopOrderReferences);
 
-        /** @var SeQuraOrder[] $result */
+        /**
+        * @var SeQuraOrder[] $result
+        */
         $result =  $this->repository->select($filter);
 
         return $result;
@@ -55,7 +59,9 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         $filter = new QueryFilter();
         $filter->where('cartId', Operators::EQUALS, $cartId);
 
-        /** @var SeQuraOrder|null $result */
+        /**
+        * @var SeQuraOrder|null $result
+        */
         $result =  $this->repository->selectOne($filter);
 
         return $result;
@@ -66,7 +72,9 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         $filter = new QueryFilter();
         $filter->where('reference', Operators::EQUALS, $sequraOrderReference);
 
-        /** @var SeQuraOrder|null $result */
+        /**
+        * @var SeQuraOrder|null $result
+        */
         $result =  $this->repository->selectOne($filter);
 
         return $result;

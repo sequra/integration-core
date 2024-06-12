@@ -4,6 +4,7 @@ namespace SeQura\Core\Infrastructure\ORM;
 
 /**
  * Class IntermediateObject
+ *
  * @package SeQura\Core\Infrastructure\ORM
  */
 class IntermediateObject

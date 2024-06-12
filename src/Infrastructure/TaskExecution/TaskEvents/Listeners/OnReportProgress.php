@@ -40,7 +40,9 @@ class OnReportProgress
             throw new RuntimeException("Parent not available.");
         }
 
-        /** @var Orchestrator $task */
+        /**
+         * @var Orchestrator $task
+        */
         $task = $parent->getTask();
         if ($task === null || !($task instanceof Orchestrator)) {
             throw new RuntimeException("Failed to retrieve task.");

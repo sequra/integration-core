@@ -144,7 +144,7 @@ class ConnectionProxyTest extends BaseTestCase
             __DIR__ . '/../../Common/ApiResponses/Merchant/GetPaymentMethodsResponses/SuccessfulResponse.json'
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody)]);
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'test',
@@ -153,7 +153,8 @@ class ConnectionProxyTest extends BaseTestCase
 
         try {
             $this->proxy->validateConnection(new ValidateConnectionRequest($connectionData));
-        } catch (Exception $exception) {}
+        } catch (Exception $exception) {
+        }
 
         self::assertNull($exception);
     }
@@ -177,11 +178,12 @@ class ConnectionProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody)]);
 
         try {
             $this->proxy->validateConnection(new ValidateConnectionRequest($connectionData));
-        } catch (HttpApiInvalidUrlParameterException $exception) {}
+        } catch (HttpApiInvalidUrlParameterException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);
@@ -200,7 +202,7 @@ class ConnectionProxyTest extends BaseTestCase
     {
         $exception = null;
         $rawResponseBody = file_get_contents(__DIR__ . '/../../Common/ApiResponses/InvalidCredentialsResponse.txt');
-        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody)]);
 
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
@@ -210,7 +212,8 @@ class ConnectionProxyTest extends BaseTestCase
 
         try {
             $this->proxy->validateConnection(new ValidateConnectionRequest($connectionData));
-        } catch (HttpApiUnauthorizedException $exception) {}
+        } catch (HttpApiUnauthorizedException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);

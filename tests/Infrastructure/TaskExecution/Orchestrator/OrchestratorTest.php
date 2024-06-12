@@ -47,8 +47,12 @@ class OrchestratorTest extends TestCase
         TestServiceRegister::registerService(QueueItemStateTransitionEventBus::CLASS_NAME, static function () {
             return QueueItemStateTransitionEventBus::getInstance();
         });
-        TestServiceRegister::registerService(TaskRunnerWakeup::CLASS_NAME, static function() {return new TaskRunnerWakeupService();});
-        TestServiceRegister::registerService(ShopLoggerAdapter::CLASS_NAME, static function() {return new TestShopLogger();});
+        TestServiceRegister::registerService(TaskRunnerWakeup::CLASS_NAME, static function () {
+            return new TaskRunnerWakeupService();
+        });
+        TestServiceRegister::registerService(ShopLoggerAdapter::CLASS_NAME, static function () {
+            return new TestShopLogger();
+        });
         RepositoryRegistry::registerRepository(QueueItem::CLASS_NAME, MemoryQueueItemRepository::getClassName());
     }
 

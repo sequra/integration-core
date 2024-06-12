@@ -70,8 +70,10 @@ class EntityTranslator
             throw new EntityClassException('Entity has not provided class name.');
         }
 
-        /** @var Entity $entity */
-        $entity = new $data['class_name'];
+        /**
+         * @var Entity $entity
+        */
+        $entity = new $data['class_name']();
         $entity->inflate($data);
         if (!($entity instanceof $this->entityClass)) {
             throw new EntityClassException("Unserialized entity is not of class {$this->entityClass}");

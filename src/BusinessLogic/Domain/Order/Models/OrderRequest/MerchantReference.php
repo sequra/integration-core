@@ -33,6 +33,7 @@ class MerchantReference extends OrderRequestDTO
      * Creates a new MerchantReference instance from an array.
      *
      * @param array $data
+     *
      * @return MerchantReference
      */
     public static function fromArray(array $data): MerchantReference

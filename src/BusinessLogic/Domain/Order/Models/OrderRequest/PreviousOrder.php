@@ -75,8 +75,7 @@ class PreviousOrder extends OrderRequestDTO
         string $paymentMethod = null,
         string $postalCode = null,
         string $countryCode = null
-    )
-    {
+    ) {
         $this->createdAt = $createdAt;
         $this->amount = $amount;
         $this->currency = $currency;

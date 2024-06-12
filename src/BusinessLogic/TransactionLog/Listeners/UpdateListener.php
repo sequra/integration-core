@@ -61,7 +61,9 @@ class UpdateListener extends Listener
         $this->event = $event;
         $this->queueItem = $this->extractQueueItem();
 
-        /** @var TransactionLogAwareInterface $task */
+        /**
+        * @var TransactionLogAwareInterface $task
+        */
         $task = $this->queueItem->getTask();
         $this->transactionLog = $task->getTransactionLog();
     }
@@ -77,7 +79,9 @@ class UpdateListener extends Listener
 
         $queueItem = $event->getQueueItem();
 
-        /** @var TransactionLogAwareInterface $task */
+        /**
+ * @var TransactionLogAwareInterface $task
+*/
         $task = $queueItem->getTask();
 
         return !(!$task || !$task->getTransactionLog());

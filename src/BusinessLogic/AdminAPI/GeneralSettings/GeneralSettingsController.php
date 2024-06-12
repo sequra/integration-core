@@ -32,10 +32,9 @@ class GeneralSettingsController
      * @param CategoryService $categoryService
      */
     public function __construct(
-        GeneralSettingsService   $generalSettingsService,
-        CategoryService          $categoryService
-    )
-    {
+        GeneralSettingsService $generalSettingsService,
+        CategoryService $categoryService
+    ) {
         $this->generalSettingsService = $generalSettingsService;
         $this->categoryService = $categoryService;
     }

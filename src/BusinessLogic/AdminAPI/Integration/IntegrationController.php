@@ -42,8 +42,7 @@ class IntegrationController
         VersionService $versionService,
         Configuration $configurationService,
         UIStateService $stateService
-    )
-    {
+    ) {
         $this->versionService = $versionService;
         $this->configurationService = $configurationService;
         $this->stateService = $stateService;

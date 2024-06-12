@@ -24,7 +24,7 @@ class SeQuraPaymentMethodTest extends BaseTestCase
             'test',
             'test',
             'test',
-            new SeQuraCost(1,1,1,1),
+            new SeQuraCost(1, 1, 1, 1),
             new DateTime('2015-09-31'),
             new DateTime('2015-09-31'),
             'test',
@@ -36,7 +36,7 @@ class SeQuraPaymentMethodTest extends BaseTestCase
             1
         );
 
-        $newCost = new SeQuraCost(2,2,2,2);
+        $newCost = new SeQuraCost(2, 2, 2, 2);
         $newStartsAt = new DateTime();
         $newEndsAt = new DateTime();
         $seQuraPaymentMethod->setProduct('product');

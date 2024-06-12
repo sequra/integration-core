@@ -224,15 +224,15 @@ abstract class BaseProxy
         }
 
         switch ($response->getStatus()) {
-            case HttpClient::HTTP_STATUS_CODE_UNAUTHORIZED :
+            case HttpClient::HTTP_STATUS_CODE_UNAUTHORIZED:
                 throw HttpApiUnauthorizedException::fromErrorResponse($response, 'Wrong credentials.');
-            case HttpClient::HTTP_STATUS_CODE_FORBIDDEN :
-                throw HttpApiInvalidUrlParameterException::fromErrorResponse($response,'Access forbidden.');
-            case HttpClient::HTTP_STATUS_CODE_NOT_FOUND :
+            case HttpClient::HTTP_STATUS_CODE_FORBIDDEN:
+                throw HttpApiInvalidUrlParameterException::fromErrorResponse($response, 'Access forbidden.');
+            case HttpClient::HTTP_STATUS_CODE_NOT_FOUND:
                 throw HttpApiNotFoundException::fromErrorResponse($response, 'Page not found.');
-            case HttpClient::HTTP_STATUS_CODE_CONFLICT :
+            case HttpClient::HTTP_STATUS_CODE_CONFLICT:
                 throw HttpApiInvalidRequestBodyException::fromErrorResponse($response, 'Invalid request body.');
-            default :
+            default:
                 throw HttpApiRequestException::fromErrorResponse($response);
         }
     }

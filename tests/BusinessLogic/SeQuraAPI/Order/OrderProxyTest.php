@@ -162,7 +162,7 @@ class OrderProxyTest extends BaseTestCase
             __DIR__ . '/../../Common/ApiResponses/Order/GetPaymentMethodsResponses/SuccessfulResponse.json'
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody)]);
         $response = $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('testId'));
         $responseBody = json_decode($rawResponseBody, true);
         $paymentMethods = [];
@@ -173,7 +173,7 @@ class OrderProxyTest extends BaseTestCase
             }
         }
 
-        for ($i = 0, $iMax = count($paymentMethods); $i < $iMax; $i++){
+        for ($i = 0, $iMax = count($paymentMethods); $i < $iMax; $i++) {
             self::assertEquals($paymentMethods[$i]['product'], $response[$i]->getProduct());
             self::assertEquals($paymentMethods[$i]['campaign'], $response[$i]->getCampaign());
             self::assertEquals($paymentMethods[$i]['title'], $response[$i]->getTitle());
@@ -205,11 +205,12 @@ class OrderProxyTest extends BaseTestCase
             __DIR__ . '/../../Common/ApiResponses/Order/GetPaymentMethodsResponses/InvalidOrderIdResponse.json'
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody)]);
 
         try {
             $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('test'));
-        } catch (HttpApiInvalidUrlParameterException $exception) {}
+        } catch (HttpApiInvalidUrlParameterException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);
@@ -227,11 +228,12 @@ class OrderProxyTest extends BaseTestCase
     {
         $exception = null;
         $rawResponseBody = file_get_contents(__DIR__ . '/../../Common/ApiResponses/InvalidCredentialsResponse.txt');
-        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody)]);
 
         try {
             $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('test'));
-        } catch (HttpApiUnauthorizedException $exception) {}
+        } catch (HttpApiUnauthorizedException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);
@@ -311,7 +313,7 @@ class OrderProxyTest extends BaseTestCase
             __DIR__ . '/../../Common/ApiResponses/Order/GetPaymentMethodsResponses/SuccessfulResponse.json'
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody)]);
         $response = $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('testId'));
         $responseBody = json_decode($rawResponseBody, true);
         $paymentMethodCategories = [];
@@ -320,7 +322,7 @@ class OrderProxyTest extends BaseTestCase
             $paymentMethodCategories[] = $category;
         }
 
-        for ($i = 0, $iMax = count($paymentMethodCategories); $i < $iMax; $i++){
+        for ($i = 0, $iMax = count($paymentMethodCategories); $i < $iMax; $i++) {
             self::assertEquals($paymentMethodCategories[$i]['title'], $response[$i]->getTitle());
             self::assertEquals($paymentMethodCategories[$i]['description'], $response[$i]->getDescription());
             self::assertEquals($paymentMethodCategories[$i]['icon'], $response[$i]->getIcon());
@@ -358,11 +360,12 @@ class OrderProxyTest extends BaseTestCase
             __DIR__ . '/../../Common/ApiResponses/Order/GetPaymentMethodsResponses/InvalidOrderIdResponse.json'
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody)]);
 
         try {
             $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('test'));
-        } catch (HttpApiInvalidUrlParameterException $exception) {}
+        } catch (HttpApiInvalidUrlParameterException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);
@@ -380,11 +383,12 @@ class OrderProxyTest extends BaseTestCase
     {
         $exception = null;
         $rawResponseBody = file_get_contents(__DIR__ . '/../../Common/ApiResponses/InvalidCredentialsResponse.txt');
-        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody)]);
 
         try {
             $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('test'));
-        } catch (HttpApiUnauthorizedException $exception) {}
+        } catch (HttpApiUnauthorizedException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);
@@ -426,7 +430,7 @@ class OrderProxyTest extends BaseTestCase
             ))
         ]);
 
-        $this->proxy->getForm(new GetFormRequest('testId', 'prod1','camp1', true));
+        $this->proxy->getForm(new GetFormRequest('testId', 'prod1', 'camp1', true));
 
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
@@ -489,7 +493,7 @@ class OrderProxyTest extends BaseTestCase
             __DIR__ . '/../../Common/ApiResponses/Order/GetFormResponses/SuccessfulResponse.html'
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody)]);
         $response = $this->proxy->getForm(new GetFormRequest('testId'));
 
         self::assertEquals($rawResponseBody, $response->getForm());
@@ -507,11 +511,12 @@ class OrderProxyTest extends BaseTestCase
             __DIR__ . '/../../Common/ApiResponses/Order/GetFormResponses/InvalidOrderIdResponse.html'
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(404, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(404, [], $rawResponseBody)]);
 
         try {
             $this->proxy->getForm(new GetFormRequest('test'));
-        } catch (HttpApiNotFoundException $exception) {}
+        } catch (HttpApiNotFoundException $exception) {
+        }
 
         self::assertNotNull($exception);
         self::assertEquals('Page not found.', $exception->getMessage());
@@ -528,11 +533,12 @@ class OrderProxyTest extends BaseTestCase
     {
         $exception = null;
         $rawResponseBody = file_get_contents(__DIR__ . '/../../Common/ApiResponses/InvalidCredentialsResponse.txt');
-        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody)]);
 
         try {
             $this->proxy->getForm(new GetFormRequest('test'));
-        } catch (HttpApiUnauthorizedException $exception) {}
+        } catch (HttpApiUnauthorizedException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);
@@ -603,7 +609,7 @@ class OrderProxyTest extends BaseTestCase
 
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
-        self::assertEquals(json_decode($expectedRequestBody,true), json_decode($lastRequest['body'],true));
+        self::assertEquals(json_decode($expectedRequestBody, true), json_decode($lastRequest['body'], true));
     }
 
     /**
@@ -623,7 +629,7 @@ class OrderProxyTest extends BaseTestCase
 
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
-        self::assertEquals(json_decode($expectedRequestBody,true), json_decode($lastRequest['body'],true));
+        self::assertEquals(json_decode($expectedRequestBody, true), json_decode($lastRequest['body'], true));
     }
 
     /**
@@ -638,8 +644,8 @@ class OrderProxyTest extends BaseTestCase
         $createOrderRequest = $this->generateMinimalCreateOrderRequest();
         $response = $this->proxy->createOrder($createOrderRequest);
 
-        self::assertEquals('testUUID',$response->getReference());
-        self::assertEquals($createOrderRequest->getState(),$response->getState());
+        self::assertEquals('testUUID', $response->getReference());
+        self::assertEquals($createOrderRequest->getState(), $response->getState());
     }
 
     /**
@@ -654,12 +660,12 @@ class OrderProxyTest extends BaseTestCase
         $createOrderRequest = $this->generateFullCreateOrderRequest();
         $response = $this->proxy->createOrder($createOrderRequest);
 
-        self::assertEquals('testUUID',$response->getReference());
-        self::assertEquals($createOrderRequest->getState(),$response->getState());
-        self::assertEquals($createOrderRequest->getCart()->getCartRef() ,$response->getCartId());
-        self::assertEquals($createOrderRequest->getMerchantReference()->getOrderRef1() ,$response->getOrderRef1());
+        self::assertEquals('testUUID', $response->getReference());
+        self::assertEquals($createOrderRequest->getState(), $response->getState());
+        self::assertEquals($createOrderRequest->getCart()->getCartRef(), $response->getCartId());
+        self::assertEquals($createOrderRequest->getMerchantReference()->getOrderRef1(), $response->getOrderRef1());
         self::assertEquals(
-            $createOrderRequest->getMerchant()->getEventsWebhook()->getParameters()['signature'] ,
+            $createOrderRequest->getMerchant()->getEventsWebhook()->getParameters()['signature'],
             $response->getMerchant()->getEventsWebhook()->getParameters()['signature']
         );
     }
@@ -676,11 +682,12 @@ class OrderProxyTest extends BaseTestCase
             __DIR__ . '/../../Common/ApiResponses/Order/CreateOrderResponses/InvalidMerchantIdResponse.json'
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody)]);
 
         try {
             $this->proxy->createOrder($this->generateMinimalCreateOrderRequest());
-        } catch (HttpApiInvalidUrlParameterException $exception) {}
+        } catch (HttpApiInvalidUrlParameterException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
 
@@ -699,11 +706,12 @@ class OrderProxyTest extends BaseTestCase
     {
         $exception = null;
         $rawResponseBody = file_get_contents(__DIR__ . '/../../Common/ApiResponses/InvalidCredentialsResponse.txt');
-        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody)]);
 
         try {
             $this->proxy->createOrder($this->generateMinimalCreateOrderRequest());
-        } catch (HttpApiUnauthorizedException $exception) {}
+        } catch (HttpApiUnauthorizedException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
 
@@ -775,7 +783,7 @@ class OrderProxyTest extends BaseTestCase
 
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
-        self::assertEquals(json_decode($expectedRequestBody,true), json_decode($lastRequest['body'],true));
+        self::assertEquals(json_decode($expectedRequestBody, true), json_decode($lastRequest['body'], true));
     }
 
     /**
@@ -795,7 +803,7 @@ class OrderProxyTest extends BaseTestCase
 
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
-        self::assertEquals(json_decode($expectedRequestBody,true), json_decode($lastRequest['body'],true));
+        self::assertEquals(json_decode($expectedRequestBody, true), json_decode($lastRequest['body'], true));
     }
 
     /**
@@ -840,11 +848,12 @@ class OrderProxyTest extends BaseTestCase
             __DIR__ . '/../../Common/ApiResponses/Order/UpdateOrderResponses/InvalidMerchantIdResponse.json'
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody)]);
 
         try {
             $this->proxy->updateOrder($this->generateMinimalUpdateOrderRequest());
-        } catch (HttpApiInvalidUrlParameterException $exception) {}
+        } catch (HttpApiInvalidUrlParameterException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
 
@@ -863,11 +872,12 @@ class OrderProxyTest extends BaseTestCase
     {
         $exception = null;
         $rawResponseBody = file_get_contents(__DIR__ . '/../../Common/ApiResponses/InvalidCredentialsResponse.txt');
-        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody )]);
+        $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody)]);
 
         try {
             $this->proxy->updateOrder($this->generateFullUpdateOrderRequest());
-        } catch (HttpApiUnauthorizedException $exception) {}
+        } catch (HttpApiUnauthorizedException $exception) {
+        }
 
         $responseBody = json_decode($rawResponseBody, true);
 
@@ -882,11 +892,12 @@ class OrderProxyTest extends BaseTestCase
      *
      * @throws Exception
      */
-    private function generateMinimalCreateOrderRequest(): CreateOrderRequest {
+    private function generateMinimalCreateOrderRequest(): CreateOrderRequest
+    {
         $merchant = new Merchant('testMerchantId');
         $merchantReference = new MerchantReference('test123');
         $cart = new Cart('testCurrency', false, [
-            new ProductItem('testItemReference','testName', 5,2, 10, false)
+            new ProductItem('testItemReference', 'testName', 5, 2, 10, false)
         ]);
 
         $deliveryMethod = new DeliveryMethod('testDeliveryMethodName');
@@ -908,8 +919,8 @@ class OrderProxyTest extends BaseTestCase
             'ES'
         );
 
-        $customer = new Customer('test@test.test','testCode','testIpNum','testAgent');
-        $platform = new Platform('testName','testVersion','testUName','testDbName','testDbVersion');
+        $customer = new Customer('test@test.test', 'testCode', 'testIpNum', 'testAgent');
+        $platform = new Platform('testName', 'testVersion', 'testUName', 'testDbName', 'testDbVersion');
         $gui = new Gui(Gui::ALLOWED_VALUES['desktop']);
 
         return new CreateOrderRequest(
@@ -931,7 +942,8 @@ class OrderProxyTest extends BaseTestCase
      *
      * @throws Exception
      */
-    private function generateFullCreateOrderRequest(): CreateOrderRequest {
+    private function generateFullCreateOrderRequest(): CreateOrderRequest
+    {
         $merchant = new Merchant(
             'testMerchantId',
             'https://testNotifyUrl',
@@ -946,7 +958,7 @@ class OrderProxyTest extends BaseTestCase
             'testRejectCallback',
             'testPartPaymentDetailsGetter',
             'testApprovedUrl',
-            new Options(true,false,true,true),
+            new Options(true, false, true, true),
             new EventsWebhook('https://testUrl', ['signature' => 'testSignature', 'testParam1Key' => 'testParam1Value'])
         );
 
@@ -984,17 +996,17 @@ class OrderProxyTest extends BaseTestCase
                     'testSupplier',
                     true
                 ),
-                new HandlingItem('testItemReference4','testName4',5),
+                new HandlingItem('testItemReference4', 'testName4', 5),
                 new InvoiceFeeItem(30),
-                new DiscountItem('testItemReference5','testName5',-20),
-                new OtherPaymentItem('testItemReference3','testName3',-5)
+                new DiscountItem('testItemReference5', 'testName5', -20),
+                new OtherPaymentItem('testItemReference3', 'testName3', -5)
             ],
             'testCartRef',
             'testCreatedAt',
             'testUpdatedAt'
         );
 
-        $deliveryMethod = new DeliveryMethod('testName','testDays','testProvider', false);
+        $deliveryMethod = new DeliveryMethod('testName', 'testDays', 'testProvider', false);
         $deliveryAddress = new Address(
             'testDeliveryAddressCompany',
             'testDeliveryAddressLine1',
@@ -1068,7 +1080,7 @@ class OrderProxyTest extends BaseTestCase
                     'testCountryCode2'
                 )
             ],
-            new Vehicle('testPlaque','testBrand','testModel','testFrame','testFirstRegistrationDate'),
+            new Vehicle('testPlaque', 'testBrand', 'testModel', 'testFrame', 'testFirstRegistrationDate'),
             true
         );
 
@@ -1111,7 +1123,8 @@ class OrderProxyTest extends BaseTestCase
                 'testPostalCode2',
                 'testCity2',
                 'testState2',
-                'ES'),
+                'ES'
+            ),
             new TrackingPostal(
                 'testReference3',
                 'testCarrier',
@@ -1141,12 +1154,13 @@ class OrderProxyTest extends BaseTestCase
      *
      * @throws Exception
      */
-    private function generateMinimalUpdateOrderRequest(): UpdateOrderRequest {
+    private function generateMinimalUpdateOrderRequest(): UpdateOrderRequest
+    {
         $merchant = new Merchant('testMerchantId');
-        $platform = new Platform('testName','testVersion','testUName','testDbName','testDbVersion');
+        $platform = new Platform('testName', 'testVersion', 'testUName', 'testDbName', 'testDbVersion');
         $merchantReference = new MerchantReference('testOrderRef1');
         $cart = new Cart('testCurrency', false, [
-            new ProductItem('testItemReference','testName', 5,2, 10, false)
+            new ProductItem('testItemReference', 'testName', 5, 2, 10, false)
         ]);
 
 
@@ -1158,7 +1172,8 @@ class OrderProxyTest extends BaseTestCase
      *
      * @throws Exception
      */
-    private function generateFullUpdateOrderRequest(): UpdateOrderRequest {
+    private function generateFullUpdateOrderRequest(): UpdateOrderRequest
+    {
         $merchant = new Merchant(
             'testMerchantId',
             'https://testNotifyUrl',
@@ -1173,7 +1188,7 @@ class OrderProxyTest extends BaseTestCase
             'testRejectCallback',
             'testPartPaymentDetailsGetter',
             'testApprovedUrl',
-            new Options(true,false,true,true),
+            new Options(true, false, true, true),
             new EventsWebhook('https://testUrl', ['signature' => 'testSignature', 'testParam1Key' => 'testParam1Value'])
         );
 
@@ -1199,17 +1214,17 @@ class OrderProxyTest extends BaseTestCase
                     'testUrl',
                     'testTrackingReference'
                 ),
-                new HandlingItem('testItemReference4','testName4',5),
+                new HandlingItem('testItemReference4', 'testName4', 5),
                 new InvoiceFeeItem(30),
-                new DiscountItem('testItemReference5','testName5',-20),
-                new OtherPaymentItem('testItemReference3','testName3',-5)
+                new DiscountItem('testItemReference5', 'testName5', -20),
+                new OtherPaymentItem('testItemReference3', 'testName3', -5)
             ],
             'testCartRef',
             'testCreatedAt',
             'testUpdatedAt'
         );
 
-        $deliveryMethod = new DeliveryMethod('testName','testDays','testProvider', false);
+        $deliveryMethod = new DeliveryMethod('testName', 'testDays', 'testProvider', false);
         $deliveryAddress = new Address(
             'testDeliveryAddressCompany',
             'testDeliveryAddressLine1',
@@ -1283,7 +1298,7 @@ class OrderProxyTest extends BaseTestCase
                     'testCountryCode2'
                 )
             ],
-            new Vehicle('testPlaque','testBrand','testModel','testFrame','testFirstRegistrationDate'),
+            new Vehicle('testPlaque', 'testBrand', 'testModel', 'testFrame', 'testFirstRegistrationDate'),
             true
         );
 
@@ -1325,7 +1340,8 @@ class OrderProxyTest extends BaseTestCase
                 'testPostalCode2',
                 'testCity2',
                 'testState2',
-                'ES'),
+                'ES'
+            ),
             new TrackingPostal(
                 'testReference3',
                 'testCarrier',

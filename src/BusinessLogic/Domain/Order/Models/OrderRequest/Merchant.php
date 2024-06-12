@@ -103,9 +103,8 @@ class Merchant extends OrderRequestDTO
         string $approvedUrl = null,
         Options $options = null,
         EventsWebhook $eventsWebhook = null
-    )
-    {
-        if($notifyUrl && !StringValidator::isValidUrl($notifyUrl)) {
+    ) {
+        if ($notifyUrl && !StringValidator::isValidUrl($notifyUrl)) {
             throw new InvalidUrlException('NotifyUrl must be a valid url.');
         }
 

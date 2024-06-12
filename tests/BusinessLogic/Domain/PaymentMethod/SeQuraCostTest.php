@@ -17,7 +17,7 @@ class SeQuraCostTest extends BaseTestCase
      */
     public function testSettersAndGetters(): void
     {
-        $seQuraCost = new SeQuraCost(1,1,1,1);
+        $seQuraCost = new SeQuraCost(1, 1, 1, 1);
 
         $seQuraCost->setSetupFee(2);
         $seQuraCost->setInstalmentFee(2);

@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpDuplicateArrayKeysInspection */
 
 namespace SeQura\Core\Tests\Infrastructure\TaskExecution;

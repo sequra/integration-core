@@ -11,7 +11,9 @@ use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemAbortedEvent;
  */
 class AbortedListener extends UpdateListener
 {
-    /** @var string  */
+    /**
+    * @var string
+    */
     private const ABORT_DESCRIPTION = 'Order update action not supported on SeQura.';
 
     /**

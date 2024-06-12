@@ -35,9 +35,8 @@ class OrderStatusSettingsController
      */
     public function __construct(
         OrderStatusSettingsService $orderStatusSettingsService,
-        ShopOrderStatusesService   $shopOrderStatusesService
-    )
-    {
+        ShopOrderStatusesService $shopOrderStatusesService
+    ) {
         $this->orderStatusSettingsService = $orderStatusSettingsService;
         $this->shopOrderStatusesService = $shopOrderStatusesService;
     }

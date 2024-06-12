@@ -47,8 +47,7 @@ class Vehicle extends OrderRequestDTO
         string $model = null,
         string $frame = null,
         string $firstRegistrationDate = null
-    )
-    {
+    ) {
         $this->plaque = $plaque;
         $this->brand = $brand;
         $this->model = $model;

@@ -21,7 +21,7 @@ class AsyncBatchStarterTest extends TestCase
 
         ServiceRegister::registerService(
             AsyncProcessService::CLASS_NAME,
-            function () use($asyncProcessStarter) {
+            function () use ($asyncProcessStarter) {
                 return $asyncProcessStarter;
             }
         );

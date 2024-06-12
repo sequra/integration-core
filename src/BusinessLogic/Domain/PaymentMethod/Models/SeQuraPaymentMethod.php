@@ -105,8 +105,8 @@ class SeQuraPaymentMethod
         string $icon = null,
         string $costDescription = null,
         int $minAmount = null,
-        int $maxAmount = null)
-    {
+        int $maxAmount = null
+    ) {
         $this->product = $product;
         $this->title = $title;
         $this->longTitle = $longTitle;

@@ -27,10 +27,9 @@ class StoreService
     private $integrationStoreService;
 
     public function __construct(
-        StoreServiceInterface             $integrationStoreService,
+        StoreServiceInterface $integrationStoreService,
         ConnectionDataRepositoryInterface $connectionDataRepository
-    )
-    {
+    ) {
         $this->connectionDataRepository = $connectionDataRepository;
         $this->integrationStoreService = $integrationStoreService;
     }

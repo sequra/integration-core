@@ -62,10 +62,10 @@ class CountryConfigurationControllerTest extends BaseTestCase
     {
         // Arrange
         $sellingCountries = [
-            new SellingCountry('CO','Colombia'),
-            new SellingCountry('IT','Italy'),
-            new SellingCountry('FR','France'),
-            new SellingCountry('PE','Peru')
+            new SellingCountry('CO', 'Colombia'),
+            new SellingCountry('IT', 'Italy'),
+            new SellingCountry('FR', 'France'),
+            new SellingCountry('PE', 'Peru')
         ];
 
         // Act
@@ -94,9 +94,9 @@ class CountryConfigurationControllerTest extends BaseTestCase
         // Arrange
         $this->countryConfigurationRepository->setCountryConfiguration(
             [
-                new CountryConfiguration('CO','logeecom'),
-                new CountryConfiguration('ES','logeecom'),
-                new CountryConfiguration('FR','logeecom')
+                new CountryConfiguration('CO', 'logeecom'),
+                new CountryConfiguration('ES', 'logeecom'),
+                new CountryConfiguration('FR', 'logeecom')
             ]
         );
 
@@ -114,9 +114,9 @@ class CountryConfigurationControllerTest extends BaseTestCase
     {
         // Arrange
         $countryConfigurations = [
-            new CountryConfiguration('CO','logeecom'),
-            new CountryConfiguration('ES','logeecom'),
-            new CountryConfiguration('FR','logeecom')
+            new CountryConfiguration('CO', 'logeecom'),
+            new CountryConfiguration('ES', 'logeecom'),
+            new CountryConfiguration('FR', 'logeecom')
         ];
 
         StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurations]);
@@ -137,9 +137,9 @@ class CountryConfigurationControllerTest extends BaseTestCase
     {
         // Arrange
         $countryConfigurations = [
-            new CountryConfiguration('CO','logeecom'),
-            new CountryConfiguration('ES','logeecom'),
-            new CountryConfiguration('FR','logeecom')
+            new CountryConfiguration('CO', 'logeecom'),
+            new CountryConfiguration('ES', 'logeecom'),
+            new CountryConfiguration('FR', 'logeecom')
         ];
 
         StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurations]);
@@ -258,9 +258,9 @@ class CountryConfigurationControllerTest extends BaseTestCase
     {
         // Arrange
         $countryConfigurations = [
-            new CountryConfiguration('CO','logeecom'),
-            new CountryConfiguration('ES','logeecom'),
-            new CountryConfiguration('FR','logeecom')
+            new CountryConfiguration('CO', 'logeecom'),
+            new CountryConfiguration('ES', 'logeecom'),
+            new CountryConfiguration('FR', 'logeecom')
         ];
 
         StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurations]);
@@ -294,9 +294,9 @@ class CountryConfigurationControllerTest extends BaseTestCase
     {
         // Arrange
         $countryConfigurations = [
-            new CountryConfiguration('CO','logeecom'),
-            new CountryConfiguration('ES','logeecom'),
-            new CountryConfiguration('FR','logeecom')
+            new CountryConfiguration('CO', 'logeecom'),
+            new CountryConfiguration('ES', 'logeecom'),
+            new CountryConfiguration('FR', 'logeecom')
         ];
 
         StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurations]);
@@ -331,9 +331,9 @@ class CountryConfigurationControllerTest extends BaseTestCase
     {
         // Arrange
         $countryConfigurations = [
-            new CountryConfiguration('CO','logeecom'),
-            new CountryConfiguration('ES','logeecom'),
-            new CountryConfiguration('FR','logeecom')
+            new CountryConfiguration('CO', 'logeecom'),
+            new CountryConfiguration('ES', 'logeecom'),
+            new CountryConfiguration('FR', 'logeecom')
         ];
 
         StoreContext::doWithStore('1', [$this->countryConfigurationRepository,'setCountryConfiguration'], [$countryConfigurations]);

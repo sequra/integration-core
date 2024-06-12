@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpMissingDocCommentInspection */
 
 namespace SeQura\Core\Tests\Infrastructure\Common\TestComponents;

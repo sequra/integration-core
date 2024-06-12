@@ -8,6 +8,7 @@ use SeQura\Core\Infrastructure\Utility\TimeProvider;
 
 /**
  * Class TaskRunnerStatus
+ *
  * @package SeQura\Core\Infrastructure\TaskExecution
  */
 class TaskRunnerStatus
