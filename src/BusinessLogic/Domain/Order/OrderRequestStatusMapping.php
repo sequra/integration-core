@@ -34,7 +34,7 @@ class OrderRequestStatusMapping
      */
     public static function mapOrderRequestStatus(string $status): string
     {
-        if(!array_key_exists($status, self::$statusMap)) {
+        if (!array_key_exists($status, self::$statusMap)) {
             throw new InvalidOrderStateException("Invalid order state '{$status}'", 400);
         }
 

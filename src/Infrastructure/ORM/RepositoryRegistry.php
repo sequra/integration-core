@@ -41,7 +41,9 @@ class RepositoryRegistry
 
         if (!array_key_exists($entityClass, static::$instantiated)) {
             $repositoryClass = static::$repositories[$entityClass];
-            /** @var RepositoryInterface $repository */
+            /**
+             * @var RepositoryInterface $repository
+            */
             $repository = new $repositoryClass();
             $repository->setEntityClass($entityClass);
             static::$instantiated[$entityClass] = $repository;
@@ -90,7 +92,9 @@ class RepositoryRegistry
      */
     public static function getQueueItemRepository()
     {
-        /** @var QueueItemRepository $repository */
+        /**
+         * @var QueueItemRepository $repository
+        */
         $repository = static::getRepository(QueueItem::getClassName());
         if (!($repository instanceof QueueItemRepository)) {
             throw new RepositoryClassException('Instance class is not implementation of QueueItemRepository');

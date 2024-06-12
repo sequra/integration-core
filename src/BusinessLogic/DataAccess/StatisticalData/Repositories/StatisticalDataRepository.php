@@ -85,7 +85,9 @@ class StatisticalDataRepository implements StatisticalDataRepositoryInterface
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
-        /** @var  StatisticalDataEntity $statisticalData */
+        /**
+        * @var StatisticalDataEntity $statisticalData
+        */
         $statisticalData = $this->repository->selectOne($queryFilter);
 
         return $statisticalData;

@@ -14,8 +14,7 @@ class TestAsyncSocketHttpClient extends AsyncSocketHttpClient
         int $port,
         int $timeOut,
         string $payload
-    ): void
-    {
+    ): void {
         $this->requestHistory[] = array(
             'transferProtocol' => $transferProtocol,
             'host' => $host,

@@ -40,13 +40,13 @@ class SellingCountriesService
 
             $sellingCountries = [];
             foreach ($storeConfiguredCountryCodes as $code) {
-                if(array_key_exists($code, SellingCountries::SELLING_COUNTRIES)) {
+                if (array_key_exists($code, SellingCountries::SELLING_COUNTRIES)) {
                     $sellingCountries[] = new SellingCountry($code, SellingCountries::SELLING_COUNTRIES[$code]);
                 }
             }
 
             return $sellingCountries;
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             throw new FailedToRetrieveSellingCountriesException(new TranslatableLabel('Failed to retrieve selling countries.', 'general.errors.countries.sellingCountries'));
         }
     }

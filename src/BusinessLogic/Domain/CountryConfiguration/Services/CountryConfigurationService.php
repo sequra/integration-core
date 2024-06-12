@@ -28,9 +28,8 @@ class CountryConfigurationService
      */
     public function __construct(
         CountryConfigurationRepositoryInterface $countryConfigurationRepository,
-        SellingCountriesServiceInterface        $sellingCountriesService
-    )
-    {
+        SellingCountriesServiceInterface $sellingCountriesService
+    ) {
         $this->countryConfigurationRepository = $countryConfigurationRepository;
         $this->sellingCountriesService = $sellingCountriesService;
     }

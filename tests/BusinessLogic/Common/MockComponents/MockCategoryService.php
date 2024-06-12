@@ -18,9 +18,9 @@ class MockCategoryService implements CategoryServiceInterface
     public function getCategories(): array
     {
         return [
-          new Category('1','Test 1'),
-          new Category('2','Test 2'),
-          new Category('3','Test 3')
+          new Category('1', 'Test 1'),
+          new Category('2', 'Test 2'),
+          new Category('3', 'Test 3')
         ];
     }
 }

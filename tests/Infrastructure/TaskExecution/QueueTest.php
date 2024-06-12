@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpDuplicateArrayKeysInspection */
 
 namespace SeQura\Core\Tests\Infrastructure\TaskExecution;
@@ -1506,7 +1507,7 @@ class QueueTest extends TestCase
         $task = new FooTask();
 
         // Act
-        $item = $this->queue->create("Test", $task, 'TestCtx',Priority::HIGH);
+        $item = $this->queue->create("Test", $task, 'TestCtx', Priority::HIGH);
 
         // Assert
         $saved = $this->queue->find($item->getId());
@@ -1519,7 +1520,7 @@ class QueueTest extends TestCase
         $task = new FooTask();
 
         // Act
-        $item = $this->queue->create("Test", $task, '',Priority::HIGH);
+        $item = $this->queue->create("Test", $task, '', Priority::HIGH);
 
         // Assert
         $saved = $this->queue->find($item->getId());
@@ -1532,7 +1533,7 @@ class QueueTest extends TestCase
         $task = new FooTask();
 
         // Act
-        $item = $this->queue->create("Test", $task, '',Priority::HIGH, 1023);
+        $item = $this->queue->create("Test", $task, '', Priority::HIGH, 1023);
 
         // Assert
         $saved = $this->queue->find($item->getId());

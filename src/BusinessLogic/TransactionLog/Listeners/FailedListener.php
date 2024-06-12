@@ -11,7 +11,9 @@ use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFailedEvent;
  */
 class FailedListener extends UpdateListener
 {
-    /** @var string  */
+    /**
+    * @var string
+    */
     private const FAILURE_DESCRIPTION = 'Order update action not supported on SeQura.';
 
     /**

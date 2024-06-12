@@ -28,7 +28,7 @@ class Gui extends OrderRequestDTO
      */
     public function __construct(string $layout)
     {
-        if(!in_array($layout, self::ALLOWED_VALUES)) {
+        if (!in_array($layout, self::ALLOWED_VALUES)) {
             throw new InvalidGuiLayoutValueException(
                 'Layout value must be one of the values defined in the allowed values constant.'
             );

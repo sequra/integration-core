@@ -81,7 +81,9 @@ class WidgetSettingsRepository implements WidgetSettingsRepositoryInterface
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
-        /** @var  WidgetSettingsEntity $widgetSettings */
+        /**
+        * @var WidgetSettingsEntity $widgetSettings
+        */
         $widgetSettings = $this->repository->selectOne($queryFilter);
 
         return $widgetSettings;

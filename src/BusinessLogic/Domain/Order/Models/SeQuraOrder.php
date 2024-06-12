@@ -148,9 +148,9 @@ class SeQuraOrder extends Entity
     }
 
     /**
-     * @inheritDoc
+     * Sets raw array data to this entity instance properties.
      *
-     * @param array $data
+     * @param array $data Raw array data with keys for class fields. @see self::$fields for field names.
      *
      * @throws Exception
      */

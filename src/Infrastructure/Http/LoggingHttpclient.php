@@ -13,6 +13,7 @@ class LoggingHttpclient extends HttpClient
 
     /**
      * LoggingHttpclient constructor.
+     *
      * @param HttpClient $client
      */
     public function __construct(HttpClient $client)
@@ -79,8 +80,7 @@ class LoggingHttpclient extends HttpClient
         string $url,
         ?array $headers = array(),
         string $body = ''
-    ): HttpResponse
-    {
+    ): HttpResponse {
         return $this->client->sendHttpRequest($method, $url, $headers, $body);
     }
 
@@ -92,8 +92,7 @@ class LoggingHttpclient extends HttpClient
         string $url,
         ?array $headers = array(),
         string $body = ''
-    ): void
-    {
+    ): void {
         $this->client->sendHttpRequestAsync($method, $url, $headers, $body);
     }
 }

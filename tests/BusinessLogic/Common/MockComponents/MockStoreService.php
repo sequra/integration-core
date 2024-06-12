@@ -12,7 +12,6 @@ use SeQura\Core\BusinessLogic\Domain\Stores\Models\Store;
  */
 class MockStoreService implements StoreServiceInterface
 {
-
     public function getStoreDomain(): string
     {
         return '';

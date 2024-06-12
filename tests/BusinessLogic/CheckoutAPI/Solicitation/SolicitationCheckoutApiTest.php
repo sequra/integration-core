@@ -40,7 +40,7 @@ class SolicitationCheckoutApiTest extends BaseTestCase
 
         TestServiceRegister::registerService(
             SolicitationController::class,
-            function() {
+            function () {
                 return new SolicitationController(new OrderService(
                     $this->orderProxy,
                     $this->orderRepository
@@ -119,7 +119,7 @@ class SolicitationCheckoutApiTest extends BaseTestCase
             'i1',
             'title1',
             'longTitle1',
-            new SeQuraCost(1,2,3,4),
+            new SeQuraCost(1, 2, 3, 4),
             new \DateTime(),
             new \DateTime(),
             'campaign1',

@@ -31,8 +31,7 @@ class MockQueueService extends QueueService
         $context = '',
         $priority = Priority::NORMAL,
         $parent = null
-    ): QueueItem
-    {
+    ): QueueItem {
         $item = new QueueItem($task, $context);
         $item->setId(count($this->queueItems));
         $this->queueItems[] = $item;

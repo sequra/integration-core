@@ -22,12 +22,14 @@ class OnboardingDataModelTest extends BaseTestCase
     {
         $onboardingData = new OnboardingData(
             new ConnectionData(
-                'live','logeecom', new AuthorizationCredentials('username', 'password')
+                'live',
+                'logeecom',
+                new AuthorizationCredentials('username', 'password')
             ),
             true
         );
 
-        $connData = new ConnectionData('live','logeecom2', new AuthorizationCredentials('test', 'test'));
+        $connData = new ConnectionData('live', 'logeecom2', new AuthorizationCredentials('test', 'test'));
 
         $onboardingData->setConnectionData($connData);
         $onboardingData->setSendStatisticalData(false);

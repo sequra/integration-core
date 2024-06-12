@@ -61,8 +61,7 @@ class Platform extends OrderRequestDTO
         string $dbVersion,
         string $pluginVersion = null,
         string $phpVersion = null
-    )
-    {
+    ) {
         $this->name = $name;
         $this->version = $version;
         $this->uname = $uname;

@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpUnused */
 
 /** @noinspection PhpMissingDocCommentInspection */
@@ -55,8 +56,7 @@ class TestHttpClient extends HttpClient
         string $url,
         ?array $headers = array(),
         string $body = ''
-    ): HttpResponse
-    {
+    ): HttpResponse {
         $this->history[] = array(
             'type' => self::REQUEST_TYPE_SYNCHRONOUS,
             'method' => $method,
@@ -80,8 +80,7 @@ class TestHttpClient extends HttpClient
         string $url,
         ?array $headers = array(),
         string $body = ''
-    ): void
-    {
+    ): void {
         $this->calledAsync = true;
 
         $this->history[] = array(

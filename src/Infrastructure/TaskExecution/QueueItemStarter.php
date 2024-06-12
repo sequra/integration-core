@@ -15,6 +15,7 @@ use Exception;
 
 /**
  * Class QueueItemStarter
+ *
  * @package SeQura\Core\Infrastructure\TaskExecution
  */
 class QueueItemStarter implements Runnable
@@ -108,7 +109,9 @@ class QueueItemStarter implements Runnable
      */
     public function run()
     {
-        /** @var QueueItem $queueItem */
+        /**
+         * @var QueueItem $queueItem
+        */
         $queueItem = $this->fetchItem();
 
         if ($queueItem === null || ($queueItem->getStatus() !== QueueItem::QUEUED)) {

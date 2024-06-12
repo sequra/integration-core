@@ -6,6 +6,7 @@ use DateTime;
 
 /**
  * Class Condition
+ *
  * @package SeQura\Core\Infrastructure\ORM\QueryFilter
  */
 class QueryCondition

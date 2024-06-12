@@ -30,6 +30,7 @@ class CheckoutAPI
 
     /**
      * @param string $storeId
+     *
      * @return SolicitationController
      */
     public function solicitation(string $storeId): object

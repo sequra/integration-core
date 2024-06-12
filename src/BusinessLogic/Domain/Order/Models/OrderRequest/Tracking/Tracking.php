@@ -46,9 +46,8 @@ abstract class Tracking extends OrderRequestDTO
         string $reference,
         string $trackingNumber = null,
         string $deliveredAt = null
-    )
-    {
-        if($deliveredAt && !StringValidator::isISO8601Timestamp($deliveredAt)){
+    ) {
+        if ($deliveredAt && !StringValidator::isISO8601Timestamp($deliveredAt)) {
             throw new InvalidTimestampException('Delivered at must be ISO 8601 formatted timestamp.');
         }
 

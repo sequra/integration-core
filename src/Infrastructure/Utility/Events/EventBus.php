@@ -4,6 +4,7 @@ namespace SeQura\Core\Infrastructure\Utility\Events;
 
 /**
  * Class EventBus
+ *
  * @package SeQura\Core\Infrastructure\Utility\Events
  */
 class EventBus extends EventEmitter

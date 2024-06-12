@@ -17,7 +17,7 @@ class ValidateConnectionHttpRequest extends HttpRequest
     public function __construct(ValidateConnectionRequest $request)
     {
         parent::__construct(
-            '/merchants/'.$request->getConnectionData()->getMerchantId().'/payment_methods',
+            '/merchants/' . $request->getConnectionData()->getMerchantId() . '/payment_methods',
             [],
             [],
             $this->generateAuthHeaderForValidation($request->getConnectionData()->getAuthorizationCredentials())
@@ -39,6 +39,6 @@ class ValidateConnectionHttpRequest extends HttpRequest
             $authorizationCredentials->getPassword()
         ));
 
-        return [AuthorizedProxy::AUTHORIZATION_HEADER_KEY => AuthorizedProxy::AUTHORIZATION_HEADER_VALUE_PREFIX.$token];
+        return [AuthorizedProxy::AUTHORIZATION_HEADER_KEY => AuthorizedProxy::AUTHORIZATION_HEADER_VALUE_PREFIX . $token];
     }
 }

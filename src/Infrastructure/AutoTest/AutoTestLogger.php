@@ -44,7 +44,9 @@ class AutoTestLogger extends Singleton implements ShopLoggerAdapter
      */
     public function getLogs()
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /**
+        * @noinspection PhpIncompatibleReturnTypeInspection
+        */
         return RepositoryRegistry::getRepository(LogData::CLASS_NAME)->select();
     }
 

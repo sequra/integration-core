@@ -17,14 +17,14 @@ class CategoryModelTest extends BaseTestCase
     {
         $this->expectException(EmptyCategoryParameterException::class);
 
-        new Category('','test');
+        new Category('', 'test');
     }
 
     public function testEmptyCategoryName(): void
     {
         $this->expectException(EmptyCategoryParameterException::class);
 
-        new Category('test','');
+        new Category('test', '');
     }
 
     /**

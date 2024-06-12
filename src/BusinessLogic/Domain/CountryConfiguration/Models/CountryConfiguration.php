@@ -33,13 +33,13 @@ class CountryConfiguration
      */
     public function __construct(string $countryCode, string $merchantId)
     {
-        if(empty($countryCode) || empty($merchantId)) {
+        if (empty($countryCode) || empty($merchantId)) {
             throw new EmptyCountryConfigurationParameterException(
                 new TranslatableLabel('Country configuration parameter cannot be an empty string.', 'general.errors.countries.empty')
             );
         }
 
-        if(!array_key_exists($countryCode, SellingCountries::SELLING_COUNTRIES)) {
+        if (!array_key_exists($countryCode, SellingCountries::SELLING_COUNTRIES)) {
             throw new InvalidCountryCodeForConfigurationException(
                 new TranslatableLabel('Invalid country code in the country configuration.', 'general.errors.countries.countryCode')
             );

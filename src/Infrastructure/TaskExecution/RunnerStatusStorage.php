@@ -77,8 +77,8 @@ class RunnerStatusStorage implements TaskRunnerStatusStorage
 
     /**
      * Gets instance of @return Configuration Service instance.
-     * @see Configuration service.
      *
+     * @see Configuration service.
      */
     private function getConfigService()
     {

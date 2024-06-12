@@ -1,8 +1,12 @@
 <?php
 
-/** @noinspection PhpDocMissingThrowsInspection */
+/**
+ * @noinspection PhpDocMissingThrowsInspection
+*/
 
-/** @noinspection PhpUnusedParameterInspection */
+/**
+ * @noinspection PhpUnusedParameterInspection
+*/
 
 namespace SeQura\Core\Infrastructure\Configuration;
 
@@ -363,7 +367,6 @@ abstract class Configuration extends Singleton
      * Sets HTTP configuration options for given domain.
      *
      * @param string $domain A domain for which to save configuration options.
-     *
      * @param Options[] $options HTTP configuration options
      */
     public function setHttpConfigurationOptions($domain, array $options)
@@ -488,7 +491,9 @@ abstract class Configuration extends Singleton
      */
     protected function saveConfigValue($name, $value)
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /**
+        * @noinspection PhpUnhandledExceptionInspection
+        */
         return $this->getConfigurationManager()->saveConfigValue($name, $value, $this->isContextSpecific($name));
     }
 
@@ -502,7 +507,9 @@ abstract class Configuration extends Singleton
      */
     protected function getConfigValue($name, $default = null)
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /**
+        * @noinspection PhpUnhandledExceptionInspection
+        */
         return $this->getConfigurationManager()->getConfigValue($name, $default, $this->isContextSpecific($name));
     }
 

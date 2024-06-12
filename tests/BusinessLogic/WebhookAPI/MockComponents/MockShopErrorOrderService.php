@@ -19,8 +19,8 @@ class MockShopErrorOrderService implements ShopOrderService
         Webhook $webhook,
         string $status,
         ?int $reasonCode = null,
-        ?string $message = null)
-    {
+        ?string $message = null
+    ) {
         throw new HttpRequestException('Error updating shop order status.');
     }
 

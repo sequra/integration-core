@@ -6,6 +6,7 @@ use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 
 /**
  * Interface ConditionallyDeletes
+ *
  * @package SeQura\Core\BusinessLogic\ORM\Interfaces
  */
 interface ConditionallyDeletes

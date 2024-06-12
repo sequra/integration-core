@@ -89,7 +89,6 @@ class LoggerConfiguration extends Singleton
      * Set default logger status (enabled or disabled).
      *
      * @param bool $loggerStatus Logger status true => enabled, false => disabled.
-     *
      */
     public function setIsDefaultLoggerEnabled($loggerStatus)
     {
@@ -126,7 +125,6 @@ class LoggerConfiguration extends Singleton
      * Saves min log level in integration.
      *
      * @param int $minLogLevel Log level.
-     *
      */
     public function setMinLogLevel($minLogLevel)
     {
@@ -158,7 +156,6 @@ class LoggerConfiguration extends Singleton
      * Gets instance of configuration service.
      *
      * @return Configuration Instance of configuration service.
-     *
      */
     private function getShopConfiguration()
     {

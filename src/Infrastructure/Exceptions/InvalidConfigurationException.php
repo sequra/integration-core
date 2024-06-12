@@ -9,5 +9,4 @@ namespace SeQura\Core\Infrastructure\Exceptions;
  */
 class InvalidConfigurationException extends BaseException
 {
-
 }

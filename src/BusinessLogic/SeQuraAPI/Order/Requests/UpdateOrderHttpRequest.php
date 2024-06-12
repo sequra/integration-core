@@ -21,7 +21,8 @@ class UpdateOrderHttpRequest extends HttpRequest
     public function __construct(string $merchantId, string $shopOrderReference, UpdateOrderRequest $request)
     {
         parent::__construct(
-            '/merchants/' . $merchantId . '/orders/' . $shopOrderReference, $this->transformBody($request)
+            '/merchants/' . $merchantId . '/orders/' . $shopOrderReference,
+            $this->transformBody($request)
         );
     }
 

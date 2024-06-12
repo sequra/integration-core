@@ -31,9 +31,8 @@ class OrderStatusSettingsService implements OrderStatusProvider
      */
     public function __construct(
         OrderStatusSettingsRepositoryInterface $orderStatusSettingsRepository,
-        ShopOrderStatusesServiceInterface      $integrationShopOrderStatusesService
-    )
-    {
+        ShopOrderStatusesServiceInterface $integrationShopOrderStatusesService
+    ) {
         $this->orderStatusSettingsRepository = $orderStatusSettingsRepository;
         $this->integrationShopOrderStatusesService = $integrationShopOrderStatusesService;
     }
@@ -57,7 +56,9 @@ class OrderStatusSettingsService implements OrderStatusProvider
      */
     public function saveOrderStatusSettings(array $orderStatusMappings): void
     {
-        /** @var string[] $shopStatusIds */
+        /**
+        * @var string[] $shopStatusIds
+        */
         $shopStatusIds = array_map(static function ($orderStatus) {
             return $orderStatus->getId();
         }, $this->integrationShopOrderStatusesService->getShopOrderStatuses());

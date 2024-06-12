@@ -9,5 +9,4 @@ namespace SeQura\Core\Infrastructure\TaskExecution\Events;
  */
 class QueueItemStartedEvent extends BaseQueueItemEvent
 {
-
 }

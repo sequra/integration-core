@@ -23,8 +23,7 @@ class MockShopOrderService implements ShopOrderService
         string $status,
         ?int $reasonCode = null,
         ?string $message = null
-    ): void
-    {
+    ): void {
     }
 
     /**

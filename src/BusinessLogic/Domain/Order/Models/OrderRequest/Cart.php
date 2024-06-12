@@ -66,17 +66,17 @@ class Cart extends OrderRequestDTO
      * @param string|int|null $cartRef
      * @param string|null $createdAt
      * @param string|null $updatedAt
+     *
      * @throws InvalidCartItemsException
      */
     public function __construct(
         string $currency,
-        bool   $gift = false,
-        array  $items = [],
-               $cartRef = null,
+        bool $gift = false,
+        array $items = [],
+        $cartRef = null,
         string $createdAt = null,
         string $updatedAt = null
-    )
-    {
+    ) {
         $orderTotalWithTax = 0;
 
         foreach ($items as $item) {
@@ -110,7 +110,9 @@ class Cart extends OrderRequestDTO
         $items = self::getDataValue($data, 'items', []);
 
         // Convert item arrays to Item instances
-        /** @type Item[] $itemInstances */
+        /**
+        * @type Item[] $itemInstances
+        */
         $itemInstances = [];
         foreach ($items as $itemData) {
             $type = $itemData['type'];

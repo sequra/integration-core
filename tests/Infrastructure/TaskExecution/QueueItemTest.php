@@ -35,7 +35,7 @@ class QueueItemTest extends TestCase
                 TimeProvider::CLASS_NAME => function () use ($timeProvider) {
                     return $timeProvider;
                 },
-                Serializer::CLASS_NAME => function() {
+                Serializer::CLASS_NAME => function () {
                     return new NativeSerializer();
                 }
             )

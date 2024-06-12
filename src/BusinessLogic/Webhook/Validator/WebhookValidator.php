@@ -72,7 +72,9 @@ class WebhookValidator
         $filter = new QueryFilter();
         $filter->where('reference', Operators::EQUALS, $orderRef);
 
-        /** @var SeQuraOrder $order */
+        /**
+        * @var SeQuraOrder $order
+        */
         $order = $repository->selectOne($filter);
 
         return $order;

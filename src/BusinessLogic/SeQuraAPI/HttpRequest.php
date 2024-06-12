@@ -42,8 +42,7 @@ class HttpRequest
         array $body = [],
         array $queries = [],
         array $headers = []
-    )
-    {
+    ) {
         $this->endpoint = $endpoint;
         $this->body = $body;
         $this->queries = $queries;

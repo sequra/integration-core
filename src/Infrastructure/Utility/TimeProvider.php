@@ -61,8 +61,7 @@ class TimeProvider
      * Returns @param int $timestamp Timestamp in seconds.
      *
      * @return DateTime Object from timestamp.
-     * @see \DateTime object from timestamp.
-     *
+     * @see    \DateTime object from timestamp.
      */
     public function getDateTime($timestamp)
     {

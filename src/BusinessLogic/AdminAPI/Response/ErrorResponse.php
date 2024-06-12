@@ -33,11 +33,13 @@ class ErrorResponse extends Response
 
     /**
      * Implementation is swallowing all undefined calls to avoid undefined method call exceptions when
-     * @see ErrorHandlingAspect already hanled the API call exception but because of chaining calle will trigger
-     * API controller messages on instance of the @see self.
      *
      * @param $methodName
      * @param $arguments
+     *
+     * @see ErrorHandlingAspect already hanled the API call exception but because of chaining calle will trigger
+     * API controller messages on instance of the @see self.
+     *
      * @return self Already handled error response
      */
     public function __call($methodName, $arguments)

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution;
-
 
 use SeQura\Core\Infrastructure\TaskExecution\Composite\ExecutionDetails;
 use SeQura\Core\Infrastructure\TaskExecution\Composite\Orchestrator;
