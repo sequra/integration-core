@@ -75,18 +75,17 @@ class OrderStatistics extends OrderRequestDTO
      * @param bool|null $sequraOffered
      */
     public function __construct(
-        string             $completedAt,
-        string             $currency,
-        ?int               $amount,
+        string $completedAt,
+        string $currency,
+        ?int $amount,
         ?MerchantReference $merchantReference,
-        ?string            $paymentMethod,
-        ?string            $country,
-        ?string            $device,
-        ?string            $status,
-        ?string            $rawStatus,
-        ?bool              $sequraOffered
-    )
-    {
+        ?string $paymentMethod,
+        ?string $country,
+        ?string $device,
+        ?string $status,
+        ?string $rawStatus,
+        ?bool $sequraOffered
+    ) {
         $this->completedAt = $completedAt;
         $this->currency = $currency;
         $this->amount = $amount;

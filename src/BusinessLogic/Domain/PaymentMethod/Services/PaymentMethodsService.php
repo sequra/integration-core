@@ -28,20 +28,6 @@ class PaymentMethodsService
     }
 
     /**
-     * Gets available payment methods for merchant.
-     *
-     * @param string $merchantId
-     *
-     * @return SeQuraPaymentMethod[]
-     *
-     * @throws HttpRequestException
-     */
-    public function getMerchantsPaymentMethods(string $merchantId): array
-    {
-        return $this->merchantProxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest($merchantId));
-    }
-
-    /**
      * Gets available products for the merchant.
      *
      * @param string $merchantId
@@ -57,5 +43,19 @@ class PaymentMethodsService
         return array_map(function (SeQuraPaymentMethod $method) {
             return $method->getProduct();
         }, $methods);
+    }
+
+    /**
+     * Gets available payment methods for merchant.
+     *
+     * @param string $merchantId
+     *
+     * @return SeQuraPaymentMethod[]
+     *
+     * @throws HttpRequestException
+     */
+    public function getMerchantsPaymentMethods(string $merchantId): array
+    {
+        return $this->merchantProxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest($merchantId));
     }
 }

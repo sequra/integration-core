@@ -53,16 +53,15 @@ class WidgetSettings
      * @param WidgetLabels|null $widgetLabels
      */
     public function __construct(
-        bool         $enabled,
-        string       $assetsKey = '',
-        bool         $displayOnProductPage = false,
-        bool         $showInstallmentsInProductListing = false,
-        bool         $showInstallmentsInCartPage = false,
-        string       $miniWidgetSelector = '',
-        string       $widgetConfig = null,
+        bool $enabled,
+        string $assetsKey = '',
+        bool $displayOnProductPage = false,
+        bool $showInstallmentsInProductListing = false,
+        bool $showInstallmentsInCartPage = false,
+        string $miniWidgetSelector = '',
+        string $widgetConfig = null,
         WidgetLabels $widgetLabels = null
-    )
-    {
+    ) {
         $this->enabled = $enabled;
         $this->assetsKey = $assetsKey;
         $this->displayOnProductPage = $displayOnProductPage;

@@ -89,18 +89,17 @@ class OrderReport extends OrderRequestDTO
      * @throws InvalidOrderDeliveryStateException
      */
     public function __construct(
-        string            $state,
+        string $state,
         MerchantReference $merchantReference,
-        Cart              $cart,
-        DeliveryMethod    $deliveryMethod,
-        Customer          $customer,
-        ?string           $sentAt = null,
-        ?array            $trackings = null,
-        ?Cart             $remainingCart = null,
-        ?Address          $deliveryAddress = null,
-        ?Address          $invoiceAddress = null
-    )
-    {
+        Cart $cart,
+        DeliveryMethod $deliveryMethod,
+        Customer $customer,
+        ?string $sentAt = null,
+        ?array $trackings = null,
+        ?Cart $remainingCart = null,
+        ?Address $deliveryAddress = null,
+        ?Address $invoiceAddress = null
+    ) {
         if (!in_array($state, OrderDeliveryStates::toArray(), true)) {
             throw new InvalidOrderDeliveryStateException('Invalid order delivery state: ' . $state);
         }
@@ -115,6 +114,74 @@ class OrderReport extends OrderRequestDTO
         $this->deliveryAddress = $deliveryAddress;
         $this->invoiceAddress = $invoiceAddress;
         $this->customer = $customer;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toArray(): array
+    {
+        return $this->transformPropertiesToAnArray(get_object_vars($this));
+    }
+
+    /**
+     * Creates a new OrderReport instance from an array.
+     *
+     * @param array $data
+     *
+     * @return self
+     *
+     * @throws InvalidOrderDeliveryStateException
+     * @throws InvalidCartItemsException
+     * @throws InvalidDateException
+     * @throws InvalidDurationException
+     * @throws InvalidQuantityException
+     * @throws InvalidServiceEndTimeException
+     * @throws InvalidTimestampException
+     */
+    public static function fromArray(array $data): self
+    {
+        $state = self::getDataValue($data, 'state');
+        $merchantReference = MerchantReference::fromArray(self::getDataValue($data, 'merchant_reference', []));
+        $cart = Cart::fromArray(self::getDataValue($data, 'cart', []));
+        $deliveryMethod = DeliveryMethod::fromArray(self::getDataValue($data, 'delivery_method', []));
+        $customer = Customer::fromArray(self::getDataValue($data, 'customer', []));
+        $sentAt = self::getDataValue($data, 'sent_at', null);
+
+        $deliveryAddress = self::getDataValue($data, 'delivery_address', null);
+        if ($deliveryAddress !== null) {
+            $deliveryAddress = Address::fromArray($deliveryAddress);
+        }
+
+        $invoiceAddress = self::getDataValue($data, 'invoice_address', null);
+        if ($invoiceAddress !== null) {
+            $invoiceAddress = Address::fromArray($invoiceAddress);
+        }
+
+        $remainingCart = self::getDataValue($data, 'remaining_cart', null);
+        if ($remainingCart !== null) {
+            $remainingCart = Cart::fromArray($remainingCart);
+        }
+
+        $trackings = self::getDataValue($data, 'trackings', null);
+        if ($trackings !== null) {
+            $trackings = array_map(static function ($tracking) {
+                return Tracking::fromArray($tracking);
+            }, $trackings);
+        }
+
+        return new self(
+            $state,
+            $merchantReference,
+            $cart,
+            $deliveryMethod,
+            $customer,
+            $sentAt,
+            $trackings,
+            $remainingCart,
+            $deliveryAddress,
+            $invoiceAddress
+        );
     }
 
     /**
@@ -195,73 +262,5 @@ class OrderReport extends OrderRequestDTO
     public function getCustomer(): Customer
     {
         return $this->customer;
-    }
-
-    /**
-     * Creates a new OrderReport instance from an array.
-     *
-     * @param array $data
-     *
-     * @return self
-     *
-     * @throws InvalidOrderDeliveryStateException
-     * @throws InvalidCartItemsException
-     * @throws InvalidDateException
-     * @throws InvalidDurationException
-     * @throws InvalidQuantityException
-     * @throws InvalidServiceEndTimeException
-     * @throws InvalidTimestampException
-     */
-    public static function fromArray(array $data): self
-    {
-        $state = self::getDataValue($data, 'state');
-        $merchantReference = MerchantReference::fromArray(self::getDataValue($data, 'merchant_reference', []));
-        $cart = Cart::fromArray(self::getDataValue($data, 'cart', []));
-        $deliveryMethod = DeliveryMethod::fromArray(self::getDataValue($data, 'delivery_method', []));
-        $customer = Customer::fromArray(self::getDataValue($data, 'customer', []));
-        $sentAt = self::getDataValue($data, 'sent_at', null);
-
-        $deliveryAddress = self::getDataValue($data, 'delivery_address', null);
-        if ($deliveryAddress !== null) {
-            $deliveryAddress = Address::fromArray($deliveryAddress);
-        }
-
-        $invoiceAddress = self::getDataValue($data, 'invoice_address', null);
-        if ($invoiceAddress !== null) {
-            $invoiceAddress = Address::fromArray($invoiceAddress);
-        }
-
-        $remainingCart = self::getDataValue($data, 'remaining_cart', null);
-        if ($remainingCart !== null) {
-            $remainingCart = Cart::fromArray($remainingCart);
-        }
-
-        $trackings = self::getDataValue($data, 'trackings', null);
-        if ($trackings !== null) {
-            $trackings = array_map(static function ($tracking) {
-                return Tracking::fromArray($tracking);
-            }, $trackings);
-        }
-
-        return new self(
-            $state,
-            $merchantReference,
-            $cart,
-            $deliveryMethod,
-            $customer,
-            $sentAt,
-            $trackings,
-            $remainingCart,
-            $deliveryAddress,
-            $invoiceAddress
-        );
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function toArray(): array
-    {
-        return $this->transformPropertiesToAnArray(get_object_vars($this));
     }
 }

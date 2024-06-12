@@ -46,13 +46,43 @@ class OrderUpdateData extends DataTransferObject
      * @param Address|null $deliveryAddress
      * @param Address|null $invoiceAddress
      */
-    public function __construct(string $orderShopReference, ?Cart $shippedCart, ?Cart $unshippedCart, ?Address $deliveryAddress, ?Address $invoiceAddress)
-    {
+    public function __construct(
+        string $orderShopReference,
+        ?Cart $shippedCart,
+        ?Cart $unshippedCart,
+        ?Address $deliveryAddress,
+        ?Address $invoiceAddress
+    ) {
         $this->orderShopReference = $orderShopReference;
         $this->shippedCart = $shippedCart;
         $this->unshippedCart = $unshippedCart;
         $this->deliveryAddress = $deliveryAddress;
         $this->invoiceAddress = $invoiceAddress;
+    }
+
+    /**
+     * Create a OrderUpdateData instance from an array.
+     *
+     * @param array $data
+     *
+     * @return OrderUpdateData
+     *
+     * @throws Exception
+     */
+    public static function fromArray(array $data): self
+    {
+        $shippedCart = self::getDataValue($data, 'shipped_cart', null);
+        $unshippedCart = self::getDataValue($data, 'unshipped_cart', null);
+        $deliveryAddress = self::getDataValue($data, 'delivery_address', null);
+        $invoiceAddress = self::getDataValue($data, 'invoice_address', null);
+
+        return new self(
+            self::getDataValue($data, 'order_shop_reference'),
+            $shippedCart ? Cart::fromArray($shippedCart) : null,
+            $unshippedCart ? Cart::fromArray($unshippedCart) : null,
+            $deliveryAddress ? Address::fromArray($deliveryAddress) : null,
+            $invoiceAddress ? Address::fromArray($invoiceAddress) : null
+        );
     }
 
     /**
@@ -133,31 +163,6 @@ class OrderUpdateData extends DataTransferObject
     public function setInvoiceAddress(?Address $invoiceAddress): void
     {
         $this->invoiceAddress = $invoiceAddress;
-    }
-
-    /**
-     * Create a OrderUpdateData instance from an array.
-     *
-     * @param array $data
-     *
-     * @return OrderUpdateData
-     *
-     * @throws Exception
-     */
-    public static function fromArray(array $data): self
-    {
-        $shippedCart = self::getDataValue($data, 'shipped_cart', null);
-        $unshippedCart = self::getDataValue($data, 'unshipped_cart', null);
-        $deliveryAddress = self::getDataValue($data, 'delivery_address', null);
-        $invoiceAddress = self::getDataValue($data, 'invoice_address', null);
-
-        return new self(
-            self::getDataValue($data, 'order_shop_reference'),
-            $shippedCart ? Cart::fromArray($shippedCart) : null,
-            $unshippedCart ? Cart::fromArray($unshippedCart) : null,
-            $deliveryAddress ? Address::fromArray($deliveryAddress) : null,
-            $invoiceAddress ? Address::fromArray($invoiceAddress) : null
-        );
     }
 
     /**

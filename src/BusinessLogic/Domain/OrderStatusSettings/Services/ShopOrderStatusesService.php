@@ -37,7 +37,8 @@ class ShopOrderStatusesService
         try {
             return $this->integrationShopOrderStatusesService->getShopOrderStatuses();
         } catch (Exception $e) {
-            throw new FailedToRetrieveShopOrderStatusesException(new TranslatableLabel('Failed to retrieve order statuses.', 'general.errors.orderStatusSettings.orderStatuses'));
+            throw new FailedToRetrieveShopOrderStatusesException(new TranslatableLabel('Failed to retrieve order statuses.',
+                'general.errors.orderStatusSettings.orderStatuses'));
         }
     }
 }

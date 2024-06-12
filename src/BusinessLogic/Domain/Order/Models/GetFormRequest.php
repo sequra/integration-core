@@ -46,6 +46,23 @@ class GetFormRequest extends DataTransferObject
     }
 
     /**
+     * Create a GetFormRequest instance from an array.
+     *
+     * @param array $data
+     *
+     * @return GetFormRequest
+     */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            self::getDataValue($data, 'order_id'),
+            self::getDataValue($data, 'product', null),
+            self::getDataValue($data, 'campaign', null),
+            self::getDataValue($data, 'ajax', null)
+        );
+    }
+
+    /**
      * @return string
      */
     public function getOrderId(): string
@@ -75,23 +92,6 @@ class GetFormRequest extends DataTransferObject
     public function getAjax(): ?bool
     {
         return $this->ajax;
-    }
-
-    /**
-     * Create a GetFormRequest instance from an array.
-     *
-     * @param array $data
-     *
-     * @return GetFormRequest
-     */
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            self::getDataValue($data, 'order_id'),
-            self::getDataValue($data, 'product', null),
-            self::getDataValue($data, 'campaign', null),
-            self::getDataValue($data, 'ajax', null)
-        );
     }
 
     /**

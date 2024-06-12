@@ -30,9 +30,9 @@ class Category
      */
     public function __construct(string $id, string $name)
     {
-        if(empty($id) || empty($name)) {
+        if (empty($id) || empty($name)) {
             throw new EmptyCategoryParameterException(
-                new TranslatableLabel('No parameter can be an empty string.','general.errors.empty')
+                new TranslatableLabel('No parameter can be an empty string.', 'general.errors.empty')
             );
         }
 
@@ -49,19 +49,19 @@ class Category
     }
 
     /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
      * @param string $id
      */
     public function setId(string $id): void
     {
         $this->id = $id;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
     }
 
     /**

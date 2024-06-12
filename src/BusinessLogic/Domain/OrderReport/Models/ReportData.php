@@ -45,22 +45,6 @@ class ReportData
     }
 
     /**
-     * @return string[]
-     */
-    public function getReportOrderIds(): array
-    {
-        return $this->reportOrderIds;
-    }
-
-    /**
-     * @return string[]|null
-     */
-    public function getStatisticsOrderIds(): ?array
-    {
-        return $this->statisticsOrderIds;
-    }
-
-    /**
      * @param string $merchantId
      *
      * @return void
@@ -71,6 +55,14 @@ class ReportData
     }
 
     /**
+     * @return string[]
+     */
+    public function getReportOrderIds(): array
+    {
+        return $this->reportOrderIds;
+    }
+
+    /**
      * @param string[] $reportOrderIds
      *
      * @return void
@@ -78,6 +70,14 @@ class ReportData
     public function setReportOrderIds(array $reportOrderIds): void
     {
         $this->reportOrderIds = $reportOrderIds;
+    }
+
+    /**
+     * @return string[]|null
+     */
+    public function getStatisticsOrderIds(): ?array
+    {
+        return $this->statisticsOrderIds;
     }
 
     /**

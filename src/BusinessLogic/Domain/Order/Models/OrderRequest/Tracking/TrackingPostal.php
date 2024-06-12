@@ -39,9 +39,8 @@ class TrackingPostal extends Tracking
         string $trackingNumber = null,
         string $deliveredAt = null,
         string $trackingUrl = null
-    )
-    {
-        if($trackingUrl && !StringValidator::isValidUrl($trackingUrl)){
+    ) {
+        if ($trackingUrl && !StringValidator::isValidUrl($trackingUrl)) {
             throw new InvalidUrlException('Tracking url must be a valid url.');
         }
 
@@ -49,6 +48,27 @@ class TrackingPostal extends Tracking
 
         $this->carrier = $carrier;
         $this->trackingUrl = $trackingUrl;
+    }
+
+    /**
+     * Create a new TrackingPostal instance from an array of data.
+     *
+     * @param array $data
+     *
+     * @return Tracking
+     *
+     * @throws InvalidTimestampException
+     * @throws InvalidUrlException
+     */
+    public static function fromArray(array $data): Tracking
+    {
+        return new self(
+            self::getDataValue($data, 'reference'),
+            self::getDataValue($data, 'carrier'),
+            self::getDataValue($data, 'tracking_number', null),
+            self::getDataValue($data, 'delivered_at', null),
+            self::getDataValue($data, 'tracking_url', null)
+        );
     }
 
     /**
@@ -73,26 +93,5 @@ class TrackingPostal extends Tracking
     public function toArray(): array
     {
         return $this->transformPropertiesToAnArray(get_object_vars($this));
-    }
-
-    /**
-     * Create a new TrackingPostal instance from an array of data.
-     *
-     * @param array $data
-     *
-     * @return Tracking
-     *
-     * @throws InvalidTimestampException
-     * @throws InvalidUrlException
-     */
-    public static function fromArray(array $data): Tracking
-    {
-        return new self(
-            self::getDataValue($data, 'reference'),
-            self::getDataValue($data, 'carrier'),
-            self::getDataValue($data, 'tracking_number', null),
-            self::getDataValue($data, 'delivered_at', null),
-            self::getDataValue($data, 'tracking_url', null)
-        );
     }
 }

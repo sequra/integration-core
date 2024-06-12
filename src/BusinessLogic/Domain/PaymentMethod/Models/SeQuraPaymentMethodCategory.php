@@ -41,6 +41,30 @@ class SeQuraPaymentMethodCategory
     }
 
     /**
+     * Creates an instance of SeQuraPaymentMethodCategory from given array data.
+     *
+     * @param array $data
+     *
+     * @return SeQuraPaymentMethodCategory
+     *
+     * @throws Exception
+     */
+    public static function fromArray(array $data): SeQuraPaymentMethodCategory
+    {
+        $methods = [];
+        foreach ($data['methods'] as $method) {
+            $methods[] = SeQuraPaymentMethod::fromArray($method);
+        }
+
+        return new self(
+            $data['title'],
+            $data['description'] ?? null,
+            $data['icon'] ?? null,
+            $methods
+        );
+    }
+
+    /**
      * @return string
      */
     public function getTitle(): string
@@ -102,29 +126,5 @@ class SeQuraPaymentMethodCategory
     public function setMethods(array $methods): void
     {
         $this->methods = $methods;
-    }
-
-    /**
-     * Creates an instance of SeQuraPaymentMethodCategory from given array data.
-     *
-     * @param array $data
-     *
-     * @return SeQuraPaymentMethodCategory
-     *
-     * @throws Exception
-     */
-    public static function fromArray(array $data): SeQuraPaymentMethodCategory
-    {
-        $methods = [];
-        foreach ($data['methods'] as $method) {
-            $methods[] = SeQuraPaymentMethod::fromArray($method);
-        }
-
-        return new self(
-            $data['title'],
-            $data['description'] ?? null,
-            $data['icon'] ?? null,
-            $methods
-        );
     }
 }

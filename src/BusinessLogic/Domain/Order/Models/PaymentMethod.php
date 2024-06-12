@@ -39,6 +39,22 @@ class PaymentMethod extends DataTransferObject
     }
 
     /**
+     * Create a new PaymentMethod instance from an array of data.
+     *
+     * @param array $data Array containing the data.
+     *
+     * @return PaymentMethod Returns a new PaymentMethod instance.
+     */
+    public static function fromArray(array $data): PaymentMethod
+    {
+        return new self(
+            self::getDataValue($data, 'id'),
+            self::getDataValue($data, 'name'),
+            self::getDataValue($data, 'icon', null)
+        );
+    }
+
+    /**
      * @return string
      */
     public function getId(): string
@@ -90,22 +106,6 @@ class PaymentMethod extends DataTransferObject
     public function setIcon(?string $icon): void
     {
         $this->icon = $icon;
-    }
-
-    /**
-     * Create a new PaymentMethod instance from an array of data.
-     *
-     * @param array $data Array containing the data.
-     *
-     * @return PaymentMethod Returns a new PaymentMethod instance.
-     */
-    public static function fromArray(array $data): PaymentMethod
-    {
-        return new self(
-            self::getDataValue($data, 'id'),
-            self::getDataValue($data, 'name'),
-            self::getDataValue($data, 'icon', null)
-        );
     }
 
     /**

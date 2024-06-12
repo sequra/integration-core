@@ -45,7 +45,7 @@ class UpdateOrderRequest extends BaseOrderRequest
     public function __construct(
         Merchant $merchant,
         MerchantReference $merchantReference,
-        Platform $platform ,
+        Platform $platform,
         Cart $unshippedCart,
         Cart $shippedCart,
         DeliveryMethod $deliveryMethod = null,
@@ -53,8 +53,7 @@ class UpdateOrderRequest extends BaseOrderRequest
         Address $deliveryAddress = null,
         Address $invoiceAddress = null,
         array $trackings = null
-    )
-    {
+    ) {
         $merchantId = $merchant->getId();
 
         $this->merchant = new Merchant($merchantId);

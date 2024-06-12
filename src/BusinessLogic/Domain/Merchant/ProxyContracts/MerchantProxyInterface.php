@@ -18,9 +18,9 @@ interface MerchantProxyInterface
      *
      * @param GetAvailablePaymentMethodsRequest $request
      *
+     * @return SeQuraPaymentMethod[]
      * @throws HttpRequestException
      *
-     * @return SeQuraPaymentMethod[]
      */
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array;
 }

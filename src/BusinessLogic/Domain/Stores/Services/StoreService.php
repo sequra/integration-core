@@ -27,10 +27,9 @@ class StoreService
     private $integrationStoreService;
 
     public function __construct(
-        StoreServiceInterface             $integrationStoreService,
+        StoreServiceInterface $integrationStoreService,
         ConnectionDataRepositoryInterface $connectionDataRepository
-    )
-    {
+    ) {
         $this->connectionDataRepository = $connectionDataRepository;
         $this->integrationStoreService = $integrationStoreService;
     }
@@ -47,7 +46,8 @@ class StoreService
         try {
             return $this->integrationStoreService->getStores();
         } catch (Exception $e) {
-            throw new FailedToRetrieveStoresException(new TranslatableLabel('Failed to retrieve stores.', 'general.errors.stores.failed'));
+            throw new FailedToRetrieveStoresException(new TranslatableLabel('Failed to retrieve stores.',
+                'general.errors.stores.failed'));
         }
     }
 
@@ -67,18 +67,9 @@ class StoreService
                 $firstConnectedStoreId
             ) : $this->integrationStoreService->getDefaultStore();
         } catch (Exception $e) {
-            throw new FailedToRetrieveStoresException(new TranslatableLabel('Failed to retrieve stores.', 'general.errors.stores.failed'));
+            throw new FailedToRetrieveStoresException(new TranslatableLabel('Failed to retrieve stores.',
+                'general.errors.stores.failed'));
         }
-    }
-
-    /**
-     * Retrieves all connected stores ids.
-     *
-     * @return string[]
-     */
-    public function getConnectedStores(): array
-    {
-        return $this->connectionDataRepository->getAllConnectionSettingsStores();
     }
 
     /**
@@ -91,5 +82,15 @@ class StoreService
         $oldestStoreId = $this->connectionDataRepository->getOldestConnectionSettingsStoreId();
 
         return $oldestStoreId ?? '';
+    }
+
+    /**
+     * Retrieves all connected stores ids.
+     *
+     * @return string[]
+     */
+    public function getConnectedStores(): array
+    {
+        return $this->connectionDataRepository->getAllConnectionSettingsStores();
     }
 }

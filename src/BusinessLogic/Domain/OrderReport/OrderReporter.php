@@ -34,18 +34,6 @@ class OrderReporter extends Orchestrator
     /**
      * @inheritDoc
      */
-    public function toArray(): array
-    {
-        $result = parent::toArray();
-        $result['page'] = $this->page;
-        $result['storeId'] = $this->storeId;
-
-        return $result;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public static function fromArray(array $array)
     {
         $entity = parent::fromArray($array);
@@ -53,6 +41,18 @@ class OrderReporter extends Orchestrator
         $entity->storeId = $array['storeId'];
 
         return $entity;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toArray(): array
+    {
+        $result = parent::toArray();
+        $result['page'] = $this->page;
+        $result['storeId'] = $this->storeId;
+
+        return $result;
     }
 
     /**
@@ -111,7 +111,8 @@ class OrderReporter extends Orchestrator
         $statisticsOrderIds = null;
         $statisticalData = $this->getStatisticalDataRepository()->getStatisticalData();
         if ($statisticalData && $statisticalData->isSendStatisticalData()) {
-            $statisticsOrderIds = $this->getShopOrderService()->getStatisticsOrderIds($this->page, static::ORDERS_PER_BACH);
+            $statisticsOrderIds = $this->getShopOrderService()->getStatisticsOrderIds($this->page,
+                static::ORDERS_PER_BACH);
         }
 
         $merchantId = null;

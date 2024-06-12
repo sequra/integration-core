@@ -25,15 +25,6 @@ class StoreContext
     {
     }
 
-    public static function getInstance(): StoreContext
-    {
-        if (!static::$instance) {
-            static::$instance = new static();
-        }
-
-        return static::$instance;
-    }
-
     /**
      * Executes callback method with set store id.
      *
@@ -41,9 +32,9 @@ class StoreContext
      * @param callable $callback
      * @param array $params
      *
+     * @return mixed
      * @throws Exception
      *
-     * @return mixed
      */
     public static function doWithStore(string $storeId, callable $callback, array $params = [])
     {
@@ -57,6 +48,15 @@ class StoreContext
         }
 
         return $result;
+    }
+
+    public static function getInstance(): StoreContext
+    {
+        if (!static::$instance) {
+            static::$instance = new static();
+        }
+
+        return static::$instance;
     }
 
     /**

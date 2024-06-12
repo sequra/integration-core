@@ -86,16 +86,6 @@ class OrderReportService
     }
 
     /**
-     * @param int $time
-     *
-     * @return void
-     */
-    public function setSendReportTime(int $time): void
-    {
-        $this->sendReportRepository->setSendReport(new SendReport($time));
-    }
-
-    /**
      * Creates a SendOrderReportRequest instance.
      *
      * @param string $merchantId
@@ -117,5 +107,15 @@ class OrderReportService
             $this->integrationOrderReportService->getPlatform(),
             $orderStatistics ? new Statistics($orderStatistics) : null
         );
+    }
+
+    /**
+     * @param int $time
+     *
+     * @return void
+     */
+    public function setSendReportTime(int $time): void
+    {
+        $this->sendReportRepository->setSendReport(new SendReport($time));
     }
 }

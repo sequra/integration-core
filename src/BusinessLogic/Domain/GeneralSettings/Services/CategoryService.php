@@ -38,7 +38,8 @@ class CategoryService
         try {
             return $this->integrationCategoryService->getCategories();
         } catch (Exception $e) {
-            throw new FailedToRetrieveCategoriesException(new TranslatableLabel('Failed to retrieve categories.', 'general.errors.generalSettings.categories'));
+            throw new FailedToRetrieveCategoriesException(new TranslatableLabel('Failed to retrieve categories.',
+                'general.errors.generalSettings.categories'));
         }
     }
 }

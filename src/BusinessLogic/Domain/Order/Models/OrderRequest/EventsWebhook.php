@@ -30,7 +30,7 @@ class EventsWebhook extends OrderRequestDTO
      */
     public function __construct(string $url, array $parameters = null)
     {
-        if(!StringValidator::isValidUrl($url)) {
+        if (!StringValidator::isValidUrl($url)) {
             throw new InvalidUrlException('Url must be a valid url.');
         }
 

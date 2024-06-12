@@ -75,8 +75,7 @@ class PreviousOrder extends OrderRequestDTO
         string $paymentMethod = null,
         string $postalCode = null,
         string $countryCode = null
-    )
-    {
+    ) {
         $this->createdAt = $createdAt;
         $this->amount = $amount;
         $this->currency = $currency;
@@ -86,6 +85,28 @@ class PreviousOrder extends OrderRequestDTO
         $this->paymentMethod = $paymentMethod;
         $this->postalCode = $postalCode;
         $this->countryCode = $countryCode;
+    }
+
+    /**
+     * Create a new PreviousOrder instance from an array of data.
+     *
+     * @param array $data
+     *
+     * @return PreviousOrder
+     */
+    public static function fromArray(array $data): PreviousOrder
+    {
+        return new PreviousOrder(
+            self::getDataValue($data, '$created_at'),
+            self::getDataValue($data, '$amount', 0),
+            self::getDataValue($data, '$currency'),
+            self::getDataValue($data, '$raw_status', null),
+            self::getDataValue($data, '$status', null),
+            self::getDataValue($data, '$payment_method_raw', null),
+            self::getDataValue($data, '$payment_method', null),
+            self::getDataValue($data, '$postal_code', null),
+            self::getDataValue($data, '$country_code', null)
+        );
     }
 
     /**
@@ -166,27 +187,5 @@ class PreviousOrder extends OrderRequestDTO
     public function toArray(): array
     {
         return $this->transformPropertiesToAnArray(get_object_vars($this));
-    }
-
-    /**
-     * Create a new PreviousOrder instance from an array of data.
-     *
-     * @param array $data
-     *
-     * @return PreviousOrder
-     */
-    public static function fromArray(array $data): PreviousOrder
-    {
-        return new PreviousOrder(
-            self::getDataValue($data, '$created_at'),
-            self::getDataValue($data, '$amount', 0),
-            self::getDataValue($data, '$currency'),
-            self::getDataValue($data, '$raw_status', null),
-            self::getDataValue($data, '$status', null),
-            self::getDataValue($data, '$payment_method_raw', null),
-            self::getDataValue($data, '$payment_method', null),
-            self::getDataValue($data, '$postal_code', null),
-            self::getDataValue($data, '$country_code', null)
-        );
     }
 }

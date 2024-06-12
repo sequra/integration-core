@@ -25,6 +25,20 @@ class GetAvailablePaymentMethodsRequest extends DataTransferObject
     }
 
     /**
+     * Create a GetAvailablePaymentMethodsRequest instance from an array.
+     *
+     * @param array $data
+     *
+     * @return GetAvailablePaymentMethodsRequest
+     */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            self::getDataValue($data, 'order_id')
+        );
+    }
+
+    /**
      * @return string
      */
     public function getOrderId(): string
@@ -38,20 +52,6 @@ class GetAvailablePaymentMethodsRequest extends DataTransferObject
     public function setOrderId(string $orderId): void
     {
         $this->orderId = $orderId;
-    }
-
-    /**
-     * Create a GetAvailablePaymentMethodsRequest instance from an array.
-     *
-     * @param array $data
-     *
-     * @return GetAvailablePaymentMethodsRequest
-     */
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            self::getDataValue($data, 'order_id')
-        );
     }
 
     /**

@@ -70,13 +70,12 @@ class Cart extends OrderRequestDTO
      */
     public function __construct(
         string $currency,
-        bool   $gift = false,
-        array  $items = [],
-               $cartRef = null,
+        bool $gift = false,
+        array $items = [],
+        $cartRef = null,
         string $createdAt = null,
         string $updatedAt = null
-    )
-    {
+    ) {
         $orderTotalWithTax = 0;
 
         foreach ($items as $item) {

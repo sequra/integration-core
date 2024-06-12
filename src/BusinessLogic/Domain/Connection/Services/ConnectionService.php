@@ -11,7 +11,6 @@ use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDa
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiUnauthorizedException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
-use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\ServiceRegister;
 
 /**
@@ -69,6 +68,16 @@ class ConnectionService
     }
 
     /**
+     * Returns an instance of the connection data repository.
+     *
+     * @return ConnectionDataRepositoryInterface
+     */
+    private function getConnectionDataRepository(): ConnectionDataRepositoryInterface
+    {
+        return ServiceRegister::getService(ConnectionDataRepositoryInterface::class);
+    }
+
+    /**
      * Calls the repository to save the connection data to the database.
      *
      * @param ConnectionData $connectionData
@@ -78,15 +87,5 @@ class ConnectionService
     public function saveConnectionData(ConnectionData $connectionData): void
     {
         $this->getConnectionDataRepository()->setConnectionData($connectionData);
-    }
-
-    /**
-     * Returns an instance of the connection data repository.
-     *
-     * @return ConnectionDataRepositoryInterface
-     */
-    private function getConnectionDataRepository(): ConnectionDataRepositoryInterface
-    {
-        return ServiceRegister::getService(ConnectionDataRepositoryInterface::class);
     }
 }

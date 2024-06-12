@@ -21,19 +21,17 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 class CreateOrderRequest extends BaseOrderRequest
 {
     /**
+     * @var Gui Fields describing the medium for which the response will be generated.
+     */
+    protected $gui;
+    /**
      * @var string String containing state of the order.
      */
     private $state;
-
     /**
      * @var Cart Fields describing the shopping cart.
      */
     private $cart;
-
-    /**
-     * @var Gui Fields describing the medium for which the response will be generated.
-     */
-    protected $gui;
 
     /**
      * @param string $state
@@ -60,8 +58,7 @@ class CreateOrderRequest extends BaseOrderRequest
         Gui $gui,
         MerchantReference $merchantReference = null,
         array $trackings = null
-    )
-    {
+    ) {
         $this->state = $state;
         $this->merchant = $merchant;
         $this->cart = $cart;
@@ -129,31 +126,6 @@ class CreateOrderRequest extends BaseOrderRequest
     }
 
     /**
-     * @return string
-     */
-    public function getState(): string
-    {
-        return $this->state;
-    }
-
-
-    /**
-     * @return Cart
-     */
-    public function getCart(): Cart
-    {
-        return $this->cart;
-    }
-
-    /**
-     * @return Gui
-     */
-    public function getGui(): Gui
-    {
-        return $this->gui;
-    }
-
-    /**
      * @inheritDoc
      */
     public function toArray(): array
@@ -185,15 +157,39 @@ class CreateOrderRequest extends BaseOrderRequest
             ->setPlatform($this->getPlatform())
             ->setGui($this->getGui());
 
-        if($this->getCart()->getCartRef()) {
+        if ($this->getCart()->getCartRef()) {
             $order->setCartId($this->getCart()->getCartRef());
         }
 
-        if($this->getMerchantReference()) {
+        if ($this->getMerchantReference()) {
             $order->setMerchantReference($this->getMerchantReference());
             $order->setOrderRef1($this->getMerchantReference()->getOrderRef1());
         }
 
         return $order;
+    }
+
+    /**
+     * @return string
+     */
+    public function getState(): string
+    {
+        return $this->state;
+    }
+
+    /**
+     * @return Cart
+     */
+    public function getCart(): Cart
+    {
+        return $this->cart;
+    }
+
+    /**
+     * @return Gui
+     */
+    public function getGui(): Gui
+    {
+        return $this->gui;
     }
 }

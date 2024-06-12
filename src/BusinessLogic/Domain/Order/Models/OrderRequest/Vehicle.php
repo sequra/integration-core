@@ -47,13 +47,30 @@ class Vehicle extends OrderRequestDTO
         string $model = null,
         string $frame = null,
         string $firstRegistrationDate = null
-    )
-    {
+    ) {
         $this->plaque = $plaque;
         $this->brand = $brand;
         $this->model = $model;
         $this->frame = $frame;
         $this->firstRegistrationDate = $firstRegistrationDate;
+    }
+
+    /**
+     * Create a new Vehicle instance from an array of data.
+     *
+     * @param array $data
+     *
+     * @return Vehicle
+     */
+    public static function fromArray(array $data): Vehicle
+    {
+        return new Vehicle(
+            self::getDataValue($data, 'plaque'),
+            self::getDataValue($data, 'brand', null),
+            self::getDataValue($data, 'model', null),
+            self::getDataValue($data, 'frame', null),
+            self::getDataValue($data, 'first_registration_date', null)
+        );
     }
 
     /**
@@ -102,23 +119,5 @@ class Vehicle extends OrderRequestDTO
     public function toArray(): array
     {
         return $this->transformPropertiesToAnArray(get_object_vars($this));
-    }
-
-    /**
-     * Create a new Vehicle instance from an array of data.
-     *
-     * @param array $data
-     *
-     * @return Vehicle
-     */
-    public static function fromArray(array $data): Vehicle
-    {
-        return new Vehicle(
-            self::getDataValue($data, 'plaque'),
-            self::getDataValue($data, 'brand', null),
-            self::getDataValue($data, 'model', null),
-            self::getDataValue($data, 'frame', null),
-            self::getDataValue($data, 'first_registration_date', null)
-        );
     }
 }

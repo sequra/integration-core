@@ -37,7 +37,8 @@ class VersionService
         try {
             return $this->integrationVersionService->getVersion();
         } catch (Exception $e) {
-            throw new FailedToRetrieveVersionException(new TranslatableLabel('Failed to retrieve version.', 'general.errors.version.failed'));
+            throw new FailedToRetrieveVersionException(new TranslatableLabel('Failed to retrieve version.',
+                'general.errors.version.failed'));
         }
     }
 }

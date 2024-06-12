@@ -103,8 +103,7 @@ class Address extends OrderRequestDTO
         string $state = null,
         string $extra = null,
         string $vatNumber = null
-    )
-    {
+    ) {
         $this->givenNames = $givenNames;
         $this->surnames = $surnames;
         $this->company = $company;

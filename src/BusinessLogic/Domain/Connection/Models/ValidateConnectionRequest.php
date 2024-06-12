@@ -26,22 +26,6 @@ class ValidateConnectionRequest extends DataTransferObject
     }
 
     /**
-     * @return ConnectionData
-     */
-    public function getConnectionData(): ConnectionData
-    {
-        return $this->connectionData;
-    }
-
-    /**
-     * @param ConnectionData $connectionData
-     */
-    public function setConnectionData(ConnectionData $connectionData): void
-    {
-        $this->connectionData = $connectionData;
-    }
-
-    /**
      * Create a GetAvailablePaymentMethodsRequest instance from an array.
      *
      * @param array $data
@@ -62,6 +46,22 @@ class ValidateConnectionRequest extends DataTransferObject
                 )
             )
         );
+    }
+
+    /**
+     * @return ConnectionData
+     */
+    public function getConnectionData(): ConnectionData
+    {
+        return $this->connectionData;
+    }
+
+    /**
+     * @param ConnectionData $connectionData
+     */
+    public function setConnectionData(ConnectionData $connectionData): void
+    {
+        $this->connectionData = $connectionData;
     }
 
     /**

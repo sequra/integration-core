@@ -2,9 +2,9 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts;
 
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -24,9 +24,9 @@ interface OrderProxyInterface
      *
      * @param GetAvailablePaymentMethodsRequest $request
      *
+     * @return SeQuraPaymentMethod[]
      * @throws HttpRequestException
      *
-     * @return SeQuraPaymentMethod[]
      */
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array;
 
@@ -35,9 +35,9 @@ interface OrderProxyInterface
      *
      * @param GetAvailablePaymentMethodsRequest $request
      *
+     * @return SeQuraPaymentMethodCategory[]
      * @throws HttpRequestException
      *
-     * @return SeQuraPaymentMethodCategory[]
      */
     public function getAvailablePaymentMethodsInCategories(GetAvailablePaymentMethodsRequest $request): array;
 
@@ -46,9 +46,9 @@ interface OrderProxyInterface
      *
      * @param CreateOrderRequest $request
      *
+     * @return SeQuraOrder
      * @throws HttpRequestException
      *
-     * @return SeQuraOrder
      */
     public function createOrder(CreateOrderRequest $request): SeQuraOrder;
 
@@ -80,9 +80,9 @@ interface OrderProxyInterface
      *
      * @param GetFormRequest $request
      *
+     * @return SeQuraForm
      * @throws HttpRequestException
      *
-     * @return SeQuraForm
      */
     public function getForm(GetFormRequest $request): SeQuraForm;
 }

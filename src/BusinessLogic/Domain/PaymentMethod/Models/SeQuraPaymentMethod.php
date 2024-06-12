@@ -105,8 +105,8 @@ class SeQuraPaymentMethod
         string $icon = null,
         string $costDescription = null,
         int $minAmount = null,
-        int $maxAmount = null)
-    {
+        int $maxAmount = null
+    ) {
         $this->product = $product;
         $this->title = $title;
         $this->longTitle = $longTitle;
@@ -120,6 +120,41 @@ class SeQuraPaymentMethod
         $this->costDescription = $costDescription;
         $this->minAmount = $minAmount;
         $this->maxAmount = $maxAmount;
+    }
+
+    /**
+     * Creates an instance of SeQuraPaymentMethod from given array data.
+     *
+     * @param array $data
+     *
+     * @return SeQuraPaymentMethod
+     *
+     * @throws Exception
+     */
+    public static function fromArray(array $data): SeQuraPaymentMethod
+    {
+        $cost = new SeQuraCost(
+            $data['cost']['setup_fee'],
+            $data['cost']['instalment_fee'],
+            $data['cost']['down_payment_fees'],
+            $data['cost']['instalment_total']
+        );
+
+        return new self(
+            $data['product'],
+            $data['title'],
+            $data['long_title'],
+            $cost,
+            new DateTime($data['starts_at']),
+            new DateTime($data['ends_at']),
+            $data['campaign'] ?? null,
+            $data['claim'] ?? null,
+            $data['description'] ?? null,
+            $data['icon'] ?? null,
+            $data['cost_description'] ?? null,
+            $data['min_amount'] ?? null,
+            $data['max_amount'] ?? null
+        );
     }
 
     /**
@@ -328,40 +363,5 @@ class SeQuraPaymentMethod
     public function setMaxAmount(?int $maxAmount): void
     {
         $this->maxAmount = $maxAmount;
-    }
-
-    /**
-     * Creates an instance of SeQuraPaymentMethod from given array data.
-     *
-     * @param array $data
-     *
-     * @return SeQuraPaymentMethod
-     *
-     * @throws Exception
-     */
-    public static function fromArray(array $data): SeQuraPaymentMethod
-    {
-        $cost = new SeQuraCost(
-            $data['cost']['setup_fee'],
-            $data['cost']['instalment_fee'],
-            $data['cost']['down_payment_fees'],
-            $data['cost']['instalment_total']
-        );
-
-        return new self(
-            $data['product'],
-            $data['title'],
-            $data['long_title'],
-            $cost,
-            new DateTime($data['starts_at']),
-            new DateTime($data['ends_at']),
-            $data['campaign'] ?? null,
-            $data['claim'] ?? null,
-            $data['description'] ?? null,
-            $data['icon'] ?? null,
-            $data['cost_description'] ?? null,
-            $data['min_amount'] ?? null,
-            $data['max_amount'] ?? null
-        );
     }
 }

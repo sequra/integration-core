@@ -88,13 +88,12 @@ class TrackingPickupPoint extends Tracking
         string $city = null,
         string $state = null,
         string $countryCode = null
-    )
-    {
-        if($countryCode && !StringValidator::isStringLengthBetween($countryCode, 2, 3)){
+    ) {
+        if ($countryCode && !StringValidator::isStringLengthBetween($countryCode, 2, 3)) {
             throw new InvalidCodeException('Country code must be ISO 3166 formatted code.');
         }
 
-        if($availableAt && !StringValidator::isISO8601Timestamp($availableAt)){
+        if ($availableAt && !StringValidator::isISO8601Timestamp($availableAt)) {
             throw new InvalidTimestampException('Available at must be ISO 8601 formatted timestamp.');
         }
 
@@ -109,6 +108,34 @@ class TrackingPickupPoint extends Tracking
         $this->city = $city;
         $this->state = $state;
         $this->countryCode = $countryCode;
+    }
+
+    /**
+     * Create a new TrackingPickupPoint instance from an array of data.
+     *
+     * @param array $data Array containing the data.
+     *
+     * @return Tracking Returns a new Tracking instance.
+     *
+     * @throws InvalidCodeException
+     * @throws InvalidTimestampException
+     */
+    public static function fromArray(array $data): Tracking
+    {
+        return new self(
+            self::getDataValue($data, 'reference'),
+            self::getDataValue($data, 'tracking_number', null),
+            self::getDataValue($data, 'delivered_at', null),
+            self::getDataValue($data, 'operator_ref', null),
+            self::getDataValue($data, 'store_ref', null),
+            self::getDataValue($data, 'available_at', null),
+            self::getDataValue($data, 'address_line_1', null),
+            self::getDataValue($data, 'address_line_2', null),
+            self::getDataValue($data, 'postal_code', null),
+            self::getDataValue($data, 'city', null),
+            self::getDataValue($data, 'state', null),
+            self::getDataValue($data, 'country_code', null)
+        );
     }
 
     /**
@@ -189,33 +216,5 @@ class TrackingPickupPoint extends Tracking
     public function toArray(): array
     {
         return $this->transformPropertiesToAnArray(get_object_vars($this));
-    }
-
-    /**
-     * Create a new TrackingPickupPoint instance from an array of data.
-     *
-     * @param array $data Array containing the data.
-     *
-     * @return Tracking Returns a new Tracking instance.
-     *
-     * @throws InvalidCodeException
-     * @throws InvalidTimestampException
-     */
-    public static function fromArray(array $data): Tracking
-    {
-        return new self(
-            self::getDataValue($data, 'reference'),
-            self::getDataValue($data, 'tracking_number', null),
-            self::getDataValue($data, 'delivered_at', null),
-            self::getDataValue($data, 'operator_ref', null),
-            self::getDataValue($data, 'store_ref', null),
-            self::getDataValue($data, 'available_at', null),
-            self::getDataValue($data, 'address_line_1', null),
-            self::getDataValue($data, 'address_line_2', null),
-            self::getDataValue($data, 'postal_code', null),
-            self::getDataValue($data, 'city', null),
-            self::getDataValue($data, 'state', null),
-            self::getDataValue($data, 'country_code', null)
-        );
     }
 }

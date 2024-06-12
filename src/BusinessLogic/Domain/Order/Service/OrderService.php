@@ -8,9 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ItemType;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
@@ -22,7 +20,6 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethodCategory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
-use SeQura\Core\Infrastructure\TaskExecution\Exceptions\AbortTaskExecutionException;
 
 /**
  * Class OrderService
@@ -44,25 +41,6 @@ class OrderService
     {
         $this->proxy = $proxy;
         $this->orderRepository = $orderRepository;
-    }
-
-    /**
-     * Gets the SeQuraOrder for a given shop order reference.
-     *
-     * @param string $shopReference
-     *
-     * @return SeQuraOrder
-     *
-     * @throws OrderNotFoundException
-     */
-    public function getOrderByShopReference(string $shopReference): SeQuraOrder
-    {
-        $order = $this->orderRepository->getByShopReference($shopReference);
-        if (!$order) {
-            throw new OrderNotFoundException('Order for shop reference ' . $shopReference . ' not found.');
-        }
-
-        return $order;
     }
 
     /**
@@ -96,6 +74,27 @@ class OrderService
         $this->orderRepository->setSeQuraOrder($order);
 
         return $order;
+    }
+
+    /**
+     * @param CreateOrderRequest $request
+     *
+     * @return SeQuraOrder|null
+     */
+    private function getExistingOrderFor(CreateOrderRequest $request): ?SeQuraOrder
+    {
+        $existingOrder = null;
+        if ($request->getCart()->getCartRef()) {
+            $existingOrder = $this->orderRepository->getByCartId($request->getCart()->getCartRef());
+        }
+
+        if (!$existingOrder && $request->getMerchantReference()) {
+            $existingOrder = $this->orderRepository->getByShopReference(
+                $request->getMerchantReference()->getOrderRef1()
+            );
+        }
+
+        return $existingOrder;
     }
 
     /**
@@ -202,6 +201,42 @@ class OrderService
     }
 
     /**
+     * Gets the SeQuraOrder for a given shop order reference.
+     *
+     * @param string $shopReference
+     *
+     * @return SeQuraOrder
+     *
+     * @throws OrderNotFoundException
+     */
+    public function getOrderByShopReference(string $shopReference): SeQuraOrder
+    {
+        $order = $this->orderRepository->getByShopReference($shopReference);
+        if (!$order) {
+            throw new OrderNotFoundException('Order for shop reference ' . $shopReference . ' not found.');
+        }
+
+        return $order;
+    }
+
+    /**
+     * Checks if the objects are equal.
+     *
+     * @param $object1
+     * @param $object2
+     *
+     * @return bool
+     */
+    private function areObjectsEqual($object1, $object2): bool
+    {
+        if (method_exists($object1, 'toArray') && method_exists($object2, 'toArray')) {
+            return json_encode($object1->toArray()) === json_encode($object2->toArray());
+        }
+
+        return json_encode($object1) === json_encode($object2);
+    }
+
+    /**
      * @param SeQuraOrder $order
      *
      * @return void
@@ -223,27 +258,6 @@ class OrderService
         }
 
         $this->orderRepository->setSeQuraOrder($order);
-    }
-
-    /**
-     * @param CreateOrderRequest $request
-     *
-     * @return SeQuraOrder|null
-     */
-    private function getExistingOrderFor(CreateOrderRequest $request): ?SeQuraOrder
-    {
-        $existingOrder = null;
-        if ($request->getCart()->getCartRef()) {
-            $existingOrder = $this->orderRepository->getByCartId($request->getCart()->getCartRef());
-        }
-
-        if (!$existingOrder && $request->getMerchantReference()) {
-            $existingOrder = $this->orderRepository->getByShopReference(
-                $request->getMerchantReference()->getOrderRef1()
-            );
-        }
-
-        return $existingOrder;
     }
 
     /**
@@ -269,22 +283,5 @@ class OrderService
             'customer' => $order->getCustomer()->toArray(),
             'platform' => $order->getPlatform()->toArray(),
         ]);
-    }
-
-    /**
-     * Checks if the objects are equal.
-     *
-     * @param $object1
-     * @param $object2
-     *
-     * @return bool
-     */
-    private function areObjectsEqual($object1, $object2): bool
-    {
-        if (method_exists($object1, 'toArray') && method_exists($object2, 'toArray')) {
-            return json_encode($object1->toArray()) === json_encode($object2->toArray());
-        }
-
-        return json_encode($object1) === json_encode($object2);
     }
 }

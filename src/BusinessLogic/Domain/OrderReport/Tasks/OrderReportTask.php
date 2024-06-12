@@ -72,6 +72,14 @@ class OrderReportTask extends Task
     }
 
     /**
+     * @inheritDocs
+     */
+    public function __serialize(): array
+    {
+        return $this->toArray();
+    }
+
+    /**
      * Transforms serializable object into an array.
      *
      * @return array Array representation of a serializable object.
@@ -84,14 +92,6 @@ class OrderReportTask extends Task
             'statisticsOrderIds' => $this->statisticsOrderIds,
             'merchantId' => $this->merchantId
         ];
-    }
-
-    /**
-     * @inheritDocs
-     */
-    public function __serialize(): array
-    {
-        return $this->toArray();
     }
 
     /**
