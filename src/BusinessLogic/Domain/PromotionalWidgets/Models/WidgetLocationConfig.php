@@ -32,18 +32,26 @@ class WidgetLocationConfig
     private $selForAltPriceTrigger;
 
     /**
+     * CSS Selector for retrieving the container element where the widget should be inserted.
+     *
+     * @var string
+     */
+    private $selForDefaultLocation;
+
+    /**
      * The locations where the widget should be displayed.
      *
      * @var WidgetLocation[]
      */
-    private $locations;
+    private $customLocations;
 
-    public function __construct(string $selForPrice, string $selForAltPrice, string $selForAltPriceTrigger, array $locations)
+    public function __construct(string $selForPrice, string $selForAltPrice, string $selForAltPriceTrigger, string $selForDefaultLocation, array $customLocations)
     {
         $this->selForPrice = $selForPrice;
         $this->selForAltPrice = $selForAltPrice;
         $this->selForAltPriceTrigger = $selForAltPriceTrigger;
-        $this->locations = $locations;
+        $this->selForDefaultLocation = $selForDefaultLocation;
+        $this->customLocations = $customLocations;
     }
 
     public function getSelForPrice(): string
@@ -64,9 +72,9 @@ class WidgetLocationConfig
     /**
      * @return WidgetLocation[]
      */
-    public function getLocations(): array
+    public function getCustomLocations(): array
     {
-        return $this->locations;
+        return $this->customLocations;
     }
 
     public function setSelForPrice(string $selForPrice): void
@@ -84,9 +92,19 @@ class WidgetLocationConfig
         $this->selForAltPriceTrigger = $selForAltPriceTrigger;
     }
 
-    public function setLocations(array $locations): void
+    public function setCustomLocations(array $locations): void
     {
-        $this->locations = $locations;
+        $this->customLocations = $locations;
+    }
+
+    public function setSelForDefaultLocation(string $selForDefaultLocation): void
+    {
+        $this->selForDefaultLocation = $selForDefaultLocation;
+    }
+
+    public function getSelForDefaultLocation(): string
+    {
+        return $this->selForDefaultLocation;
     }
 
     public static function fromArray(array $data): ?self
@@ -95,28 +113,25 @@ class WidgetLocationConfig
             !isset($data['selForPrice'])
             || !isset($data['selForAltPrice'])
             || !isset($data['selForAltPriceTrigger'])
-            || !isset($data['locations'])
+            || !isset($data['selForDefaultLocation'])
+            || !isset($data['customLocations'])
         ) {
             return null;
         }
 
         $locations = [];
-        foreach ($data['locations'] as $location) {
+        foreach ($data['customLocations'] as $location) {
             $location = WidgetLocation::fromArray($location);
             if ($location) {
                 $locations[] = $location;
             }
         }
 
-        if (empty($locations)) {
-            // At least one location is required with the default selector.
-            return null;
-        }
-
         return new self(
             $data['selForPrice'],
             $data['selForAltPrice'],
             $data['selForAltPriceTrigger'],
+            $data['selForDefaultLocation'],
             $locations
         );
     }
@@ -124,7 +139,7 @@ class WidgetLocationConfig
     public function toArray(): array
     {
         $locations = [];
-        foreach ($this->locations as $location) {
+        foreach ($this->customLocations as $location) {
             $locations[] = $location->toArray();
         }
 
@@ -132,21 +147,8 @@ class WidgetLocationConfig
             'selForPrice' => $this->selForPrice,
             'selForAltPrice' => $this->selForAltPrice,
             'selForAltPriceTrigger' => $this->selForAltPriceTrigger,
-            'locations' => $locations
+            'selForDefaultLocation' => $this->selForDefaultLocation,
+            'customLocations' => $locations
         ];
-    }
-
-    /**
-     * Get the default location. That is, the location where only the CSS selector is defined.
-     */
-    public function getDefaultLocation(): ?WidgetLocation
-    {
-        foreach ($this->locations as $location) {
-            if ($location->isDefaultLocation()) {
-                return $location;
-            }
-        }
-
-        return null;
     }
 }
