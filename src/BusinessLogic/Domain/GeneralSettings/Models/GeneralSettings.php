@@ -35,24 +35,56 @@ class GeneralSettings
     protected $excludedProducts;
 
     /**
+     * @var bool
+     */
+    private $enabledForServices;
+
+    /**
+     * @var bool
+     */
+    private $allowFirstServicePaymentDelay;
+
+    /**
+     * @var bool
+     */
+    private $allowServiceRegItems;
+
+    /**
+     * @var string
+     */
+    private $defaultServicesEndDate;
+
+    /**
      * @param bool $sendOrderReportsPeriodicallyToSeQura
      * @param bool|null $showSeQuraCheckoutAsHostedPage
      * @param string[]|null $allowedIPAddresses
      * @param string[]|null $excludedProducts
      * @param string[]|null $excludedCategories
+     * @param bool $enabledForServices
+     * @param bool $allowFirstServicePaymentDelay
+     * @param bool $allowServiceRegItems
+     * @param string $defaultServicesEndDate
      */
     public function __construct(
         bool $sendOrderReportsPeriodicallyToSeQura,
         ?bool $showSeQuraCheckoutAsHostedPage,
         ?array $allowedIPAddresses,
         ?array $excludedProducts,
-        ?array $excludedCategories
+        ?array $excludedCategories,
+        bool $enabledForServices,
+        bool $allowFirstServicePaymentDelay,
+        bool $allowServiceRegItems,
+        string $defaultServicesEndDate
     ) {
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
         $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
         $this->allowedIPAddresses = $allowedIPAddresses;
         $this->excludedProducts = $excludedProducts;
         $this->excludedCategories = $excludedCategories;
+        $this->enabledForServices = $enabledForServices;
+        $this->allowFirstServicePaymentDelay = $allowFirstServicePaymentDelay;
+        $this->allowServiceRegItems = $allowServiceRegItems;
+        $this->defaultServicesEndDate = $defaultServicesEndDate;
     }
 
     /**
@@ -133,5 +165,45 @@ class GeneralSettings
     public function setExcludedProducts(?array $excludedProducts): void
     {
         $this->excludedProducts = $excludedProducts;
+    }
+
+    public function isEnabledForServices(): bool
+    {
+        return $this->enabledForServices;
+    }
+
+    public function setEnabledForServices(bool $enabledForServices): void
+    {
+        $this->enabledForServices = $enabledForServices;
+    }
+
+    public function isAllowFirstServicePaymentDelay(): bool
+    {
+        return $this->allowFirstServicePaymentDelay;
+    }
+
+    public function setAllowFirstServicePaymentDelay(bool $allowFirstServicePaymentDelay): void
+    {
+        $this->allowFirstServicePaymentDelay = $allowFirstServicePaymentDelay;
+    }
+
+    public function isAllowServiceRegItems(): bool
+    {
+        return $this->allowServiceRegItems;
+    }
+
+    public function setAllowServiceRegItems(bool $allowServiceRegItems): void
+    {
+        $this->allowServiceRegItems = $allowServiceRegItems;
+    }
+
+    public function getDefaultServicesEndDate(): string
+    {
+        return $this->defaultServicesEndDate;
+    }
+
+    public function setDefaultServicesEndDate(string $defaultServicesEndDate): void
+    {
+        $this->defaultServicesEndDate = $defaultServicesEndDate;
     }
 }
