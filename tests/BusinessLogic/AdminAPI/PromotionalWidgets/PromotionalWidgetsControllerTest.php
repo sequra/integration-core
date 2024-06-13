@@ -6,8 +6,9 @@ use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Requests\WidgetSettingsRequest;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetConfiguration;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetLabels;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetLocation;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetLocationConfig;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
@@ -64,6 +65,24 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
                     'ES' => 'test test es',
                     'IT' => 'test test it',
                 ]
+            ),
+            new WidgetLocationConfig(
+                'selector-for-price',
+                'selector-for-alt-price',
+                'selector-for-alt-price-trigger',
+                'selector-for-default-location',
+                [
+                    new WidgetLocation(
+                        'selector-for-location',
+                        'pp3',
+                        'ES'
+                    ),
+                    new WidgetLocation(
+                        'selector-for-location2',
+                        'i1',
+                        'IT'
+                    )
+                ]
             )
         );
         StoreContext::doWithStore('store1', [$this->widgetSettingsRepository, 'setWidgetSettings'], [$settings]);
@@ -84,6 +103,22 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
                 'widgetLabels' => [
                     'messages' => $settings->getWidgetLabels()->getMessages(),
                     'messagesBelowLimit' => $settings->getWidgetLabels()->getMessagesBelowLimit(),
+                ],
+                'selForPrice' => 'selector-for-price',
+                'selForAltPrice' => 'selector-for-alt-price',
+                'selForAltPriceTrigger' => 'selector-for-alt-price-trigger',
+                'selForDefaultLocation' => 'selector-for-default-location',
+                'customLocations' => [
+                    [
+                        'selForTarget' => 'selector-for-location',
+                        'product' => 'pp3',
+                        'country' => 'ES',
+                    ],
+                    [
+                        'selForTarget' => 'selector-for-location2',
+                        'product' => 'i1',
+                        'country' => 'IT',
+                    ],
                 ],
             ],
             $result->toArray()
