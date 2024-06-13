@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities;
 
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetLabels as DomainWidgetLabels;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetLocationConfig;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings as DomainWidgetSettings;
 use SeQura\Core\Infrastructure\ORM\Configuration\EntityConfiguration;
 use SeQura\Core\Infrastructure\ORM\Configuration\IndexMap;
@@ -36,7 +37,6 @@ class WidgetSettings extends Entity
         parent::inflate($data);
 
         $widgetSettings = $data['widgetSettings'] ?? [];
-        $widgetConfiguration = $widgetSettings['widgetConfiguration'] ?? [];
         $widgetLabels = $widgetSettings['widgetLabels'] ?? [];
 
         $this->storeId = $data['storeId'] ?? '';
@@ -51,7 +51,8 @@ class WidgetSettings extends Entity
             $widgetLabels ? new DomainWidgetLabels(
                 static::getDataValue($widgetLabels, 'messages', []),
                 static::getDataValue($widgetLabels, 'messagesBelowLimit', [])
-            ) : null
+            ) : null,
+            WidgetLocationConfig::fromArray(self::getArrayValue($widgetSettings, 'widgetLocationConfiguration', []))
         );
     }
 
@@ -63,6 +64,7 @@ class WidgetSettings extends Entity
         $data = parent::toArray();
 
         $labels = $this->widgetSettings->getWidgetLabels();
+        $locationConfig = $this->widgetSettings->getLocationConfig();
 
         $data['storeId'] = $this->storeId;
         $data['widgetSettings'] = [
@@ -77,6 +79,7 @@ class WidgetSettings extends Entity
                 'messages' => $labels->getMessages(),
                 'messagesBelowLimit' => $labels->getMessagesBelowLimit(),
             ] : [],
+            'widgetLocationConfiguration' => $locationConfig ? $locationConfig->toArray() : [],
         ];
 
         return $data;
