@@ -43,6 +43,11 @@ class WidgetSettings
     protected $widgetLabels;
 
     /**
+     * @var WidgetLocationConfig
+     */
+    protected $locationConfig;
+
+    /**
      * @param bool $enabled
      * @param string $assetsKey
      * @param bool $displayOnProductPage
@@ -51,6 +56,7 @@ class WidgetSettings
      * @param string $miniWidgetSelector
      * @param string|null $widgetConfig
      * @param WidgetLabels|null $widgetLabels
+     * @param WidgetLocationConfig|null $locationConfig
      */
     public function __construct(
         bool $enabled,
@@ -60,7 +66,8 @@ class WidgetSettings
         bool $showInstallmentsInCartPage = false,
         string $miniWidgetSelector = '',
         string $widgetConfig = null,
-        WidgetLabels $widgetLabels = null
+        WidgetLabels $widgetLabels = null,
+        WidgetLocationConfig $locationConfig = null
     ) {
         $this->enabled = $enabled;
         $this->assetsKey = $assetsKey;
@@ -70,6 +77,7 @@ class WidgetSettings
         $this->miniWidgetSelector = $miniWidgetSelector;
         $this->widgetConfig = $widgetConfig;
         $this->widgetLabels = $widgetLabels;
+        $this->locationConfig = $locationConfig;
     }
 
     public function isEnabled(): bool
@@ -150,5 +158,15 @@ class WidgetSettings
     public function setMiniWidgetSelector(string $miniWidgetSelector): void
     {
         $this->miniWidgetSelector = $miniWidgetSelector;
+    }
+
+    public function getLocationConfig(): ?WidgetLocationConfig
+    {
+        return $this->locationConfig;
+    }
+
+    public function setLocationConfig(?WidgetLocationConfig $locationConfig): void
+    {
+        $this->locationConfig = $locationConfig;
     }
 }
