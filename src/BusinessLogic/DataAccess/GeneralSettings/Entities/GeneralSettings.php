@@ -44,7 +44,11 @@ class GeneralSettings extends Entity
             self::getArrayValue($generalSettings, 'showSeQuraCheckoutAsHostedPage'),
             static::getDataValue($generalSettings, 'allowedIPAddresses', []),
             static::getDataValue($generalSettings, 'excludedProducts', []),
-            static::getDataValue($generalSettings, 'excludedCategories', [])
+            static::getDataValue($generalSettings, 'excludedCategories', []),
+            static::getDataValue($generalSettings, 'enabledForServices', false),
+            static::getDataValue($generalSettings, 'allowFirstServicePaymentDelay', true),
+            static::getDataValue($generalSettings, 'allowServiceRegItems', true),
+            static::getDataValue($generalSettings, 'defaultServicesEndDate', 'P1Y')
         );
     }
 
@@ -61,6 +65,10 @@ class GeneralSettings extends Entity
             'allowedIPAddresses' => $this->generalSettings->getAllowedIPAddresses(),
             'excludedProducts' => $this->generalSettings->getExcludedProducts(),
             'excludedCategories' => $this->generalSettings->getExcludedCategories(),
+            'enabledForServices' => $this->generalSettings->isEnabledForServices(),
+            'allowFirstServicePaymentDelay' => $this->generalSettings->isAllowFirstServicePaymentDelay(),
+            'allowServiceRegItems' => $this->generalSettings->isAllowServiceRegItems(),
+            'defaultServicesEndDate' => $this->generalSettings->getDefaultServicesEndDate()
         ];
 
         return $data;
