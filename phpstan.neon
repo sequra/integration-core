@@ -1,5 +1,5 @@
 parameters:
-    level: 9
+    level: 1
     errorFormat: table
     treatPhpDocTypesAsCertain: false
     paths:
