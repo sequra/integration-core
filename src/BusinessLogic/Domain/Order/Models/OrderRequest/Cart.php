@@ -15,6 +15,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\Item;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ItemType;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\OtherPaymentItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ProductItem;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\RegistrationItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ServiceItem;
 
 /**
@@ -125,6 +126,9 @@ class Cart extends OrderRequestDTO
                     break;
                 case ItemType::TYPE_DISCOUNT:
                     $itemInstances[] = DiscountItem::fromArray($itemData);
+                    break;
+                case ItemType::TYPE_REGISTRATION:
+                    $itemInstances[] = RegistrationItem::fromArray($itemData);
                     break;
                 case ItemType::TYPE_SERVICE:
                     $itemInstances[] = ServiceItem::fromArray($itemData);
