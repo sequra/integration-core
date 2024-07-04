@@ -15,4 +15,5 @@ class ItemType
     public const TYPE_INVOICE_FEE = 'invoice_fee';
     public const TYPE_HANDLING = 'handling';
     public const TYPE_DISCOUNT = 'discount';
+    public const TYPE_REGISTRATION = 'registration';
 }
