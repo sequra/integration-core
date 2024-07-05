@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\OrderStates;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
+use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
 use SeQura\Core\BusinessLogic\Webhook\Tasks\OrderUpdateTask;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
@@ -70,19 +71,19 @@ class WebhookHandler
         * @var OrderProxy $orderProxy
         */
         $orderProxy = ServiceRegister::getService(OrderProxyInterface::class);
-        $order = $this->getSeQuraOrderByOrderReference($orderReference);
+        $shopOrder = $this->getCreateOrderRequest($orderReference);
 
         $request = new CreateOrderRequest(
             OrderRequestStatusMapping::mapOrderRequestStatus($state),
-            $order->getMerchant(),
-            $order->getUnshippedCart(),
-            $order->getDeliveryMethod(),
-            $order->getCustomer(),
-            $order->getPlatform(),
-            $order->getDeliveryAddress(),
-            $order->getInvoiceAddress(),
-            $order->getGui(),
-            $order->getMerchantReference()
+            $shopOrder->getMerchant(),
+            $shopOrder->getCart(),
+            $shopOrder->getDeliveryMethod(),
+            $shopOrder->getCustomer(),
+            $shopOrder->getPlatform(),
+            $shopOrder->getDeliveryAddress(),
+            $shopOrder->getInvoiceAddress(),
+            $shopOrder->getGui(),
+            $shopOrder->getMerchantReference()
         );
 
         $orderProxy->acknowledgeOrder($orderReference, $request);
@@ -111,5 +112,20 @@ class WebhookHandler
         $order = $repository->selectOne($filter);
 
         return $order;
+    }
+
+    /**
+     * Retrieves create order request.
+     *
+     * @param string $orderReference
+     *
+     * @return CreateOrderRequest
+     */
+    protected function getCreateOrderRequest(string $orderReference): CreateOrderRequest
+    {
+        /** @var ShopOrderService $service */
+        $service = ServiceRegister::getService(ShopOrderService::class);
+
+        return $service->getCreateOrderRequest($orderReference);
     }
 }
