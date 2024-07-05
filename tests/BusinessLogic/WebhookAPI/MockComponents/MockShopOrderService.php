@@ -2,7 +2,6 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents;
 
-use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidGuiLayoutValueException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
@@ -17,7 +16,6 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Platform;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
-use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
  * Class MockShopOrderService
@@ -34,11 +32,10 @@ class MockShopOrderService implements ShopOrderService
      */
     public function updateStatus(
         Webhook $webhook,
-        string  $status,
-        ?int    $reasonCode = null,
+        string $status,
+        ?int $reasonCode = null,
         ?string $message = null
-    ): void
-    {
+    ): void {
     }
 
     /**

@@ -123,7 +123,9 @@ class WebhookHandler
      */
     protected function getCreateOrderRequest(string $orderReference): CreateOrderRequest
     {
-        /** @var ShopOrderService $service */
+        /**
+         * @var ShopOrderService $service
+         */
         $service = ServiceRegister::getService(ShopOrderService::class);
 
         return $service->getCreateOrderRequest($orderReference);
