@@ -31,10 +31,11 @@ class MockShopErrorOrderService implements ShopOrderService
      */
     public function updateStatus(
         Webhook $webhook,
-        string $status,
-        ?int $reasonCode = null,
+        string  $status,
+        ?int    $reasonCode = null,
         ?string $message = null
-    ) {
+    )
+    {
         throw new HttpRequestException('Error updating shop order status.');
     }
 
@@ -59,7 +60,7 @@ class MockShopErrorOrderService implements ShopOrderService
      */
     public function getOrderUrl(string $merchantReference): string
     {
-        return  '';
+        return '';
     }
 
     /**
@@ -71,7 +72,7 @@ class MockShopErrorOrderService implements ShopOrderService
         $merchant = new Merchant('testMerchantId');
         $merchantReference = new MerchantReference('test123');
         $cart = new Cart('testCurrency', false, [
-            new ProductItem('testItemReference','testName', 5,2, 10, false)
+            new ProductItem('testItemReference', 'testName', 5, 2, 10, false)
         ], $orderReference);
 
         $deliveryMethod = new DeliveryMethod('testDeliveryMethodName');
@@ -93,8 +94,8 @@ class MockShopErrorOrderService implements ShopOrderService
             'ES'
         );
 
-        $customer = new Customer('test@test.test','testCode','testIpNum','testAgent');
-        $platform = new Platform('testName','testVersion','testUName','testDbName','testDbVersion');
+        $customer = new Customer('test@test.test', 'testCode', 'testIpNum', 'testAgent');
+        $platform = new Platform('testName', 'testVersion', 'testUName', 'testDbName', 'testDbVersion');
         $gui = new Gui(Gui::ALLOWED_VALUES['desktop']);
 
         return new CreateOrderRequest(
