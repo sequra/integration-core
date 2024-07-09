@@ -73,11 +73,11 @@ abstract class DataTransferObject
      *
      * @param array $rawData Raw DTO data.
      * @param string $key Data key.
-     * @param string $default Default value.
+     * @param mixed $default Default value.
      *
      * @return mixed
      */
-    protected static function getDataValue(array $rawData, $key, $default = '')
+    protected static function getDataValue(array $rawData, string $key, mixed $default = '')
     {
         return isset($rawData[$key]) ? $rawData[$key] : $default;
     }

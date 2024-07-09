@@ -134,8 +134,8 @@ class ServiceItem extends Item
         $quantity = self::getDataValue($data, 'quantity', 1);
         $downloadable = self::getDataValue($data, 'downloadable', false);
         $totalWithTax = self::getDataValue($data, 'total_with_tax', 0);
-        $endsOn = self::getDataValue($data, 'ends_on');
-        $endsIn = self::getDataValue($data, 'ends_in');
+        $endsOn = self::getDataValue($data, 'ends_on', null);
+        $endsIn = self::getDataValue($data, 'ends_in', null);
         $supplier = self::getDataValue($data, 'supplier');
         $rendered = self::getDataValue($data, 'rendered');
 
