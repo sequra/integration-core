@@ -17,27 +17,27 @@ class OrderUpdateData extends DataTransferObject
     /**
      * @var string
      */
-    private $orderShopReference;
+    protected $orderShopReference;
 
     /**
      * @var Cart|null
      */
-    private $shippedCart;
+    protected $shippedCart;
 
     /**
      * @var Cart|null
      */
-    private $unshippedCart;
+    protected $unshippedCart;
 
     /**
      * @var Address|null
      */
-    private $deliveryAddress;
+    protected $deliveryAddress;
 
     /**
      * @var Address|null
      */
-    private $invoiceAddress;
+    protected $invoiceAddress;
 
     /**
      * @param string $orderShopReference

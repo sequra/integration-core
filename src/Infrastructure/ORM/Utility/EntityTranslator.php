@@ -16,7 +16,7 @@ class EntityTranslator
     /**
      * @var string
      */
-    private $entityClass;
+    protected $entityClass;
 
     /**
      * @param string $entityClass
@@ -62,7 +62,7 @@ class EntityTranslator
      * @return Entity
      * @throws EntityClassException
      */
-    private function translateOne(IntermediateObject $intermediateObject)
+    protected function translateOne(IntermediateObject $intermediateObject)
     {
         $data = json_decode($intermediateObject->getData(), true);
 

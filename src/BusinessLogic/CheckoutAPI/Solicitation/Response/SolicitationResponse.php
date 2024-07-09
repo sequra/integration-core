@@ -16,11 +16,11 @@ class SolicitationResponse extends Response
     /**
      * @var SeQuraOrder
      */
-    private $order;
+    protected $order;
     /**
      * @var SeQuraPaymentMethod[]
      */
-    private $availablePaymentMethods;
+    protected $availablePaymentMethods;
 
     /**
      * SolicitationResponse constructor.

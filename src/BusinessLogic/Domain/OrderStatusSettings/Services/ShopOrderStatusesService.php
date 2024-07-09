@@ -18,7 +18,7 @@ class ShopOrderStatusesService
     /**
      * @var ShopOrderStatusesServiceInterface
      */
-    private $integrationShopOrderStatusesService;
+    protected $integrationShopOrderStatusesService;
 
     public function __construct(ShopOrderStatusesServiceInterface $integrationShopOrderStatusesService)
     {

@@ -21,12 +21,12 @@ class UpdateOrderRequest extends BaseOrderRequest
     /**
      * @var Cart Fields describing the unshipped cart.
      */
-    private $unshippedCart;
+    protected $unshippedCart;
 
     /**
      * @var Cart Fields describing the shipped cart.
      */
-    private $shippedCart;
+    protected $shippedCart;
 
     /**
      * @param Merchant $merchant

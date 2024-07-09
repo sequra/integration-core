@@ -18,7 +18,7 @@ class VersionService
     /**
      * @var VersionServiceInterface
      */
-    private $integrationVersionService;
+    protected $integrationVersionService;
 
     public function __construct(VersionServiceInterface $integrationVersionService)
     {

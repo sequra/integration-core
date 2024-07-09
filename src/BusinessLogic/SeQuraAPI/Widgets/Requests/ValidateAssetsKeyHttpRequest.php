@@ -33,7 +33,7 @@ class ValidateAssetsKeyHttpRequest extends HttpRequest
      *
      * @throws HttpNoAvailablePaymentMethods
      */
-    private function generatePaymentString(array $paymentMethodIds)
+    protected function generatePaymentString(array $paymentMethodIds)
     {
         $i1Key = array_search('i1', $paymentMethodIds);
 

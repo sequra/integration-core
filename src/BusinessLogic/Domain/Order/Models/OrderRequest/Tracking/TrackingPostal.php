@@ -16,12 +16,12 @@ class TrackingPostal extends Tracking
     /**
      * @var string The name of the company that handled this delivery.
      */
-    private $carrier;
+    protected $carrier;
 
     /**
      * @var string|null Tracking URL.
      */
-    private $trackingUrl;
+    protected $trackingUrl;
 
     /**
      * @param string $reference

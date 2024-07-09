@@ -19,12 +19,12 @@ class StoreService
     /**
      * @var ConnectionDataRepositoryInterface
      */
-    private $connectionDataRepository;
+    protected $connectionDataRepository;
 
     /**
      * @var StoreServiceInterface
      */
-    private $integrationStoreService;
+    protected $integrationStoreService;
 
     public function __construct(
         StoreServiceInterface $integrationStoreService,
@@ -85,7 +85,7 @@ class StoreService
      *
      * @return string
      */
-    private function getFirstConnectedStoreId(): string
+    protected function getFirstConnectedStoreId(): string
     {
         $oldestStoreId = $this->connectionDataRepository->getOldestConnectionSettingsStoreId();
 

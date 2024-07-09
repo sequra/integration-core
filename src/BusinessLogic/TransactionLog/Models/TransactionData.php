@@ -14,23 +14,23 @@ class TransactionData extends DataTransferObject
     /**
      * @var string|int
      */
-    private $merchantReference;
+    protected $merchantReference;
     /**
      * @var string
      */
-    private $eventCode;
+    protected $eventCode;
     /**
      * @var int
      */
-    private $timestamp;
+    protected $timestamp;
     /**
      * @var string
      */
-    private $reason;
+    protected $reason;
     /**
      * @var bool
      */
-    private $isSuccessful;
+    protected $isSuccessful;
 
     /**
      * @param $merchantReference

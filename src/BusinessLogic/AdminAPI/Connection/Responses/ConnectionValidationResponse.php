@@ -14,12 +14,12 @@ class ConnectionValidationResponse extends Response
     /**
      * @var bool
      */
-    private $isValid;
+    protected $isValid;
 
     /**
      * @var string|null
      */
-    private $reason;
+    protected $reason;
 
 
     public function __construct(bool $isValid, ?string $reason = null)

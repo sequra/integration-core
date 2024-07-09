@@ -17,7 +17,7 @@ class ServiceRegister
      *
      * @var ServiceRegister
      */
-    private static $instance;
+    protected static $instance;
     /**
      * Array of registered services.
      *

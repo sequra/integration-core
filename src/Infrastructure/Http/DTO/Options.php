@@ -16,13 +16,13 @@ class Options extends DataTransferObject
      *
      * @var string
      */
-    private $name;
+    protected $name;
     /**
      * Value of the option.
      *
      * @var string
      */
-    private $value;
+    protected $value;
 
     /**
      * Options constructor.

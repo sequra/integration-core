@@ -20,17 +20,17 @@ class TransactionalOrderUpdateTask extends TransactionalTask
     /**
      * @var OrderUpdateData
      */
-    private $orderUpdateData;
+    protected $orderUpdateData;
 
     /**
      * @var TransactionData
      */
-    private $transactionData;
+    protected $transactionData;
 
     /**
      * @var string
      */
-    private $storeId;
+    protected $storeId;
 
     /**
      * @param OrderUpdateData $orderUpdateData
@@ -65,7 +65,7 @@ class TransactionalOrderUpdateTask extends TransactionalTask
      *
      * @throws Exception
      */
-    private function doExecute(): void
+    protected function doExecute(): void
     {
         $this->getOrderService()->updateOrder($this->orderUpdateData);
         $this->transactionData->setIsSuccessful(true);
@@ -75,7 +75,7 @@ class TransactionalOrderUpdateTask extends TransactionalTask
     /**
      * @return OrderService
      */
-    private function getOrderService(): OrderService
+    protected function getOrderService(): OrderService
     {
         return ServiceRegister::getService(OrderService::class);
     }

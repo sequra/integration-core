@@ -15,7 +15,7 @@ class StoresResponse extends Response
     /**
      * @var Store[]
      */
-    private $stores;
+    protected $stores;
 
     /**
      * @param Store[] $stores

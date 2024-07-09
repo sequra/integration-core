@@ -14,7 +14,7 @@ class IntegrationShopNameResponse extends Response
     /**
      * @var string
      */
-    private $shopName;
+    protected $shopName;
 
     /**
      * @param string $shopName

@@ -12,23 +12,23 @@ class Options extends OrderRequestDTO
     /**
      * @var boolean|null Set to true if $ is jQuery 1.7 or above, false otherwise.
      */
-    private $hasJquery;
+    protected $hasJquery;
 
     /**
      * @var boolean|null True if the merchant wishes to use the API option that explicitly communicates if some items
      * will be shipped immediately after confirmation.
      */
-    private $usesShippedCart;
+    protected $usesShippedCart;
 
     /**
      * @var boolean|null True if the merchant cannot send both addresses during checkout.
      */
-    private $addressesMayBeMissing;
+    protected $addressesMayBeMissing;
 
     /**
      * @var boolean|null True if the merchant wishes to lock the provided shopper's personal data.
      */
-    private $immutableCustomerData;
+    protected $immutableCustomerData;
 
     /**
      * @param bool|null $hasJquery

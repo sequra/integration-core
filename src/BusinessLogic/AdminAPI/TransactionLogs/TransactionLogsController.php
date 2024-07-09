@@ -16,7 +16,7 @@ class TransactionLogsController
     /**
      * @var TransactionLogService
      */
-    private $transactionLogService;
+    protected $transactionLogService;
 
     /**
      * @param TransactionLogService $transactionLogService

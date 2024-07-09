@@ -21,13 +21,13 @@ class BeforeQueueStatusChangeEvent extends Event
      *
      * @var QueueItem
      */
-    private $queueItem;
+    protected $queueItem;
     /**
      * Previous state of queue item.
      *
      * @var string
      */
-    private $previousState;
+    protected $previousState;
 
     /**
      * TaskProgressEvent constructor.

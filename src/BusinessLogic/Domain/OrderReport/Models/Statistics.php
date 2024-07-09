@@ -14,7 +14,7 @@ class Statistics extends OrderRequestDTO
     /**
      * @var OrderStatistics[]
      */
-    private $orders;
+    protected $orders;
 
     /**
      * @param OrderStatistics[] $orders

@@ -12,15 +12,15 @@ class Version
     /**
      * @var string
      */
-    private $current;
+    protected $current;
     /**
      * @var string | null
      */
-    private $new;
+    protected $new;
     /**
      * @var string | null
      */
-    private $downloadNewVersionUrl;
+    protected $downloadNewVersionUrl;
 
     /**
      * @param string $current

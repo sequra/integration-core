@@ -31,7 +31,7 @@ class AutoTestService
      *
      * @var Configuration
      */
-    private $configService;
+    protected $configService;
 
     /**
      * Starts the auto-test.
@@ -173,7 +173,7 @@ class AutoTestService
      *
      * @return Configuration Configuration service instance.
      */
-    private function getConfigService()
+    protected function getConfigService()
     {
         if ($this->configService === null) {
             $this->configService = ServiceRegister::getService(Configuration::CLASS_NAME);

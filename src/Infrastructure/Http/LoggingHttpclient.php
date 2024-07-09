@@ -9,7 +9,7 @@ class LoggingHttpclient extends HttpClient
     /**
      * @var HttpClient
      */
-    private $client;
+    protected $client;
 
     /**
      * LoggingHttpclient constructor.

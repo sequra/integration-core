@@ -17,7 +17,7 @@ class PaymentMethodsService
     /**
      * @var MerchantProxyInterface
      */
-    private $merchantProxy;
+    protected $merchantProxy;
 
     /**
      * @param MerchantProxyInterface $merchantProxy

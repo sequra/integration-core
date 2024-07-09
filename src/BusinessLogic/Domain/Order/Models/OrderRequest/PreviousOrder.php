@@ -12,47 +12,47 @@ class PreviousOrder extends OrderRequestDTO
     /**
      * @var string Date (and time, if available) when this order was created or delivered, in ISO-8601 format.
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var int Total order amount including tax.
      */
-    private $amount;
+    protected $amount;
 
     /**
      * @var string Currency name for amount.
      */
-    private $currency;
+    protected $currency;
 
     /**
      * @var string|null The status of the order as reported in the platform.
      */
-    private $rawStatus;
+    protected $rawStatus;
 
     /**
      * @var string|null The mapped status value.
      */
-    private $status;
+    protected $status;
 
     /**
      * @var string|null Payment method as reported by the platform.
      */
-    private $paymentMethodRaw;
+    protected $paymentMethodRaw;
 
     /**
      * @var string|null Mapped payment methods.
      */
-    private $paymentMethod;
+    protected $paymentMethod;
 
     /**
      * @var string|null Previous order's delivery address postal code.
      */
-    private $postalCode;
+    protected $postalCode;
 
     /**
      * @var string|null Previous order's country code.
      */
-    private $countryCode;
+    protected $countryCode;
 
     /**
      * @param string $createdAt

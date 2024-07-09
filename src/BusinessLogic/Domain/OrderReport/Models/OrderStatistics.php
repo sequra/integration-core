@@ -15,52 +15,52 @@ class OrderStatistics extends OrderRequestDTO
     /**
      * @var string Filed representing the date of order completion.
      */
-    private $completedAt;
+    protected $completedAt;
 
     /**
      * @var string Field representing the order currency.
      */
-    private $currency;
+    protected $currency;
 
     /**
      * @var int|null Field representing the total amount paid or due to pay.
      */
-    private $amount;
+    protected $amount;
 
     /**
      * @var MerchantReference|null Order id(s) used by the merchant.
      */
-    private $merchantReference;
+    protected $merchantReference;
 
     /**
      * @var string|null Name or type of payment method.
      */
-    private $paymentMethod;
+    protected $paymentMethod;
 
     /**
      * @var string|null ISO-3166-1 country code of the delivery address.
      */
-    private $country;
+    protected $country;
 
     /**
      * @var string|null Device used in purchase.
      */
-    private $device;
+    protected $device;
 
     /**
      * @var string|null Status of the order.
      */
-    private $status;
+    protected $status;
 
     /**
      * @var string|null Your platform's string representation of the order status.
      */
-    private $rawStatus;
+    protected $rawStatus;
 
     /**
      * @var bool|null Was the shopper offered to use SeQura in the checkout?
      */
-    private $sequraOffered;
+    protected $sequraOffered;
 
     /**
      * @param string $completedAt

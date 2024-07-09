@@ -30,15 +30,15 @@ class TransactionLogService
     /**
      * @var TransactionLogRepositoryInterface
      */
-    private $transactionLogRepository;
+    protected $transactionLogRepository;
     /**
      * @var OrderService
      */
-    private $orderService;
+    protected $orderService;
     /**
      * @var ShopOrderService
      */
-    private $integrationOrderService;
+    protected $integrationOrderService;
 
     public function __construct(
         TransactionLogRepositoryInterface $transactionLogRepository,
@@ -241,7 +241,7 @@ class TransactionLogService
      * @throws QueueItemDeserializationException
      * @throws OrderNotFoundException
      */
-    private function createTransactionLogInstance(QueueItem $item): TransactionLog
+    protected function createTransactionLogInstance(QueueItem $item): TransactionLog
     {
 
         /**

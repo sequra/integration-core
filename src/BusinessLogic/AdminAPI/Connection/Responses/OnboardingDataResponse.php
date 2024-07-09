@@ -16,12 +16,12 @@ class OnboardingDataResponse extends Response
     /**
      * @var ConnectionData
      */
-    private $connectionData;
+    protected $connectionData;
 
     /**
      * @var StatisticalData
      */
-    private $statisticalData;
+    protected $statisticalData;
 
     /**
      * @param ConnectionData|null $connectionData

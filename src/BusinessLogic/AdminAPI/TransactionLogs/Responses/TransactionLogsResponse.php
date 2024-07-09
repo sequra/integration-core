@@ -10,12 +10,12 @@ class TransactionLogsResponse extends Response
     /**
      * @var bool
      */
-    private $hasNextPage;
+    protected $hasNextPage;
 
     /**
      * @var TransactionLog[]
      */
-    private $transactionLogs;
+    protected $transactionLogs;
 
     /**
      * @param bool $hasNextPage

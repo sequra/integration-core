@@ -22,25 +22,25 @@ class TaskRunnerStatus
      *
      * @var string
      */
-    private $guid;
+    protected $guid;
     /**
      * Timestamp since task runner is alive.
      *
      * @var int|null
      */
-    private $aliveSinceTimestamp;
+    protected $aliveSinceTimestamp;
     /**
      * Time provider service instance.
      *
      * @var TimeProvider
      */
-    private $timeProvider;
+    protected $timeProvider;
     /**
      * Configuration service instance.
      *
      * @var Configuration
      */
-    private $configService;
+    protected $configService;
 
     /**
      * TaskRunnerStatus constructor.
@@ -104,7 +104,7 @@ class TaskRunnerStatus
      *
      * @return int Max alive timestamp.
      */
-    private function getMaxAliveTimestamp()
+    protected function getMaxAliveTimestamp()
     {
         $configurationValue = $this->configService->getTaskRunnerMaxAliveTime();
 

@@ -12,22 +12,22 @@ class SeQuraCost
     /**
      * @var int Setup fee to pay the order.
      */
-    private $setupFee;
+    protected $setupFee;
 
     /**
      * @var int Installment fee to pay the order.
      */
-    private $instalmentFee;
+    protected $instalmentFee;
 
     /**
      * @var int Down payment fee to pay the order.
      */
-    private $downPaymentFees;
+    protected $downPaymentFees;
 
     /**
      * @var int Total amount for each instalment to pay the order.
      */
-    private $instalmentTotal;
+    protected $instalmentTotal;
 
     /**
      * @param int $setupFee

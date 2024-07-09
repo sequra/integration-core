@@ -14,14 +14,14 @@ class WidgetLabels
      *
      * @var string[]
      */
-    private $messages;
+    protected $messages;
     /**
      * Mini widget messages for price below limit
      * in supported languages.
      *
      * @var string[]
      */
-    private $messagesBelowLimit;
+    protected $messagesBelowLimit;
 
     /**
      * @param string[] $messages

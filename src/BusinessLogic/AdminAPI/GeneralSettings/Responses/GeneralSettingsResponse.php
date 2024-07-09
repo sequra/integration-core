@@ -15,7 +15,7 @@ class GeneralSettingsResponse extends Response
     /**
      * @var GeneralSettings
      */
-    private $generalSettings;
+    protected $generalSettings;
 
     /**
      * @param GeneralSettings|null $generalSettings

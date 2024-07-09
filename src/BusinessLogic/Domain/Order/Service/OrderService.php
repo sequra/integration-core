@@ -34,11 +34,11 @@ class OrderService
     /**
      * @var OrderProxyInterface
      */
-    private $proxy;
+    protected $proxy;
     /**
      * @var SeQuraOrderRepositoryInterface
      */
-    private $orderRepository;
+    protected $orderRepository;
 
     public function __construct(OrderProxyInterface $proxy, SeQuraOrderRepositoryInterface $orderRepository)
     {
@@ -210,7 +210,7 @@ class OrderService
      * @throws HttpRequestException
      * @throws Exception
      */
-    private function tryOrderUpdate(SeQuraOrder $order)
+    protected function tryOrderUpdate(SeQuraOrder $order)
     {
         try {
             $this->proxy->updateOrder($this->getUpdateOrderRequest($order));
@@ -230,7 +230,7 @@ class OrderService
      *
      * @return SeQuraOrder|null
      */
-    private function getExistingOrderFor(CreateOrderRequest $request): ?SeQuraOrder
+    protected function getExistingOrderFor(CreateOrderRequest $request): ?SeQuraOrder
     {
         $existingOrder = null;
         if ($request->getCart()->getCartRef()) {
@@ -255,7 +255,7 @@ class OrderService
      *
      * @throws Exception
      */
-    private function getUpdateOrderRequest(SeQuraOrder $order): UpdateOrderRequest
+    protected function getUpdateOrderRequest(SeQuraOrder $order): UpdateOrderRequest
     {
         return UpdateOrderRequest::fromArray([
             'merchant' => $order->getMerchant()->toArray(),
@@ -279,7 +279,7 @@ class OrderService
      *
      * @return bool
      */
-    private function areObjectsEqual($object1, $object2): bool
+    protected function areObjectsEqual($object1, $object2): bool
     {
         if (method_exists($object1, 'toArray') && method_exists($object2, 'toArray')) {
             return json_encode($object1->toArray()) === json_encode($object2->toArray());

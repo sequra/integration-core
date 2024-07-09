@@ -15,7 +15,7 @@ class PaymentMethodsResponse extends Response
     /**
      * @var SeQuraPaymentMethod[]
      */
-    private $paymentMethods;
+    protected $paymentMethods;
 
     /**
      * @param SeQuraPaymentMethod[] $paymentMethods

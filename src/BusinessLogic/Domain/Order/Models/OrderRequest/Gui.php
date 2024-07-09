@@ -19,7 +19,7 @@ class Gui extends OrderRequestDTO
     /**
      * @var string Type of layout the API should optimise for.
      */
-    private $layout;
+    protected $layout;
 
     /**
      * @param string $layout

@@ -36,13 +36,13 @@ class Index
      *
      * @var string
      */
-    private $type;
+    protected $type;
     /**
      * Property name (column name).
      *
      * @var string
      */
-    private $property;
+    protected $property;
 
     /**
      * Index constructor.

@@ -9,22 +9,22 @@ class SeQuraPaymentMethodCategory
     /**
      * @var string String containing the title of the category.
      */
-    private $title;
+    protected $title;
 
     /**
      * @var string String containing the description of the category.
      */
-    private $description;
+    protected $description;
 
     /**
      * @var string|null String containing icon for the methods category in svg format.
      */
-    private $icon;
+    protected $icon;
 
     /**
      * @var SeQuraPaymentMethod[] Array of payment methods.
      */
-    private $methods;
+    protected $methods;
 
     /**
      * @param string $title

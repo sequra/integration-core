@@ -18,12 +18,12 @@ class OrderStatusSettingsService implements OrderStatusProvider
     /**
      * @var OrderStatusSettingsRepositoryInterface
      */
-    private $orderStatusSettingsRepository;
+    protected $orderStatusSettingsRepository;
 
     /**
      * @var ShopOrderStatusesServiceInterface
      */
-    private $integrationShopOrderStatusesService;
+    protected $integrationShopOrderStatusesService;
 
     /**
      * @param OrderStatusSettingsRepositoryInterface $orderStatusSettingsRepository

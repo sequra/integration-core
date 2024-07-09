@@ -16,11 +16,11 @@ class CountryConfigurationService
     /**
      * @var CountryConfigurationRepositoryInterface
      */
-    private $countryConfigurationRepository;
+    protected $countryConfigurationRepository;
     /**
      * @var SellingCountriesServiceInterface
      */
-    private $sellingCountriesService;
+    protected $sellingCountriesService;
 
     /**
      * @param CountryConfigurationRepositoryInterface $countryConfigurationRepository

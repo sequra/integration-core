@@ -56,7 +56,7 @@ class OnReportProgress
      *
      * @return QueueService
      */
-    private static function getQueueService()
+    protected static function getQueueService()
     {
         return ServiceRegister::getService(QueueService::CLASS_NAME);
     }

@@ -18,47 +18,47 @@ class ServiceItem extends Item
     /**
      * @var string|int A public id for this service.
      */
-    private $reference;
+    protected $reference;
 
     /**
      * @var string A name to describe this service.
      */
-    private $name;
+    protected $name;
 
     /**
      * @var string|null Maximum date for the service to be rendered or ended (ISO8601 formatted date).
      */
-    private $endsOn;
+    protected $endsOn;
 
     /**
      * @var string|null Maximum time, from the start of the service, for the service to be rendered or ended.
      */
-    private $endsIn;
+    protected $endsIn;
 
     /**
      * @var int Price with tax for one item.
      */
-    private $priceWithTax;
+    protected $priceWithTax;
 
     /**
      * @var int The number of items ordered by the shopper.
      */
-    private $quantity;
+    protected $quantity;
 
     /**
      * @var boolean True for services that can be fully (or sufficiently) enjoyed without a physical delivery.
      */
-    private $downloadable;
+    protected $downloadable;
 
     /**
      * @var string|null Name of supplier or provider.
      */
-    private $supplier;
+    protected $supplier;
 
     /**
      * @var boolean|null True when the service has been rendered.
      */
-    private $rendered;
+    protected $rendered;
 
     /**
      * @param $reference

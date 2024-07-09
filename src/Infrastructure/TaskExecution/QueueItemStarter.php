@@ -25,19 +25,19 @@ class QueueItemStarter implements Runnable
      *
      * @var int
      */
-    private $queueItemId;
+    protected $queueItemId;
     /**
      * Service instance.
      *
      * @var QueueService
      */
-    private $queueService;
+    protected $queueService;
     /**
      * Service instance.
      *
      * @var ConfigurationManager
      */
-    private $configurationManager;
+    protected $configurationManager;
 
     /**
      * QueueItemStarter constructor.
@@ -173,7 +173,7 @@ class QueueItemStarter implements Runnable
      *
      * @return QueueItem|null Queue item if found; otherwise, null.
      */
-    private function fetchItem()
+    protected function fetchItem()
     {
         try {
             $queueItem = $this->getQueueService()->find($this->queueItemId);
@@ -189,7 +189,7 @@ class QueueItemStarter implements Runnable
      *
      * @return QueueService Service instance.
      */
-    private function getQueueService()
+    protected function getQueueService()
     {
         if ($this->queueService === null) {
             $this->queueService = ServiceRegister::getService(QueueService::CLASS_NAME);
@@ -203,7 +203,7 @@ class QueueItemStarter implements Runnable
      *
      * @return ConfigurationManager Service instance.
      */
-    private function getConfigManager()
+    protected function getConfigManager()
     {
         if ($this->configurationManager === null) {
             $this->configurationManager = ServiceRegister::getService(ConfigurationManager::CLASS_NAME);

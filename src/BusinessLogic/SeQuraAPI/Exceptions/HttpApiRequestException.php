@@ -15,7 +15,7 @@ class HttpApiRequestException extends HttpRequestException
     /**
      * @var string[]
      */
-    private $errors = [];
+    protected $errors = [];
 
     /**
      * Creates an instance of HttpApiRequestException.

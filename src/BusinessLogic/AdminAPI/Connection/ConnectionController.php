@@ -29,12 +29,12 @@ class ConnectionController
     /**
      * @var ConnectionService
      */
-    private $connectionService;
+    protected $connectionService;
 
     /**
      * @var StatisticalDataService
      */
-    private $statisticalDataService;
+    protected $statisticalDataService;
 
     /**
      * @param ConnectionService $connectionService

@@ -12,78 +12,78 @@ class ProductItem extends Item
     /**
      * @var string|int A public product id for this item.
      */
-    private $reference;
+    protected $reference;
 
     /**
      * @var string A description to include in the payment instructions.
      */
-    private $name;
+    protected $name;
 
     /**
      * @var int Price with tax for one item.
      */
-    private $priceWithTax;
+    protected $priceWithTax;
 
     /**
      * @var int The number of items ordered by the shopper.
      */
-    private $quantity;
+    protected $quantity;
 
     /**
      * @var boolean Can the buyer access or consume the product without a physical delivery.
      */
-    private $downloadable;
+    protected $downloadable;
 
     /**
      * @var boolean|null A product is perishable if it loses its value if it is not delivered on time.
      */
-    private $perishable;
+    protected $perishable;
 
     /**
      * @var boolean|null A product is personalized if it is irreversibly customized in a way that makes it less
      * appealing to most people other than the buyer.
      */
-    private $personalized;
+    protected $personalized;
 
     /**
      * @var boolean|null A product is restockable if it can be sold to someone else if returned in good condition.
      */
-    private $restockable;
+    protected $restockable;
 
     /**
      * @var string|null Name of category.
      */
-    private $category;
+    protected $category;
 
     /**
      * @var string|null Product description.
      */
-    private $description;
+    protected $description;
 
     /**
      * @var string|null Name of manufacturer.
      */
-    private $manufacturer;
+    protected $manufacturer;
 
     /**
      * @var string|null Name of supplier or provider.
      */
-    private $supplier;
+    protected $supplier;
 
     /**
      * @var string|int|null Id from database.
      */
-    private $productId;
+    protected $productId;
 
     /**
      * @var string|null Product page URL in your shop.
      */
-    private $url;
+    protected $url;
 
     /**
      * @var string|null A reference to the tracking in which this item will be handed.
      */
-    private $trackingReference;
+    protected $trackingReference;
 
     /**
      * @param int|string $reference

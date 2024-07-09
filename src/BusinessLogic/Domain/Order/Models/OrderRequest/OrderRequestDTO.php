@@ -59,7 +59,7 @@ abstract class OrderRequestDTO extends DataTransferObject
      *
      * @return array
      */
-    private function handleArrayProperty(array $arrayData, string $name, array $value): array
+    protected function handleArrayProperty(array $arrayData, string $name, array $value): array
     {
         $arrayData[$name] = [];
         foreach ($value as $key => $item) {

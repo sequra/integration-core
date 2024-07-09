@@ -16,7 +16,7 @@ class StoreContextAspect implements Aspect
     /**
      * @var string
      */
-    private $storeId;
+    protected $storeId;
 
     public function __construct(string $storeId)
     {

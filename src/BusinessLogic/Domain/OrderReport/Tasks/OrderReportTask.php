@@ -23,22 +23,22 @@ class OrderReportTask extends Task
     /**
      * @var string
      */
-    private $merchantId;
+    protected $merchantId;
 
     /**
      * @var string[]
      */
-    private $reportOrderIds;
+    protected $reportOrderIds;
 
     /**
      * @var string[] | null
      */
-    private $statisticsOrderIds;
+    protected $statisticsOrderIds;
 
     /**
      * @var string
      */
-    private $storeId;
+    protected $storeId;
 
     /**
      * OrderReportTask constructor.
@@ -154,7 +154,7 @@ class OrderReportTask extends Task
      * @throws HttpRequestException
      * @throws InvalidUrlException
      */
-    private function doExecute(): void
+    protected function doExecute(): void
     {
         $this->getOrderReportService()->sendReport(
             new ReportData($this->merchantId, $this->reportOrderIds, $this->statisticsOrderIds)
@@ -168,7 +168,7 @@ class OrderReportTask extends Task
      *
      * @return OrderReportService
      */
-    private function getOrderReportService(): OrderReportService
+    protected function getOrderReportService(): OrderReportService
     {
         return ServiceRegister::getService(OrderReportService::class);
     }

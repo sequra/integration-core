@@ -22,23 +22,23 @@ class WidgetSettingsService
     /**
      * @var WidgetSettingsRepositoryInterface
      */
-    private $widgetSettingsRepository;
+    protected $widgetSettingsRepository;
     /**
      * @var PaymentMethodsService
      */
-    private $paymentMethodsService;
+    protected $paymentMethodsService;
     /**
      * @var CountryConfigurationService
      */
-    private $countryConfigService;
+    protected $countryConfigService;
     /**
      * @var ConnectionService
      */
-    private $connectionService;
+    protected $connectionService;
     /**
      * @var WidgetsProxyInterface
      */
-    private $widgetsProxy;
+    protected $widgetsProxy;
 
     /**
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository

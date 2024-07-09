@@ -65,13 +65,13 @@ abstract class HttpClient
      *
      * @var Configuration
      */
-    private $configService;
+    protected $configService;
     /**
      * An array of additional HTTP configuration options.
      *
      * @var array
      */
-    private $httpConfigurationOptions;
+    protected $httpConfigurationOptions;
 
     /**
      * Create and send request.
@@ -249,7 +249,7 @@ abstract class HttpClient
      *
      * @return bool TRUE if request was successful; otherwise, FALSE.
      */
-    private function isRequestSuccessful(
+    protected function isRequestSuccessful(
         string $method,
         string $url,
         ?array $headers = array(),

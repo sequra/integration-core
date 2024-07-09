@@ -18,19 +18,19 @@ class HttpResponse
      *
      * @var int
      */
-    private $status;
+    protected $status;
     /**
      * Response body.
      *
      * @var string
      */
-    private $body;
+    protected $body;
     /**
      * HTTP headers.
      *
      * @var array
      */
-    private $headers;
+    protected $headers;
 
     /**
      * HttpResponse constructor.

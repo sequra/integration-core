@@ -14,23 +14,23 @@ class QueryCondition
     /**
      * @var string - AND | OR
      */
-    private $chainOperator;
+    protected $chainOperator;
     /**
      * @var string
      */
-    private $column;
+    protected $column;
     /**
      * @var string
      */
-    private $operator;
+    protected $operator;
     /**
      * @var mixed
      */
-    private $value;
+    protected $value;
     /**
      * @var string
      */
-    private $valueType;
+    protected $valueType;
 
     /**
      * Condition constructor.

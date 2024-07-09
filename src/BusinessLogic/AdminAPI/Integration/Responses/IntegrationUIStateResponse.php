@@ -14,24 +14,24 @@ class IntegrationUIStateResponse extends Response
     /**
      * Onboarding string constant.
      */
-    private const ONBOARDING = 'onboarding';
+    protected const ONBOARDING = 'onboarding';
 
     /**
      * Dashboard string constant.
      */
-    private const DASHBOARD = 'dashboard';
+    protected const DASHBOARD = 'dashboard';
 
     /**
      * String representation of state.
      *
      * @var string
      */
-    private $state;
+    protected $state;
 
     /**
      * @param string $state
      */
-    private function __construct(string $state)
+    protected function __construct(string $state)
     {
         $this->state = $state;
     }
