@@ -12,12 +12,12 @@ class HandlingItem extends Item
     /**
      * @var string|int A unique code that refers to this item.
      */
-    private $reference;
+    protected $reference;
 
     /**
      * @var string A name to describe this item.
      */
-    private $name;
+    protected $name;
 
     /**
      * @param int|string $reference

@@ -13,27 +13,27 @@ class OnboardingRequest extends Request
     /**
      * @var string
      */
-    private $environment;
+    protected $environment;
 
     /**
      * @var string
      */
-    private $username;
+    protected $username;
 
     /**
      * @var string
      */
-    private $password;
+    protected $password;
 
     /**
      * @var bool
      */
-    private $sendStatisticalData;
+    protected $sendStatisticalData;
 
     /**
      * @var string|null
      */
-    private $merchantId;
+    protected $merchantId;
 
     /**
      * @param string $environment

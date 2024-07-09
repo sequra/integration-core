@@ -193,7 +193,7 @@ class QueueItem extends Entity
      *
      * @var TimeProvider
      */
-    private $timeProvider;
+    protected $timeProvider;
 
     /**
      * QueueItem constructor.
@@ -867,7 +867,7 @@ class QueueItem extends Entity
     /**
      * Attach Task event handlers.
      */
-    private function attachTaskEventHandlers()
+    protected function attachTaskEventHandlers()
     {
         if ($this->task === null) {
             return;

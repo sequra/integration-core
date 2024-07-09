@@ -14,14 +14,14 @@ class StoreContext
     /**
      * @var self
      */
-    private static $instance;
+    protected static $instance;
 
     /**
      * @var string
      */
-    private $storeId = '';
+    protected $storeId = '';
 
-    private function __construct()
+    protected function __construct()
     {
     }
 

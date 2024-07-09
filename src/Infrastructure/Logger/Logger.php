@@ -42,13 +42,13 @@ class Logger extends Singleton
      *
      * @var ShopLoggerAdapter
      */
-    private $shopLogger;
+    protected $shopLogger;
     /**
      * Time provider.
      *
      * @var TimeProvider
      */
-    private $timeProvider;
+    protected $timeProvider;
 
     /**
      * Logger constructor. Hidden.
@@ -117,7 +117,7 @@ class Logger extends Singleton
      * @param string $component Component for which to log message.
      * @param LogContextData[]|array $context Additional context data.
      */
-    private function logMessage($level, $message, $component, array $context = array())
+    protected function logMessage($level, $message, $component, array $context = array())
     {
         $config = LoggerConfiguration::getInstance();
         $logData = new LogData(

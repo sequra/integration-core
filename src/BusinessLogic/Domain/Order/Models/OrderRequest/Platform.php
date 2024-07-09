@@ -12,37 +12,37 @@ class Platform extends OrderRequestDTO
     /**
      * @var string Name of the platform.
      */
-    private $name;
+    protected $name;
 
     /**
      * @var string Version of the platform.
      */
-    private $version;
+    protected $version;
 
     /**
      * @var string|null Version of the plugin or platform module.
      */
-    private $pluginVersion;
+    protected $pluginVersion;
 
     /**
      * @var string uname of the shop server.
      */
-    private $uname;
+    protected $uname;
 
     /**
      * @var string DB used.
      */
-    private $dbName;
+    protected $dbName;
 
     /**
      * @var string Version of the DB.
      */
-    private $dbVersion;
+    protected $dbVersion;
 
     /**
      * @var string|null PHP interpreter version.
      */
-    private $phpVersion;
+    protected $phpVersion;
 
     /**
      * @param string $name

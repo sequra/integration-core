@@ -12,98 +12,98 @@ class Customer extends OrderRequestDTO
     /**
      * @var string|null Customer given names.
      */
-    private $givenNames;
+    protected $givenNames;
 
     /**
      * @var string|null Customer surnames.
      */
-    private $surnames;
+    protected $surnames;
 
     /**
      * @var string|null Customer title and/or gender.
      */
-    private $title;
+    protected $title;
 
     /**
      * @var string Customer email.
      */
-    private $email;
+    protected $email;
 
     /**
      * @var boolean|string Is the customer logged in.
      */
-    private $loggedIn;
+    protected $loggedIn;
 
     /**
      * @var string Customer language code.
      */
-    private $languageCode;
+    protected $languageCode;
 
     /**
      * @var string Customer ip number.
      */
-    private $ipNumber;
+    protected $ipNumber;
 
     /**
      * @var string Customer browser.
      */
-    private $userAgent;
+    protected $userAgent;
 
     /**
      * @var string|int|null Customer reference number in the shop's database.
      */
-    private $ref;
+    protected $ref;
 
     /**
      * @var string|null Customer date of birth in ISO-8601 format.
      */
-    private $dateOfBirth;
+    protected $dateOfBirth;
 
     /**
      * @var string|null Customer's national identity number.
      */
-    private $nin;
+    protected $nin;
 
     /**
      * @var string|null Customer company name.
      */
-    private $company;
+    protected $company;
 
     /**
      * @var string|null Shopper VAT number.
      */
-    private $vatNumber;
+    protected $vatNumber;
 
     /**
      * @var string|null Date when this customer was added to the shop database, in ISO-8601 format.
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var string|null Date when this customer was updated in the shop database, in ISO-8601 format.
      */
-    private $updatedAt;
+    protected $updatedAt;
 
     /**
      * @var int|null The merchant's rating of this customer. 0 to 100, inclusive, where 0 is "cannot be trusted" and
      * 100 is "very trustworthy".
      */
-    private $rating;
+    protected $rating;
 
     /**
      * @var string|null A validation code printed in the physical DNI or NIE.
      */
-    private $ninControl;
+    protected $ninControl;
 
     /**
      * @var PreviousOrder[]|null List of customer's previous orders in this shop.
      */
-    private $previousOrders;
+    protected $previousOrders;
 
     /**
      * @var Vehicle|null Fields describing the customer's vehicle.
      */
-    private $vehicle;
+    protected $vehicle;
 
     /**
      * @param string $email

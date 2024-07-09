@@ -27,52 +27,52 @@ class OrderReport extends OrderRequestDTO
     /**
      * @var string String containing state of the order.
      */
-    private $state;
+    protected $state;
 
     /**
      * @var string|null String containing the time of sending the order report.
      */
-    private $sentAt;
+    protected $sentAt;
 
     /**
      * @var MerchantReference Order id(s) used by the merchant.
      */
-    private $merchantReference;
+    protected $merchantReference;
 
     /**
      * @var Cart Fields describing the shopping cart.
      */
-    private $cart;
+    protected $cart;
 
     /**
      * @var Tracking[]|null A list of trackings for the order.
      */
-    private $trackings;
+    protected $trackings;
 
     /**
      * @var Cart|null Fields describing the remaining cart.
      */
-    private $remainingCart;
+    protected $remainingCart;
 
     /**
      * @var DeliveryMethod Delivery method used on the purchase.
      */
-    private $deliveryMethod;
+    protected $deliveryMethod;
 
     /**
      * @var Address|null Fields describing the delivery address.
      */
-    private $deliveryAddress;
+    protected $deliveryAddress;
 
     /**
      * @var Address|null Fields describing the invoice address.
      */
-    private $invoiceAddress;
+    protected $invoiceAddress;
 
     /**
      * @var Customer Fields describing the customer.
      */
-    private $customer;
+    protected $customer;
 
     /**
      * @param string $state

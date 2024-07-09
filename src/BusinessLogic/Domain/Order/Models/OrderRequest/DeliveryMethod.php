@@ -12,22 +12,22 @@ class DeliveryMethod extends OrderRequestDTO
     /**
      * @var string Name of the delivery method.
      */
-    private $name;
+    protected $name;
 
     /**
      * @var string|null Days it takes to deliver the goods.
      */
-    private $days;
+    protected $days;
 
     /**
      * @var string|null Company or agent that performs the delivery.
      */
-    private $provider;
+    protected $provider;
 
     /**
      * @var boolean|null If goods are delivered to the buyer's home or office and not to a pick-up place.
      */
-    private $homeDelivery;
+    protected $homeDelivery;
 
     /**
      * @param string $name

@@ -15,7 +15,7 @@ class CountryConfigurationResponse extends Response
     /**
      * @var CountryConfiguration[]
      */
-    private $countryConfigurations;
+    protected $countryConfigurations;
 
     /**
      * @param CountryConfiguration[]|null $countryConfigurations

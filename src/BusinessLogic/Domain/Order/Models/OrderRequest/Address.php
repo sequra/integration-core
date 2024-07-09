@@ -12,67 +12,67 @@ class Address extends OrderRequestDTO
     /**
      * @var string|null Customer's given names for delivery/invoice.
      */
-    private $givenNames;
+    protected $givenNames;
 
     /**
      * @var string|null Customer's last names for delivery/invoice.
      */
-    private $surnames;
+    protected $surnames;
 
     /**
      * @var string Customer company name.
      */
-    private $company;
+    protected $company;
 
     /**
      * @var string Delivery/invoice address line 1.
      */
-    private $addressLine1;
+    protected $addressLine1;
 
     /**
      * @var string Delivery/invoice address line 2.
      */
-    private $addressLine2;
+    protected $addressLine2;
 
     /**
      * @var string Delivery/invoice address postal code.
      */
-    private $postalCode;
+    protected $postalCode;
 
     /**
      * @var string Delivery/invoice address city.
      */
-    private $city;
+    protected $city;
 
     /**
      * @var string Delivery/invoice address country code.
      */
-    private $countryCode;
+    protected $countryCode;
 
     /**
      * @var string|null Customer phone.
      */
-    private $phone;
+    protected $phone;
 
     /**
      * @var string|null Customer mobile phone.
      */
-    private $mobilePhone;
+    protected $mobilePhone;
 
     /**
      * @var string|null Customer region or state.
      */
-    private $state;
+    protected $state;
 
     /**
      * @var string|null Extra handling information that the customer adds to the order.
      */
-    private $extra;
+    protected $extra;
 
     /**
      * @var string|null Customer VAT number.
      */
-    private $vatNumber;
+    protected $vatNumber;
 
     /**
      * @param string $company

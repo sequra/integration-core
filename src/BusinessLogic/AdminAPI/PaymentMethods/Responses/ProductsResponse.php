@@ -14,7 +14,7 @@ class ProductsResponse extends Response
     /**
      * @var string[]
      */
-    private $products;
+    protected $products;
 
     /**
      * @param string[] $products

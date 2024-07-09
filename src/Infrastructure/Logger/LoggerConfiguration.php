@@ -33,25 +33,25 @@ class LoggerConfiguration extends Singleton
      *
      * @var boolean
      */
-    private $isDefaultLoggerEnabled;
+    protected $isDefaultLoggerEnabled;
     /**
      * Configuration service instance.
      *
      * @var Configuration
      */
-    private $shopConfiguration;
+    protected $shopConfiguration;
     /**
      * Minimum log level set.
      *
      * @var int
      */
-    private $minLogLevel;
+    protected $minLogLevel;
     /**
      * Integration name.
      *
      * @var string
      */
-    private $integrationName;
+    protected $integrationName;
 
     /**
      * Set default logger status (turning on/off).
@@ -157,7 +157,7 @@ class LoggerConfiguration extends Singleton
      *
      * @return Configuration Instance of configuration service.
      */
-    private function getShopConfiguration()
+    protected function getShopConfiguration()
     {
         if ($this->shopConfiguration === null) {
             $this->shopConfiguration = ServiceRegister::getService(Configuration::CLASS_NAME);

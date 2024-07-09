@@ -16,47 +16,47 @@ class TrackingPickupPoint extends Tracking
     /**
      * @var string|null Permanent identifier for the operator that handed the delivery.
      */
-    private $operatorRef;
+    protected $operatorRef;
 
     /**
      * @var string|null Permanent identifier for the store that handled this delivery.
      */
-    private $storeRef;
+    protected $storeRef;
 
     /**
      * @var string|null When this delivery was available in the store.
      */
-    private $availableAt;
+    protected $availableAt;
 
     /**
      * @var string|null Address line 1 for the pickup point.
      */
-    private $addressLine1;
+    protected $addressLine1;
 
     /**
      * @var string|null Address line 2 for the pickup point.
      */
-    private $addressLine2;
+    protected $addressLine2;
 
     /**
      * @var string|null Postal code.
      */
-    private $postalCode;
+    protected $postalCode;
 
     /**
      * @var string|null City.
      */
-    private $city;
+    protected $city;
 
     /**
      * @var string|null State or region.
      */
-    private $state;
+    protected $state;
 
     /**
      * @var string|null Country code.
      */
-    private $countryCode;
+    protected $countryCode;
 
     /**
      * @param string $reference

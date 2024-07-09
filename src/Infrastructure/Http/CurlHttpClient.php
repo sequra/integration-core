@@ -50,7 +50,7 @@ class CurlHttpClient extends HttpClient
      *
      * @var resource
      */
-    private $curlSession;
+    protected $curlSession;
 
     /**
      * Create and send request.

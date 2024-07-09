@@ -21,31 +21,31 @@ class QueryFilter
      *
      * @var QueryCondition[]
      */
-    private $conditions = array();
+    protected $conditions = array();
     /**
      * Order by column name.
      *
      * @var string
      */
-    private $orderByColumn;
+    protected $orderByColumn;
     /**
      * Order direction.
      *
      * @var string
      */
-    private $orderDirection = 'ASC';
+    protected $orderDirection = 'ASC';
     /**
      * Limit for select.
      *
      * @var int
      */
-    private $limit;
+    protected $limit;
     /**
      * Offset for select.
      *
      * @var int
      */
-    private $offset;
+    protected $offset;
 
     /**
      * Gets limit for select.
@@ -198,7 +198,7 @@ class QueryFilter
      *
      * @throws QueryFilterInvalidParamException
      */
-    private function validateConditionParameters($column, $operator, $value)
+    protected function validateConditionParameters($column, $operator, $value)
     {
         if (!is_string($column) || !is_string($operator)) {
             throw new QueryFilterInvalidParamException('Column and operator values must be string types');

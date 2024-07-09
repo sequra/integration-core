@@ -15,7 +15,7 @@ class GeneralSettingsService
     /**
      * @var GeneralSettingsRepositoryInterface
      */
-    private $generalSettingsRepository;
+    protected $generalSettingsRepository;
 
     /**
      * @param GeneralSettingsRepositoryInterface $generalSettingsRepository

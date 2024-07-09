@@ -12,35 +12,35 @@ class IntermediateObject
     /**
      * @var string
      */
-    private $index1;
+    protected $index1;
     /**
      * @var string
      */
-    private $index2;
+    protected $index2;
     /**
      * @var string
      */
-    private $index3;
+    protected $index3;
     /**
      * @var string
      */
-    private $index4;
+    protected $index4;
     /**
      * @var string
      */
-    private $index5;
+    protected $index5;
     /**
      * @var string
      */
-    private $index6;
+    protected $index6;
     /**
      * @var string
      */
-    private $data;
+    protected $data;
     /**
      * @var array
      */
-    private $otherIndexes = array();
+    protected $otherIndexes = array();
 
     /**
      * @return string

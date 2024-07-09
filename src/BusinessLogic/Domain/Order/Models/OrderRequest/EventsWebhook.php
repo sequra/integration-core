@@ -15,12 +15,12 @@ class EventsWebhook extends OrderRequestDTO
     /**
      * @var string SeQura will make a POST to this URL when an event happens for that order after confirmation.
      */
-    private $url;
+    protected $url;
 
     /**
      * @var string[]|null Optional name/value pairs that will be included in the webhook event POST.
      */
-    private $parameters;
+    protected $parameters;
 
     /**
      * @param string $url

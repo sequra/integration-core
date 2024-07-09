@@ -36,7 +36,7 @@ class TickEventListener
     /**
      * @return StatisticalDataService
      */
-    private static function getStatisticalDataService(): StatisticalDataService
+    protected static function getStatisticalDataService(): StatisticalDataService
     {
         return ServiceRegister::getService(StatisticalDataService::class);
     }
@@ -44,7 +44,7 @@ class TickEventListener
     /**
      * @return QueueService
      */
-    private static function getQueueService(): QueueService
+    protected static function getQueueService(): QueueService
     {
         return ServiceRegister::getService(QueueService::class);
     }

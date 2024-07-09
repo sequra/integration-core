@@ -36,19 +36,19 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @var DateTime
      */
-    private $lastAliveSignalTime;
+    protected $lastAliveSignalTime;
     /**
      * An instance of Configuration service.
      *
      * @var Configuration
      */
-    private $configService;
+    protected $configService;
     /**
      * Task execution id.
      *
      * @var string
      */
-    private $executionId;
+    protected $executionId;
 
     /**
      * Runs task logic.
@@ -247,7 +247,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return int Base points representation of percentage.
      */
-    private function percentToBasePoints($percentValue)
+    protected function percentToBasePoints($percentValue)
     {
         return (int)round($percentValue * 100, 2);
     }

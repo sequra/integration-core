@@ -20,7 +20,7 @@ class RunnerStatusStorage implements TaskRunnerStatusStorage
      *
      * @var Configuration
      */
-    private $configService;
+    protected $configService;
 
     /**
      * Returns task runner status.
@@ -63,7 +63,7 @@ class RunnerStatusStorage implements TaskRunnerStatusStorage
      * @throws TaskRunnerStatusChangeException
      * @throws TaskRunnerStatusStorageUnavailableException
      */
-    private function checkTaskRunnerStatusChangeAvailability(TaskRunnerStatus $status)
+    protected function checkTaskRunnerStatusChangeAvailability(TaskRunnerStatus $status)
     {
         $currentGuid = $this->getStatus()->getGuid();
         $guidForUpdate = $status->getGuid();
@@ -80,7 +80,7 @@ class RunnerStatusStorage implements TaskRunnerStatusStorage
      *
      * @see Configuration service.
      */
-    private function getConfigService()
+    protected function getConfigService()
     {
         if ($this->configService === null) {
             $this->configService = ServiceRegister::getService(Configuration::CLASS_NAME);

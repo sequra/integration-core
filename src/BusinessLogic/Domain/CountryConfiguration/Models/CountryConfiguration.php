@@ -17,12 +17,12 @@ class CountryConfiguration
     /**
      * @var string
      */
-    private $countryCode;
+    protected $countryCode;
 
     /**
      * @var string
      */
-    private $merchantId;
+    protected $merchantId;
 
     /**
      * @param string $countryCode

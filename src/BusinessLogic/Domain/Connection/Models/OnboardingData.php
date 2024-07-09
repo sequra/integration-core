@@ -12,12 +12,12 @@ class OnboardingData
     /**
      * @var ConnectionData
      */
-    private $connectionData;
+    protected $connectionData;
 
     /**
      * @var bool
      */
-    private $sendStatisticalData;
+    protected $sendStatisticalData;
 
     /**
      * @param ConnectionData $connectionData

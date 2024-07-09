@@ -12,19 +12,19 @@ class ValidateAssetsKeyRequest
     /**
      * @var string
      */
-    private $merchantId;
+    protected $merchantId;
     /**
      * @var array
      */
-    private $paymentMethodIds;
+    protected $paymentMethodIds;
     /**
      * @var string
      */
-    private $assetsKey;
+    protected $assetsKey;
     /**
      * @var string
      */
-    private $mode;
+    protected $mode;
 
     /**
      * @param string $merchantId

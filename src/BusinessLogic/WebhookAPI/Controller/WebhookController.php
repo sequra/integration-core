@@ -19,12 +19,12 @@ class WebhookController
     /**
      * @var WebhookValidator
      */
-    private $validator;
+    protected $validator;
 
     /**
      * @var WebhookHandler
      */
-    private $handler;
+    protected $handler;
 
     /**
      * WebhookController constructor.

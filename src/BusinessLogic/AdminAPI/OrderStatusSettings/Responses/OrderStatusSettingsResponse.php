@@ -15,7 +15,7 @@ class OrderStatusSettingsResponse extends Response
     /**
      * @var OrderStatusMapping[]
      */
-    private $orderStatusMappings;
+    protected $orderStatusMappings;
 
     /**
      * @param OrderStatusMapping[]|null $orderStatusMappings

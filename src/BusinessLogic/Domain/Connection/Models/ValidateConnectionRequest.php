@@ -15,7 +15,7 @@ class ValidateConnectionRequest extends DataTransferObject
     /**
      * @var ConnectionData
      */
-    private $connectionData;
+    protected $connectionData;
 
     /**
      * @param ConnectionData $connectionData

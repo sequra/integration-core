@@ -191,7 +191,7 @@ abstract class Orchestrator extends Task
      *
      * @return float
      */
-    private function calculateProgress()
+    protected function calculateProgress()
     {
         $totalWeight = 0;
         $totalProgress = 0;
@@ -219,7 +219,7 @@ abstract class Orchestrator extends Task
      *
      * @return QueueService
      */
-    private function getQueueService()
+    protected function getQueueService()
     {
         return ServiceRegister::getService(QueueService::CLASS_NAME);
     }
@@ -229,7 +229,7 @@ abstract class Orchestrator extends Task
      *
      * @return string
      */
-    private function getContext()
+    protected function getContext()
     {
         /**
          * @var ConfigurationManager $configManager
@@ -246,7 +246,7 @@ abstract class Orchestrator extends Task
      *
      * @return ExecutionDetails | false
      */
-    private function getSubJob($executionId)
+    protected function getSubJob($executionId)
     {
         return current(array_filter(
             $this->taskList,
@@ -259,7 +259,7 @@ abstract class Orchestrator extends Task
     /**
      * Aborts incomplete sub-jobs.
      */
-    private function abortSubJobs()
+    protected function abortSubJobs()
     {
         $ids = [];
         foreach ($this->taskList as $task) {
@@ -278,7 +278,7 @@ abstract class Orchestrator extends Task
     /**
      * Starts sub-jobs.
      */
-    private function startSubJobs()
+    protected function startSubJobs()
     {
         $ids = array_map(static function (ExecutionDetails $d) {
             return $d->getExecutionId();

@@ -44,7 +44,7 @@ class OnReportAlive
      *
      * @return QueueService
      */
-    private static function getQueue()
+    protected static function getQueue()
     {
         return ServiceRegister::getService(QueueService::CLASS_NAME);
     }

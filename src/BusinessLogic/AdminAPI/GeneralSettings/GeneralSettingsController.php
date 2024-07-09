@@ -20,12 +20,12 @@ class GeneralSettingsController
     /**
      * @var GeneralSettingsService
      */
-    private $generalSettingsService;
+    protected $generalSettingsService;
 
     /**
      * @var CategoryService
      */
-    private $categoryService;
+    protected $categoryService;
 
     /**
      * @param GeneralSettingsService $generalSettingsService

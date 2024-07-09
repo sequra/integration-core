@@ -25,17 +25,17 @@ class OrderReportService
     /**
      * @var OrderReportProxyInterface
      */
-    private $proxy;
+    protected $proxy;
 
     /**
      * @var OrderReportServiceInterface
      */
-    private $integrationOrderReportService;
+    protected $integrationOrderReportService;
 
     /**
      * @var SendReportRepositoryInterface
      */
-    private $sendReportRepository;
+    protected $sendReportRepository;
 
     /**
      * @param OrderReportProxyInterface $proxy
@@ -106,7 +106,7 @@ class OrderReportService
      *
      * @throws InvalidUrlException
      */
-    private function createSendOrderReportRequest(
+    protected function createSendOrderReportRequest(
         string $merchantId,
         array $orderReports,
         array $orderStatistics = null

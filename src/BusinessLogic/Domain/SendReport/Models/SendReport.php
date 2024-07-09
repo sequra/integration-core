@@ -12,7 +12,7 @@ class SendReport
     /**
      * @var int
      */
-    private $sendReportTime;
+    protected $sendReportTime;
 
     /**
      * @param int $sendReportTime

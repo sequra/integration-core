@@ -15,27 +15,27 @@ class GeneralSettingsRequest extends Request
     /**
      * @var bool
      */
-    private $sendOrderReportsPeriodicallyToSeQura;
+    protected $sendOrderReportsPeriodicallyToSeQura;
 
     /**
      * @var bool|null
      */
-    private $showSeQuraCheckoutAsHostedPage;
+    protected $showSeQuraCheckoutAsHostedPage;
 
     /**
      * @var string[]|null
      */
-    private $allowedIPAddresses;
+    protected $allowedIPAddresses;
 
     /**
      * @var string[]|null
      */
-    private $excludedCategories;
+    protected $excludedCategories;
 
     /**
      * @var string[]|null
      */
-    private $excludedProducts;
+    protected $excludedProducts;
 
     /**
      * @param bool $sendOrderReportsPeriodicallyToSeQura

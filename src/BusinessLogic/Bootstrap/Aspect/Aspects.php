@@ -16,15 +16,15 @@ class Aspects
     /**
      * @var T|null
      */
-    private $subject;
+    protected $subject;
     /**
      * @var class-string<T>|null
      */
-    private $subjectClassName;
+    protected $subjectClassName;
     /**
      * @var Aspect
      */
-    private $aspect;
+    protected $aspect;
 
     protected function __construct(Aspect $aspect)
     {

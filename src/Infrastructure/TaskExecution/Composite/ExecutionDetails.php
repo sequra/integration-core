@@ -10,7 +10,7 @@ use SeQura\Core\Infrastructure\Serializer\Serializer;
  *
  * @package SeQura\Core\Infrastructure\TaskExecution\Composite
  *
- * @access private
+ * @access protected
  */
 class ExecutionDetails implements Serializable
 {
@@ -19,19 +19,19 @@ class ExecutionDetails implements Serializable
      *
      * @var int
      */
-    private $executionId;
+    protected $executionId;
     /**
      * Positive (grater than zero) integer. Higher number implies higher impact of subtask's progress on total progress.
      *
      * @var int
      */
-    private $weight;
+    protected $weight;
     /**
      * Task progress.
      *
      * @var float
      */
-    private $progress;
+    protected $progress;
 
     /**
      * ExecutionDetails constructor.

@@ -26,8 +26,8 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\UpdateOrderHttpRequest;
  */
 class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
 {
-    private const PAYMENT_OPTIONS_KEY = 'payment_options';
-    private const METHODS_KEY = 'methods';
+    protected const PAYMENT_OPTIONS_KEY = 'payment_options';
+    protected const METHODS_KEY = 'methods';
 
     /**
      * @inheritDoc
@@ -104,7 +104,7 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
      *
      * @return string
      */
-    private function getOrderUUID(array $headers): string
+    protected function getOrderUUID(array $headers): string
     {
         $headers = array_change_key_case($headers);
         $location = array_key_exists('location', $headers) ? $headers['location'] : '';
@@ -121,7 +121,7 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
      *
      * @throws Exception
      */
-    private function getListOfPaymentMethods(array $responseData): array
+    protected function getListOfPaymentMethods(array $responseData): array
     {
         $paymentMethods = [];
 
@@ -143,7 +143,7 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
      *
      * @throws Exception
      */
-    private function getListOfPaymentMethodsInCategories(array $responseData): array
+    protected function getListOfPaymentMethodsInCategories(array $responseData): array
     {
         $paymentMethodCategories = [];
 

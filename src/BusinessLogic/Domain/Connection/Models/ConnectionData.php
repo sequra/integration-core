@@ -16,17 +16,17 @@ class ConnectionData extends DataTransferObject
     /**
      * @var string
      */
-    private $environment;
+    protected $environment;
 
     /**
      * @var string|null
      */
-    private $merchantId;
+    protected $merchantId;
 
     /**
      * @var AuthorizationCredentials
      */
-    private $authorizationCredentials;
+    protected $authorizationCredentials;
 
     /**
      * @param string $environment

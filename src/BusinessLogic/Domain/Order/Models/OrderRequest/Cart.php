@@ -27,37 +27,37 @@ class Cart extends OrderRequestDTO
     /**
      * @var string Name of currency used on the purchase.
      */
-    private $currency;
+    protected $currency;
 
     /**
      * @var boolean Set to true if shopper has indicated that this is a gift.
      */
-    private $gift;
+    protected $gift;
 
     /**
      * @var int Total value with tax of the items listed below.
      */
-    private $orderTotalWithTax;
+    protected $orderTotalWithTax;
 
     /**
      * @var string|int|null Shop's unique id for this basket.
      */
-    private $cartRef;
+    protected $cartRef;
 
     /**
      * @var string|null When shopper put the first item in the cart.
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var string|null When shopper put the last item in the cart.
      */
-    private $updatedAt;
+    protected $updatedAt;
 
     /**
      * @var Item[] List of items in the order.
      */
-    private $items;
+    protected $items;
 
     /**
      * @param string $currency

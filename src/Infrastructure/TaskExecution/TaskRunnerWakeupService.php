@@ -27,25 +27,25 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @var AsyncProcessStarterService
      */
-    private $asyncProcessStarter;
+    protected $asyncProcessStarter;
     /**
      * Service instance.
      *
      * @var RunnerStatusStorage
      */
-    private $runnerStatusStorage;
+    protected $runnerStatusStorage;
     /**
      * Service instance.
      *
      * @var TimeProvider
      */
-    private $timeProvider;
+    protected $timeProvider;
     /**
      * Service instance.
      *
      * @var GuidProvider
      */
-    private $guidProvider;
+    protected $guidProvider;
 
     /**
      * Wakes up @see TaskRunner instance asynchronously if active instance is not already running.
@@ -92,7 +92,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      * @throws TaskRunnerStatusStorageUnavailableException
      * @throws HttpRequestException
      */
-    private function doWakeup()
+    protected function doWakeup()
     {
         $runnerStatus = $this->getRunnerStorage()->getStatus();
         $currentGuid = $runnerStatus->getGuid();
@@ -122,7 +122,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @see TaskRunnerStatusStorageInterface.
      */
-    private function getRunnerStorage()
+    protected function getRunnerStorage()
     {
         if ($this->runnerStatusStorage === null) {
             $this->runnerStatusStorage = ServiceRegister::getService(TaskRunnerStatusStorage::CLASS_NAME);
@@ -136,7 +136,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @see GuidProvider.
      */
-    private function getGuidProvider()
+    protected function getGuidProvider()
     {
         if ($this->guidProvider === null) {
             $this->guidProvider = ServiceRegister::getService(GuidProvider::CLASS_NAME);
@@ -150,7 +150,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @see TimeProvider.
      */
-    private function getTimeProvider()
+    protected function getTimeProvider()
     {
         if ($this->timeProvider === null) {
             $this->timeProvider = ServiceRegister::getService(TimeProvider::CLASS_NAME);
@@ -164,7 +164,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @see AsyncProcessStarterService.
      */
-    private function getAsyncProcessStarter()
+    protected function getAsyncProcessStarter()
     {
         if ($this->asyncProcessStarter === null) {
             $this->asyncProcessStarter = ServiceRegister::getService(AsyncProcessService::CLASS_NAME);

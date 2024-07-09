@@ -14,7 +14,7 @@ class IndexMap
      *
      * @var Index[]
      */
-    private $indexes = array();
+    protected $indexes = array();
 
     /**
      * Adds boolean index.

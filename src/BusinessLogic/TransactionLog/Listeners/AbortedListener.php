@@ -14,7 +14,7 @@ class AbortedListener extends UpdateListener
     /**
     * @var string
     */
-    private const ABORT_DESCRIPTION = 'Order update action not supported on SeQura.';
+    protected const ABORT_DESCRIPTION = 'Order update action not supported on SeQura.';
 
     /**
      * @var QueueItemAbortedEvent

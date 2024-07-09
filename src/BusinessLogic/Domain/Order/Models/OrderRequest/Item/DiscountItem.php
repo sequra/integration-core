@@ -12,12 +12,12 @@ class DiscountItem extends Item
     /**
      * @var string|int A unique code that refers to this discount.
      */
-    private $reference;
+    protected $reference;
 
     /**
      * @var string A name to describe this discount.
      */
-    private $name;
+    protected $name;
 
     /**
      * @param int|string $reference

@@ -36,25 +36,25 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
      *
      * @var Configuration
      */
-    private $configuration;
+    protected $configuration;
     /**
      * Process entity repository.
      *
      * @var RepositoryInterface
      */
-    private $processRepository;
+    protected $processRepository;
     /**
      * GUID provider instance.
      *
      * @var GuidProvider
      */
-    private $guidProvider;
+    protected $guidProvider;
     /**
      * HTTP client.
      *
      * @var HttpClient
      */
-    private $httpClient;
+    protected $httpClient;
 
     /**
      * AsyncProcessStarterService constructor.
@@ -119,7 +119,7 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
      *
      * @throws ProcessStarterSaveException
      */
-    private function saveGuidAndRunner($guid, Runnable $runner)
+    protected function saveGuidAndRunner($guid, Runnable $runner)
     {
         try {
             $process = new Process();
@@ -140,7 +140,7 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
      *
      * @throws HttpRequestException
      */
-    private function startRunnerAsynchronously($guid)
+    protected function startRunnerAsynchronously($guid)
     {
         try {
             $this->httpClient->requestAsync(

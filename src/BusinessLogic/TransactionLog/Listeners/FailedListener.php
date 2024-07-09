@@ -14,7 +14,7 @@ class FailedListener extends UpdateListener
     /**
     * @var string
     */
-    private const FAILURE_DESCRIPTION = 'Order update action not supported on SeQura.';
+    protected const FAILURE_DESCRIPTION = 'Order update action not supported on SeQura.';
 
     /**
      * @var QueueItemFailedEvent

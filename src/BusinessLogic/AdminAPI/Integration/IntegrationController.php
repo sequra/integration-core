@@ -21,17 +21,17 @@ class IntegrationController
     /**
      * @var VersionService
      */
-    private $versionService;
+    protected $versionService;
 
     /**
      * @var Configuration
      */
-    private $configurationService;
+    protected $configurationService;
 
     /**
      * @var UIStateService
      */
-    private $stateService;
+    protected $stateService;
 
     /**
      * @param VersionService $versionService

@@ -12,7 +12,7 @@ class SeQuraForm
     /**
      * @var string HTML form from SeQura.
      */
-    private $form;
+    protected $form;
 
     /**
      * @param string $form

@@ -12,11 +12,11 @@ class CompositeAspect
     /**
      * @var Aspect
      */
-    private $aspect;
+    protected $aspect;
     /**
      * @var Aspect|null
      */
-    private $next;
+    protected $next;
 
     public function __construct(Aspect $aspect)
     {
@@ -41,7 +41,7 @@ class CompositeAspect
         return $this->aspect->applyOn($callback, $params);
     }
 
-    private function getNextCallee(callable $callee, array $params = []): \Closure
+    protected function getNextCallee(callable $callee, array $params = []): \Closure
     {
         return function () use ($callee, $params) {
             return $this->next->applyOn($callee, $params);

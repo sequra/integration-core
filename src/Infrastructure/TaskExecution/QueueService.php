@@ -50,25 +50,25 @@ class QueueService
      *
      * @var RepositoryRegistry
      */
-    private $storage;
+    protected $storage;
     /**
      * Time provider instance.
      *
      * @var TimeProvider
      */
-    private $timeProvider;
+    protected $timeProvider;
     /**
      * Task runner wakeup instance.
      *
      * @var TaskRunnerWakeup
      */
-    private $taskRunnerWakeup;
+    protected $taskRunnerWakeup;
     /**
      * Configuration service instance.
      *
      * @var Configuration
      */
-    private $configService;
+    protected $configService;
 
     /**
      * Updates status of a group of tasks.
@@ -534,7 +534,7 @@ class QueueService
      *
      * @throws QueueStorageUnavailableException
      */
-    private function save(
+    protected function save(
         QueueItem $queueItem,
         array $additionalWhere = array(),
         $reportStateChange = false,
@@ -564,7 +564,7 @@ class QueueService
      * @param QueueItem $queueItem Queue item with is about to change status.
      * @param string $previousState Previous state. MUST be one of the states defined as constants in @see QueueItem.
      */
-    private function reportBeforeStatusChange(QueueItem $queueItem, $previousState)
+    protected function reportBeforeStatusChange(QueueItem $queueItem, $previousState)
     {
         /**
          * @var EventBus $eventBus
@@ -579,7 +579,7 @@ class QueueService
      * @param QueueItem $queueItem Queue item with changed status.
      * @param string $previousState Previous state. MUST be one of the states defined as constants in @see QueueItem.
      */
-    private function reportStatusChange(QueueItem $queueItem, $previousState)
+    protected function reportStatusChange(QueueItem $queueItem, $previousState)
     {
         /**
          * @var EventBus $eventBus
@@ -595,7 +595,7 @@ class QueueService
      *
      * @return QueueItemRepository Task storage instance.
      */
-    private function getStorage()
+    protected function getStorage()
     {
         if ($this->storage === null) {
             /**
@@ -612,7 +612,7 @@ class QueueService
      *
      * @return TimeProvider Time provider instance.
      */
-    private function getTimeProvider()
+    protected function getTimeProvider()
     {
         if ($this->timeProvider === null) {
             $this->timeProvider = ServiceRegister::getService(TimeProvider::CLASS_NAME);
@@ -626,7 +626,7 @@ class QueueService
      *
      * @return TaskRunnerWakeup Task runner wakeup instance.
      */
-    private function getTaskRunnerWakeup()
+    protected function getTaskRunnerWakeup()
     {
         if ($this->taskRunnerWakeup === null) {
             $this->taskRunnerWakeup = ServiceRegister::getService(TaskRunnerWakeup::CLASS_NAME);
@@ -640,7 +640,7 @@ class QueueService
      *
      * @return Configuration Configuration service instance.
      */
-    private function getConfigService()
+    protected function getConfigService()
     {
         if ($this->configService === null) {
             $this->configService = ServiceRegister::getService(Configuration::CLASS_NAME);
@@ -657,7 +657,7 @@ class QueueService
      *
      * @throws BadMethodCallException
      */
-    private function throwIllegalTransitionException($fromStatus, $toStatus)
+    protected function throwIllegalTransitionException($fromStatus, $toStatus)
     {
         throw new BadMethodCallException(
             sprintf(
@@ -673,7 +673,7 @@ class QueueService
      *
      * @return int Number of retries.
      */
-    private function getMaxRetries()
+    protected function getMaxRetries()
     {
         $configurationValue = $this->getConfigService()->getMaxTaskExecutionRetries();
 
@@ -691,7 +691,7 @@ class QueueService
      *
      * @return QueueItem
      */
-    private function instantiate(Task $task, $queueName, $context, $priority, $parent = null)
+    protected function instantiate(Task $task, $queueName, $context, $priority, $parent = null)
     {
         $queueItem = new QueueItem($task);
         $queueItem->setQueueName($queueName);

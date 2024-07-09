@@ -21,7 +21,7 @@ class TaskProgressEvent extends Event
      *
      * @var int
      */
-    private $progressPercentBasePoints;
+    protected $progressPercentBasePoints;
 
     /**
      * TaskProgressEvent constructor.

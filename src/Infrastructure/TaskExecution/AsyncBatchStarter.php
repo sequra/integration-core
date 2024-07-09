@@ -15,31 +15,31 @@ class AsyncBatchStarter implements Runnable
      *
      * @var int
      */
-    private $batchSize;
+    protected $batchSize;
     /**
      * List of sub-batches.
      *
      * @var AsyncBatchStarter[]
      */
-    private $subBatches = array();
+    protected $subBatches = array();
     /**
      * List of runners.
      *
      * @var Runnable[]
      */
-    private $runners = array();
+    protected $runners = array();
     /**
      * Current add index.
      *
      * @var int
      */
-    private $addIndex = 0;
+    protected $addIndex = 0;
     /**
      * Instance of async process starter.
      *
      * @var AsyncProcessService
      */
-    private $asyncProcessStarter;
+    protected $asyncProcessStarter;
 
     /**
      * @inheritDoc

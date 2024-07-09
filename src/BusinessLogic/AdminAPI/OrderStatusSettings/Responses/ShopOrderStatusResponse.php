@@ -15,7 +15,7 @@ class ShopOrderStatusResponse extends Response
     /**
      * @var OrderStatus[]
      */
-    private $orderStatuses;
+    protected $orderStatuses;
 
     /**
      * @param OrderStatus[]|null $orderStatuses

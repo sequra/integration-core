@@ -15,7 +15,7 @@ class SellingCountriesResponse extends Response
     /**
      * @var SellingCountry[]
      */
-    private $sellingCountries;
+    protected $sellingCountries;
 
     /**
      * @param SellingCountry[] $sellingCountries

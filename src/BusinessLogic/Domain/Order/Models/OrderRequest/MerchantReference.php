@@ -12,12 +12,12 @@ class MerchantReference extends OrderRequestDTO
     /**
      * @var string|int Merchant reference 1.
      */
-    private $orderRef1;
+    protected $orderRef1;
 
     /**
      * @var string|int|null Merchant reference 2.
      */
-    private $orderRef2;
+    protected $orderRef2;
 
     /**
      * @param int|string $orderRef1

@@ -24,7 +24,7 @@ class ConnectionService
     /**
      * @var ConnectionProxyInterface
      */
-    private $connectionProxy;
+    protected $connectionProxy;
 
     /**
      * @param ConnectionProxyInterface $connectionProxy
@@ -85,7 +85,7 @@ class ConnectionService
      *
      * @return ConnectionDataRepositoryInterface
      */
-    private function getConnectionDataRepository(): ConnectionDataRepositoryInterface
+    protected function getConnectionDataRepository(): ConnectionDataRepositoryInterface
     {
         return ServiceRegister::getService(ConnectionDataRepositoryInterface::class);
     }

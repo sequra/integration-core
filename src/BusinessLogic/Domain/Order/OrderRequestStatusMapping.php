@@ -17,7 +17,7 @@ class OrderRequestStatusMapping
      *
      * @var array
      */
-    private static $statusMap = [
+    protected static $statusMap = [
         OrderStates::STATE_APPROVED => OrderRequestStates::CONFIRMED,
         OrderStates::STATE_NEEDS_REVIEW => OrderRequestStates::ON_HOLD,
         OrderStates::STATE_CANCELLED => OrderRequestStates::CANCELLED

@@ -12,17 +12,17 @@ class ReportData
     /**
      * @var string
      */
-    private $merchantId;
+    protected $merchantId;
 
     /**
      * @var string[]
      */
-    private $reportOrderIds;
+    protected $reportOrderIds;
 
     /**
      * @var string[]|null
      */
-    private $statisticsOrderIds;
+    protected $statisticsOrderIds;
 
     /**
      * @param string $merchantId

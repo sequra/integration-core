@@ -22,12 +22,12 @@ class OrderStatusSettingsController
     /**
      * @var OrderStatusSettingsService
      */
-    private $orderStatusSettingsService;
+    protected $orderStatusSettingsService;
 
     /**
      * @var ShopOrderStatusesService
      */
-    private $shopOrderStatusesService;
+    protected $shopOrderStatusesService;
 
     /**
      * @param OrderStatusSettingsService $orderStatusSettingsService
