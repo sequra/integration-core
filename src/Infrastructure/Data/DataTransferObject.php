@@ -77,7 +77,7 @@ abstract class DataTransferObject
      *
      * @return mixed
      */
-    protected static function getDataValue(array $rawData, string $key, mixed $default = '')
+    protected static function getDataValue(array $rawData, string $key, $default = '')
     {
         return isset($rawData[$key]) ? $rawData[$key] : $default;
     }
