@@ -2,7 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest;
 
-use InvalidArgumentException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidDateException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidDurationException;
@@ -11,12 +10,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidServiceEndTimeExcep
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\AbstractItemFactory;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\DiscountItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\HandlingItem;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\InvoiceFeeItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\Item;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ItemType;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\OtherPaymentItem;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ProductItem;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ServiceItem;
 use SeQura\Core\Infrastructure\ServiceRegister;
 
 /**
