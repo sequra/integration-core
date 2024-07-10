@@ -55,6 +55,26 @@ class GeneralSettings
     private $defaultServicesEndDate;
 
     /**
+     * @var bool
+     */
+    private $enabledForServices;
+
+    /**
+     * @var bool
+     */
+    private $allowFirstServicePaymentDelay;
+
+    /**
+     * @var bool
+     */
+    private $allowServiceRegItems;
+
+    /**
+     * @var string
+     */
+    private $defaultServicesEndDate;
+
+    /**
      * @param bool $sendOrderReportsPeriodicallyToSeQura
      * @param bool|null $showSeQuraCheckoutAsHostedPage
      * @param string[]|null $allowedIPAddresses
