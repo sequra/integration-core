@@ -67,6 +67,7 @@ class WebhookAPITest extends BaseTestCase
     public function testValidWebhook()
     {
         $this->httpClient->setMockResponses([
+            new HttpResponse(200, [], ''),
             new HttpResponse(200, [], '')
         ]);
 

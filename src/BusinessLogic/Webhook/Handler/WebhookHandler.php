@@ -14,6 +14,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
 use SeQura\Core\BusinessLogic\Webhook\Tasks\OrderUpdateTask;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
@@ -43,6 +44,8 @@ class WebhookHandler
      */
     public function handle(Webhook $webhook): void
     {
+        $this->validateOrder($webhook);
+
         $task = new OrderUpdateTask($webhook);
         $task->execute();
 
@@ -53,6 +56,30 @@ class WebhookHandler
 
 
     /**
+     * @param Webhook $webhook
+     *
+     * @return void
+     *
+     * @throws HttpRequestException
+     * @throws InvalidOrderStateException
+     * @throws QueryFilterInvalidParamException
+     * @throws RepositoryNotRegisteredException
+     * @throws Exception
+     */
+    private function validateOrder(Webhook $webhook): void
+    {
+        try {
+            $this->acknowledgeOrder($webhook->getOrderRef(), $webhook->getSqState());
+        } catch (Exception $e) {
+            if ($e->getCode() === HttpClient::HTTP_STATUS_CODE_CONFLICT) {
+                throw new Exception($e->getMessage(), 410);
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
      * Acknowledges the order and its state to SeQura API.
      *
      * @param string $orderReference
@@ -61,16 +88,17 @@ class WebhookHandler
      * @return void
      *
      * @throws HttpRequestException
+     * @throws InvalidOrderStateException
      * @throws QueryFilterInvalidParamException
      * @throws RepositoryNotRegisteredException
-     * @throws InvalidOrderStateException
      */
     protected function acknowledgeOrder(string $orderReference, string $state): void
     {
         /**
-        * @var OrderProxy $orderProxy
-        */
+         * @var OrderProxy $orderProxy
+         */
         $orderProxy = ServiceRegister::getService(OrderProxyInterface::class);
+        $order = $this->getSeQuraOrderByOrderReference($orderReference);
         $shopOrder = $this->getCreateOrderRequest($orderReference);
 
         $request = new CreateOrderRequest(
@@ -78,12 +106,12 @@ class WebhookHandler
             $shopOrder->getMerchant(),
             $shopOrder->getCart(),
             $shopOrder->getDeliveryMethod(),
-            $shopOrder->getCustomer(),
+            $order->getCustomer(),
             $shopOrder->getPlatform(),
             $shopOrder->getDeliveryAddress(),
             $shopOrder->getInvoiceAddress(),
             $shopOrder->getGui(),
-            $shopOrder->getMerchantReference()
+            $order->getMerchantReference()
         );
 
         $orderProxy->acknowledgeOrder($orderReference, $request);
@@ -107,8 +135,8 @@ class WebhookHandler
         $filter->where('reference', Operators::EQUALS, $orderRef);
 
         /**
-        * @var SeQuraOrder $order
-        */
+         * @var SeQuraOrder $order
+         */
         $order = $repository->selectOne($filter);
 
         return $order;
