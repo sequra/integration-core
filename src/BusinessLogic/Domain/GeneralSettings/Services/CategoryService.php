@@ -18,7 +18,7 @@ class CategoryService
     /**
      * @var CategoryServiceInterface
      */
-    private $integrationCategoryService;
+    protected $integrationCategoryService;
 
     /**
      * @param CategoryServiceInterface $integrationCategoryService

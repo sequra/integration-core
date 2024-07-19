@@ -31,7 +31,7 @@ class ValidateConnectionHttpRequest extends HttpRequest
      *
      * @return string[]
      */
-    private function generateAuthHeaderForValidation(AuthorizationCredentials $authorizationCredentials): array
+    protected function generateAuthHeaderForValidation(AuthorizationCredentials $authorizationCredentials): array
     {
         $token = base64_encode(sprintf(
             '%s:%s',

@@ -15,7 +15,7 @@ class IdentificationFormResponse extends Response
     /**
      * @var SeQuraForm
      */
-    private $identificationForm;
+    protected $identificationForm;
 
     public function __construct(SeQuraForm $identificationForm)
     {

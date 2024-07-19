@@ -27,7 +27,7 @@ class SendOrderReportHttpRequest extends HttpRequest
      *
      * @return array
      */
-    private function transformBody(SendOrderReportRequest $request): array
+    protected function transformBody(SendOrderReportRequest $request): array
     {
         $data['delivery_report'] = $request->toArray();
 

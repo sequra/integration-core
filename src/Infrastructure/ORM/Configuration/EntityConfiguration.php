@@ -14,13 +14,13 @@ class EntityConfiguration
      *
      * @var IndexMap
      */
-    private $indexMap;
+    protected $indexMap;
     /**
      * Entity type.
      *
      * @var string
      */
-    private $type;
+    protected $type;
 
     /**
      * EntityConfiguration constructor.

@@ -17,7 +17,7 @@ class PaymentMethodsController
     /**
      * @var PaymentMethodsService
      */
-    private $paymentMethodsService;
+    protected $paymentMethodsService;
 
     /**
      * @param PaymentMethodsService $paymentMethodsService

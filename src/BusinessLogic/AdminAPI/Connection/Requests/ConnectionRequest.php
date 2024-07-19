@@ -17,22 +17,22 @@ class ConnectionRequest extends Request
     /**
      * @var string
      */
-    private $environment;
+    protected $environment;
 
     /**
      * @var string
      */
-    private $merchantId;
+    protected $merchantId;
 
     /**
      * @var string
      */
-    private $username;
+    protected $username;
 
     /**
      * @var string
      */
-    private $password;
+    protected $password;
 
     /**
      * @param string $environment

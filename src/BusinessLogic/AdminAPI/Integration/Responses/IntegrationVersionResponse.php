@@ -15,7 +15,7 @@ class IntegrationVersionResponse extends Response
     /**
      * @var Version
      */
-    private $version;
+    protected $version;
 
     /**
      * @param Version $version

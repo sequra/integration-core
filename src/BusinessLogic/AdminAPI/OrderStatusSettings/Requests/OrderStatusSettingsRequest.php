@@ -17,7 +17,7 @@ class OrderStatusSettingsRequest extends Request
     /**
      * @var array
      */
-    private $orderStatusMappings;
+    protected $orderStatusMappings;
 
     /**
      * @param array $orderStatusMappings

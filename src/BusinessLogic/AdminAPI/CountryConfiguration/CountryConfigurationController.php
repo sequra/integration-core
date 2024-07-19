@@ -22,12 +22,12 @@ class CountryConfigurationController
     /**
      * @var CountryConfigurationService
      */
-    private $countryConfigurationService;
+    protected $countryConfigurationService;
 
     /**
      * @var SellingCountriesService
      */
-    private $sellingCountriesService;
+    protected $sellingCountriesService;
 
     /**
      * @param CountryConfigurationService $countryConfigurationService

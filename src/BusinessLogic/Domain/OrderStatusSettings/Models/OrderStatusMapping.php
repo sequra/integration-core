@@ -17,12 +17,12 @@ class OrderStatusMapping
     /**
      * @var string
      */
-    private $sequraStatus;
+    protected $sequraStatus;
 
     /**
      * @var string
      */
-    private $shopStatus;
+    protected $shopStatus;
 
     /**
      * @param string $seQuraStatus

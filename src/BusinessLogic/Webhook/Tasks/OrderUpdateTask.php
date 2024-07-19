@@ -21,12 +21,12 @@ class OrderUpdateTask extends Task
     /**
      * @var Webhook
      */
-    private $webhook;
+    protected $webhook;
 
     /**
      * @var string
      */
-    private $storeId;
+    protected $storeId;
 
     /**
      * Transforms array into an order update task object,
@@ -77,7 +77,7 @@ class OrderUpdateTask extends Task
      *
      * @return void
      */
-    private function doExecute(): void
+    protected function doExecute(): void
     {
         $shopStatus = $this->getOrderStatusMappingService()->getMapping($this->webhook->getSqState());
         $this->getShopOrderService()->updateStatus($this->webhook, $shopStatus);
@@ -144,7 +144,7 @@ class OrderUpdateTask extends Task
      *
      * @return OrderStatusSettingsService
      */
-    private function getOrderStatusMappingService(): OrderStatusSettingsService
+    protected function getOrderStatusMappingService(): OrderStatusSettingsService
     {
         return ServiceRegister::getService(OrderStatusSettingsService::class);
     }
@@ -154,7 +154,7 @@ class OrderUpdateTask extends Task
      *
      * @return ShopOrderService
      */
-    private function getShopOrderService(): ShopOrderService
+    protected function getShopOrderService(): ShopOrderService
     {
         return ServiceRegister::getService(ShopOrderService::class);
     }

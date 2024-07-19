@@ -12,7 +12,7 @@ class StatisticalData
     /**
      * @var bool
      */
-    private $sendStatisticalData;
+    protected $sendStatisticalData;
 
     /**
      * @param bool $sendStatisticalData

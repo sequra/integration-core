@@ -25,7 +25,7 @@ class TimeProvider
     /**
      * TimeProvider constructor
      */
-    private function __construct()
+    protected function __construct()
     {
     }
 

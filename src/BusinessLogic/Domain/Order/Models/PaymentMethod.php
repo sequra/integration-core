@@ -14,17 +14,17 @@ class PaymentMethod extends DataTransferObject
     /**
      * @var string
      */
-    private $id;
+    protected $id;
 
     /**
      * @var string
      */
-    private $name;
+    protected $name;
 
     /**
      * @var string|null
      */
-    private $icon;
+    protected $icon;
 
     /**
      * @param string $id

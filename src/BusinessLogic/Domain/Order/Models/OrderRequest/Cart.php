@@ -2,20 +2,16 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest;
 
-use InvalidArgumentException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidDateException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidDurationException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidServiceEndTimeException;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\AbstractItemFactory;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\DiscountItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\HandlingItem;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\InvoiceFeeItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\Item;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ItemType;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\OtherPaymentItem;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ProductItem;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ServiceItem;
+use SeQura\Core\Infrastructure\ServiceRegister;
 
 /**
  * Class Cart
@@ -27,37 +23,37 @@ class Cart extends OrderRequestDTO
     /**
      * @var string Name of currency used on the purchase.
      */
-    private $currency;
+    protected $currency;
 
     /**
      * @var boolean Set to true if shopper has indicated that this is a gift.
      */
-    private $gift;
+    protected $gift;
 
     /**
      * @var int Total value with tax of the items listed below.
      */
-    private $orderTotalWithTax;
+    protected $orderTotalWithTax;
 
     /**
      * @var string|int|null Shop's unique id for this basket.
      */
-    private $cartRef;
+    protected $cartRef;
 
     /**
      * @var string|null When shopper put the first item in the cart.
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var string|null When shopper put the last item in the cart.
      */
-    private $updatedAt;
+    protected $updatedAt;
 
     /**
      * @var Item[] List of items in the order.
      */
-    private $items;
+    protected $items;
 
     /**
      * @param string $currency
@@ -107,38 +103,13 @@ class Cart extends OrderRequestDTO
     public static function fromArray(array $data): Cart
     {
         $orderTotal = self::getDataValue($data, 'order_total_with_tax', 0);
-        $items = self::getDataValue($data, 'items', []);
+        $items = (array) self::getDataValue($data, 'items', []);
 
-        // Convert item arrays to Item instances
         /**
-        * @type Item[] $itemInstances
-        */
-        $itemInstances = [];
-        foreach ($items as $itemData) {
-            $type = $itemData['type'];
-            switch ($type) {
-                case ItemType::TYPE_PRODUCT:
-                    $itemInstances[] = ProductItem::fromArray($itemData);
-                    break;
-                case ItemType::TYPE_HANDLING:
-                    $itemInstances[] = HandlingItem::fromArray($itemData);
-                    break;
-                case ItemType::TYPE_DISCOUNT:
-                    $itemInstances[] = DiscountItem::fromArray($itemData);
-                    break;
-                case ItemType::TYPE_SERVICE:
-                    $itemInstances[] = ServiceItem::fromArray($itemData);
-                    break;
-                case ItemType::TYPE_INVOICE_FEE:
-                    $itemInstances[] = InvoiceFeeItem::fromArray($itemData);
-                    break;
-                case ItemType::TYPE_OTHER_PAYMENT:
-                    $itemInstances[] = OtherPaymentItem::fromArray($itemData);
-                    break;
-                default:
-                    throw new InvalidArgumentException('Invalid cart item type ' . $type);
-            }
-        }
+         * @var AbstractItemFactory $itemFactory
+         */
+        $itemFactory = ServiceRegister::getService(AbstractItemFactory::class);
+        $itemInstances = $itemFactory->createListFromArray($items);
 
         $itemTotal = array_reduce($itemInstances, static function ($sum, $item) {
             return $sum + $item->getTotalWithTax();

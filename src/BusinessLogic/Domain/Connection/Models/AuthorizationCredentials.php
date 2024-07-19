@@ -14,12 +14,12 @@ class AuthorizationCredentials extends DataTransferObject
     /**
      * @var string Authorization username.
      */
-    private $username;
+    protected $username;
 
     /**
      * @var string Authorization username.
      */
-    private $password;
+    protected $password;
 
     /**
      * @param string $username

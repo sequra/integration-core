@@ -15,12 +15,12 @@ class Store
     /**
      * @var string
      */
-    private $storeId;
+    protected $storeId;
 
     /**
      * @var string
      */
-    private $storeName;
+    protected $storeName;
 
     /**
      * @param string $storeId

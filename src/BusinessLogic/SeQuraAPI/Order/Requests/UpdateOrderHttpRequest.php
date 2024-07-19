@@ -33,7 +33,7 @@ class UpdateOrderHttpRequest extends HttpRequest
      *
      * @return array
      */
-    private function transformBody(BaseOrderRequest $request): array
+    protected function transformBody(BaseOrderRequest $request): array
     {
         $data['order'] = $request->toArray();
 

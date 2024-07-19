@@ -17,7 +17,7 @@ class SolicitationController
     /**
      * @var OrderService
      */
-    private $orderService;
+    protected $orderService;
 
     public function __construct(OrderService $orderService)
     {

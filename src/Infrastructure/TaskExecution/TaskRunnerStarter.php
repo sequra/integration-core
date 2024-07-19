@@ -27,25 +27,25 @@ class TaskRunnerStarter implements Runnable
      *
      * @var string
      */
-    private $guid;
+    protected $guid;
     /**
      * Instance of task runner status storage.
      *
      * @var TaskRunnerStatusStorage
      */
-    private $runnerStatusStorage;
+    protected $runnerStatusStorage;
     /**
      * Instance of task runner.
      *
      * @var TaskRunner
      */
-    private $taskRunner;
+    protected $taskRunner;
     /**
      * Instance of task runner wakeup service.
      *
      * @var TaskRunnerWakeup
      */
-    private $taskWakeup;
+    protected $taskWakeup;
 
     /**
      * TaskRunnerStarter constructor.
@@ -173,7 +173,7 @@ class TaskRunnerStarter implements Runnable
      * @throws TaskRunnerRunException
      * @throws TaskRunnerStatusStorageUnavailableException
      */
-    private function doRun()
+    protected function doRun()
     {
         $runnerStatus = $this->getRunnerStorage()->getStatus();
         if ($this->guid !== $runnerStatus->getGuid()) {
@@ -203,7 +203,7 @@ class TaskRunnerStarter implements Runnable
      *
      * @return TaskRunnerStatusStorage Instance of runner status storage service.
      */
-    private function getRunnerStorage()
+    protected function getRunnerStorage()
     {
         if ($this->runnerStatusStorage === null) {
             $this->runnerStatusStorage = ServiceRegister::getService(TaskRunnerStatusStorage::CLASS_NAME);
@@ -217,7 +217,7 @@ class TaskRunnerStarter implements Runnable
      *
      * @return TaskRunner Instance of runner service.
      */
-    private function getTaskRunner()
+    protected function getTaskRunner()
     {
         if ($this->taskRunner === null) {
             $this->taskRunner = ServiceRegister::getService(TaskRunner::CLASS_NAME);
@@ -231,7 +231,7 @@ class TaskRunnerStarter implements Runnable
      *
      * @return TaskRunnerWakeup Instance of runner wakeup service.
      */
-    private function getTaskWakeup()
+    protected function getTaskWakeup()
     {
         if ($this->taskWakeup === null) {
             $this->taskWakeup = ServiceRegister::getService(TaskRunnerWakeup::CLASS_NAME);

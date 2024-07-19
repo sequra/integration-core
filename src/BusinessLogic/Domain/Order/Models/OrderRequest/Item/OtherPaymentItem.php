@@ -12,12 +12,12 @@ class OtherPaymentItem extends Item
     /**
      * @var string|int A code that refers to this "other" payment.
      */
-    private $reference;
+    protected $reference;
 
     /**
      * @var string A name to describe this payment.
      */
-    private $name;
+    protected $name;
 
     /**
      * @param int|string $reference

@@ -15,7 +15,7 @@ class ShopCategoriesResponse extends Response
     /**
      * @var Category[]
      */
-    private $categories;
+    protected $categories;
 
     /**
      * @param Category[]|null $categories

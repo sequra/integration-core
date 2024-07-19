@@ -14,7 +14,7 @@ class GetAvailablePaymentMethodsRequest extends DataTransferObject
     /**
      * @var string
      */
-    private $merchantId;
+    protected $merchantId;
 
     /**
      * @param string $merchantId

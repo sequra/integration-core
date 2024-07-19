@@ -37,7 +37,7 @@ class MerchantProxy extends AuthorizedProxy implements MerchantProxyInterface
      *
      * @throws Exception
      */
-    private function getListOfPaymentMethods(array $responseData): array
+    protected function getListOfPaymentMethods(array $responseData): array
     {
         $paymentMethods = [];
 

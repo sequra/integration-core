@@ -11,7 +11,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
  */
 class WidgetConfiguratorResponse extends Response
 {
-    private $widgetConfigurator;
+    protected $widgetConfigurator;
 
     /**
      * @inheritDoc

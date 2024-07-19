@@ -12,27 +12,27 @@ class Vehicle extends OrderRequestDTO
     /**
      * @var string Plaque identification from customer's vehicle.
      */
-    private $plaque;
+    protected $plaque;
 
     /**
      * @var string|null Brand from customer's vehicle.
      */
-    private $brand;
+    protected $brand;
 
     /**
      * @var string|null Model from customer's vehicle.
      */
-    private $model;
+    protected $model;
 
     /**
      * @var string|null Frame identification from customer's vehicle.
      */
-    private $frame;
+    protected $frame;
 
     /**
      * @var string|null First registration date plaque from customer's vehicle.
      */
-    private $firstRegistrationDate;
+    protected $firstRegistrationDate;
 
     /**
      * @param string $plaque

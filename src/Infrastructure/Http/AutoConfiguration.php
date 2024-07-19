@@ -33,11 +33,11 @@ class AutoConfiguration
     /**
      * @var Configuration
      */
-    private $configService;
+    protected $configService;
     /**
      * @var HttpClient
      */
-    private $httpClient;
+    protected $httpClient;
 
     /**
      * AutoConfigurationController constructor.

@@ -23,12 +23,12 @@ class CreateOrderRequest extends BaseOrderRequest
     /**
      * @var string String containing state of the order.
      */
-    private $state;
+    protected $state;
 
     /**
      * @var Cart Fields describing the shopping cart.
      */
-    private $cart;
+    protected $cart;
 
     /**
      * @var Gui Fields describing the medium for which the response will be generated.

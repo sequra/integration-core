@@ -24,7 +24,7 @@ class OrderReporter extends Orchestrator
     protected const ORDERS_PER_BACH = 5000;
     protected $page = 1;
 
-    private $storeId;
+    protected $storeId;
 
     public function __construct()
     {
@@ -104,7 +104,7 @@ class OrderReporter extends Orchestrator
      *
      * @throws QueueStorageUnavailableException
      */
-    private function getSubTaskInContext(): ?ExecutionDetails
+    protected function getSubTaskInContext(): ?ExecutionDetails
     {
         $reportOrderIds = $this->getShopOrderService()->getReportOrderIds($this->page, static::ORDERS_PER_BACH);
 
@@ -134,7 +134,7 @@ class OrderReporter extends Orchestrator
      *
      * @return ShopOrderService
      */
-    private function getShopOrderService(): ShopOrderService
+    protected function getShopOrderService(): ShopOrderService
     {
         return ServiceRegister::getService(ShopOrderService::class);
     }
@@ -144,7 +144,7 @@ class OrderReporter extends Orchestrator
      *
      * @return StatisticalDataRepositoryInterface
      */
-    private function getStatisticalDataRepository(): StatisticalDataRepositoryInterface
+    protected function getStatisticalDataRepository(): StatisticalDataRepositoryInterface
     {
         return ServiceRegister::getService(StatisticalDataRepositoryInterface::class);
     }
@@ -154,7 +154,7 @@ class OrderReporter extends Orchestrator
      *
      * @return CountryConfigurationRepositoryInterface
      */
-    private function getCountryConfigurationRepository(): CountryConfigurationRepositoryInterface
+    protected function getCountryConfigurationRepository(): CountryConfigurationRepositoryInterface
     {
         return ServiceRegister::getService(CountryConfigurationRepositoryInterface::class);
     }

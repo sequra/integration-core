@@ -14,22 +14,22 @@ class GetFormRequest extends DataTransferObject
     /**
      * @var string
      */
-    private $orderId;
+    protected $orderId;
 
     /**
      * @var string|null
      */
-    private $product;
+    protected $product;
 
     /**
      * @var string|null
      */
-    private $campaign;
+    protected $campaign;
 
     /**
      * @var bool|null
      */
-    private $ajax;
+    protected $ajax;
 
     /**
      * @param string $orderId

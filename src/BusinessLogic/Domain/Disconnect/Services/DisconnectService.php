@@ -16,12 +16,12 @@ class DisconnectService
     /**
      * @var DisconnectServiceInterface
      */
-    private $integrationDisconnectService;
+    protected $integrationDisconnectService;
 
     /**
      * @var SendReportRepositoryInterface
      */
-    private $sendReportRepository;
+    protected $sendReportRepository;
 
     /**
      * @param DisconnectServiceInterface $integrationDisconnectService

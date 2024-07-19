@@ -17,7 +17,7 @@ abstract class Listener
     /**
      * @var TransactionLogService
      */
-    private $transactionLogService;
+    protected $transactionLogService;
 
     public function __construct(TransactionLogService $transactionLogService)
     {

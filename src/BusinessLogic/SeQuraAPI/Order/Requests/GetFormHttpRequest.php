@@ -25,7 +25,7 @@ class GetFormHttpRequest extends HttpRequest
         );
     }
 
-    private function transformQueryParameters(GetFormRequest $request): array
+    protected function transformQueryParameters(GetFormRequest $request): array
     {
         $request->getProduct() && $params['product'] = $request->getProduct();
         $request->getCampaign() && $params['campaign'] = $request->getCampaign();

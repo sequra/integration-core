@@ -15,67 +15,67 @@ class SeQuraPaymentMethod
     /**
      * @var string SeQura product code.
      */
-    private $product;
+    protected $product;
 
     /**
      * @var string|null SeQura campaign code.
      */
-    private $campaign;
+    protected $campaign;
 
     /**
      * @var string Payment method title.
      */
-    private $title;
+    protected $title;
 
     /**
      * @var string Longer payment method title.
      */
-    private $longTitle;
+    protected $longTitle;
 
     /**
      * @var string|null Payment method claim.
      */
-    private $claim;
+    protected $claim;
 
     /**
      * @var string|null Payment method description.
      */
-    private $description;
+    protected $description;
 
     /**
      * @var string|null Serialized HTML element.
      */
-    private $icon;
+    protected $icon;
 
     /**
      * @var SeQuraCost
      */
-    private $cost;
+    protected $cost;
 
     /**
      * @var string|null Cost description.
      */
-    private $costDescription;
+    protected $costDescription;
 
     /**
      * @var DateTime Method available from this date on.
      */
-    private $startsAt;
+    protected $startsAt;
 
     /**
      * @var DateTime Method available until this date.
      */
-    private $endsAt;
+    protected $endsAt;
 
     /**
      * @var int|null Minimum supported order amount for this payment method.
      */
-    private $minAmount;
+    protected $minAmount;
 
     /**
      * @var int|null Maximum supported order amount for this payment method.
      */
-    private $maxAmount;
+    protected $maxAmount;
 
     /**
      * @param string $product

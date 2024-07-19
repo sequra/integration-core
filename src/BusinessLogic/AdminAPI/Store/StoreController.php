@@ -18,7 +18,7 @@ class StoreController
     /**
      * @var StoreService
      */
-    private $storeService;
+    protected $storeService;
 
     /**
      * @param StoreService $storeService
@@ -59,7 +59,7 @@ class StoreController
      *
      * @return Store
      */
-    private function failBackStore(): Store
+    protected function failBackStore(): Store
     {
         return new Store('failBack', 'failBack');
     }

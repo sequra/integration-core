@@ -12,12 +12,12 @@ class SellingCountry
     /**
      * @var string
      */
-    private $code;
+    protected $code;
 
     /**
      * @var string
      */
-    private $name;
+    protected $name;
 
     /**
      * @param string $code

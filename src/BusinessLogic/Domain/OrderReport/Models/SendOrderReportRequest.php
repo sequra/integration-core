@@ -24,22 +24,22 @@ class SendOrderReportRequest extends OrderRequestDTO
     /**
      * @var Merchant Fields describing the merchant.
      */
-    private $merchant;
+    protected $merchant;
 
     /**
      * @var OrderReport[] A list of order reports.
      */
-    private $orders;
+    protected $orders;
 
     /**
      * @var Statistics|null Filed containing a list of statistical order data.
      */
-    private $statistics;
+    protected $statistics;
 
     /**
      * @var Platform Fields describing the store platform.
      */
-    private $platform;
+    protected $platform;
 
     /**
      * @param Merchant $merchant

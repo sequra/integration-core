@@ -15,7 +15,7 @@ class ConnectionSettingsResponse extends Response
     /**
      * @var ConnectionData
      */
-    private $connectionSettings;
+    protected $connectionSettings;
 
     /**
      * @param ConnectionData|null $connectionSettings

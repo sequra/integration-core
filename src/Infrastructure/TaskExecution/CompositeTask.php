@@ -40,7 +40,7 @@ abstract class CompositeTask extends Task
      *
      * @var int
      */
-    private $initialProgress;
+    protected $initialProgress;
 
     /**
      * CompositeTask constructor.
@@ -355,7 +355,7 @@ abstract class CompositeTask extends Task
      *
      * @param Task $task A Task for which to register listener.
      */
-    private function registerReportAliveEvent(Task $task)
+    protected function registerReportAliveEvent(Task $task)
     {
         $self = $this;
 
@@ -372,7 +372,7 @@ abstract class CompositeTask extends Task
      *
      * @param string $taskKey A Task for which to register listener.
      */
-    private function registerReportProgressEvent($taskKey)
+    protected function registerReportProgressEvent($taskKey)
     {
         $self = $this;
         $task = $this->tasks[$taskKey];

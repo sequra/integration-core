@@ -19,7 +19,7 @@ class SellingCountriesService
     /**
      * @var SellingCountriesServiceInterface
      */
-    private $integrationSellingCountriesService;
+    protected $integrationSellingCountriesService;
 
     public function __construct(SellingCountriesServiceInterface $integrationSellingCountriesService)
     {

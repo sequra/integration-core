@@ -17,7 +17,7 @@ class CountryConfigurationRequest extends Request
     /**
      * @var array
      */
-    private $countryConfigurations;
+    protected $countryConfigurations;
 
     /**
      * @param array $countryConfigurations

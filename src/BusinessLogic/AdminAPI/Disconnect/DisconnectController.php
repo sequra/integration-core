@@ -15,7 +15,7 @@ class DisconnectController
     /**
      * @var DisconnectService
      */
-    private $disconnectService;
+    protected $disconnectService;
 
     /**
      * @param DisconnectService $disconnectService

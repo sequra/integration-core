@@ -15,65 +15,65 @@ class Merchant extends OrderRequestDTO
     /**
      * @var string|int Merchant identifier.
      */
-    private $id;
+    protected $id;
 
     /**
      * @var string|null SeQura will make an IPN POST to this URL when the order is approved.
      */
-    private $notifyUrl;
+    protected $notifyUrl;
 
     /**
      * @var string[]|null Optional name/value pairs that will be included in the IPN POST.
      */
-    private $notificationParameters;
+    protected $notificationParameters;
 
     /**
      * @var string|null The shopper will be redirected to this URL once the shop has confirmed the order after IPN
      * notification.
      */
-    private $returnUrl;
+    protected $returnUrl;
 
     /**
      * @var string|null Name of Javascript function to call when SeQura approves the order and checkout should move to
      * next step.
      */
-    private $approvedCallback;
+    protected $approvedCallback;
 
     /**
      * @var string|null URL for a page where the shopper can edit their name, address, etc.
      */
-    private $editUrl;
+    protected $editUrl;
 
     /**
      * @var string|null URL for a page where the shopper can pick another payment method.
      */
-    private $abortUrl;
+    protected $abortUrl;
 
     /**
      * @var string|null Name of Javascript function to call if the shopper is rejected.
      */
-    private $rejectedCallback;
+    protected $rejectedCallback;
 
     /**
      * @var string|null Name of Javascript function to call to get the shopper's part-payment details.
      */
-    private $partpaymentDetailsGetter;
+    protected $partpaymentDetailsGetter;
 
     /**
      * @var string|null When SeQura approves the order, the customer's browser will make a POST to this URL without
      * arguments.
      */
-    private $approvedUrl;
+    protected $approvedUrl;
 
     /**
      * @var Options|null Features activated by this merchant in this request.
      */
-    private $options;
+    protected $options;
 
     /**
      * @var EventsWebhook|null Fields describing how the merchant wants to receive webhook events.
      */
-    private $eventsWebhook;
+    protected $eventsWebhook;
 
     /**
      * @param int|string $id

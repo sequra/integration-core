@@ -16,13 +16,13 @@ class LogContextData extends DataTransferObject
      *
      * @var string
      */
-    private $name;
+    protected $name;
     /**
      * Value of data.
      *
      * @var mixed
      */
-    private $value;
+    protected $value;
 
     /**
      * LogContextData constructor.

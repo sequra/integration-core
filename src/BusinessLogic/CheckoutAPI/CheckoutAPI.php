@@ -14,7 +14,7 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationCo
  */
 class CheckoutAPI
 {
-    private function __construct()
+    protected function __construct()
     {
     }
 
