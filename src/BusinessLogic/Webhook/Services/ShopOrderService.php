@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Webhook\Services;
 
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 
 /**
@@ -49,4 +50,13 @@ interface ShopOrderService
      * @return string
      */
     public function getOrderUrl(string $merchantReference): string;
+
+    /**
+     * Retrieves create order request from shop.
+     *
+     * @param string $orderReference
+     *
+     * @return CreateOrderRequest
+     */
+    public function getCreateOrderRequest(string $orderReference): CreateOrderRequest;
 }
