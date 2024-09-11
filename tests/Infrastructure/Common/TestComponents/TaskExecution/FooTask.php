@@ -21,6 +21,7 @@ class FooTask extends Task
 
     public function __construct($dependency1 = '', $dependency2 = 0)
     {
+        parent::__construct();
         $this->dependency1 = $dependency1;
         $this->dependency2 = $dependency2;
     }

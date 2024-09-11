@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestDTO;
  *
  * @package SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item
  */
+/** @phpstan-consistent-constructor */
 abstract class Item extends OrderRequestDTO
 {
     /**

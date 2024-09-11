@@ -12,6 +12,7 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  *
  * @package SeQura\Core\Infrastructure\AutoTest
  */
+/** @phpstan-consistent-constructor */
 class AutoTestTask extends Task
 {
     /**
@@ -28,6 +29,7 @@ class AutoTestTask extends Task
      */
     public function __construct($data)
     {
+        parent::__construct();
         $this->data = $data;
     }
 

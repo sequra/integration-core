@@ -11,6 +11,7 @@ use SeQura\Core\Infrastructure\ORM\Configuration\EntityConfiguration;
  *
  * @package SeQura\Core\Infrastructure\ORM\Entities
  */
+/** @phpstan-consistent-constructor */
 abstract class Entity extends DataTransferObject
 {
     /**
@@ -29,6 +30,10 @@ abstract class Entity extends DataTransferObject
      * @var array
      */
     protected $fields = array('id');
+
+    public function __construct()
+    {
+    }
 
     /**
      * Returns full class name.

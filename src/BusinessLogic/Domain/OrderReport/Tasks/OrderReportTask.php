@@ -18,6 +18,7 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  *
  * @package SeQura\Core\BusinessLogic\Domain\OrderReport\Tasks
  */
+/** @phpstan-consistent-constructor */
 class OrderReportTask extends Task
 {
     /**
@@ -49,6 +50,7 @@ class OrderReportTask extends Task
      */
     public function __construct(string $merchantId, array $reportOrderIds, ?array $statisticsOrderIds = null)
     {
+        parent::__construct();
         $this->merchantId = $merchantId;
         $this->reportOrderIds = $reportOrderIds;
         $this->statisticsOrderIds = $statisticsOrderIds;

@@ -9,6 +9,7 @@ use DateTime;
  *
  * @package SeQura\Core\Infrastructure\Utility
  */
+/** @phpstan-consistent-constructor */
 class TimeProvider
 {
     /**

@@ -7,6 +7,7 @@ namespace SeQura\Core\Infrastructure\Utility\Events;
  *
  * @package SeQura\Core\Infrastructure\Utility\Events
  */
+/** @phpstan-consistent-constructor */
 class EventBus extends EventEmitter
 {
     /**

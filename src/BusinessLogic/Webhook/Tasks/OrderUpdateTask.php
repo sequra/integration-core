@@ -16,6 +16,7 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  *
  * @package SeQura\Core\BusinessLogic\Webhook\Tasks
  */
+/** @phpstan-consistent-constructor */
 class OrderUpdateTask extends Task
 {
     /**
@@ -51,6 +52,7 @@ class OrderUpdateTask extends Task
      */
     public function __construct(Webhook $webhook)
     {
+        parent::__construct();
         $this->webhook = $webhook;
         $this->storeId = StoreContext::getInstance()->getStoreId();
     }

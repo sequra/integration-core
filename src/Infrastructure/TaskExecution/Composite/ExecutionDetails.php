@@ -12,6 +12,7 @@ use SeQura\Core\Infrastructure\Serializer\Serializer;
  *
  * @access protected
  */
+/** @phpstan-consistent-constructor */
 class ExecutionDetails implements Serializable
 {
     /**

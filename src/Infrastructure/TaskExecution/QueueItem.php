@@ -203,6 +203,8 @@ class QueueItem extends Entity
      */
     public function __construct(Task $task = null, $context = '')
     {
+        parent::__construct();
+
         $this->timeProvider = ServiceRegister::getService(TimeProvider::CLASS_NAME);
 
         $this->task = $task;

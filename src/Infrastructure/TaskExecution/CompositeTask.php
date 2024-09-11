@@ -15,6 +15,7 @@ use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\TaskProgressEvent;
  *
  * @package SeQura\Core\Infrastructure\TaskExecution
  */
+/** @phpstan-consistent-constructor */
 abstract class CompositeTask extends Task
 {
     /**
@@ -50,6 +51,7 @@ abstract class CompositeTask extends Task
      */
     public function __construct(array $subTasks, $initialProgress = 0)
     {
+        parent::__construct();
         $this->initialProgress = $initialProgress;
 
         $this->taskProgressMap = array(

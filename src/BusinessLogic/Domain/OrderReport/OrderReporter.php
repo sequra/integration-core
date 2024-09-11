@@ -28,6 +28,7 @@ class OrderReporter extends Orchestrator
 
     public function __construct()
     {
+        parent::__construct();
         $this->storeId = StoreContext::getInstance()->getStoreId();
     }
 

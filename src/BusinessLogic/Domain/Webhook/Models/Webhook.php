@@ -53,7 +53,7 @@ class Webhook
      */
     public static function fromArray(array $array): Webhook
     {
-        $webhook = new static();
+        $webhook = new self();
 
         $webhook->setSignature($array['signature'] ?? '');
         $webhook->setOrderRef($array['order_ref'] ?? '');

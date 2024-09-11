@@ -78,6 +78,8 @@ class LogData extends Entity
         $message = '',
         array $context = array()
     ) {
+        parent::__construct();
+
         $this->integration = $integration;
         $this->logLevel = $logLevel;
         $this->component = $component;
