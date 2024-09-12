@@ -69,7 +69,7 @@ abstract class HttpClient
     /**
      * An array of additional HTTP configuration options.
      *
-     * @var array
+     * @var array | null
      */
     protected $httpConfigurationOptions;
 
@@ -271,7 +271,7 @@ abstract class HttpClient
      */
     protected function getConfigService(): Configuration
     {
-        if (empty($this->configService)) {
+        if ($this->configService === null) {
             $this->configService = ServiceRegister::getService(Configuration::CLASS_NAME);
         }
 

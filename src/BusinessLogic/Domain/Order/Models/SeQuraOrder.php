@@ -367,7 +367,7 @@ class SeQuraOrder extends Entity
      */
     public function getTrackings(): array
     {
-        return $this->trackings ?? [];
+        return !empty($this->trackings) ? $this->trackings : [];
     }
 
     /**
@@ -567,7 +567,7 @@ class SeQuraOrder extends Entity
      *
      * @param Gui $gui
      *
-     * @return SeQuraorder
+     * @return SeQuraOrder
      */
     public function setGui(Gui $gui): SeQuraOrder
     {

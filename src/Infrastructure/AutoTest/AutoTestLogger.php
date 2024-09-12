@@ -47,6 +47,7 @@ class AutoTestLogger extends Singleton implements ShopLoggerAdapter
         /**
         * @noinspection PhpIncompatibleReturnTypeInspection
         */
+        // @phpstan-ignore-next-line
         return RepositoryRegistry::getRepository(LogData::CLASS_NAME)->select();
     }
 

@@ -132,7 +132,7 @@ abstract class Orchestrator extends Task
      * Update progress of a sub-job.
      *
      * @param int $executionId Sub-Job id.
-     * @param int $progress Between 0 and 100, inclusive.
+     * @param int|float $progress Between 0 and 100, inclusive.
      *
      * @final
      */

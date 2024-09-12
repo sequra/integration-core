@@ -87,6 +87,7 @@ class OrderStatusMappingRepository implements OrderStatusSettingsRepositoryInter
         /**
         * @noinspection PhpIncompatibleReturnTypeInspection
         */
+        // @phpstan-ignore-next-line
         return $this->repository->selectOne($queryFilter);
     }
 }

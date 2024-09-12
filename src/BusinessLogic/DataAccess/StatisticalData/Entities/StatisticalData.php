@@ -40,7 +40,7 @@ class StatisticalData extends Entity
 
         $this->storeId = $data['storeId'] ?? '';
         $this->statisticalData = new DomainStatisticalData(
-            self::getArrayValue($statisticalData, 'sendStatisticalData')
+            (bool)self::getArrayValue($statisticalData, 'sendStatisticalData', false)
         );
     }
 

@@ -3,6 +3,7 @@
 namespace SeQura\Core\Infrastructure\TaskExecution;
 
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\ProcessStarterSaveException;
@@ -59,8 +60,8 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
                 'Fail to wakeup task runner. Runner status storage failed to set new active state.',
                 'Core',
                 array(
-                    'ExceptionMessage' => $ex->getMessage(),
-                    'ExceptionTrace' => $ex->getTraceAsString(),
+                    new LogContextData('ExceptionMessage', $ex->getMessage()),
+                    new LogContextData('ExceptionTrace', $ex->getTraceAsString()),
                 )
             );
         } catch (TaskRunnerStatusStorageUnavailableException $ex) {
@@ -68,8 +69,8 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
                 'Fail to wakeup task runner. Runner status storage unavailable.',
                 'Core',
                 array(
-                    'ExceptionMessage' => $ex->getMessage(),
-                    'ExceptionTrace' => $ex->getTraceAsString(),
+                    new LogContextData('ExceptionMessage', $ex->getMessage()),
+                    new LogContextData('ExceptionTrace', $ex->getTraceAsString()),
                 )
             );
         } catch (Exception $ex) {
@@ -77,8 +78,8 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
                 'Fail to wakeup task runner. Unexpected error occurred.',
                 'Core',
                 array(
-                    'ExceptionMessage' => $ex->getMessage(),
-                    'ExceptionTrace' => $ex->getTraceAsString(),
+                    new LogContextData('ExceptionMessage', $ex->getMessage()),
+                    new LogContextData('ExceptionTrace', $ex->getTraceAsString()),
                 )
             );
         }

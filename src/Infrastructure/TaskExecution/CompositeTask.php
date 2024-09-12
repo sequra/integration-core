@@ -146,7 +146,7 @@ abstract class CompositeTask extends Task
 
         $tasks = array();
         foreach ($data['tasks'] as $task) {
-            $tasks[] = Serializer::serialize($task);
+            $tasks[] = Serializer::unserialize($task);
         }
 
         $this->tasks = $tasks;

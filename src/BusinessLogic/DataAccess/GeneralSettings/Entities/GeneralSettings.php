@@ -40,8 +40,8 @@ class GeneralSettings extends Entity
         $this->storeId = $data['storeId'] ?? '';
 
         $this->generalSettings = new DomainGeneralSettings(
-            self::getArrayValue($generalSettings, 'sendOrderReportsPeriodicallyToSeQura'),
-            self::getArrayValue($generalSettings, 'showSeQuraCheckoutAsHostedPage'),
+            (bool)self::getArrayValue($generalSettings, 'sendOrderReportsPeriodicallyToSeQura', false),
+            (bool)self::getArrayValue($generalSettings, 'showSeQuraCheckoutAsHostedPage', null),
             static::getDataValue($generalSettings, 'allowedIPAddresses', []),
             static::getDataValue($generalSettings, 'excludedProducts', []),
             static::getDataValue($generalSettings, 'excludedCategories', [])

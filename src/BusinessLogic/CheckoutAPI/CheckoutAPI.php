@@ -25,6 +25,7 @@ class CheckoutAPI
      */
     public static function get(): object
     {
+        // @phpstan-ignore-next-line
         return Aspects::run(new ErrorHandlingAspect())->beforeEachMethodOfInstance(new CheckoutAPI());
     }
 
@@ -35,9 +36,11 @@ class CheckoutAPI
      */
     public function solicitation(string $storeId): object
     {
+        // @phpstan-ignore-next-line
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
+            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(SolicitationController::class);
     }
 }

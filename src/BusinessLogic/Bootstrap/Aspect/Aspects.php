@@ -17,10 +17,12 @@ class Aspects
     /**
      * @var T|null
      */
+    // @phpstan-ignore-next-line
     protected $subject;
     /**
      * @var class-string<T>|null
      */
+    // @phpstan-ignore-next-line
     protected $subjectClassName;
     /**
      * @var Aspect
@@ -48,6 +50,7 @@ class Aspects
     /**
      * @param T $subject
      *
+     * // @phpstan-ignore-next-line
      * @return T
      */
     public function beforeEachMethodOfInstance($subject)
@@ -55,12 +58,15 @@ class Aspects
         $this->subject = $subject;
         $this->subjectClassName = null;
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        // @phpstan-ignore-next-line
         return $this;
     }
 
     /**
      * @param class-string<T> $serviceClass
      *
+     * // @phpstan-ignore-next-line
      * @return T
      */
     public function beforeEachMethodOfService(string $serviceClass)
@@ -68,6 +74,8 @@ class Aspects
         $this->subjectClassName = $serviceClass;
         $this->subject = null;
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        // @phpstan-ignore-next-line
         return $this;
     }
 

@@ -95,7 +95,7 @@ class QueueItem extends Entity
     /**
      * Task associated to queue item.
      *
-     * @var Task
+     * @var Task|null
      */
     protected $task;
     /**

@@ -5,6 +5,7 @@ namespace SeQura\Core\Infrastructure\AutoTest;
 use SeQura\Core\Infrastructure\Configuration\Configuration;
 use SeQura\Core\Infrastructure\Exceptions\StorageNotAccessibleException;
 use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\LogData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
@@ -165,7 +166,11 @@ class AutoTestService
             $options[$option->getName()] = $option->getValue();
         }
 
-        Logger::logInfo('HTTP configuration options', 'Core', [$testDomain => ['HTTPOptions' => $options]]);
+        Logger::logInfo(
+            'HTTP configuration options',
+            'Core',
+            [new LogContextData($testDomain, ['HTTPOptions' => $options])]
+        );
     }
 
     /**

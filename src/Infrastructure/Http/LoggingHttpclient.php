@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Infrastructure\Http;
 
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 
 class LoggingHttpclient extends HttpClient
@@ -30,10 +31,10 @@ class LoggingHttpclient extends HttpClient
             "Sending http request to $url",
             'Core',
             array(
-                'Type' => $method,
-                'Endpoint' => $url,
-                'Headers' => json_encode($headers),
-                'Content' => $body,
+                new LogContextData('Type', $method),
+                new LogContextData('Endpoint', $url),
+                new LogContextData('Headers', json_encode($headers)),
+                new LogContextData('Content', $body),
             )
         );
 
@@ -43,10 +44,10 @@ class LoggingHttpclient extends HttpClient
             "Http response from $url",
             'Core',
             array(
-                'ResponseFor' => "$method at $url",
-                'Status' => $response->getStatus(),
-                'Headers' => json_encode($response->getHeaders()),
-                'Content' => $response->getBody(),
+                new LogContextData('ResponseFor', "$method at $url"),
+                new LogContextData('Status', $response->getStatus()),
+                new LogContextData('Headers', json_encode($response->getHeaders())),
+                new LogContextData('Content', $response->getBody()),
             )
         );
 
@@ -62,10 +63,10 @@ class LoggingHttpclient extends HttpClient
             "Sending async http request to $url",
             'Core',
             array(
-                'Type' => $method,
-                'Endpoint' => $url,
-                'Headers' => json_encode($headers),
-                'Content' => $body,
+                new LogContextData('Type', $method),
+                new LogContextData('Endpoint', $url),
+                new LogContextData('Headers', json_encode($headers)),
+                new LogContextData('Content', $body),
             )
         );
 

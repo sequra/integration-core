@@ -47,7 +47,7 @@ abstract class Task extends EventEmitter implements Serializable
     /**
      * Task execution id.
      *
-     * @var string
+     * @var string|int
      */
     protected $executionId;
 
@@ -212,7 +212,7 @@ abstract class Task extends EventEmitter implements Serializable
     /**
      * Gets execution Id.
      *
-     * @return string Execution Id.
+     * @return string|int Execution Id.
      */
     public function getExecutionId()
     {
@@ -222,7 +222,7 @@ abstract class Task extends EventEmitter implements Serializable
     /**
      * Sets Execution id.
      *
-     * @param string $executionId Execution id.
+     * @param int|string $executionId Execution id.
      */
     public function setExecutionId($executionId)
     {

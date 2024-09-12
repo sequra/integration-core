@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Infrastructure\TaskExecution;
 
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
@@ -20,6 +21,7 @@ use Exception;
  *
  * @package SeQura\Core\Infrastructure\TaskExecution
  */
+
 /** @phpstan-consistent-constructor */
 class TaskRunnerStarter implements Runnable
 {
@@ -138,19 +140,20 @@ class TaskRunnerStarter implements Runnable
             Logger::logError(
                 'Failed to run task runner. Runner status storage unavailable.',
                 'Core',
-                array('ExceptionMessage' => $ex->getMessage())
+                array(new LogContextData('ExceptionMessage', $ex->getMessage()))
             );
             Logger::logDebug(
                 'Failed to run task runner. Runner status storage unavailable.',
                 'Core',
                 array(
-                    'ExceptionMessage' => $ex->getMessage(),
-                    'ExceptionTrace' => $ex->getTraceAsString(),
+                    new LogContextData('ExceptionMessage', $ex->getMessage()),
+                    new LogContextData('ExceptionTrace', $ex->getTraceAsString()),
                 )
             );
         } catch (TaskRunnerRunException $ex) {
             Logger::logInfo($ex->getMessage());
-            Logger::logDebug($ex->getMessage(), 'Core', array('ExceptionTrace' => $ex->getTraceAsString()));
+            Logger::logDebug($ex->getMessage(), 'Core', array(new LogContextData('ExceptionTrace', $ex->getTraceAsString())));
+            // @phpstan-ignore-next-line
         } catch (Exception $ex) {
             Logger::logError(
                 'Failed to run task runner. Unexpected error occurred.',

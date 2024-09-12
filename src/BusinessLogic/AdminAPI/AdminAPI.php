@@ -34,6 +34,7 @@ class AdminAPI
      */
     public static function get(): object
     {
+        // @phpstan-ignore-next-line
         return Aspects::run(new ErrorHandlingAspect())->beforeEachMethodOfInstance(new AdminAPI());
     }
 
@@ -47,9 +48,11 @@ class AdminAPI
      */
     public function connection(string $storeId): object
     {
+        // @phpstan-ignore-next-line
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
+            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(ConnectionController::class);
     }
 
@@ -62,9 +65,11 @@ class AdminAPI
      */
     public function store(string $storeId): object
     {
+        // @phpstan-ignore-next-line
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
+            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(StoreController::class);
     }
 
@@ -77,9 +82,11 @@ class AdminAPI
      */
     public function countryConfiguration(string $storeId): object
     {
+        // @phpstan-ignore-next-line
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
+            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(CountryConfigurationController::class);
     }
 
@@ -92,9 +99,11 @@ class AdminAPI
      */
     public function widgetConfiguration(string $storeId): object
     {
+        // @phpstan-ignore-next-line
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
+            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(PromotionalWidgetsController::class);
     }
 
@@ -107,9 +116,11 @@ class AdminAPI
      */
     public function paymentMethods(string $storeId): object
     {
+        // @phpstan-ignore-next-line
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
+            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(PaymentMethodsController::class);
     }
 
@@ -122,9 +133,11 @@ class AdminAPI
      */
     public function generalSettings(string $storeId): object
     {
+        // @phpstan-ignore-next-line
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
+            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(GeneralSettingsController::class);
     }
 
@@ -137,9 +150,11 @@ class AdminAPI
      */
     public function orderStatusSettings(string $storeId): object
     {
+        // @phpstan-ignore-next-line
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
+            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(OrderStatusSettingsController::class);
     }
 
@@ -152,9 +167,11 @@ class AdminAPI
      */
     public function transactionLogs(string $storeId): object
     {
+        // @phpstan-ignore-next-line
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
+            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(TransactionLogsController::class);
     }
 
@@ -167,9 +184,11 @@ class AdminAPI
      */
     public function integration(string $storeId): object
     {
+        // @phpstan-ignore-next-line
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
+            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(IntegrationController::class);
     }
 
@@ -182,9 +201,11 @@ class AdminAPI
      */
     public function disconnect(string $storeId): object
     {
+        // @phpstan-ignore-next-line
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
+            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(DisconnectController::class);
     }
 }

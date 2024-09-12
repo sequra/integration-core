@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Infrastructure\AutoTest;
 
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
@@ -103,7 +104,11 @@ class AutoTestTask extends Task
         Logger::logInfo('Auto-test task started');
 
         $this->reportProgress(50);
-        Logger::logInfo('Auto-test task parameters', 'Core', [$this->data]);
+        Logger::logInfo(
+            'Auto-test task parameters',
+            'Core',
+            [new LogContextData('context', $this->data)]
+        );
 
         $this->reportProgress(100);
         Logger::logInfo('Auto-test task ended');

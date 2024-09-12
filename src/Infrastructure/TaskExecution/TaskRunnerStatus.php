@@ -46,7 +46,7 @@ class TaskRunnerStatus
      * TaskRunnerStatus constructor.
      *
      * @param string $guid Runner instance identifier.
-     * @param int $aliveSinceTimestamp Timestamp of last alive moment.
+     * @param int|null $aliveSinceTimestamp Timestamp of last alive moment.
      */
     public function __construct($guid, $aliveSinceTimestamp)
     {

@@ -15,21 +15,21 @@ class Options extends DataTransferObject
     /**
      * Name of the option.
      *
-     * @var string
+     * @var mixed
      */
     protected $name;
     /**
      * Value of the option.
      *
-     * @var string
+     * @var mixed
      */
     protected $value;
 
     /**
      * Options constructor.
      *
-     * @param string $name Name of the option.
-     * @param string $value Value of the option.
+     * @param mixed $name Name of the option.
+     * @param mixed $value Value of the option.
      */
     public function __construct($name, $value)
     {
@@ -40,7 +40,7 @@ class Options extends DataTransferObject
     /**
      * Gets name of the option.
      *
-     * @return string Name of the option.
+     * @return mixed Name of the option.
      */
     public function getName()
     {
@@ -50,7 +50,7 @@ class Options extends DataTransferObject
     /**
      * Gets value of the option.
      *
-     * @return string Value of the option.
+     * @return mixed Value of the option.
      */
     public function getValue()
     {

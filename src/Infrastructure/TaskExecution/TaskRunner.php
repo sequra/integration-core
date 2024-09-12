@@ -155,6 +155,7 @@ class TaskRunner
         $this->keepAlive();
 
         while ($runningItem = array_shift($runningItems)) {
+            // @phpstan-ignore-next-line
             if (!$this->isCurrentRunnerAlive()) {
                 break;
             }
@@ -253,6 +254,7 @@ class TaskRunner
 
         $this->keepAlive();
 
+        // @phpstan-ignore-next-line
         if (!$this->isCurrentRunnerAlive()) {
             return;
         }
@@ -464,7 +466,7 @@ class TaskRunner
 
         $minimalSleepTime = $configurationValue !== null ? $configurationValue : self::WAKEUP_DELAY;
 
-        return $minimalSleepTime + ceil($this->batchSleepTime);
+        return $minimalSleepTime + (int)ceil($this->batchSleepTime);
     }
 
     /**

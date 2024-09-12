@@ -3,6 +3,7 @@
 namespace SeQura\Core\Infrastructure\TaskExecution;
 
 use SeQura\Core\Infrastructure\Configuration\ConfigurationManager;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
@@ -120,8 +121,8 @@ class QueueItemStarter implements Runnable
                 'Fail to start task execution because task no longer exists or it is not in queued state anymore.',
                 'Core',
                 array(
-                    'TaskId' => $this->getQueueItemId(),
-                    'Status' => $queueItem !== null ? $queueItem->getStatus() : 'unknown',
+                    new LogContextData('TaskId', $this->getQueueItemId()),
+                    new LogContextData('Status', $queueItem !== null ? $queueItem->getStatus() : 'unknown'),
                 )
             );
 
@@ -134,25 +135,26 @@ class QueueItemStarter implements Runnable
             $queueService->validateExecutionRequirements($queueItem);
             $queueService->start($queueItem);
         } catch (QueueStorageUnavailableException $e) {
-            Logger::logInfo($e->getMessage(), 'Core', array('trace' => $e->getTraceAsString()));
+            Logger::logInfo($e->getMessage(), 'Core', array(new LogContextData('trace', $e->getTraceAsString())));
         } catch (ExecutionRequirementsNotMetException $e) {
             $id = $queueItem->getId();
             Logger::logWarning(
                 "Execution requirements not met for queue item [$id] because:" .
                 $e->getMessage(),
                 'Core',
-                array('ExceptionTrace' => $e->getTraceAsString())
+                array(new LogContextData('ExceptionTrace', $e->getTraceAsString()))
             );
         } catch (AbortTaskExecutionException $exception) {
             $queueService->abort($queueItem, $exception->getMessage());
         } catch (Exception $ex) {
+            // @phpstan-ignore-next-line
             if (QueueItem::IN_PROGRESS === $queueItem->getStatus()) {
                 $queueService->fail($queueItem, $ex->getMessage());
             }
             $context = array(
-                'TaskId' => $this->getQueueItemId(),
-                'ExceptionMessage' => $ex->getMessage(),
-                'ExceptionTrace' => $ex->getTraceAsString(),
+                new LogContextData('TaskId', $this->getQueueItemId()),
+                new LogContextData('ExceptionMessage', $ex->getMessage()),
+                new LogContextData('ExceptionTrace', $ex->getTraceAsString()),
             );
 
             Logger::logError("Fail to start task execution because: {$ex->getMessage()}.", 'Core', $context);

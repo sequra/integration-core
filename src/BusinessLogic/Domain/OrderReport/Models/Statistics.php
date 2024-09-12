@@ -41,7 +41,7 @@ class Statistics extends OrderRequestDTO
     }
 
     /**
-     * @return OrderReport[]
+     * @return OrderStatistics[]
      */
     public function getOrders(): array
     {

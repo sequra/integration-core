@@ -126,7 +126,7 @@ class ExecutionDetails implements Serializable
     }
 
     /**
-     * @inheritDoc
+     * @return ExecutionDetails
      */
     public static function fromArray(array $array)
     {

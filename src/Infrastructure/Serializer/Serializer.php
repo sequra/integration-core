@@ -30,6 +30,7 @@ abstract class Serializer
         /**
          * @var Serializer $instace
         */
+        // @phpstan-ignore-next-line
         $instance = ServiceRegister::getService(self::CLASS_NAME);
 
         return $instance->doSerialize($data);
@@ -47,6 +48,7 @@ abstract class Serializer
         /**
          * @var Serializer $instace
         */
+        // @phpstan-ignore-next-line
         $instance = ServiceRegister::getService(self::CLASS_NAME);
 
         return $instance->doUnserialize($serialized);

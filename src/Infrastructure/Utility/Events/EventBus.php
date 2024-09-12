@@ -17,7 +17,7 @@ class EventBus extends EventEmitter
     /**
      * Singleton instance of this class.
      *
-     * @var EventBus
+     * @var EventBus | null
      */
     protected static $instance;
 

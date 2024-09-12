@@ -50,7 +50,9 @@ class OrderReporter extends Orchestrator
     public static function fromArray(array $array)
     {
         $entity = parent::fromArray($array);
+        // @phpstan-ignore-next-line
         $entity->page = $array['page'];
+        // @phpstan-ignore-next-line
         $entity->storeId = $array['storeId'];
 
         return $entity;

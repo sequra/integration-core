@@ -48,7 +48,7 @@ class QueueService
     /**
      * A storage for task queue.
      *
-     * @var RepositoryRegistry
+     * @var QueueItemRepository
      */
     protected $storage;
     /**
@@ -221,7 +221,7 @@ class QueueService
         $lastExecutionProgress = $queueItem->getLastExecutionProgressBasePoints();
 
         $queueItem->setStatus(QueueItem::QUEUED);
-        $queueItem->setStartTimestamp(null);
+        $queueItem->setStartTimestamp(0);
         $queueItem->setLastExecutionProgressBasePoints($queueItem->getProgressBasePoints());
 
         $this->save(
@@ -279,7 +279,7 @@ class QueueService
             }
         } else {
             $queueItem->setStatus(QueueItem::QUEUED);
-            $queueItem->setStartTimestamp(null);
+            $queueItem->setStartTimestamp(0);
         }
 
         $this->save(

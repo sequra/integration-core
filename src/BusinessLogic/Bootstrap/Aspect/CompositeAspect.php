@@ -7,7 +7,7 @@ namespace SeQura\Core\BusinessLogic\Bootstrap\Aspect;
  *
  * @package SeQura\Core\BusinessLogic\Bootstrap\Aspect
  */
-class CompositeAspect
+class CompositeAspect implements Aspect
 {
     /**
      * @var Aspect

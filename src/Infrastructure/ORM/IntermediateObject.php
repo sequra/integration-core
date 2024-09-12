@@ -166,7 +166,7 @@ class IntermediateObject
             return;
         }
 
-        if ($index >= 1 && $index <= 6) {
+        if ($index <= 6) {
             $methodName = 'setIndex' . $index;
             $this->$methodName($value);
         } else {
@@ -188,7 +188,7 @@ class IntermediateObject
             return $value;
         }
 
-        if ($index >= 1 && $index <= 6) {
+        if ($index <= 6) {
             $methodName = 'getIndex' . $index;
             $value = $this->$methodName();
         } elseif (array_key_exists('index_' . $index, $this->otherIndexes)) {
