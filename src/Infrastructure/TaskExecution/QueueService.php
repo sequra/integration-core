@@ -100,8 +100,7 @@ class QueueService
         string $context = '',
         int $priority = Priority::NORMAL,
         int $parent = null
-    ): QueueItem
-    {
+    ): QueueItem {
         $queueItem = $this->instantiate($task, $queueName, $context, $priority, $parent);
         $this->save($queueItem);
         $this->fireStateTransitionEvent(new QueueItemCreatedEvent($queueItem));
@@ -542,11 +541,10 @@ class QueueService
      */
     protected function save(
         QueueItem $queueItem,
-        array     $additionalWhere = array(),
-        bool      $reportStateChange = false,
+        array $additionalWhere = array(),
+        bool $reportStateChange = false,
         string $previousState = ''
-    ): int
-    {
+    ): int {
         try {
             if ($reportStateChange) {
                 $this->reportBeforeStatusChange($queueItem, $previousState);

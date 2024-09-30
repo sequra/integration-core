@@ -160,7 +160,7 @@ class IntermediateObject
      * @param mixed $index
      * @param mixed $value
      */
-    public function setIndexValue($index,$value): void
+    public function setIndexValue($index, $value): void
     {
         if (!is_int($index) || $index < 1 || !is_string($value)) {
             return;

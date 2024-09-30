@@ -50,8 +50,7 @@ class SolicitationController
         string $product = null,
         string $campaign = null,
         bool $ajax = true
-    ): IdentificationFormResponse
-    {
+    ): IdentificationFormResponse {
         return new IdentificationFormResponse(
             $this->orderService->getIdentificationForm($cartId, $product, $campaign, $ajax)
         );
