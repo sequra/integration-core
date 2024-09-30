@@ -69,7 +69,7 @@ class Aspects
     }
 
     /**
-     * @param  class-string<T> $serviceClass
+     * @param class-string<T> $serviceClass
      *
      * // @phpstan-ignore-next-line
      *
