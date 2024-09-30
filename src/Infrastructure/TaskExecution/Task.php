@@ -21,7 +21,9 @@ use RuntimeException;
  *
  * @package SeQura\Core\Infrastructure\TaskExecution
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 abstract class Task extends EventEmitter implements Serializable
 {
     /**

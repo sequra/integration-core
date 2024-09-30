@@ -15,7 +15,9 @@ use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\TaskProgressEvent;
  *
  * @package SeQura\Core\Infrastructure\TaskExecution
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 abstract class CompositeTask extends Task
 {
     /**

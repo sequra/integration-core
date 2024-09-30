@@ -10,7 +10,9 @@ use SeQura\Core\Infrastructure\Http\HttpResponse;
  *
  * @package SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 class HttpApiRequestException extends HttpRequestException
 {
     /**

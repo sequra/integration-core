@@ -15,7 +15,9 @@ use SeQura\Core\Infrastructure\ServiceRegister;
  *
  * @package SeQura\Core\BusinessLogic\TransactionLog\Tasks
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 class TransactionalOrderUpdateTask extends TransactionalTask
 {
     /**

@@ -18,7 +18,9 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  *
  * @package SeQura\Core\BusinessLogic\Domain\OrderReport\Tasks
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 class OrderReportTask extends Task
 {
     /**

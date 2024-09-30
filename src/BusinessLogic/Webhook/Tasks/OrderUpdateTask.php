@@ -17,7 +17,9 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  *
  * @package SeQura\Core\BusinessLogic\Webhook\Tasks
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 class OrderUpdateTask extends Task
 {
     /**

@@ -11,7 +11,9 @@ use SeQura\Core\Infrastructure\ServiceRegister;
  *
  * @package SeQura\Core\BusinessLogic\Bootstrap\Aspect
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 class Aspects
 {
     /**

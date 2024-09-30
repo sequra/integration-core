@@ -9,7 +9,9 @@ use SeQura\Core\Infrastructure\Data\DataTransferObject;
  *
  * @package SeQura\Core\Infrastructure\Http\DTO
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 class Options extends DataTransferObject
 {
     /**

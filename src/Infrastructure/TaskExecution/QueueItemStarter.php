@@ -19,7 +19,9 @@ use Exception;
  *
  * @package SeQura\Core\Infrastructure\TaskExecution
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 class QueueItemStarter implements Runnable
 {
     /**

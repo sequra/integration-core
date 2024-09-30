@@ -11,7 +11,9 @@ use SeQura\Core\BusinessLogic\Utility\StringValidator;
  *
  * @package SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 abstract class Tracking extends OrderRequestDTO
 {
     /**

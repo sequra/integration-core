@@ -17,7 +17,9 @@ use InvalidArgumentException;
  *
  * @package SeQura\Core\Infrastructure\TaskExecution\Composite
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 abstract class Orchestrator extends Task
 {
     const QUEUE_NAME_PREFIX = 'SUB_JOB_';

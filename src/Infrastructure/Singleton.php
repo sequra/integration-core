@@ -10,7 +10,9 @@ use RuntimeException;
  *
  * @package SeQura\Core\Infrastructure
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 abstract class Singleton
 {
     /**

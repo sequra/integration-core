@@ -13,7 +13,9 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  *
  * @package SeQura\Core\Infrastructure\AutoTest
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 class AutoTestTask extends Task
 {
     /**

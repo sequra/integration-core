@@ -9,7 +9,9 @@ use RuntimeException;
  *
  * @package SeQura\Core\Infrastructure\Data
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 abstract class DataTransferObject
 {
     /**

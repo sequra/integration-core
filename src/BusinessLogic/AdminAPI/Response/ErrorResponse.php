@@ -9,7 +9,9 @@ use Throwable;
  *
  * @package SeQura\Core\BusinessLogic\AdminAPI\Response
  */
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ */
 class ErrorResponse extends Response
 {
     /**
