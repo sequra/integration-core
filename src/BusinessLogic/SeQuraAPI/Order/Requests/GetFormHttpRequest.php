@@ -27,6 +27,7 @@ class GetFormHttpRequest extends HttpRequest
 
     /**
      * @param  GetFormRequest $request
+     *
      * @return mixed[]
      */
     protected function transformQueryParameters(GetFormRequest $request): array

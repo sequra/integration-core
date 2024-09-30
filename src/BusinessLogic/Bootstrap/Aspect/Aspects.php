@@ -72,6 +72,7 @@ class Aspects
      * @param  class-string<T> $serviceClass
      *
      * // @phpstan-ignore-next-line
+     *
      * @return T
      */
     public function beforeEachMethodOfService(string $serviceClass)
