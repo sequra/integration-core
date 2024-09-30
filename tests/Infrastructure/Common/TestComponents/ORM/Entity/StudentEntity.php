@@ -86,7 +86,7 @@ class StudentEntity extends Entity
      *
      * @return EntityConfiguration
      */
-    public function getConfig()
+    public function getConfig(): EntityConfiguration
     {
         $indexMap = new IndexMap();
         $indexMap->addIntegerIndex('localId')

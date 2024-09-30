@@ -79,6 +79,14 @@ class Aspects
         return $this;
     }
 
+    /**
+     * @param string $methodName
+     * @param mixed[] $arguments
+     *
+     * @return mixed
+     *
+     * @throws \Exception
+     */
     public function __call($methodName, $arguments)
     {
         if ($this->subject) {

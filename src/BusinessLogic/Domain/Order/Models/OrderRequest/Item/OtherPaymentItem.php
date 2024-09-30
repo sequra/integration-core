@@ -33,7 +33,7 @@ class OtherPaymentItem extends Item
     }
 
     /**
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return OtherPaymentItem
      */

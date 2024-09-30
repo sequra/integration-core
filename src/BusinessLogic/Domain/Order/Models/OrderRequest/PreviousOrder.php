@@ -170,7 +170,7 @@ class PreviousOrder extends OrderRequestDTO
     /**
      * Create a new PreviousOrder instance from an array of data.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return PreviousOrder
      */

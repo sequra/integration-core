@@ -35,24 +35,17 @@ class AutoTestTask extends Task
     }
 
     /**
-     * Transforms array into an serializable object,
-     *
-     * @param array $array Data that is used to instantiate serializable object.
-     *
-     * @return Serializable
-     *      Instance of serialized object.
+     * @inheritDoc
      */
-    public static function fromArray(array $array)
+    public static function fromArray(array $array): Serializable
     {
         return new static($array['data']);
     }
 
     /**
-     * Transforms serializable object into an array.
-     *
-     * @return array Array representation of a serializable object.
+     * @inheritDoc
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array('data' => $this->data);
     }
@@ -68,7 +61,7 @@ class AutoTestTask extends Task
     /**
      * @inheritDoc
      */
-    public function __unserialize($data)
+    public function __unserialize($data): void
     {
         $this->data = $data['data'];
     }
@@ -78,7 +71,7 @@ class AutoTestTask extends Task
      *
      * @return string The string representation of the object or null.
      */
-    public function serialize()
+    public function serialize(): ?string
     {
         return Serializer::serialize(array($this->data));
     }
@@ -98,7 +91,7 @@ class AutoTestTask extends Task
     /**
      * Runs task logic.
      */
-    public function execute()
+    public function execute(): void
     {
         $this->reportProgress(5);
         Logger::logInfo('Auto-test task started');

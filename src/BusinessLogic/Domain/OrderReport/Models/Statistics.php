@@ -27,7 +27,7 @@ class Statistics extends OrderRequestDTO
     /**
      * Creates a new Statistics instance from an input array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return self
      */

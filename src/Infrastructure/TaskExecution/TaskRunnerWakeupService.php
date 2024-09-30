@@ -51,7 +51,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
     /**
      * Wakes up @see TaskRunner instance asynchronously if active instance is not already running.
      */
-    public function wakeup()
+    public function wakeup(): void
     {
         try {
             $this->doWakeup();
@@ -93,7 +93,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      * @throws TaskRunnerStatusStorageUnavailableException
      * @throws HttpRequestException
      */
-    protected function doWakeup()
+    protected function doWakeup(): void
     {
         $runnerStatus = $this->getRunnerStorage()->getStatus();
         $currentGuid = $runnerStatus->getGuid();
@@ -123,7 +123,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @see TaskRunnerStatusStorageInterface.
      */
-    protected function getRunnerStorage()
+    protected function getRunnerStorage(): TaskRunnerStatusStorage
     {
         if ($this->runnerStatusStorage === null) {
             $this->runnerStatusStorage = ServiceRegister::getService(TaskRunnerStatusStorage::CLASS_NAME);
@@ -137,7 +137,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @see GuidProvider.
      */
-    protected function getGuidProvider()
+    protected function getGuidProvider(): GuidProvider
     {
         if ($this->guidProvider === null) {
             $this->guidProvider = ServiceRegister::getService(GuidProvider::CLASS_NAME);
@@ -151,7 +151,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @see TimeProvider.
      */
-    protected function getTimeProvider()
+    protected function getTimeProvider(): TimeProvider
     {
         if ($this->timeProvider === null) {
             $this->timeProvider = ServiceRegister::getService(TimeProvider::CLASS_NAME);
@@ -165,7 +165,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @see AsyncProcessStarterService.
      */
-    protected function getAsyncProcessStarter()
+    protected function getAsyncProcessStarter(): AsyncProcessService
     {
         if ($this->asyncProcessStarter === null) {
             $this->asyncProcessStarter = ServiceRegister::getService(AsyncProcessService::CLASS_NAME);

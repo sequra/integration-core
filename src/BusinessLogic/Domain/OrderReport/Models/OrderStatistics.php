@@ -102,7 +102,7 @@ class OrderStatistics extends OrderRequestDTO
     /**
      * Creates a new OrderStatistics instance from an array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return self
      */

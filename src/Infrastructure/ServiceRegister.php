@@ -21,19 +21,19 @@ class ServiceRegister
     /**
      * Array of registered services.
      *
-     * @var array
+     * @var array<string,callable>
      */
     protected $services;
 
     /**
      * ServiceRegister constructor.
      *
-     * @param array $services
+     * @param array<string,callable> $services
      *
      * @throws InvalidArgumentException
      *  In case delegate of a registered service is not a callable.
      */
-    protected function __construct($services = array())
+    protected function __construct(array $services = array())
     {
         if (!empty($services)) {
             foreach ($services as $type => $service) {
@@ -49,7 +49,7 @@ class ServiceRegister
      *
      * @return ServiceRegister
      */
-    public static function getInstance()
+    public static function getInstance(): ServiceRegister
     {
         if (self::$instance === null) {
             self::$instance = new ServiceRegister();
@@ -66,7 +66,7 @@ class ServiceRegister
      * @return       mixed Instance of service.
      * @noinspection PhpDocMissingThrowsInspection
      */
-    public static function getService($type)
+    public static function getService(string $type)
     {
         // Unhandled exception warning suppressed on purpose so that all classes using service
         // would not need @throws tag.
@@ -85,7 +85,7 @@ class ServiceRegister
      * @throws InvalidArgumentException
      *  In case delegate is not a callable.
      */
-    public static function registerService($type, $delegate)
+    public static function registerService(string $type, callable $delegate): void
     {
         self::getInstance()->register($type, $delegate);
     }
@@ -99,7 +99,7 @@ class ServiceRegister
      * @throws InvalidArgumentException
      *  In case delegate is not a callable.
      */
-    protected function register($type, $delegate)
+    protected function register(string $type, callable $delegate): void
     {
         if (!is_callable($delegate)) {
             throw new InvalidArgumentException("$type delegate is not callable.");

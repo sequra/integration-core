@@ -18,7 +18,7 @@ class TestDefaultLogger implements ShopLoggerAdapter
      */
     public $loggedMessages = array();
 
-    public function logMessage(LogData $data)
+    public function logMessage(LogData $data): void
     {
         $this->data = $data;
         $this->loggedMessages[] = $data;

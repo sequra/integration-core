@@ -138,7 +138,7 @@ class OrderUpdateData extends DataTransferObject
     /**
      * Create a OrderUpdateData instance from an array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return OrderUpdateData
      *

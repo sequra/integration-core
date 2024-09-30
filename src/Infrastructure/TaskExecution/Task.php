@@ -60,12 +60,12 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @throws AbortTaskExecutionException
      */
-    abstract public function execute();
+    abstract public function execute(): void;
 
     /**
      * @inheritdoc
      */
-    public function serialize()
+    public function serialize(): ?string
     {
         return Serializer::serialize(array());
     }
@@ -73,7 +73,7 @@ abstract class Task extends EventEmitter implements Serializable
     /**
      * @inheritdoc
      */
-    public function unserialize($serialized)
+    public function unserialize($data)
     {
         // This method was intentionally left blank because
         // this task doesn't have any properties which needs to encapsulate.
@@ -82,7 +82,7 @@ abstract class Task extends EventEmitter implements Serializable
     /**
      * @inheritDoc
      */
-    public static function fromArray(array $array)
+    public static function fromArray(array $array): Serializable
     {
         return new static();
     }
@@ -90,7 +90,7 @@ abstract class Task extends EventEmitter implements Serializable
     /**
      * @inheritDoc
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array();
     }
@@ -100,21 +100,23 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return int Task priority.
      */
-    public function getPriority()
+    public function getPriority(): int
     {
         return Priority::NORMAL;
     }
 
     /**
-     * Reports task progress by emitting @param float|int $progressPercent
+     * Reports task progress by emitting progress percent
      *   Float representation of progress percentage, value between 0 and 100 that will immediately
      *   be converted to base points. One base point is equal to 0.01%. For example 23.58% is
      *   equal to 2358 base points
      *
+     * @param float|int $progressPercent
+     *
      * @throws InvalidArgumentException In case when progress percent is outside of 0 - 100 boundaries or not an float
      * @see    TaskProgressEvent and defers next @see AliveAnnouncedTaskEvent.
      */
-    public function reportProgress($progressPercent)
+    public function reportProgress($progressPercent): void
     {
         if (!is_int($progressPercent) && !is_float($progressPercent)) {
             throw new InvalidArgumentException('Progress percentage must be value integer or float value');
@@ -136,7 +138,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @see AliveAnnouncedTaskEvent.
      */
-    public function reportAlive($force = false)
+    public function reportAlive(bool $force = false): void
     {
         /**
          * @var TimeProvider $timeProvider
@@ -157,7 +159,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return int Max inactivity period for a task in seconds.
      */
-    public function getMaxInactivityPeriod()
+    public function getMaxInactivityPeriod(): int
     {
         $configurationValue = $this->getConfigService()->getMaxTaskInactivityPeriod();
 
@@ -170,7 +172,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return string FQN of the task.
      */
-    public function getType()
+    public function getType(): string
     {
         return static::getClassName();
     }
@@ -180,7 +182,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return string FQN of the task.
      */
-    public static function getClassName()
+    public static function getClassName(): string
     {
         $namespaceParts = explode('\\', get_called_class());
         $name = end($namespaceParts);
@@ -197,7 +199,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return bool TRUE if task can be reconfigured; otherwise, FALSE.
      */
-    public function canBeReconfigured()
+    public function canBeReconfigured(): bool
     {
         return false;
     }
@@ -205,7 +207,7 @@ abstract class Task extends EventEmitter implements Serializable
     /**
      * Reconfigures the task.
      */
-    public function reconfigure()
+    public function reconfigure(): void
     {
     }
 
@@ -224,7 +226,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @param int|string $executionId Execution id.
      */
-    public function setExecutionId($executionId)
+    public function setExecutionId($executionId): void
     {
         $this->executionId = $executionId;
     }
@@ -232,7 +234,7 @@ abstract class Task extends EventEmitter implements Serializable
     /**
      * Cleans up resources upon failure.
      */
-    public function onFail()
+    public function onFail(): void
     {
         // Extension stub.
     }
@@ -240,7 +242,7 @@ abstract class Task extends EventEmitter implements Serializable
     /**
      * Cleans up resources upon abort.
      */
-    public function onAbort()
+    public function onAbort(): void
     {
         // Extension stub.
     }
@@ -252,7 +254,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return int Base points representation of percentage.
      */
-    protected function percentToBasePoints($percentValue)
+    protected function percentToBasePoints(float $percentValue): int
     {
         return (int)round($percentValue * 100, 2);
     }
@@ -262,7 +264,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return Configuration Service instance.
      */
-    protected function getConfigService()
+    protected function getConfigService(): Configuration
     {
         if ($this->configService === null) {
             $this->configService = ServiceRegister::getService(Configuration::CLASS_NAME);

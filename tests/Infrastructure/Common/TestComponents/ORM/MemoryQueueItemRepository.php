@@ -95,7 +95,7 @@ class MemoryQueueItemRepository extends MemoryRepository implements QueueItemRep
      * @throws QueryFilterInvalidParamException
      * @throws QueueItemSaveException
      */
-    public function saveWithCondition(QueueItem $queueItem, array $additionalWhere = array())
+    public function saveWithCondition(QueueItem $queueItem, array $additionalWhere = array()): int
     {
         if ($this->disabled) {
             throw new QueueItemSaveException('Failed to save queue item due to save restriction rule.');
@@ -150,7 +150,7 @@ class MemoryQueueItemRepository extends MemoryRepository implements QueueItemRep
      * @throws EntityClassException
      * @throws QueryFilterInvalidParamException
      */
-    public function batchStatusUpdate(array $ids, $status)
+    public function batchStatusUpdate(array $ids, $status): void
     {
         $filter = new QueryFilter();
         $filter->where('id', Operators::IN, $ids);

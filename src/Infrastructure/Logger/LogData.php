@@ -56,7 +56,7 @@ class LogData extends Entity
     /**
      * Array of field names.
      *
-     * @var array
+     * @var string[]
      */
     protected $fields = array('id', 'integration', 'logLevel', 'timestamp', 'component', 'message');
 
@@ -101,7 +101,7 @@ class LogData extends Entity
      *
      * @return EntityConfiguration Configuration object.
      */
-    public function getConfig()
+    public function getConfig(): EntityConfiguration
     {
         $map = new IndexMap();
         $map->addStringIndex('integration')
@@ -115,9 +115,9 @@ class LogData extends Entity
     /**
      * Transforms raw array data to this entity instance.
      *
-     * @param array $data Raw array data.
+     * @param mixed[] $data Raw array data.
      */
-    public function inflate(array $data)
+    public function inflate(array $data): void
     {
         parent::inflate($data);
 
@@ -132,9 +132,9 @@ class LogData extends Entity
     /**
      * Transforms entity to its array format representation.
      *
-     * @return array Entity in array format.
+     * @return mixed[] Entity in array format.
      */
-    public function toArray()
+    public function toArray(): array
     {
         $data = parent::toArray();
 

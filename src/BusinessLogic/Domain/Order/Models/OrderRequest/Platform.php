@@ -74,7 +74,7 @@ class Platform extends OrderRequestDTO
     /**
      * Create a new Platform instance from an array of data.
      *
-     * @param array $data Array containing the data.
+     * @param mixed[] $data Array containing the data.
      *
      * @return Platform Returns a new Platform instance.
      */

@@ -68,7 +68,7 @@ class AutoTestService
      *
      * @param bool $persist Indicates whether to store the mode change in configuration.
      */
-    public function setAutoTestMode($persist = false)
+    public function setAutoTestMode($persist = false): void
     {
         Logger::resetInstance();
         ServiceRegister::registerService(
@@ -134,7 +134,7 @@ class AutoTestService
      *
      * @param callable $loggerInitializerDelegate Delegate that will give instance of the shop logger service.
      */
-    public function stopAutoTestMode($loggerInitializerDelegate)
+    public function stopAutoTestMode($loggerInitializerDelegate): void
     {
         $this->getConfigService()->setAutoTestMode(false);
         ServiceRegister::registerService(ShopLoggerAdapter::CLASS_NAME, $loggerInitializerDelegate);
@@ -146,7 +146,7 @@ class AutoTestService
      *
      * @throws RepositoryNotRegisteredException
      */
-    protected function deletePreviousLogs()
+    protected function deletePreviousLogs(): void
     {
         $repo = RepositoryRegistry::getRepository(LogData::getClassName());
         $logs = $repo->select();
@@ -158,7 +158,7 @@ class AutoTestService
     /**
      * Logs current HTTP configuration options.
      */
-    protected function logHttpOptions()
+    protected function logHttpOptions(): void
     {
         $testDomain = parse_url($this->getConfigService()->getAsyncProcessUrl(''), PHP_URL_HOST);
         $options = array();

@@ -142,7 +142,7 @@ class ProductItem extends Item
     }
 
     /**
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return ProductItem
      */

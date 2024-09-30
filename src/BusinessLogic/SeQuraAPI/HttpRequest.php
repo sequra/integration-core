@@ -15,17 +15,17 @@ class HttpRequest
     protected $endpoint;
 
     /**
-     * @var array
+     * @var mixed[]
      */
     protected $body;
 
     /**
-     * @var array
+     * @var mixed[]
      */
     protected $queries;
 
     /**
-     * @var array
+     * @var array<string,string>
      */
     protected $headers;
 
@@ -33,9 +33,9 @@ class HttpRequest
      * HttpRequest constructor.
      *
      * @param string $endpoint
-     * @param array $body
-     * @param array $queries
-     * @param array $headers
+     * @param mixed[] $body
+     * @param mixed[] $queries
+     * @param array<string,string> $headers
      */
     public function __construct(
         string $endpoint,
@@ -66,7 +66,7 @@ class HttpRequest
     }
 
     /**
-     * @return array
+     * @return mixed[]
      */
     public function getBody(): array
     {
@@ -74,7 +74,7 @@ class HttpRequest
     }
 
     /**
-     * @param array $body
+     * @param mixed[] $body
      */
     public function setBody(array $body): void
     {
@@ -82,7 +82,7 @@ class HttpRequest
     }
 
     /**
-     * @return array
+     * @return mixed[]
      */
     public function getQueries(): array
     {
@@ -90,7 +90,7 @@ class HttpRequest
     }
 
     /**
-     * @param array $queries
+     * @param mixed[] $queries
      */
     public function setQueries(array $queries): void
     {
@@ -98,7 +98,7 @@ class HttpRequest
     }
 
     /**
-     * @return array
+     * @return array<string,string>
      */
     public function getHeaders(): array
     {
@@ -106,7 +106,7 @@ class HttpRequest
     }
 
     /**
-     * @param array $headers
+     * @param array<string,string> $headers
      */
     public function setHeaders(array $headers): void
     {

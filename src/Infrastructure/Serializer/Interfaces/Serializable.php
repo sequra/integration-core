@@ -12,29 +12,29 @@ interface Serializable extends \Serializable
     /**
      * Transforms array into an serializable object,
      *
-     * @param array $array Data that is used to instantiate serializable object.
+     * @param array<mixed> $array Data that is used to instantiate serializable object.
      *
      * @return Serializable
      *      Instance of serialized object.
      */
-    public static function fromArray(array $array);
+    public static function fromArray(array $array): Serializable;
 
     /**
      * Transforms serializable object into an array.
      *
-     * @return array Array representation of a serializable object.
+     * @return array<mixed> Array representation of a serializable object.
      */
-    public function toArray();
+    public function toArray(): array;
 
     /**
-     * @return array
+     * @return array<mixed>
      */
     public function __serialize();
 
     /**
-     * @param array $data
+     * @param array<mixed> $data
      *
      * @return void
      */
-    public function __unserialize($data);
+    public function __unserialize(array $data): void;
 }

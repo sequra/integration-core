@@ -15,7 +15,7 @@ abstract class DataTransferObject
     /**
      * Creates instance of the data transfer object from an array.
      *
-     * @param array $data Raw data used for the object instantiation.
+     * @param mixed[] $data Raw data used for the object instantiation.
      *
      * @return DataTransferObject An instance of the data transfer object.
      *
@@ -29,9 +29,9 @@ abstract class DataTransferObject
     /**
      * Creates list of DTOs from a batch of raw data.
      *
-     * @param array $batch Batch of raw data.
+     * @param mixed[] $batch Batch of raw data.
      *
-     * @return array List of DTO instances.
+     * @return mixed[] List of DTO instances.
      */
     public static function fromBatch(array $batch)
     {
@@ -49,7 +49,7 @@ abstract class DataTransferObject
      *
      * @param static[] $batch Batch of data transfer objects.
      *
-     * @return array Transformed data transfer objects batch.
+     * @return mixed[] Transformed data transfer objects batch.
      */
     public static function toBatchArray(array $batch)
     {
@@ -65,14 +65,14 @@ abstract class DataTransferObject
     /**
      * Transforms data transfer object to array.
      *
-     * @return array Array representation of data transfer object.
+     * @return mixed[] Array representation of data transfer object.
      */
-    abstract public function toArray();
+    abstract public function toArray(): array;
 
     /**
      * Retrieves value from raw data.
      *
-     * @param array $rawData Raw DTO data.
+     * @param mixed[] $rawData Raw DTO data.
      * @param string $key Data key.
      * @param mixed $default Default value.
      *

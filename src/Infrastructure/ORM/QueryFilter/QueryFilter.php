@@ -50,9 +50,9 @@ class QueryFilter
     /**
      * Gets limit for select.
      *
-     * @return int Limit for select.
+     * @return int|null Limit for select.
      */
-    public function getLimit()
+    public function getLimit(): ?int
     {
         return $this->limit;
     }
@@ -64,7 +64,7 @@ class QueryFilter
      *
      * @return self This instance for chaining.
      */
-    public function setLimit($limit)
+    public function setLimit(int $limit): QueryFilter
     {
         $this->limit = $limit;
 
@@ -74,9 +74,9 @@ class QueryFilter
     /**
      * Gets select offset.
      *
-     * @return int Offset.
+     * @return int|null Offset.
      */
-    public function getOffset()
+    public function getOffset(): ?int
     {
         return $this->offset;
     }
@@ -88,7 +88,7 @@ class QueryFilter
      *
      * @return self This instance for chaining.
      */
-    public function setOffset($offset)
+    public function setOffset(int $offset): QueryFilter
     {
         $this->offset = $offset;
 
@@ -98,14 +98,14 @@ class QueryFilter
     /**
      * Sets order by column and direction
      *
-     * @param string $column Column name.
+     * @param mixed $column Column name.
      * @param string $direction Order direction (@see self::ORDER_ASC or @see self::ORDER_DESC).
      *
      * @return self This instance for chaining.
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function orderBy($column, $direction = self::ORDER_ASC)
+    public function orderBy($column, string $direction = self::ORDER_ASC): QueryFilter
     {
         if (!is_string($column) || !in_array($direction, array(self::ORDER_ASC, self::ORDER_DESC), false)) {
             throw new QueryFilterInvalidParamException(
@@ -122,9 +122,9 @@ class QueryFilter
     /**
      * Gets name for order by column.
      *
-     * @return string Order column name.
+     * @return string|null Order column name.
      */
-    public function getOrderByColumn()
+    public function getOrderByColumn(): ?string
     {
         return $this->orderByColumn;
     }
@@ -132,9 +132,9 @@ class QueryFilter
     /**
      * Gets order direction.
      *
-     * @return string Order direction (@see self::ORDER_ASC or @see self::ORDER_DESC)
+     * @return string|null Order direction (@see self::ORDER_ASC or @see self::ORDER_DESC)
      */
-    public function getOrderDirection()
+    public function getOrderDirection(): ?string
     {
         return $this->orderDirection;
     }
@@ -144,7 +144,7 @@ class QueryFilter
      *
      * @return QueryCondition[] Filter conditions.
      */
-    public function getConditions()
+    public function getConditions(): array
     {
         return $this->conditions;
     }
@@ -160,7 +160,7 @@ class QueryFilter
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function where($column, $operator, $value = null)
+    public function where(string $column, string $operator, $value = null): QueryFilter
     {
         $this->validateConditionParameters($column, $operator, $value);
 
@@ -180,7 +180,7 @@ class QueryFilter
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function orWhere($column, $operator, $value = null)
+    public function orWhere(string $column, string $operator, $value = null): QueryFilter
     {
         $this->validateConditionParameters($column, $operator, $value);
 
@@ -192,13 +192,13 @@ class QueryFilter
     /**
      * Validates condition parameters.
      *
-     * @param string $column Column name.
-     * @param string $operator Operator. Use constants from @see Operator class.
+     * @param mixed $column Column name.
+     * @param mixed $operator Operator. Use constants from @see Operator class.
      * @param mixed $value Value of condition.
      *
      * @throws QueryFilterInvalidParamException
      */
-    protected function validateConditionParameters($column, $operator, $value)
+    protected function validateConditionParameters($column, $operator, $value): void
     {
         if (!is_string($column) || !is_string($operator)) {
             throw new QueryFilterInvalidParamException('Column and operator values must be string types');

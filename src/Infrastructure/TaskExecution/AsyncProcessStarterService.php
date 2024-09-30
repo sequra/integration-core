@@ -80,7 +80,7 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
      * @throws HttpRequestException
      * @throws ProcessStarterSaveException
      */
-    public function start(Runnable $runner)
+    public function start(Runnable $runner): void
     {
         $guid = trim($this->guidProvider->generateGuid());
 
@@ -93,7 +93,7 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
      *
      * @param string $guid Identifier of process.
      */
-    public function runProcess($guid)
+    public function runProcess($guid): void
     {
         try {
             $filter = new QueryFilter();
@@ -127,7 +127,7 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
      *
      * @throws ProcessStarterSaveException
      */
-    protected function saveGuidAndRunner($guid, Runnable $runner)
+    protected function saveGuidAndRunner(string $guid, Runnable $runner): void
     {
         try {
             $process = new Process();
@@ -148,7 +148,7 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
      *
      * @throws HttpRequestException
      */
-    protected function startRunnerAsynchronously($guid)
+    protected function startRunnerAsynchronously(string $guid): void
     {
         try {
             $this->httpClient->requestAsync(

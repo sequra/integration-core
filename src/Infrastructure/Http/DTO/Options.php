@@ -60,9 +60,9 @@ class Options extends DataTransferObject
     /**
      * Transforms DTO to an array representation.
      *
-     * @return array DTO in array format.
+     * @return mixed[] DTO in array format.
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array(
             'name' => $this->getName(),
@@ -73,7 +73,7 @@ class Options extends DataTransferObject
     /**
      * Transforms raw array data to Options.
      *
-     * @param array $raw Raw array data.
+     * @param mixed[] $raw Raw array data.
      *
      * @return Options Transformed object.
      */

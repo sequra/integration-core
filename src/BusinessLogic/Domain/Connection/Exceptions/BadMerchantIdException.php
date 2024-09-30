@@ -13,6 +13,9 @@ use Throwable;
  */
 class BadMerchantIdException extends BaseTranslatableException
 {
+    /**
+     * @var int
+     */
     protected $code = 403;
 
     public function __construct(Throwable $previous = null)

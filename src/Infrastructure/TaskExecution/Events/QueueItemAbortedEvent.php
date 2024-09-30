@@ -11,15 +11,18 @@ use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
  */
 class QueueItemAbortedEvent extends BaseQueueItemEvent
 {
+    /**
+     * @var string
+     */
     protected $abortDescription;
 
     /**
      * QueueItemAbortedEvent constructor.
      *
      * @param QueueItem $queueItem
-     * @param $abortDescription
+     * @param string $abortDescription
      */
-    public function __construct(QueueItem $queueItem, $abortDescription)
+    public function __construct(QueueItem $queueItem, string $abortDescription)
     {
         parent::__construct($queueItem);
         $this->abortDescription = $abortDescription;

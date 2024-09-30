@@ -18,7 +18,7 @@ class TestTaskRunnerWakeupService extends TaskRunnerWakeupService
         $this->callHistory = array();
     }
 
-    public function wakeup()
+    public function wakeup(): void
     {
         $this->callHistory['wakeup'][] = array();
     }

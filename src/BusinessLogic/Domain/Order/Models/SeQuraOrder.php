@@ -31,7 +31,7 @@ class SeQuraOrder extends Entity
     /**
      * Array of field names.
      *
-     * @var array
+     * @var string[]
      */
     protected $fields = [
         'id',
@@ -148,9 +148,7 @@ class SeQuraOrder extends Entity
     }
 
     /**
-     * Sets raw array data to this entity instance properties.
-     *
-     * @param array $data Raw array data with keys for class fields. @see self::$fields for field names.
+     * @inheritDoc
      *
      * @throws Exception
      */

@@ -15,12 +15,12 @@ use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusMappi
 class OrderStatusSettingsRequest extends Request
 {
     /**
-     * @var array
+     * @var string[]
      */
     protected $orderStatusMappings;
 
     /**
-     * @param array $orderStatusMappings
+     * @param string[] $orderStatusMappings
      */
     public function __construct(array $orderStatusMappings)
     {

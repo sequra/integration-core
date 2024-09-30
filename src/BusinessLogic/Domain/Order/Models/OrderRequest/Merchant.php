@@ -76,8 +76,9 @@ class Merchant extends OrderRequestDTO
     protected $eventsWebhook;
 
     /**
-     * @param int|string $id
+     * @param mixed $id
      * @param string|null $notifyUrl
+     * @param mixed[]|null $notificationParameters
      * @param string|null $returnUrl
      * @param string|null $approvedCallback
      * @param string|null $editUrl
@@ -125,7 +126,7 @@ class Merchant extends OrderRequestDTO
     /**
      * Create a new Merchant instance from an array of data.
      *
-     * @param array $data Array containing the data.
+     * @param mixed[] $data Array containing the data.
      *
      * @return Merchant Returns a new Merchant instance.
      * @throws InvalidUrlException

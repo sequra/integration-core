@@ -27,7 +27,7 @@ abstract class Entity extends DataTransferObject
     /**
      * Array of field names.
      *
-     * @var array
+     * @var string[]
      */
     protected $fields = array('id');
 
@@ -40,7 +40,7 @@ abstract class Entity extends DataTransferObject
      *
      * @return string Fully qualified class name.
      */
-    public static function getClassName()
+    public static function getClassName(): string
     {
         return static::CLASS_NAME;
     }
@@ -48,11 +48,11 @@ abstract class Entity extends DataTransferObject
     /**
      * Transforms raw array data to this entity instance.
      *
-     * @param array $data Raw array data with keys for class fields. @see self::$fields for field names.
+     * @param mixed[] $data Raw array data with keys for class fields. @see self::$fields for field names.
      *
      * @return static Transformed entity object.
      */
-    public static function fromArray(array $data)
+    public static function fromArray(array $data): Entity
     {
         $instance = new static();
         $instance->inflate($data);
@@ -65,14 +65,14 @@ abstract class Entity extends DataTransferObject
      *
      * @return EntityConfiguration Configuration object.
      */
-    abstract public function getConfig();
+    abstract public function getConfig(): EntityConfiguration;
 
     /**
      * Sets raw array data to this entity instance properties.
      *
-     * @param array $data Raw array data with keys for class fields. @see self::$fields for field names.
+     * @param mixed[] $data Raw array data with keys for class fields. @see self::$fields for field names.
      */
-    public function inflate(array $data)
+    public function inflate(array $data): void
     {
         foreach ($this->fields as $fieldName) {
             $this->$fieldName = static::getArrayValue($data, $fieldName, $this->$fieldName);
@@ -82,9 +82,9 @@ abstract class Entity extends DataTransferObject
     /**
      * Transforms entity to its array format representation.
      *
-     * @return array Entity in array format.
+     * @return mixed[] Entity in array format.
      */
-    public function toArray()
+    public function toArray(): array
     {
         $data = array('class_name' => static::getClassName());
         foreach ($this->fields as $fieldName) {
@@ -109,7 +109,7 @@ abstract class Entity extends DataTransferObject
      *
      * @param int $id entity identifier.
      */
-    public function setId($id)
+    public function setId($id): void
     {
         $this->id = $id;
     }
@@ -143,11 +143,11 @@ abstract class Entity extends DataTransferObject
     /**
      * Gets value from the array for given key.
      *
-     * @param array $search An array with keys to check.
+     * @param mixed[] $search An array with keys to check.
      * @param string $key Key to get value for.
      * @param mixed $default Default value if key is not present. NULL by default.
      *
-     * @return string Value from the array for given key if key exists; otherwise, $default value.
+     * @return mixed Value from the array for given key if key exists; otherwise, $default value.
      */
     protected static function getArrayValue($search, $key, $default = null)
     {

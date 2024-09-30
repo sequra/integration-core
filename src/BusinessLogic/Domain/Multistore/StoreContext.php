@@ -40,7 +40,7 @@ class StoreContext
      *
      * @param string $storeId
      * @param callable $callback
-     * @param array $params
+     * @param mixed[] $params
      *
      * @throws Exception
      *

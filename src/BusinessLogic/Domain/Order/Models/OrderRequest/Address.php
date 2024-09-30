@@ -122,7 +122,7 @@ class Address extends OrderRequestDTO
     /**
      * Create a new Address instance from an array of data.
      *
-     * @param array $data Array containing the data.
+     * @param mixed[] $data Array containing the data.
      *
      * @return Address Returns a new Address instance.
      */

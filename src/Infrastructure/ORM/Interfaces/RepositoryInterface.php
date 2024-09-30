@@ -29,7 +29,7 @@ interface RepositoryInterface
      *
      * @param string $entityClass Repository entity class.
      */
-    public function setEntityClass($entityClass);
+    public function setEntityClass(string $entityClass): void;
 
     /**
      * Executes select query.

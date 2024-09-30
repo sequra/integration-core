@@ -21,7 +21,7 @@ class TestQueueService extends QueueService
         $this->exceptionResponses[$methodName] = $exceptionToThrow;
     }
 
-    public function requeue(QueueItem $queueItem)
+    public function requeue(QueueItem $queueItem): void
     {
         if (!empty($this->exceptionResponses['requeue'])) {
             throw $this->exceptionResponses['requeue'];
@@ -32,7 +32,7 @@ class TestQueueService extends QueueService
         parent::requeue($queueItem);
     }
 
-    public function fail(QueueItem $queueItem, $failureDescription, $force = false)
+    public function fail(QueueItem $queueItem, string $failureDescription, bool $force = false): void
     {
         if (!empty($this->exceptionResponses['fail'])) {
             throw $this->exceptionResponses['fail'];
@@ -45,7 +45,7 @@ class TestQueueService extends QueueService
         parent::fail($queueItem, $failureDescription, $force);
     }
 
-    public function find($id)
+    public function find(int $id): ?QueueItem
     {
         if (!empty($this->exceptionResponses['find'])) {
             throw $this->exceptionResponses['find'];
@@ -56,7 +56,7 @@ class TestQueueService extends QueueService
         return parent::find($id);
     }
 
-    public function start(QueueItem $queueItem)
+    public function start(QueueItem $queueItem): void
     {
         if (!empty($this->exceptionResponses['start'])) {
             throw $this->exceptionResponses['start'];
@@ -66,7 +66,7 @@ class TestQueueService extends QueueService
         parent::start($queueItem);
     }
 
-    public function finish(QueueItem $queueItem)
+    public function finish(QueueItem $queueItem): void
     {
         if (!empty($this->exceptionResponses['finish'])) {
             throw $this->exceptionResponses['finish'];

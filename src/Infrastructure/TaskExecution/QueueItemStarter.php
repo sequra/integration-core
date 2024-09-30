@@ -54,12 +54,12 @@ class QueueItemStarter implements Runnable
     /**
      * Transforms array into an serializable object,
      *
-     * @param array $array Data that is used to instantiate serializable object.
+     * @param array<mixed> $array Data that is used to instantiate serializable object.
      *
      * @return Serializable
      *      Instance of serialized object.
      */
-    public static function fromArray(array $array)
+    public static function fromArray(array $array): Serializable
     {
         return new static($array['queue_item_id']);
     }
@@ -67,9 +67,9 @@ class QueueItemStarter implements Runnable
     /**
      * Transforms serializable object into an array.
      *
-     * @return array Array representation of a serializable object.
+     * @return array<mixed> Array representation of a serializable object.
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array('queue_item_id' => $this->queueItemId);
     }
@@ -85,7 +85,7 @@ class QueueItemStarter implements Runnable
     /**
      * @inheritDoc
      */
-    public function __unserialize($data)
+    public function __unserialize($data): void
     {
         $this->queueItemId = $data['queue_item_id'];
     }
@@ -109,7 +109,7 @@ class QueueItemStarter implements Runnable
     /**
      * Starts runnable run logic.
      */
-    public function run()
+    public function run(): void
     {
         /**
          * @var QueueItem $queueItem
@@ -147,7 +147,6 @@ class QueueItemStarter implements Runnable
         } catch (AbortTaskExecutionException $exception) {
             $queueService->abort($queueItem, $exception->getMessage());
         } catch (Exception $ex) {
-            // @phpstan-ignore-next-line
             if (QueueItem::IN_PROGRESS === $queueItem->getStatus()) {
                 $queueService->fail($queueItem, $ex->getMessage());
             }

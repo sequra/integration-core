@@ -274,8 +274,8 @@ class OrderService
     /**
      * Checks if the objects are equal.
      *
-     * @param $object1
-     * @param $object2
+     * @param mixed $object1
+     * @param mixed $object2
      *
      * @return bool
      */

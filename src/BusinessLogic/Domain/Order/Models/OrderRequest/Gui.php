@@ -40,7 +40,7 @@ class Gui extends OrderRequestDTO
     /**
      * Creates a new Gui instance from an input array.
      *
-     * @param array $data Input data.
+     * @param mixed[] $data Input data.
      *
      * @return Gui
      * @throws InvalidGuiLayoutValueException

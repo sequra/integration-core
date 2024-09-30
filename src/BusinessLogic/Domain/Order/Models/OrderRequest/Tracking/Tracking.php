@@ -61,7 +61,7 @@ abstract class Tracking extends OrderRequestDTO
     /**
      * Creates a new Tracking instance from the given array.
      *
-     * @param array $data An array with data to create a new instance.
+     * @param mixed[] $data An array with data to create a new instance.
      *
      * @return static A new Tracking instance.
      *

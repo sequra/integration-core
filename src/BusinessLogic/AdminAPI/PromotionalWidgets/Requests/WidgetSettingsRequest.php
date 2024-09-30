@@ -59,8 +59,8 @@ class WidgetSettingsRequest extends Request
      * @param bool $showInstallmentsInCartPage
      * @param string $miniWidgetSelector
      * @param string $widgetConfiguration
-     * @param array $messages
-     * @param array $messagesBelowLimit
+     * @param string[] $messages
+     * @param string[] $messagesBelowLimit
      */
     public function __construct(
         bool $enabled,

@@ -34,7 +34,7 @@ class FooTask extends Task
      * @return \SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable
      *      Instance of serialized object.
      */
-    public static function fromArray(array $array)
+    public static function fromArray(array $array): \SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable
     {
         $entity = new static();
 
@@ -50,7 +50,7 @@ class FooTask extends Task
      *
      * @return array Array representation of a serializable object.
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array(
             'dependency_1' => $this->dependency1,
@@ -70,7 +70,7 @@ class FooTask extends Task
     /**
      * @inheritDoc
      */
-    public function __unserialize($data)
+    public function __unserialize($data): void
     {
         $this->dependency1 = $data['dependency_1'];
         $this->dependency2 = $data['dependency_2'];
@@ -82,7 +82,7 @@ class FooTask extends Task
      *
      * @return string the string representation of the object or null
      */
-    public function serialize()
+    public function serialize(): ?string
     {
         return Serializer::serialize(
             array(
@@ -110,7 +110,7 @@ class FooTask extends Task
         $this->methodsCallCount = Serializer::unserialize($data['methodsCallCount']);
     }
 
-    public function execute()
+    public function execute(): void
     {
         $this->methodsCallCount['execute']++;
     }
@@ -136,12 +136,12 @@ class FooTask extends Task
         return $this->dependency2;
     }
 
-    public function reconfigure()
+    public function reconfigure(): void
     {
         $this->methodsCallCount['reconfigure']++;
     }
 
-    public function canBeReconfigured()
+    public function canBeReconfigured(): bool
     {
         return true;
     }

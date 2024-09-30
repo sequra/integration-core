@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution;
 
+use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\AbortTaskExecutionException;
 use SeQura\Core\Infrastructure\TaskExecution\Task;
 
@@ -12,7 +13,7 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  */
 class AbortTask extends Task
 {
-    public function execute()
+    public function execute(): void
     {
         throw new AbortTaskExecutionException('Abort mission!');
     }
@@ -20,7 +21,7 @@ class AbortTask extends Task
     /**
      * @inheritDoc
      */
-    public static function fromArray(array $array)
+    public static function fromArray(array $array): Serializable
     {
         return new static();
     }
@@ -28,7 +29,7 @@ class AbortTask extends Task
     /**
      * @inheritDoc
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array();
     }
@@ -44,7 +45,7 @@ class AbortTask extends Task
     /**
      * @inheritDoc
      */
-    public function __unserialize($data)
+    public function __unserialize($data): void
     {
     }
 }

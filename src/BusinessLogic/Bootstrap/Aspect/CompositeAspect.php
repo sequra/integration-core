@@ -29,6 +29,11 @@ class CompositeAspect implements Aspect
     }
 
     /**
+     * @param callable $callee
+     * @param mixed[] $params
+     *
+     * @return mixed
+     *
      * @throws \Exception
      */
     public function applyOn(callable $callee, array $params = [])
@@ -41,6 +46,12 @@ class CompositeAspect implements Aspect
         return $this->aspect->applyOn($callback, $params);
     }
 
+    /**
+     * @param callable $callee
+     * @param mixed[] $params
+     *
+     * @return \Closure
+     */
     protected function getNextCallee(callable $callee, array $params = []): \Closure
     {
         return function () use ($callee, $params) {

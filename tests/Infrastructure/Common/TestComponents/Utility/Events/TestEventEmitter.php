@@ -23,7 +23,7 @@ class TestEventEmitter extends EventEmitter
         return static::$instance;
     }
 
-    public function fire(Event $event)
+    public function fire(Event $event): void
     {
         parent::fire($event);
     }

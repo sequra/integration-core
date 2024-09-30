@@ -26,7 +26,7 @@ class AcknowledgeOrderHttpRequest extends HttpRequest
      *
      * @param BaseOrderRequest $request
      *
-     * @return array
+     * @return mixed[]
      */
     protected function transformBody(BaseOrderRequest $request): array
     {

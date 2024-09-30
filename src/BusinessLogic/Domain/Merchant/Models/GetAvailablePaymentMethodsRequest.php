@@ -43,7 +43,7 @@ class GetAvailablePaymentMethodsRequest extends DataTransferObject
     /**
      * Create a GetAvailablePaymentMethodsRequest instance from an array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return GetAvailablePaymentMethodsRequest
      */

@@ -58,7 +58,7 @@ class Cart extends OrderRequestDTO
     /**
      * @param string $currency
      * @param bool $gift
-     * @param array $items
+     * @param mixed[] $items
      * @param string|int|null $cartRef
      * @param string|null $createdAt
      * @param string|null $updatedAt
@@ -91,7 +91,7 @@ class Cart extends OrderRequestDTO
     /**
      * Create a new Cart instance from an array of data.
      *
-     * @param array $data Array containing the data.
+     * @param mixed[] $data Array containing the data.
      *
      * @return Cart Returns a new Cart instance.
      * @throws InvalidCartItemsException

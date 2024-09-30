@@ -193,7 +193,7 @@ class TrackingPickupPoint extends Tracking
     /**
      * Create a new TrackingPickupPoint instance from an array of data.
      *
-     * @param array $data Array containing the data.
+     * @param mixed[] $data Array containing the data.
      *
      * @return Tracking Returns a new Tracking instance.
      *

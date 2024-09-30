@@ -21,12 +21,12 @@ class OnReportProgress
      * Handles queue item progress change.
      *
      * @param QueueItem $queueItem
-     * @param $progressBasePoints
+     * @param int $progressBasePoints
      *
      * @throws QueueStorageUnavailableException
      * @throws QueueItemDeserializationException
      */
-    public static function handle(QueueItem $queueItem, $progressBasePoints)
+    public static function handle(QueueItem $queueItem, int $progressBasePoints): void
     {
         $queue = static::getQueueService();
         $queue->updateProgress($queueItem, $progressBasePoints);
@@ -44,7 +44,7 @@ class OnReportProgress
          * @var Orchestrator $task
         */
         $task = $parent->getTask();
-        if ($task === null || !($task instanceof Orchestrator)) {
+        if (!($task instanceof Orchestrator)) {
             throw new RuntimeException("Failed to retrieve task.");
         }
 
@@ -56,7 +56,7 @@ class OnReportProgress
      *
      * @return QueueService
      */
-    protected static function getQueueService()
+    protected static function getQueueService(): QueueService
     {
         return ServiceRegister::getService(QueueService::CLASS_NAME);
     }

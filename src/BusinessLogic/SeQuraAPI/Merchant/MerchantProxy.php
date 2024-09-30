@@ -31,7 +31,7 @@ class MerchantProxy extends AuthorizedProxy implements MerchantProxyInterface
     /**
      * Gets a list of SeQuraPaymentMethods from the raw response data.
      *
-     * @param array $responseData
+     * @param mixed[] $responseData
      *
      * @return SeQuraPaymentMethod[]
      *

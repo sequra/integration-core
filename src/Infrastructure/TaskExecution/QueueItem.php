@@ -56,7 +56,7 @@ class QueueItem extends Entity
     /**
      * Array of simple field names.
      *
-     * @var array
+     * @var string[]
      */
     protected $fields = array(
         'id',
@@ -224,7 +224,7 @@ class QueueItem extends Entity
      *
      * @param int $id Queue item id.
      */
-    public function setId($id)
+    public function setId($id): void
     {
         parent::setId($id);
 
@@ -238,7 +238,7 @@ class QueueItem extends Entity
      *
      * @return int|null
      */
-    public function getParentId()
+    public function getParentId(): ?int
     {
         return $this->parentId;
     }
@@ -248,7 +248,7 @@ class QueueItem extends Entity
      *
      * @param int|null $parentId
      */
-    public function setParentId($parentId)
+    public function setParentId(?int $parentId): void
     {
         $this->parentId = $parentId;
     }
@@ -256,9 +256,9 @@ class QueueItem extends Entity
     /**
      * Returns queueTime.
      *
-     * @return DateTime queueTime Queue date and time.
+     * @return DateTime|null queueTime Queue date and time.
      */
-    public function getQueueTime()
+    public function getQueueTime(): ?DateTime
     {
         return $this->queueTime;
     }
@@ -268,7 +268,7 @@ class QueueItem extends Entity
      *
      * @return DateTime lastUpdateTime Date and time of last update.
      */
-    public function getLastUpdateTime()
+    public function getLastUpdateTime(): DateTime
     {
         return $this->lastUpdateTime;
     }
@@ -278,7 +278,7 @@ class QueueItem extends Entity
      *
      * @return string Queue item status.
      */
-    public function getStatus()
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -289,18 +289,18 @@ class QueueItem extends Entity
      * @param string $status Queue item status.
      *  One of: QueueItem::CREATED, QueueItem::QUEUED, QueueItem::IN_PROGRESS, QueueItem::COMPLETED or QueueItem::FAILED
      */
-    public function setStatus($status)
+    public function setStatus(string $status): void
     {
         if (
             !in_array(
                 $status,
                 array(
-                self::CREATED,
-                self::QUEUED,
-                self::IN_PROGRESS,
-                self::COMPLETED,
-                self::FAILED,
-                self::ABORTED,
+                    self::CREATED,
+                    self::QUEUED,
+                    self::IN_PROGRESS,
+                    self::COMPLETED,
+                    self::FAILED,
+                    self::ABORTED,
                 ),
                 false
             )
@@ -326,9 +326,9 @@ class QueueItem extends Entity
     /**
      * Gets queue item queue name.
      *
-     * @return string Queue item queue name.
+     * @return string|null Queue item queue name.
      */
-    public function getQueueName()
+    public function getQueueName(): ?string
     {
         return $this->queueName;
     }
@@ -338,7 +338,7 @@ class QueueItem extends Entity
      *
      * @param string $queueName Queue item queue name.
      */
-    public function setQueueName($queueName)
+    public function setQueueName(string $queueName): void
     {
         $this->queueName = $queueName;
     }
@@ -351,7 +351,7 @@ class QueueItem extends Entity
      *
      * @return int Last execution progress expressed in base points.
      */
-    public function getLastExecutionProgressBasePoints()
+    public function getLastExecutionProgressBasePoints(): int
     {
         return $this->lastExecutionProgressBasePoints;
     }
@@ -364,7 +364,7 @@ class QueueItem extends Entity
      *
      * @param int $lastExecutionProgressBasePoints Queue item last execution progress in base points.
      */
-    public function setLastExecutionProgressBasePoints($lastExecutionProgressBasePoints)
+    public function setLastExecutionProgressBasePoints(int $lastExecutionProgressBasePoints): void
     {
         if (
             !is_int($lastExecutionProgressBasePoints) ||
@@ -382,7 +382,7 @@ class QueueItem extends Entity
      *
      * @return float QueueItem progress in percentage rounded to 2 decimal value.
      */
-    public function getProgressFormatted()
+    public function getProgressFormatted(): float
     {
         return round($this->progressBasePoints / 100, 2);
     }
@@ -395,7 +395,7 @@ class QueueItem extends Entity
      *
      * @return int Queue item progress percentage in base points.
      */
-    public function getProgressBasePoints()
+    public function getProgressBasePoints(): int
     {
         return $this->progressBasePoints;
     }
@@ -406,9 +406,9 @@ class QueueItem extends Entity
      * One base point is equal to 0.01%.
      * For example 23.58% is equal to 2358 base points.
      *
-     * @param int $progressBasePoints Queue item progress in base points.
+     * @param mixed $progressBasePoints Queue item progress in base points.
      */
-    public function setProgressBasePoints($progressBasePoints)
+    public function setProgressBasePoints($progressBasePoints): void
     {
         if (!is_int($progressBasePoints) || $progressBasePoints < 0 || 10000 < $progressBasePoints) {
             throw new InvalidArgumentException('Progress percentage must be value between 0 and 100.');
@@ -422,7 +422,7 @@ class QueueItem extends Entity
      *
      * @return int Queue item retries count.
      */
-    public function getRetries()
+    public function getRetries(): int
     {
         return $this->retries;
     }
@@ -432,7 +432,7 @@ class QueueItem extends Entity
      *
      * @param int $retries Queue item retries count.
      */
-    public function setRetries($retries)
+    public function setRetries(int $retries): void
     {
         $this->retries = $retries;
     }
@@ -444,7 +444,7 @@ class QueueItem extends Entity
      *
      * @throws QueueItemDeserializationException
      */
-    public function getTaskType()
+    public function getTaskType(): string
     {
         try {
             return $this->getTask() ? $this->getTask()->getType() : '';
@@ -460,7 +460,7 @@ class QueueItem extends Entity
      *
      * @throws QueueItemDeserializationException
      */
-    public function getTask()
+    public function getTask(): ?Task
     {
         if ($this->task === null) {
             try {
@@ -500,10 +500,10 @@ class QueueItem extends Entity
     /**
      * Gets serialized queue item task.
      *
-     * @return string
+     * @return string | null
      *   Serialized representation of queue item task.
      */
-    public function getSerializedTask()
+    public function getSerializedTask(): ?string
     {
         if ($this->task === null) {
             return $this->serializedTask;
@@ -517,7 +517,7 @@ class QueueItem extends Entity
      *
      * @param string $serializedTask Serialized representation of task.
      */
-    public function setSerializedTask($serializedTask)
+    public function setSerializedTask(string $serializedTask): void
     {
         $this->serializedTask = $serializedTask;
         $this->task = null;
@@ -529,7 +529,7 @@ class QueueItem extends Entity
      * @return string
      *   Context in which task will be executed.
      */
-    public function getContext()
+    public function getContext(): string
     {
         return $this->context;
     }
@@ -539,7 +539,7 @@ class QueueItem extends Entity
      *
      * @param string $context Execution context.
      */
-    public function setContext($context)
+    public function setContext(string $context): void
     {
         $this->context = $context;
     }
@@ -550,7 +550,7 @@ class QueueItem extends Entity
      * @return string
      *   Queue item failure description.
      */
-    public function getFailureDescription()
+    public function getFailureDescription(): string
     {
         return $this->failureDescription;
     }
@@ -558,10 +558,10 @@ class QueueItem extends Entity
     /**
      * Sets queue item failure description.
      *
-     * @param string $failureDescription
+     * @param string|null $failureDescription
      *   Queue item failure description.
      */
-    public function setFailureDescription($failureDescription)
+    public function setFailureDescription(?string $failureDescription): void
     {
         $this->failureDescription = $failureDescription;
     }
@@ -572,7 +572,7 @@ class QueueItem extends Entity
      * @return int|null
      *   Queue item created timestamp.
      */
-    public function getCreateTimestamp()
+    public function getCreateTimestamp(): ?int
     {
         return $this->getTimestamp($this->createTime);
     }
@@ -583,7 +583,7 @@ class QueueItem extends Entity
      * @param int $timestamp
      *   Sets queue item created timestamp.
      */
-    public function setCreateTimestamp($timestamp)
+    public function setCreateTimestamp(int $timestamp): void
     {
         $this->createTime = $this->getDateTimeFromTimestamp($timestamp);
     }
@@ -594,7 +594,7 @@ class QueueItem extends Entity
      * @return int|null
      *   Queue item start timestamp.
      */
-    public function getStartTimestamp()
+    public function getStartTimestamp(): ?int
     {
         return $this->getTimestamp($this->startTime);
     }
@@ -605,7 +605,7 @@ class QueueItem extends Entity
      * @param int $timestamp
      *   Queue item start timestamp.
      */
-    public function setStartTimestamp($timestamp)
+    public function setStartTimestamp(int $timestamp): void
     {
         $this->startTime = $this->getDateTimeFromTimestamp($timestamp);
     }
@@ -616,7 +616,7 @@ class QueueItem extends Entity
      * @return int|null
      *   Queue item finish timestamp.
      */
-    public function getFinishTimestamp()
+    public function getFinishTimestamp(): ?int
     {
         return $this->getTimestamp($this->finishTime);
     }
@@ -624,9 +624,9 @@ class QueueItem extends Entity
     /**
      * Sets queue item finish timestamp.
      *
-     * @param int $timestamp Queue item finish timestamp.
+     * @param int|null $timestamp Queue item finish timestamp.
      */
-    public function setFinishTimestamp($timestamp)
+    public function setFinishTimestamp(?int $timestamp): void
     {
         $this->finishTime = $this->getDateTimeFromTimestamp($timestamp);
     }
@@ -637,7 +637,7 @@ class QueueItem extends Entity
      * @return int|null
      *   Queue item fail timestamp.
      */
-    public function getFailTimestamp()
+    public function getFailTimestamp(): ?int
     {
         return $this->getTimestamp($this->failTime);
     }
@@ -645,9 +645,9 @@ class QueueItem extends Entity
     /**
      * Sets queue item fail timestamp.
      *
-     * @param int $timestamp Queue item fail timestamp.
+     * @param int|null $timestamp Queue item fail timestamp.
      */
-    public function setFailTimestamp($timestamp)
+    public function setFailTimestamp(?int $timestamp): void
     {
         $this->failTime = $this->getDateTimeFromTimestamp($timestamp);
     }
@@ -658,7 +658,7 @@ class QueueItem extends Entity
      * @return int|null
      *   Queue item earliest start timestamp.
      */
-    public function getEarliestStartTimestamp()
+    public function getEarliestStartTimestamp(): ?int
     {
         return $this->getTimestamp($this->earliestStartTime);
     }
@@ -668,7 +668,7 @@ class QueueItem extends Entity
      *
      * @param int $timestamp Queue item earliest start timestamp.
      */
-    public function setEarliestStartTimestamp($timestamp)
+    public function setEarliestStartTimestamp(int $timestamp): void
     {
         $this->earliestStartTime = $this->getDateTimeFromTimestamp($timestamp);
     }
@@ -679,7 +679,7 @@ class QueueItem extends Entity
      * @return int|null
      *   Queue item queue timestamp.
      */
-    public function getQueueTimestamp()
+    public function getQueueTimestamp(): ?int
     {
         return $this->getTimestamp($this->queueTime);
     }
@@ -689,7 +689,7 @@ class QueueItem extends Entity
      *
      * @param int $timestamp Queue item queue timestamp.
      */
-    public function setQueueTimestamp($timestamp)
+    public function setQueueTimestamp(int $timestamp): void
     {
         $this->queueTime = $this->getDateTimeFromTimestamp($timestamp);
     }
@@ -700,7 +700,7 @@ class QueueItem extends Entity
      * @return int|null
      *   Queue item last updated timestamp.
      */
-    public function getLastUpdateTimestamp()
+    public function getLastUpdateTimestamp(): ?int
     {
         return $this->getTimestamp($this->lastUpdateTime);
     }
@@ -708,10 +708,10 @@ class QueueItem extends Entity
     /**
      * Sets queue item last updated timestamp.
      *
-     * @param int $timestamp
+     * @param int|null $timestamp
      *   Queue item last updated timestamp.
      */
-    public function setLastUpdateTimestamp($timestamp)
+    public function setLastUpdateTimestamp(?int $timestamp): void
     {
         $this->lastUpdateTime = $this->getDateTimeFromTimestamp($timestamp);
     }
@@ -724,7 +724,7 @@ class QueueItem extends Entity
      *
      * @return int Last execution progress expressed in base points.
      */
-    public function getLastExecutionProgress()
+    public function getLastExecutionProgress(): int
     {
         return $this->lastExecutionProgressBasePoints;
     }
@@ -734,7 +734,7 @@ class QueueItem extends Entity
      *
      * @return int QueueItem execution priority.
      */
-    public function getPriority()
+    public function getPriority(): int
     {
         return $this->priority ?: Priority::NORMAL;
     }
@@ -744,7 +744,7 @@ class QueueItem extends Entity
      *
      * @param int $priority QueueItem execution priority.
      */
-    public function setPriority($priority)
+    public function setPriority(int $priority): void
     {
         if (!in_array($priority, static::getAvailablePriorities(), true)) {
             throw new InvalidArgumentException("Priority {$priority} is not supported.");
@@ -758,7 +758,7 @@ class QueueItem extends Entity
      *
      * @throws Exceptions\QueueItemDeserializationException
      */
-    public function reconfigureTask()
+    public function reconfigureTask(): void
     {
         $task = $this->getTask();
 
@@ -774,7 +774,7 @@ class QueueItem extends Entity
      *
      * @return EntityConfiguration Configuration object.
      */
-    public function getConfig()
+    public function getConfig(): EntityConfiguration
     {
         $indexMap = new IndexMap();
         $indexMap->addStringIndex('status')
@@ -793,9 +793,9 @@ class QueueItem extends Entity
     /**
      * Transforms entity to its array format representation.
      *
-     * @return array Entity in array format.
+     * @return mixed[] Entity in array format.
      */
-    public function toArray()
+    public function toArray(): array
     {
         $this->serializedTask = $this->getSerializedTask();
         $result = parent::toArray();
@@ -815,9 +815,9 @@ class QueueItem extends Entity
     /**
      * Sets raw array data to this entity instance properties.
      *
-     * @param array $data Raw array data with keys for class fields. @see self::$fields for field names.
+     * @param mixed[] $data Raw array data with keys for class fields. @see self::$fields for field names.
      */
-    public function inflate(array $data)
+    public function inflate(array $data): void
     {
         parent::inflate($data);
 
@@ -833,9 +833,9 @@ class QueueItem extends Entity
     /**
      * Defines available priorities.
      *
-     * @return array
+     * @return int[]
      */
-    public static function getAvailablePriorities()
+    public static function getAvailablePriorities(): array
     {
         return array(Priority::HIGH, Priority::NORMAL, Priority::LOW);
     }
@@ -848,7 +848,7 @@ class QueueItem extends Entity
      * @return int|null
      *   Timestamp of provided datetime or null if time is not defined.
      */
-    protected function getTimestamp(DateTime $time = null)
+    protected function getTimestamp(DateTime $time = null): ?int
     {
         return $time !== null ? $time->getTimestamp() : null;
     }
@@ -856,12 +856,12 @@ class QueueItem extends Entity
     /**
      * Gets \DateTime object from timestamp.
      *
-     * @param int $timestamp Timestamp in seconds.
+     * @param int|null $timestamp Timestamp in seconds.
      *
      * @return DateTime|null
      *  Object if successful; otherwise, null;
      */
-    protected function getDateTimeFromTimestamp($timestamp)
+    protected function getDateTimeFromTimestamp(?int $timestamp): ?DateTime
     {
         return !empty($timestamp) ? $this->timeProvider->getDateTime($timestamp) : null;
     }
@@ -869,7 +869,7 @@ class QueueItem extends Entity
     /**
      * Attach Task event handlers.
      */
-    protected function attachTaskEventHandlers()
+    protected function attachTaskEventHandlers(): void
     {
         if ($this->task === null) {
             return;

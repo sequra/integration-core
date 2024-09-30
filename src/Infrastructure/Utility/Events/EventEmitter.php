@@ -13,7 +13,7 @@ abstract class EventEmitter
      * Event handlers array. Key is Fully qualified class name of desired event
      * and value is array of callbacks to invoke when event occurs.
      *
-     * @var array
+     * @var array<string, callable[]>
      */
     protected $handlers = array();
 
@@ -24,7 +24,7 @@ abstract class EventEmitter
      * @param callable $handler Callback to invoke when event occurs.
      *      Observable will pass observed event instance as a handler parameter.
      */
-    public function when(string $eventClass, callable $handler)
+    public function when(string $eventClass, callable $handler): void
     {
         $this->handlers[$eventClass][] = $handler;
     }
@@ -34,7 +34,7 @@ abstract class EventEmitter
      *
      * @param Event $event Event to fire.
      */
-    protected function fire(Event $event)
+    protected function fire(Event $event): void
     {
         $eventClass = get_class($event);
         if (!empty($this->handlers[$eventClass])) {

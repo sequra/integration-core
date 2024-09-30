@@ -46,7 +46,7 @@ class DeliveryMethod extends OrderRequestDTO
     /**
      * Create a new DeliveryMethod instance from an array of data.
      *
-     * @param array $data Array containing the data.
+     * @param mixed[] $data Array containing the data.
      *
      * @return DeliveryMethod Returns a new DeliveryMethod instance.
      */

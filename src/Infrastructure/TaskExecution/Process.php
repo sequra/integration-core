@@ -36,11 +36,11 @@ class Process extends Entity
     /**
      * Sets raw array data to this entity instance properties.
      *
-     * @param array $data Raw array data with keys 'id', 'guid' and 'runner'.
+     * @param mixed[] $data Raw array data with keys 'id', 'guid' and 'runner'.
      *
      * @throws InvalidArgumentException In case when @see $data does not have all needed keys.
      */
-    public function inflate(array $data)
+    public function inflate(array $data): void
     {
         if (!isset($data['guid'], $data['runner'])) {
             throw new InvalidArgumentException('Data array needs to have "guid" and "runner" keys.');
@@ -54,9 +54,9 @@ class Process extends Entity
     /**
      * Transforms entity to its array format representation.
      *
-     * @return array Entity in array format.
+     * @return mixed[] Entity in array format.
      */
-    public function toArray()
+    public function toArray(): array
     {
         $data = parent::toArray();
         $data['guid'] = $this->getGuid();
@@ -70,7 +70,7 @@ class Process extends Entity
      *
      * @return EntityConfiguration
      */
-    public function getConfig()
+    public function getConfig(): EntityConfiguration
     {
         $indexMap = new IndexMap();
         $indexMap->addStringIndex('guid');
@@ -83,7 +83,7 @@ class Process extends Entity
      *
      * @return string Guid.
      */
-    public function getGuid()
+    public function getGuid(): string
     {
         return $this->guid;
     }
@@ -93,7 +93,7 @@ class Process extends Entity
      *
      * @param string $guid Guid.
      */
-    public function setGuid($guid)
+    public function setGuid(string $guid): void
     {
         $this->guid = $guid;
     }
@@ -103,7 +103,7 @@ class Process extends Entity
      *
      * @return Runnable Runner.
      */
-    public function getRunner()
+    public function getRunner(): Runnable
     {
         return $this->runner;
     }
@@ -113,7 +113,7 @@ class Process extends Entity
      *
      * @param Runnable $runner Runner.
      */
-    public function setRunner(Runnable $runner)
+    public function setRunner(Runnable $runner): void
     {
         $this->runner = $runner;
     }

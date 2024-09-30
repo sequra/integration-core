@@ -35,7 +35,7 @@ abstract class Item extends OrderRequestDTO
     /**
      * Create a new Item instance from an array of data.
      *
-     * @param array $data Array containing the data.
+     * @param mixed[] $data Array containing the data.
      *
      * @return Item Returns a new Item instance.
      */

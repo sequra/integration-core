@@ -33,7 +33,7 @@ class MerchantReference extends OrderRequestDTO
     /**
      * Creates a new MerchantReference instance from an array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return MerchantReference
      */

@@ -15,12 +15,12 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfigur
 class CountryConfigurationRequest extends Request
 {
     /**
-     * @var array
+     * @var string[]
      */
     protected $countryConfigurations;
 
     /**
-     * @param array $countryConfigurations
+     * @param string[] $countryConfigurations
      */
     public function __construct(array $countryConfigurations)
     {

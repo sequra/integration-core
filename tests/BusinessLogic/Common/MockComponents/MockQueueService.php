@@ -39,7 +39,7 @@ class MockQueueService extends QueueService
         return $item;
     }
 
-    public function batchStatusUpdate(array $ids, $status): void
+    public function batchStatusUpdate(array $ids, string $status): void
     {
         // Intentionally not implemented.
     }

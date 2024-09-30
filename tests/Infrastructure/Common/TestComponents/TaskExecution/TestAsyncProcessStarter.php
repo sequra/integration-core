@@ -23,7 +23,7 @@ class TestAsyncProcessStarter implements AsyncProcessService
         return !empty($this->callHistory[$methodName]) ? $this->callHistory[$methodName] : array();
     }
 
-    public function start(Runnable $runner)
+    public function start(Runnable $runner): void
     {
         $this->callHistory['start'][] = array('runner' => $runner);
         if ($this->doStartRunner) {
@@ -42,7 +42,7 @@ class TestAsyncProcessStarter implements AsyncProcessService
     /**
      * @inheritDoc
      */
-    public function runProcess($guid)
+    public function runProcess($guid): void
     {
     }
 }

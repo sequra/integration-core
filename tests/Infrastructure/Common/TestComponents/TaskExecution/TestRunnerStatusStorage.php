@@ -22,7 +22,7 @@ class TestRunnerStatusStorage implements TaskRunnerStatusStorage
         $this->status = $status;
     }
 
-    public function getStatus()
+    public function getStatus(): TaskRunnerStatus
     {
         if (!empty($this->exceptionResponses['getStatus'])) {
             throw $this->exceptionResponses['getStatus'];
@@ -33,7 +33,7 @@ class TestRunnerStatusStorage implements TaskRunnerStatusStorage
         return $this->status !== null ? $this->status : TaskRunnerStatus::createNullStatus();
     }
 
-    public function setStatus(TaskRunnerStatus $status)
+    public function setStatus(TaskRunnerStatus $status): void
     {
         if (!empty($this->exceptionResponses['setStatus'])) {
             throw $this->exceptionResponses['setStatus'];
@@ -43,7 +43,7 @@ class TestRunnerStatusStorage implements TaskRunnerStatusStorage
         $this->status = $status;
     }
 
-    public function setExceptionResponse($methodName, $exceptionToThrow)
+    public function setExceptionResponse($methodName, $exceptionToThrow): void
     {
         $this->exceptionResponses[$methodName] = $exceptionToThrow;
     }

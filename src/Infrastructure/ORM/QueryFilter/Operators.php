@@ -20,6 +20,9 @@ class Operators
     const NOT_IN = 'NOT IN';
     const NULL = 'IS NULL';
     const NOT_NULL = 'IS NOT NULL';
+    /**
+     * @var string[]
+     */
     public static $AVAILABLE_OPERATORS = array(
         self::EQUALS,
         self::NOT_EQUALS,
@@ -33,6 +36,9 @@ class Operators
         self::NULL,
         self::NOT_NULL,
     );
+    /**
+     * @var array<string,string[]>
+     */
     public static $TYPE_OPERATORS = array(
         'integer' => array(
             self::EQUALS,

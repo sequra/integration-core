@@ -14,10 +14,10 @@ interface TaskRunnerManager
     /**
      * Halts task runner.
      */
-    public function halt();
+    public function halt(): void;
 
     /**
      * Resumes task execution.
      */
-    public function resume();
+    public function resume(): void;
 }

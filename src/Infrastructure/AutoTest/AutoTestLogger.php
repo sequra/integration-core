@@ -29,7 +29,7 @@ class AutoTestLogger extends Singleton implements ShopLoggerAdapter
      *
      * @throws RepositoryNotRegisteredException
      */
-    public function logMessage(LogData $data)
+    public function logMessage(LogData $data): void
     {
         $repo = RepositoryRegistry::getRepository(LogData::CLASS_NAME);
         $repo->save($data);
@@ -54,7 +54,7 @@ class AutoTestLogger extends Singleton implements ShopLoggerAdapter
     /**
      * Transforms logs to the plain array.
      *
-     * @return array An array of logs.
+     * @return mixed[] An array of logs.
      *
      * @throws RepositoryNotRegisteredException
      */

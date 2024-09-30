@@ -27,7 +27,7 @@ abstract class Response
     /**
      * Transforms response to array.
      *
-     * @return array Array representation of response object.
+     * @return mixed[] Array representation of response object.
      */
     abstract public function toArray(): array;
 }

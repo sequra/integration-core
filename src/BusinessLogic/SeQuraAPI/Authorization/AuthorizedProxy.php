@@ -40,7 +40,7 @@ class AuthorizedProxy extends BaseProxy
     /**
      * Retrieves request headers.
      *
-     * @return array Complete list of request headers.
+     * @return array<string,string> Complete list of request headers.
      */
     protected function getHeaders(): array
     {

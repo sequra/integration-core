@@ -58,11 +58,7 @@ class OrderReportTask extends Task
     }
 
     /**
-     * Transforms array into a serializable object,
-     *
-     * @param array $array
-     *
-     * @return Serializable
+     * @inheritDoc
      *
      * @throws Exception
      */
@@ -74,9 +70,7 @@ class OrderReportTask extends Task
     }
 
     /**
-     * Transforms serializable object into an array.
-     *
-     * @return array Array representation of a serializable object.
+     * @inheritDoc
      */
     public function toArray(): array
     {

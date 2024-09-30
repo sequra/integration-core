@@ -95,7 +95,7 @@ class PaymentMethod extends DataTransferObject
     /**
      * Create a new PaymentMethod instance from an array of data.
      *
-     * @param array $data Array containing the data.
+     * @param mixed[] $data Array containing the data.
      *
      * @return PaymentMethod Returns a new PaymentMethod instance.
      */

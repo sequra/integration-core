@@ -73,10 +73,10 @@ class QueueService
     /**
      * Updates status of a group of tasks.
      *
-     * @param array $ids
+     * @param array<mixed> $ids
      * @param string $status
      */
-    public function batchStatusUpdate(array $ids, $status)
+    public function batchStatusUpdate(array $ids, string $status): void
     {
         $this->getStorage()->batchStatusUpdate($ids, $status);
     }
@@ -84,17 +84,23 @@ class QueueService
     /**
      * Creates queue item.
      *
-     * @param $queueName
+     * @param string $queueName
      * @param Task $task
      * @param string $context
      * @param int $priority
-     * @param int $parent
+     * @param int|null $parent
      *
      * @return QueueItem
      *
      * @throws QueueStorageUnavailableException
      */
-    public function create($queueName, Task $task, $context = '', $priority = Priority::NORMAL, $parent = null)
+    public function create(
+        string $queueName,
+        Task $task,
+        string $context = '',
+        int $priority = Priority::NORMAL,
+        int $parent = null
+    ): QueueItem
     {
         $queueItem = $this->instantiate($task, $queueName, $context, $priority, $parent);
         $this->save($queueItem);
@@ -117,7 +123,7 @@ class QueueService
      *
      * @throws QueueStorageUnavailableException When queue storage fails to save the item.
      */
-    public function enqueue($queueName, Task $task, $context = '', $priority = Priority::NORMAL)
+    public function enqueue(string $queueName, Task $task, string $context = '', int $priority = Priority::NORMAL): QueueItem
     {
         $queueItem = $this->instantiate($task, $queueName, $context, $priority);
         $queueItem->setStatus(QueueItem::QUEUED);
@@ -138,7 +144,7 @@ class QueueService
      *
      * @throws ExecutionRequirementsNotMetException
      */
-    public function validateExecutionRequirements(QueueItem $queueItem)
+    public function validateExecutionRequirements(QueueItem $queueItem): void
     {
     }
 
@@ -151,7 +157,7 @@ class QueueService
      * @throws QueueStorageUnavailableException
      * @throws AbortTaskExecutionException
      */
-    public function start(QueueItem $queueItem)
+    public function start(QueueItem $queueItem): void
     {
         if ($queueItem->getStatus() !== QueueItem::QUEUED) {
             $this->throwIllegalTransitionException($queueItem->getStatus(), QueueItem::IN_PROGRESS);
@@ -185,7 +191,7 @@ class QueueService
      *
      * @throws QueueStorageUnavailableException
      */
-    public function finish(QueueItem $queueItem)
+    public function finish(QueueItem $queueItem): void
     {
         if ($queueItem->getStatus() !== QueueItem::IN_PROGRESS) {
             $this->throwIllegalTransitionException($queueItem->getStatus(), QueueItem::COMPLETED);
@@ -212,7 +218,7 @@ class QueueService
      *
      * @throws QueueStorageUnavailableException
      */
-    public function requeue(QueueItem $queueItem)
+    public function requeue(QueueItem $queueItem): void
     {
         if ($queueItem->getStatus() !== QueueItem::IN_PROGRESS) {
             $this->throwIllegalTransitionException($queueItem->getStatus(), QueueItem::QUEUED);
@@ -249,7 +255,7 @@ class QueueService
      * @throws QueueItemDeserializationException
      * @throws QueueStorageUnavailableException
      */
-    public function fail(QueueItem $queueItem, $failureDescription, $force = false)
+    public function fail(QueueItem $queueItem, string $failureDescription, bool $force = false): void
     {
         if ($queueItem->getStatus() !== QueueItem::IN_PROGRESS) {
             $this->throwIllegalTransitionException($queueItem->getStatus(), QueueItem::FAILED);
@@ -315,7 +321,7 @@ class QueueService
      * @throws QueueStorageUnavailableException
      * @throws QueueItemDeserializationException
      */
-    public function abort(QueueItem $queueItem, $abortDescription)
+    public function abort(QueueItem $queueItem, string $abortDescription): void
     {
         if (!in_array($queueItem->getStatus(), [QueueItem::CREATED, QueueItem::QUEUED, QueueItem::IN_PROGRESS])) {
             $this->throwIllegalTransitionException($queueItem->getStatus(), QueueItem::ABORTED);
@@ -365,7 +371,7 @@ class QueueService
      *
      * @throws QueueStorageUnavailableException
      */
-    public function updateProgress(QueueItem $queueItem, $progress)
+    public function updateProgress(QueueItem $queueItem, int $progress): void
     {
         if ($queueItem->getStatus() !== QueueItem::IN_PROGRESS) {
             throw new BadMethodCallException('Progress reported for not started queue item.');
@@ -399,7 +405,7 @@ class QueueService
      *
      * @throws QueueStorageUnavailableException
      */
-    public function keepAlive(QueueItem $queueItem)
+    public function keepAlive(QueueItem $queueItem): void
     {
         $lastExecutionProgress = $queueItem->getLastExecutionProgressBasePoints();
         $lastUpdateTimestamp = $queueItem->getLastUpdateTimestamp();
@@ -423,7 +429,7 @@ class QueueService
      *
      * @return QueueItem|null Queue item if found; otherwise, NULL.
      */
-    public function find($id)
+    public function find(int $id): ?QueueItem
     {
         $filter = new QueryFilter();
         /**
@@ -444,7 +450,7 @@ class QueueService
      *
      * @return QueueItem|null Queue item if found; otherwise, NULL.
      */
-    public function findLatestByType($type, $context = '')
+    public function findLatestByType(string $type, string $context = ''): ?QueueItem
     {
         $filter = new QueryFilter();
         /**
@@ -473,7 +479,7 @@ class QueueService
      *
      * @return QueueItem[] Running queue items.
      */
-    public function findRunningItems()
+    public function findRunningItems(): array
     {
         $filter = new QueryFilter();
         /**
@@ -493,7 +499,7 @@ class QueueService
      *
      * @return QueueItem[] An array of found queue items.
      */
-    public function findOldestQueuedItems($limit = 10)
+    public function findOldestQueuedItems(int $limit = 10): array
     {
         $result = array();
         $currentLimit = $limit;
@@ -515,7 +521,7 @@ class QueueService
     /**
      * @param Event $event
      */
-    public function fireStateTransitionEvent(Event $event)
+    public function fireStateTransitionEvent(Event $event): void
     {
         $bus = ServiceRegister::getService(QueueItemStateTransitionEventBus::CLASS_NAME);
         $bus->fire($event);
@@ -526,7 +532,7 @@ class QueueService
      * created; otherwise, update will be performed.
      *
      * @param QueueItem $queueItem Item to save.
-     * @param array $additionalWhere List of key/value pairs to set in where clause when saving queue item.
+     * @param array<mixed> $additionalWhere List of key/value pairs to set in where clause when saving queue item.
      * @param bool $reportStateChange Indicates whether to invoke a status change event.
      * @param string $previousState If event should be invoked, indicates the previous state.
      *
@@ -536,10 +542,11 @@ class QueueService
      */
     protected function save(
         QueueItem $queueItem,
-        array $additionalWhere = array(),
-        $reportStateChange = false,
-        $previousState = ''
-    ) {
+        array     $additionalWhere = array(),
+        bool      $reportStateChange = false,
+        string $previousState = ''
+    ): int
+    {
         try {
             if ($reportStateChange) {
                 $this->reportBeforeStatusChange($queueItem, $previousState);
@@ -564,7 +571,7 @@ class QueueService
      * @param QueueItem $queueItem Queue item with is about to change status.
      * @param string $previousState Previous state. MUST be one of the states defined as constants in @see QueueItem.
      */
-    protected function reportBeforeStatusChange(QueueItem $queueItem, $previousState)
+    protected function reportBeforeStatusChange(QueueItem $queueItem, string $previousState): void
     {
         /**
          * @var EventBus $eventBus
@@ -579,7 +586,7 @@ class QueueService
      * @param QueueItem $queueItem Queue item with changed status.
      * @param string $previousState Previous state. MUST be one of the states defined as constants in @see QueueItem.
      */
-    protected function reportStatusChange(QueueItem $queueItem, $previousState)
+    protected function reportStatusChange(QueueItem $queueItem, string $previousState): void
     {
         /**
          * @var EventBus $eventBus
@@ -595,7 +602,7 @@ class QueueService
      *
      * @return QueueItemRepository Task storage instance.
      */
-    protected function getStorage()
+    protected function getStorage(): QueueItemRepository
     {
         if ($this->storage === null) {
             /**
@@ -612,7 +619,7 @@ class QueueService
      *
      * @return TimeProvider Time provider instance.
      */
-    protected function getTimeProvider()
+    protected function getTimeProvider(): TimeProvider
     {
         if ($this->timeProvider === null) {
             $this->timeProvider = ServiceRegister::getService(TimeProvider::CLASS_NAME);
@@ -626,7 +633,7 @@ class QueueService
      *
      * @return TaskRunnerWakeup Task runner wakeup instance.
      */
-    protected function getTaskRunnerWakeup()
+    protected function getTaskRunnerWakeup(): TaskRunnerWakeup
     {
         if ($this->taskRunnerWakeup === null) {
             $this->taskRunnerWakeup = ServiceRegister::getService(TaskRunnerWakeup::CLASS_NAME);
@@ -640,7 +647,7 @@ class QueueService
      *
      * @return Configuration Configuration service instance.
      */
-    protected function getConfigService()
+    protected function getConfigService(): Configuration
     {
         if ($this->configService === null) {
             $this->configService = ServiceRegister::getService(Configuration::CLASS_NAME);
@@ -657,7 +664,7 @@ class QueueService
      *
      * @throws BadMethodCallException
      */
-    protected function throwIllegalTransitionException($fromStatus, $toStatus)
+    protected function throwIllegalTransitionException(string $fromStatus, string $toStatus): void
     {
         throw new BadMethodCallException(
             sprintf(
@@ -673,7 +680,7 @@ class QueueService
      *
      * @return int Number of retries.
      */
-    protected function getMaxRetries()
+    protected function getMaxRetries(): int
     {
         $configurationValue = $this->getConfigService()->getMaxTaskExecutionRetries();
 
@@ -691,7 +698,7 @@ class QueueService
      *
      * @return QueueItem
      */
-    protected function instantiate(Task $task, $queueName, $context, $priority, $parent = null)
+    protected function instantiate(Task $task, string $queueName, string $context, int $priority, int $parent = null): QueueItem
     {
         $queueItem = new QueueItem($task);
         $queueItem->setQueueName($queueName);
