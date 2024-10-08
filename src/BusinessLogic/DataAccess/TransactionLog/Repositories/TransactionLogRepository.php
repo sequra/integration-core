@@ -91,7 +91,12 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
             $queryFilter->where('timestamp', Operators::GREATER_THAN, $disconnectTime);
         }
 
-        return $this->repository->select($queryFilter);
+        return array_filter(
+            $this->repository->select($queryFilter),
+            function ($transactionLog) {
+                return $transactionLog instanceof TransactionLog;
+            }
+        );
     }
 
     /**
