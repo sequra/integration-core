@@ -26,13 +26,13 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
     /**
      * Service instance.
      *
-     * @var AsyncProcessStarterService
+     * @var AsyncProcessService
      */
     protected $asyncProcessStarter;
     /**
      * Service instance.
      *
-     * @var RunnerStatusStorage
+     * @var TaskRunnerStatusStorage
      */
     protected $runnerStatusStorage;
     /**
