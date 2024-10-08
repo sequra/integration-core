@@ -14,7 +14,7 @@ interface Serializable extends \Serializable
      *
      * @param array<mixed> $array Data that is used to instantiate serializable object.
      *
-     * @return Serializable
+     * @return static
      *      Instance of serialized object.
      */
     public static function fromArray(array $array): Serializable;

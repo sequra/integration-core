@@ -7,41 +7,41 @@ use SeQura\Core\Infrastructure\ServiceRegister;
 /**
  * Class Aspects
  *
- * @template T
+ * @phpstan-consistent-constructor
  *
  * @package SeQura\Core\BusinessLogic\Bootstrap\Aspect
- */
-/**
- * @phpstan-consistent-constructor
  */
 class Aspects
 {
     /**
-     * @var T|null
+     * @var object|null
      */
-    // @phpstan-ignore-next-line
     protected $subject;
     /**
-     * @var class-string<T>|null
+     * @var class-string|null
      */
-    // @phpstan-ignore-next-line
     protected $subjectClassName;
     /**
      * @var Aspect
      */
     protected $aspect;
 
+    /**
+     * Aspects constructor.
+     *
+     * @param Aspect $aspect
+     */
     protected function __construct(Aspect $aspect)
     {
         $this->aspect = $aspect;
     }
 
-    public static function run(Aspect $aspect): self
+    public static function run(Aspect $aspect): Aspects
     {
         return new static($aspect);
     }
 
-    public function andRun(Aspect $aspect): self
+    public function andRun(Aspect $aspect): Aspects
     {
         $this->aspect = new CompositeAspect($this->aspect);
         $this->aspect->append($aspect);
@@ -50,40 +50,26 @@ class Aspects
     }
 
     /**
-     * @param T $subject
+     * @param object $subject
      *
-     * // @phpstan-ignore-next-line
-     *
-     * @return T
+     * @return Aspects
      */
-    public function beforeEachMethodOfInstance($subject)
+    public function beforeEachMethodOfInstance($subject): Aspects
     {
         $this->subject = $subject;
         $this->subjectClassName = null;
-
-        /**
- * @noinspection PhpIncompatibleReturnTypeInspection
-*/
-        // @phpstan-ignore-next-line
         return $this;
     }
 
     /**
-     * @param class-string<T> $serviceClass
+     * @param class-string $serviceClass
      *
-     * // @phpstan-ignore-next-line
-     *
-     * @return T
+     * @return Aspects
      */
-    public function beforeEachMethodOfService(string $serviceClass)
+    public function beforeEachMethodOfService(string $serviceClass): Aspects
     {
         $this->subjectClassName = $serviceClass;
         $this->subject = null;
-
-        /**
- * @noinspection PhpIncompatibleReturnTypeInspection
-*/
-        // @phpstan-ignore-next-line
         return $this;
     }
 

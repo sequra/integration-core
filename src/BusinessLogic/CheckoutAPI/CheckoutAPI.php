@@ -21,26 +21,23 @@ class CheckoutAPI
     /**
      * Gets an CheckoutAPI instance.
      *
-     * @return CheckoutAPI
+     * @return Aspects
      */
     public static function get(): object
     {
-        // @phpstan-ignore-next-line
         return Aspects::run(new ErrorHandlingAspect())->beforeEachMethodOfInstance(new CheckoutAPI());
     }
 
     /**
      * @param string $storeId
      *
-     * @return SolicitationController
+     * @return object
      */
     public function solicitation(string $storeId): object
     {
-        // @phpstan-ignore-next-line
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
-            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(SolicitationController::class);
     }
 }

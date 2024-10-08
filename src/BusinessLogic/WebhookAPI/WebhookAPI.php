@@ -14,14 +14,12 @@ use SeQura\Core\BusinessLogic\WebhookAPI\Controller\WebhookController;
 class WebhookAPI
 {
     /**
-     * @return WebhookController
+     * @return object
      */
     public static function webhookHandler(string $storeId = ''): object
     {
-        // @phpstan-ignore-next-line
         return Aspects
             ::run(new StoreContextAspect($storeId))
-            // @phpstan-ignore-next-line
             ->beforeEachMethodOfService(WebhookController::class);
     }
 }

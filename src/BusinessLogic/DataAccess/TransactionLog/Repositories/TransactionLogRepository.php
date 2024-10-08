@@ -91,7 +91,6 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
             $queryFilter->where('timestamp', Operators::GREATER_THAN, $disconnectTime);
         }
 
-        // @phpstan-ignore-next-line
         return $this->repository->select($queryFilter);
     }
 

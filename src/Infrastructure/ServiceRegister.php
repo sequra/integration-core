@@ -61,18 +61,12 @@ class ServiceRegister
     /**
      * Gets service for specified type.
      *
-     * @param string $type Type of service. Should be fully qualified class name.
-     *
-     * @return       mixed Instance of service.
-     * @noinspection PhpDocMissingThrowsInspection
+     * @template T
+     * @param class-string<T> $type
+     * @return T
      */
     public static function getService(string $type)
     {
-        // Unhandled exception warning suppressed on purpose so that all classes using service
-        // would not need @throws tag.
-        /**
-        * @noinspection PhpUnhandledExceptionInspection
-        */
         return self::getInstance()->get($type);
     }
 

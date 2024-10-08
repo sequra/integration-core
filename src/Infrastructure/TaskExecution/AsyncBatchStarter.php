@@ -9,6 +9,9 @@ use SeQura\Core\Infrastructure\TaskExecution\Exceptions\ProcessStarterSaveExcept
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\AsyncProcessService;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Runnable;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class AsyncBatchStarter implements Runnable
 {
     /**
@@ -76,7 +79,7 @@ class AsyncBatchStarter implements Runnable
             $subBatches[] = Serializer::unserialize($subBatch);
         }
 
-        $instance = new self($array['batchSize'], $runners);
+        $instance = new static($array['batchSize'], $runners);
         $instance->subBatches = $subBatches;
         $instance->addIndex = $array['addIndex'];
 
