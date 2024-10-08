@@ -157,19 +157,20 @@ class TaskRunnerStarter implements Runnable
         } catch (TaskRunnerRunException $ex) {
             Logger::logInfo($ex->getMessage());
             Logger::logDebug($ex->getMessage(), 'Core', array(new LogContextData('ExceptionTrace', $ex->getTraceAsString())));
-            // @phpstan-ignore-next-line
         } catch (Exception $ex) {
             Logger::logError(
                 'Failed to run task runner. Unexpected error occurred.',
                 'Core',
-                array('ExceptionMessage' => $ex->getMessage())
+                array(
+                    new LogContextData('ExceptionMessage', $ex->getMessage())
+                )
             );
             Logger::logDebug(
                 'Failed to run task runner. Unexpected error occurred.',
                 'Core',
                 array(
-                    'ExceptionMessage' => $ex->getMessage(),
-                    'ExceptionTrace' => $ex->getTraceAsString(),
+                    new LogContextData('ExceptionMessage', $ex->getMessage()),
+                    new LogContextData('ExceptionTrace', $ex->getTraceAsString()),
                 )
             );
         }
@@ -180,6 +181,7 @@ class TaskRunnerStarter implements Runnable
      *
      * @throws TaskRunnerRunException
      * @throws TaskRunnerStatusStorageUnavailableException
+     * @throws Exception
      */
     protected function doRun(): void
     {
