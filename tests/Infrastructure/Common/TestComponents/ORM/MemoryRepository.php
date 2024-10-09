@@ -170,11 +170,9 @@ class MemoryRepository implements RepositoryInterface, MassInsert
     }
 
     /**
-     * Sets repository entity
-     *
-     * @param string $entityClass
+     * @inheritdoc
      */
-    public function setEntityClass(string $entityClass): void
+    public function setEntityClass($entityClass)
     {
         $this->entityClass = $entityClass;
     }

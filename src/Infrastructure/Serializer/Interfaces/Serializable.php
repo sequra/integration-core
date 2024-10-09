@@ -17,14 +17,14 @@ interface Serializable extends \Serializable
      * @return static
      *      Instance of serialized object.
      */
-    public static function fromArray(array $array): Serializable;
+    public static function fromArray(array $array);
 
     /**
      * Transforms serializable object into an array.
      *
      * @return array<mixed> Array representation of a serializable object.
      */
-    public function toArray(): array;
+    public function toArray();
 
     /**
      * @return array<mixed>
@@ -36,5 +36,5 @@ interface Serializable extends \Serializable
      *
      * @return void
      */
-    public function __unserialize(array $data): void;
+    public function __unserialize(array $data);
 }

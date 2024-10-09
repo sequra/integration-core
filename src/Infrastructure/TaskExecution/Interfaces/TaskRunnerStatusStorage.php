@@ -24,7 +24,7 @@ interface TaskRunnerStatusStorage
      * @return TaskRunnerStatus Current runner status
      * @throws TaskRunnerStatusStorageUnavailableException When task storage is not available
      */
-    public function getStatus(): TaskRunnerStatus;
+    public function getStatus();
 
     /**
      * Sets status of task runner to provided status.
@@ -32,9 +32,11 @@ interface TaskRunnerStatusStorage
      *
      * @param TaskRunnerStatus $status
      *
+     * @return void
+     *
      * @throws TaskRunnerStatusChangeException Thrown when setting status operation fails because:
      *      - Trying to set new task status to new nonempty guid but currently set guid is not empty
      * @throws TaskRunnerStatusStorageUnavailableException When task storage is not available
      */
-    public function setStatus(TaskRunnerStatus $status): void;
+    public function setStatus(TaskRunnerStatus $status);
 }

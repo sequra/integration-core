@@ -42,7 +42,7 @@ abstract class Entity extends DataTransferObject
      *
      * @return string Fully qualified class name.
      */
-    public static function getClassName(): string
+    public static function getClassName()
     {
         return static::CLASS_NAME;
     }
@@ -54,7 +54,7 @@ abstract class Entity extends DataTransferObject
      *
      * @return static Transformed entity object.
      */
-    public static function fromArray(array $data): Entity
+    public static function fromArray(array $data)
     {
         $instance = new static();
         $instance->inflate($data);
@@ -67,14 +67,16 @@ abstract class Entity extends DataTransferObject
      *
      * @return EntityConfiguration Configuration object.
      */
-    abstract public function getConfig(): EntityConfiguration;
+    abstract public function getConfig();
 
     /**
      * Sets raw array data to this entity instance properties.
      *
      * @param mixed[] $data Raw array data with keys for class fields. @see self::$fields for field names.
+     *
+     * @return void
      */
-    public function inflate(array $data): void
+    public function inflate(array $data)
     {
         foreach ($this->fields as $fieldName) {
             $this->$fieldName = static::getArrayValue($data, $fieldName, $this->$fieldName);
@@ -86,7 +88,7 @@ abstract class Entity extends DataTransferObject
      *
      * @return mixed[] Entity in array format.
      */
-    public function toArray(): array
+    public function toArray()
     {
         $data = array('class_name' => static::getClassName());
         foreach ($this->fields as $fieldName) {
@@ -110,8 +112,10 @@ abstract class Entity extends DataTransferObject
      * Sets entity identifier.
      *
      * @param int $id entity identifier.
+     *
+     * @return void
      */
-    public function setId($id): void
+    public function setId($id)
     {
         $this->id = $id;
     }

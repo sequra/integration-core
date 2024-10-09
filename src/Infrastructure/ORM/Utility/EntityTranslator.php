@@ -21,9 +21,11 @@ class EntityTranslator
     /**
      * @param string $entityClass
      *
+     * @return void
+     *
      * @throws EntityClassException
      */
-    public function init(string $entityClass): void
+    public function init($entityClass)
     {
         if (!is_subclass_of($entityClass, Entity::getClassName())) {
             throw new EntityClassException("Class $entityClass is not implementation of Entity");

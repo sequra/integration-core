@@ -52,7 +52,7 @@ class QueryFilter
      *
      * @return int|null Limit for select.
      */
-    public function getLimit(): ?int
+    public function getLimit()
     {
         return $this->limit;
     }
@@ -64,7 +64,7 @@ class QueryFilter
      *
      * @return self This instance for chaining.
      */
-    public function setLimit(int $limit): QueryFilter
+    public function setLimit($limit)
     {
         $this->limit = $limit;
 
@@ -76,7 +76,7 @@ class QueryFilter
      *
      * @return int|null Offset.
      */
-    public function getOffset(): ?int
+    public function getOffset()
     {
         return $this->offset;
     }
@@ -88,7 +88,7 @@ class QueryFilter
      *
      * @return self This instance for chaining.
      */
-    public function setOffset(int $offset): QueryFilter
+    public function setOffset($offset)
     {
         $this->offset = $offset;
 
@@ -105,7 +105,7 @@ class QueryFilter
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function orderBy($column, string $direction = self::ORDER_ASC): QueryFilter
+    public function orderBy($column, $direction = self::ORDER_ASC)
     {
         if (!is_string($column) || !in_array($direction, array(self::ORDER_ASC, self::ORDER_DESC), false)) {
             throw new QueryFilterInvalidParamException(
@@ -124,7 +124,7 @@ class QueryFilter
      *
      * @return string|null Order column name.
      */
-    public function getOrderByColumn(): ?string
+    public function getOrderByColumn()
     {
         return $this->orderByColumn;
     }
@@ -134,7 +134,7 @@ class QueryFilter
      *
      * @return string|null Order direction (@see self::ORDER_ASC or @see self::ORDER_DESC)
      */
-    public function getOrderDirection(): ?string
+    public function getOrderDirection()
     {
         return $this->orderDirection;
     }
@@ -144,7 +144,7 @@ class QueryFilter
      *
      * @return QueryCondition[] Filter conditions.
      */
-    public function getConditions(): array
+    public function getConditions()
     {
         return $this->conditions;
     }
@@ -160,7 +160,7 @@ class QueryFilter
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function where(string $column, string $operator, $value = null): QueryFilter
+    public function where($column, $operator, $value = null)
     {
         $this->validateConditionParameters($column, $operator, $value);
 
@@ -180,7 +180,7 @@ class QueryFilter
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function orWhere(string $column, string $operator, $value = null): QueryFilter
+    public function orWhere($column, $operator, $value = null)
     {
         $this->validateConditionParameters($column, $operator, $value);
 
@@ -196,9 +196,11 @@ class QueryFilter
      * @param mixed $operator Operator. Use constants from @see Operator class.
      * @param mixed $value Value of condition.
      *
+     * @return void
+     *
      * @throws QueryFilterInvalidParamException
      */
-    protected function validateConditionParameters($column, $operator, $value): void
+    protected function validateConditionParameters($column, $operator, $value)
     {
         if (!is_string($column) || !is_string($operator)) {
             throw new QueryFilterInvalidParamException('Column and operator values must be string types');

@@ -39,7 +39,7 @@ abstract class Orchestrator extends Task
     /**
      * @inheritDoc
      */
-    public function serialize(): ?string
+    public function serialize()
     {
         $taskList = [];
         foreach ($this->taskList as $data) {
@@ -63,7 +63,7 @@ abstract class Orchestrator extends Task
     /**
      * @inheritDoc
      */
-    public static function fromArray(array $array): \SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable
+    public static function fromArray(array $array)
     {
         $entity = new static();
         foreach ($array['taskList'] as $data) {
@@ -97,7 +97,7 @@ abstract class Orchestrator extends Task
     /**
      * @inheritDoc
      */
-    public function __unserialize($data): void
+    public function __unserialize($data)
     {
         $taskList = array();
         foreach ($data['taskList'] as $task) {
@@ -110,9 +110,11 @@ abstract class Orchestrator extends Task
     /**
      * Creates subtasks.
      *
+     * @return void
+     *
      * @final
      */
-    public function execute(): void
+    public function execute()
     {
         while ($task = $this->getSubTask()) {
             $this->taskList[] = $task;
@@ -136,16 +138,18 @@ abstract class Orchestrator extends Task
      * @param int $executionId Sub-Job id.
      * @param int|float $progress Between 0 and 100, inclusive.
      *
+     * @return void
+     *
      * @final
      */
-    public function updateSubJobProgress(int $executionId, $progress): void
+    public function updateSubJobProgress($executionId, $progress)
     {
         if ($progress > 100 || $progress < 0) {
-            throw new InvalidArgumentException("Invalid progress ${progress} provided. ");
+            throw new InvalidArgumentException("Invalid progress $progress provided. ");
         }
 
         if (!($subJob = $this->getSubJob($executionId))) {
-            throw new InvalidArgumentException("Provided execution with id ${executionId} not found in task list");
+            throw new InvalidArgumentException("Provided execution with id $executionId not found in task list");
         }
 
         $subJob->setProgress($progress);
@@ -154,18 +158,20 @@ abstract class Orchestrator extends Task
 
     /**
      * @inheritDoc
+     *
      * @final
      */
-    public function onFail(): void
+    public function onFail()
     {
         $this->abortSubJobs();
     }
 
     /**
      * @inheritDoc
+     *
      * @final
      */
-    public function onAbort(): void
+    public function onAbort()
     {
         $this->abortSubJobs();
     }
@@ -175,7 +181,7 @@ abstract class Orchestrator extends Task
      *
      * @return ExecutionDetails | null
      */
-    abstract protected function getSubTask(): ?ExecutionDetails;
+    abstract protected function getSubTask();
 
     /**
      * Creates sub-job.
@@ -187,7 +193,7 @@ abstract class Orchestrator extends Task
      *
      * @throws QueueStorageUnavailableException
      */
-    protected function createSubJob(Task $task, int $weight = 1): ExecutionDetails
+    protected function createSubJob(Task $task, $weight = 1)
     {
         $queueItem = $this->getQueueService()->create($this->getSubJobQueueName(), $task, $this->getContext(), Priority::NORMAL, $this->getExecutionId());
 
@@ -217,7 +223,7 @@ abstract class Orchestrator extends Task
      *
      * @return string
      */
-    protected function getSubJobQueueName(): string
+    protected function getSubJobQueueName()
     {
         return static::QUEUE_NAME_PREFIX . $this->getExecutionId();
     }
@@ -227,7 +233,7 @@ abstract class Orchestrator extends Task
      *
      * @return QueueService
      */
-    protected function getQueueService(): QueueService
+    protected function getQueueService()
     {
         return ServiceRegister::getService(QueueService::CLASS_NAME);
     }
@@ -254,7 +260,7 @@ abstract class Orchestrator extends Task
      *
      * @return ExecutionDetails | false
      */
-    protected function getSubJob(int $executionId)
+    protected function getSubJob($executionId)
     {
         return current(array_filter(
             $this->taskList,
@@ -266,8 +272,10 @@ abstract class Orchestrator extends Task
 
     /**
      * Aborts incomplete sub-jobs.
+     *
+     * @return void
      */
-    protected function abortSubJobs(): void
+    protected function abortSubJobs()
     {
         $ids = [];
         foreach ($this->taskList as $task) {
@@ -285,8 +293,10 @@ abstract class Orchestrator extends Task
 
     /**
      * Starts sub-jobs.
+     *
+     * @return void
      */
-    protected function startSubJobs(): void
+    protected function startSubJobs()
     {
         $ids = array_map(static function (ExecutionDetails $d) {
             return $d->getExecutionId();

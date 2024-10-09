@@ -42,7 +42,7 @@ interface QueueItemRepository extends RepositoryInterface
      * @return int Id of saved queue item
      * @throws QueueItemSaveException if queue item could not be saved
      */
-    public function saveWithCondition(QueueItem $queueItem, array $additionalWhere = array()): int;
+    public function saveWithCondition(QueueItem $queueItem, array $additionalWhere = array());
 
     /**
      * Updates status of a batch of queue items.
@@ -52,5 +52,5 @@ interface QueueItemRepository extends RepositoryInterface
      *
      * @return void
      */
-    public function batchStatusUpdate(array $ids, $status): void;
+    public function batchStatusUpdate(array $ids, $status);
 }

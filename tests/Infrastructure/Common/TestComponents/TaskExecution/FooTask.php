@@ -141,7 +141,7 @@ class FooTask extends Task
         $this->methodsCallCount['reconfigure']++;
     }
 
-    public function canBeReconfigured(): bool
+    public function canBeReconfigured()
     {
         return true;
     }

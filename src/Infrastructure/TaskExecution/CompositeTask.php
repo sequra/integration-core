@@ -51,7 +51,7 @@ abstract class CompositeTask extends Task
      * @param mixed[] $subTasks List of all tasks for this composite task. Key is task FQN and value is percentage share.
      * @param int $initialProgress Initial progress in percents.
      */
-    public function __construct(array $subTasks, int $initialProgress = 0)
+    public function __construct(array $subTasks, $initialProgress = 0)
     {
         parent::__construct();
         $this->initialProgress = $initialProgress;
@@ -76,7 +76,7 @@ abstract class CompositeTask extends Task
      * @return Serializable
      *      Instance of serialized object.
      */
-    public static function fromArray(array $array): Serializable
+    public static function fromArray(array $array)
     {
         $tasks = array();
 
@@ -103,7 +103,7 @@ abstract class CompositeTask extends Task
      *
      * @return static
      */
-    protected static function createTask(array $tasks, int $initialProgress): CompositeTask
+    protected static function createTask(array $tasks, int $initialProgress)
     {
         return new static($tasks, $initialProgress);
     }
@@ -113,7 +113,7 @@ abstract class CompositeTask extends Task
      *
      * @return mixed[] Array representation of a serializable object.
      */
-    public function toArray(): array
+    public function toArray()
     {
         $tasks = array();
 
@@ -140,7 +140,7 @@ abstract class CompositeTask extends Task
     /**
      * @inheritDoc
      */
-    public function __unserialize($data): void
+    public function __unserialize($data)
     {
         $this->initialProgress = $data['initial_progress'];
         $this->taskProgressMap = $data['task_progress_map'];
@@ -159,7 +159,7 @@ abstract class CompositeTask extends Task
     /**
      * @inheritdoc
      */
-    public function serialize(): ?string
+    public function serialize()
     {
         return Serializer::serialize(
             array(
@@ -189,8 +189,10 @@ abstract class CompositeTask extends Task
     /**
      * Called upon composite task deserialization.
      * Allows bootstrapping operations to be completed when the deserialization is complete.
+     *
+     * @return void
      */
-    public function onUnserialized(): void
+    public function onUnserialized()
     {
         $this->registerSubTasksEvents();
     }
@@ -200,9 +202,11 @@ abstract class CompositeTask extends Task
      *
      * @final
      *
+     * @return void
+     *
      * @throws AbortTaskExecutionException
      */
-    public function execute(): void
+    public function execute()
     {
         while ($activeTask = $this->getActiveTask()) {
             $this->executeSubTask($activeTask);
@@ -214,7 +218,7 @@ abstract class CompositeTask extends Task
      *
      * @return bool TRUE if active task can be reconfigures; otherwise, FALSE.
      */
-    public function canBeReconfigured(): bool
+    public function canBeReconfigured()
     {
         $activeTask = $this->getActiveTask();
 
@@ -222,9 +226,9 @@ abstract class CompositeTask extends Task
     }
 
     /**
-     * Reconfigures the task.
+     * @inheritdoc
      */
-    public function reconfigure(): void
+    public function reconfigure()
     {
         $activeTask = $this->getActiveTask();
 
@@ -238,7 +242,7 @@ abstract class CompositeTask extends Task
      *
      * @return mixed[] A map of progress per task. Array key is task FQN and current progress is value.
      */
-    public function getProgressByTask(): array
+    public function getProgressByTask()
     {
         return $this->taskProgressMap;
     }
@@ -250,14 +254,14 @@ abstract class CompositeTask extends Task
      *
      * @return Task Created task.
      */
-    abstract protected function createSubTask(string $taskKey): Task;
+    abstract protected function createSubTask($taskKey);
 
     /**
      * Returns active task.
      *
      * @return Task|null Active task if any; otherwise, NULL.
      */
-    protected function getActiveTask(): ?Task
+    protected function getActiveTask()
     {
         $task = null;
         foreach ($this->taskProgressMap as $taskKey => $taskProgress) {
@@ -282,7 +286,7 @@ abstract class CompositeTask extends Task
      *
      * @return Task An instance of task for given FQN.
      */
-    protected function getSubTask(string $taskKey): Task
+    protected function getSubTask(string $taskKey)
     {
         if (empty($this->tasks[$taskKey])) {
             $this->tasks[$taskKey] = $this->createSubTask($taskKey);
@@ -294,8 +298,10 @@ abstract class CompositeTask extends Task
 
     /**
      * Registers "report progress" and "report alive" events to all sub tasks.
+     *
+     * @return void
      */
-    protected function registerSubTasksEvents(): void
+    protected function registerSubTasksEvents()
     {
         foreach ($this->tasks as $key => $task) {
             $this->registerSubTaskEvents($key);
@@ -306,8 +312,10 @@ abstract class CompositeTask extends Task
      * Registers "report progress" and "report alive" events to a sub task.
      *
      * @param string $taskKey KeyA Task for which to register listener.
+     *
+     * @return void
      */
-    protected function registerSubTaskEvents(string $taskKey): void
+    protected function registerSubTaskEvents($taskKey)
     {
         $task = $this->tasks[$taskKey];
         $task->setExecutionId($this->getExecutionId());
@@ -320,8 +328,10 @@ abstract class CompositeTask extends Task
      *
      * @param float $subTaskProgress Progress for current sub task.
      * @param string $subTaskKey FQN of current task.
+     *
+     * @return void
      */
-    protected function calculateProgress(float $subTaskProgress, string $subTaskKey): void
+    protected function calculateProgress($subTaskProgress, $subTaskKey)
     {
         // set current task progress to overall map
         $this->taskProgressMap[$subTaskKey] = $subTaskProgress;
@@ -343,7 +353,7 @@ abstract class CompositeTask extends Task
      *
      * @return bool TRUE if all tasks are completed; otherwise, FALSE.
      */
-    protected function isProcessCompleted(): bool
+    protected function isProcessCompleted()
     {
         foreach (array_keys($this->tasksProgressShare) as $subTaskKey) {
             if ($this->taskProgressMap[$subTaskKey] < 100) {
@@ -358,8 +368,10 @@ abstract class CompositeTask extends Task
      * Registers "report alive" event listener so that this composite task can broadcast event.
      *
      * @param Task $task A Task for which to register listener.
+     *
+     * @return void
      */
-    protected function registerReportAliveEvent(Task $task): void
+    protected function registerReportAliveEvent(Task $task)
     {
         $self = $this;
 
@@ -375,8 +387,10 @@ abstract class CompositeTask extends Task
      * Registers "report progress" event listener so that this composite task can calculate and report overall progress.
      *
      * @param string $taskKey A Task for which to register listener.
+     *
+     * @return void
      */
-    protected function registerReportProgressEvent(string $taskKey): void
+    protected function registerReportProgressEvent($taskKey)
     {
         $self = $this;
         $task = $this->tasks[$taskKey];
@@ -395,9 +409,11 @@ abstract class CompositeTask extends Task
      *
      * @param Task $activeTask
      *
+     * @return void
+     *
      * @throws AbortTaskExecutionException
      */
-    protected function executeSubTask(Task $activeTask): void
+    protected function executeSubTask(Task $activeTask)
     {
         $activeTask->execute();
     }

@@ -21,14 +21,18 @@ interface AsyncProcessService
      *
      * @param Runnable $runner Runner that should be started async
      *
+     * @return void
+     *
      * @throws ProcessStarterSaveException
      */
-    public function start(Runnable $runner): void;
+    public function start(Runnable $runner);
 
     /**
      * Runs a process with provided identifier.
      *
      * @param string $guid Identifier of process.
+     *
+     * @return void
      */
-    public function runProcess($guid): void;
+    public function runProcess($guid);
 }

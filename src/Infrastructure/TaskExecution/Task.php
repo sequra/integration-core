@@ -60,14 +60,16 @@ abstract class Task extends EventEmitter implements Serializable
     /**
      * Runs task logic.
      *
+     * @return void
+     *
      * @throws AbortTaskExecutionException
      */
-    abstract public function execute(): void;
+    abstract public function execute();
 
     /**
      * @inheritdoc
      */
-    public function serialize(): ?string
+    public function serialize()
     {
         return Serializer::serialize(array());
     }
@@ -84,7 +86,7 @@ abstract class Task extends EventEmitter implements Serializable
     /**
      * @inheritDoc
      */
-    public static function fromArray(array $array): Serializable
+    public static function fromArray(array $array)
     {
         return new static();
     }
@@ -92,7 +94,7 @@ abstract class Task extends EventEmitter implements Serializable
     /**
      * @inheritDoc
      */
-    public function toArray(): array
+    public function toArray()
     {
         return array();
     }
@@ -115,10 +117,12 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @param float|int $progressPercent
      *
+     * @return void
+     *
      * @throws InvalidArgumentException In case when progress percent is outside of 0 - 100 boundaries or not an float
      * @see    TaskProgressEvent and defers next @see AliveAnnouncedTaskEvent.
      */
-    public function reportProgress($progressPercent): void
+    public function reportProgress($progressPercent)
     {
         if (!is_int($progressPercent) && !is_float($progressPercent)) {
             throw new InvalidArgumentException('Progress percentage must be value integer or float value');
@@ -138,9 +142,11 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @param boolean $force
      *
+     * @return void
+     *
      * @see AliveAnnouncedTaskEvent.
      */
-    public function reportAlive(bool $force = false): void
+    public function reportAlive($force = false)
     {
         /**
          * @var TimeProvider $timeProvider
@@ -161,7 +167,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return int Max inactivity period for a task in seconds.
      */
-    public function getMaxInactivityPeriod(): int
+    public function getMaxInactivityPeriod()
     {
         $configurationValue = $this->getConfigService()->getMaxTaskInactivityPeriod();
 
@@ -174,7 +180,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return string FQN of the task.
      */
-    public function getType(): string
+    public function getType()
     {
         return static::getClassName();
     }
@@ -184,7 +190,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return string FQN of the task.
      */
-    public static function getClassName(): string
+    public static function getClassName()
     {
         $namespaceParts = explode('\\', get_called_class());
         $name = end($namespaceParts);
@@ -201,15 +207,17 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return bool TRUE if task can be reconfigured; otherwise, FALSE.
      */
-    public function canBeReconfigured(): bool
+    public function canBeReconfigured()
     {
         return false;
     }
 
     /**
      * Reconfigures the task.
+     *
+     * @return void
      */
-    public function reconfigure(): void
+    public function reconfigure()
     {
     }
 
@@ -227,24 +235,30 @@ abstract class Task extends EventEmitter implements Serializable
      * Sets Execution id.
      *
      * @param int|string $executionId Execution id.
+     *
+     * @return void
      */
-    public function setExecutionId($executionId): void
+    public function setExecutionId($executionId)
     {
         $this->executionId = $executionId;
     }
 
     /**
      * Cleans up resources upon failure.
+     *
+     * @return void
      */
-    public function onFail(): void
+    public function onFail()
     {
         // Extension stub.
     }
 
     /**
      * Cleans up resources upon abort.
+     *
+     * @return void
      */
-    public function onAbort(): void
+    public function onAbort()
     {
         // Extension stub.
     }
@@ -256,7 +270,7 @@ abstract class Task extends EventEmitter implements Serializable
      *
      * @return int Base points representation of percentage.
      */
-    protected function percentToBasePoints(float $percentValue): int
+    protected function percentToBasePoints($percentValue)
     {
         return (int)round($percentValue * 100, 2);
     }

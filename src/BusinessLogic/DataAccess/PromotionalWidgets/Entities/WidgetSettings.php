@@ -31,7 +31,7 @@ class WidgetSettings extends Entity
     /**
      * @inheritDoc
      */
-    public function inflate(array $data): void
+    public function inflate(array $data)
     {
         parent::inflate($data);
 

@@ -38,9 +38,11 @@ class Process extends Entity
      *
      * @param mixed[] $data Raw array data with keys 'id', 'guid' and 'runner'.
      *
+     * @return void
+     *
      * @throws InvalidArgumentException In case when @see $data does not have all needed keys.
      */
-    public function inflate(array $data): void
+    public function inflate(array $data)
     {
         if (!isset($data['guid'], $data['runner'])) {
             throw new InvalidArgumentException('Data array needs to have "guid" and "runner" keys.');
@@ -56,7 +58,7 @@ class Process extends Entity
      *
      * @return mixed[] Entity in array format.
      */
-    public function toArray(): array
+    public function toArray()
     {
         $data = parent::toArray();
         $data['guid'] = $this->getGuid();
@@ -70,7 +72,7 @@ class Process extends Entity
      *
      * @return EntityConfiguration
      */
-    public function getConfig(): EntityConfiguration
+    public function getConfig()
     {
         $indexMap = new IndexMap();
         $indexMap->addStringIndex('guid');
@@ -83,7 +85,7 @@ class Process extends Entity
      *
      * @return string Guid.
      */
-    public function getGuid(): string
+    public function getGuid()
     {
         return $this->guid;
     }
@@ -92,8 +94,10 @@ class Process extends Entity
      * Sets Guid.
      *
      * @param string $guid Guid.
+     *
+     * @return void
      */
-    public function setGuid(string $guid): void
+    public function setGuid($guid)
     {
         $this->guid = $guid;
     }
@@ -103,7 +107,7 @@ class Process extends Entity
      *
      * @return Runnable Runner.
      */
-    public function getRunner(): Runnable
+    public function getRunner()
     {
         return $this->runner;
     }
@@ -112,8 +116,10 @@ class Process extends Entity
      * Sets Runner.
      *
      * @param Runnable $runner Runner.
+     *
+     * @return void
      */
-    public function setRunner(Runnable $runner): void
+    public function setRunner(Runnable $runner)
     {
         $this->runner = $runner;
     }

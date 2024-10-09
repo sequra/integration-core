@@ -101,7 +101,7 @@ class LogData extends Entity
      *
      * @return EntityConfiguration Configuration object.
      */
-    public function getConfig(): EntityConfiguration
+    public function getConfig()
     {
         $map = new IndexMap();
         $map->addStringIndex('integration')
@@ -116,8 +116,10 @@ class LogData extends Entity
      * Transforms raw array data to this entity instance.
      *
      * @param mixed[] $data Raw array data.
+     *
+     * @return void
      */
-    public function inflate(array $data): void
+    public function inflate(array $data)
     {
         parent::inflate($data);
 

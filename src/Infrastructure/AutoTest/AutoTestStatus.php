@@ -58,7 +58,7 @@ class AutoTestStatus extends DataTransferObject
      *
      * @return mixed[] This object as an array.
      */
-    public function toArray(): array
+    public function toArray()
     {
         return array(
             'taskStatus' => $this->taskStatus,

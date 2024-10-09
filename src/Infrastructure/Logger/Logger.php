@@ -67,8 +67,10 @@ class Logger extends Singleton
      * @param string $message Message to log.
      * @param string $component Component for which to log message.
      * @param LogContextData[]|array $context Additional context data.
+     *
+     * @return void
      */
-    public static function logError($message, $component = 'Core', array $context = array()): void
+    public static function logError($message, $component = 'Core', array $context = array())
     {
         self::getInstance()->logMessage(self::ERROR, $message, $component, $context);
     }
@@ -79,8 +81,10 @@ class Logger extends Singleton
      * @param string $message Message to log.
      * @param string $component Component for which to log message.
      * @param LogContextData[]|array $context Additional context data.
+     *
+     * @return void
      */
-    public static function logWarning($message, $component = 'Core', array $context = array()): void
+    public static function logWarning($message, $component = 'Core', array $context = array())
     {
         self::getInstance()->logMessage(self::WARNING, $message, $component, $context);
     }
@@ -91,8 +95,10 @@ class Logger extends Singleton
      * @param string $message Message to log.
      * @param string $component Component for which to log message.
      * @param LogContextData[]|array $context Additional context data.
+     *
+     * @return void
      */
-    public static function logInfo($message, $component = 'Core', array $context = array()): void
+    public static function logInfo($message, $component = 'Core', array $context = array())
     {
         self::getInstance()->logMessage(self::INFO, $message, $component, $context);
     }
@@ -103,8 +109,10 @@ class Logger extends Singleton
      * @param string $message Message to log.
      * @param string $component Component for which to log message.
      * @param LogContextData[]|array $context Additional context data.
+     *
+     * @return void
      */
-    public static function logDebug($message, $component = 'Core', array $context = array()): void
+    public static function logDebug($message, $component = 'Core', array $context = array())
     {
         self::getInstance()->logMessage(self::DEBUG, $message, $component, $context);
     }
@@ -116,8 +124,10 @@ class Logger extends Singleton
      * @param string $message Message to log.
      * @param string $component Component for which to log message.
      * @param LogContextData[]|array $context Additional context data.
+     *
+     * @return void
      */
-    protected function logMessage($level, $message, $component, array $context = array()): void
+    protected function logMessage($level, $message, $component, array $context = array())
     {
         $config = LoggerConfiguration::getInstance();
         $logData = new LogData(

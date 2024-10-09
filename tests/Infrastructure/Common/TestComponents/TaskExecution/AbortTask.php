@@ -21,7 +21,7 @@ class AbortTask extends Task
     /**
      * @inheritDoc
      */
-    public static function fromArray(array $array): Serializable
+    public static function fromArray(array $array)
     {
         return new static();
     }

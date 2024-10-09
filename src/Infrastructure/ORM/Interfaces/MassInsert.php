@@ -10,6 +10,8 @@ interface MassInsert
      * Executes mass insert query for all provided entities
      *
      * @param Entity[] $entities
+     *
+     * @return void
      */
-    public function massInsert(array $entities): void;
+    public function massInsert(array $entities);
 }

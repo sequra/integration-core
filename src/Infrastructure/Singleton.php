@@ -47,8 +47,10 @@ abstract class Singleton
 
     /**
      * Resets singleton instance. Required for proper tests.
+     *
+     * @return void
      */
-    public static function resetInstance(): void
+    public static function resetInstance()
     {
         static::$instance = null;
     }

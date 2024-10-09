@@ -53,7 +53,7 @@ class OrderReporter extends Orchestrator
     /**
      * @inheritDoc
      */
-    public static function fromArray(array $array): Serializable
+    public static function fromArray(array $array)
     {
         $entity = parent::fromArray($array);
         $entity->page = intval($array['page']);

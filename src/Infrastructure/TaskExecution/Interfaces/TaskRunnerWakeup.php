@@ -16,6 +16,8 @@ interface TaskRunnerWakeup
 
     /**
      * Wakes up TaskRunner instance asynchronously if active instance is not already running.
+     *
+     * @return void
      */
-    public function wakeup(): void;
+    public function wakeup();
 }

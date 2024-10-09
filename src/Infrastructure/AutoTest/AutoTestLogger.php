@@ -23,13 +23,9 @@ class AutoTestLogger extends Singleton implements ShopLoggerAdapter
     protected static $instance;
 
     /**
-     * Logs a message in system.
-     *
-     * @param LogData $data Data to log.
-     *
-     * @throws RepositoryNotRegisteredException
+     * @inheritDoc
      */
-    public function logMessage(LogData $data): void
+    public function logMessage(LogData $data)
     {
         $repo = RepositoryRegistry::getRepository(LogData::CLASS_NAME);
         $repo->save($data);

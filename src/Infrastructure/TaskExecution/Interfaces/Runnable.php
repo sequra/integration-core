@@ -13,6 +13,8 @@ interface Runnable extends Serializable
 {
     /**
      * Starts runnable run logic
+     *
+     * @return void
      */
-    public function run(): void;
+    public function run();
 }

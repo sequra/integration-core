@@ -64,7 +64,7 @@ class OrderReportTask extends Task
      *
      * @throws Exception
      */
-    public static function fromArray(array $array): Serializable
+    public static function fromArray(array $array)
     {
         return StoreContext::doWithStore($array['storeId'], static function () use ($array) {
             return new static($array['merchantId'], $array['reportOrderIds'], $array['statisticsOrderIds'] ?? null);

@@ -95,8 +95,10 @@ abstract class Configuration extends Singleton
      * Saves min log level in integration database.
      *
      * @param int $minLogLevel Min log level.
+     *
+     * @return void
      */
-    public function saveMinLogLevel($minLogLevel): void
+    public function saveMinLogLevel($minLogLevel)
     {
         $this->saveConfigValue('minLogLevel', $minLogLevel);
     }
@@ -115,8 +117,10 @@ abstract class Configuration extends Singleton
      * Set default logger status (enabled/disabled).
      *
      * @param bool $status TRUE if default logger is enabled; otherwise, false.
+     *
+     * @return void
      */
-    public function setDefaultLoggerEnabled($status): void
+    public function setDefaultLoggerEnabled($status)
     {
         $this->saveConfigValue('defaultLoggerEnabled', $status);
     }
@@ -135,8 +139,10 @@ abstract class Configuration extends Singleton
      * Sets debug mode status (enabled/disabled).
      *
      * @param bool $status TRUE if debug mode is enabled; otherwise, false.
+     *
+     * @return void
      */
-    public function setDebugModeEnabled($status): void
+    public function setDebugModeEnabled($status)
     {
         $this->saveConfigValue('debugModeEnabled', (bool)$status);
     }
@@ -177,8 +183,10 @@ abstract class Configuration extends Singleton
      * can be in "in_progress" status at the same time.
      *
      * @param int $limit Max started tasks limit.
+     *
+     * @return void
      */
-    public function setMaxStartedTasksLimit($limit): void
+    public function setMaxStartedTasksLimit($limit)
     {
         $this->saveConfigValue('maxStartedTasksLimit', $limit);
     }
@@ -197,8 +205,10 @@ abstract class Configuration extends Singleton
      * Sets async process batch size.
      *
      * @param int $size
+     *
+     * @return void
      */
-    public function setAsyncStarterBatchSize($size): void
+    public function setAsyncStarterBatchSize($size)
     {
         $this->saveConfigValue('asyncStarterBatchSize', $size);
     }
@@ -218,8 +228,10 @@ abstract class Configuration extends Singleton
      * Sets task runner wakeup delay.
      *
      * @param int $delay Delay in seconds.
+     *
+     * @return void
      */
-    public function setTaskRunnerWakeupDelay($delay): void
+    public function setTaskRunnerWakeupDelay($delay)
     {
         $this->saveConfigValue('taskRunnerWakeupDelay', $delay);
     }
@@ -240,8 +252,10 @@ abstract class Configuration extends Singleton
      * Sets max alive time.
      *
      * @param int $maxAliveTime Max alive time in seconds.
+     *
+     * @return void
      */
-    public function setTaskRunnerMaxAliveTime($maxAliveTime): void
+    public function setTaskRunnerMaxAliveTime($maxAliveTime)
     {
         $this->saveConfigValue('taskRunnerMaxAliveTime', $maxAliveTime);
     }
@@ -261,8 +275,10 @@ abstract class Configuration extends Singleton
      * Sets max task execution retries.
      *
      * @param int $maxRetries Max number of retries.
+     *
+     * @return void
      */
-    public function setMaxTaskExecutionRetries($maxRetries): void
+    public function setMaxTaskExecutionRetries($maxRetries)
     {
         $this->saveConfigValue('maxTaskExecutionRetries', $maxRetries);
     }
@@ -282,8 +298,10 @@ abstract class Configuration extends Singleton
      * Sets max task inactivity period.
      *
      * @param int $maxInactivityPeriod Max inactivity period in seconds.
+     *
+     * @return void
      */
-    public function setMaxTaskInactivityPeriod($maxInactivityPeriod): void
+    public function setMaxTaskInactivityPeriod($maxInactivityPeriod)
     {
         $this->saveConfigValue('maxTaskInactivityPeriod', $maxInactivityPeriod);
     }
@@ -304,9 +322,11 @@ abstract class Configuration extends Singleton
      * @param string $guid Global unique identifier.
      * @param int|null $timestamp Timestamp.
      *
+     * @return void
+     *
      * @throws TaskRunnerStatusStorageUnavailableException
      */
-    public function setTaskRunnerStatus($guid, $timestamp): void
+    public function setTaskRunnerStatus($guid, $timestamp)
     {
         $taskRunnerStatus = array('guid' => $guid, 'timestamp' => $timestamp);
         $config = $this->saveConfigValue('taskRunnerStatus', $taskRunnerStatus);
@@ -340,8 +360,10 @@ abstract class Configuration extends Singleton
      * Sets current auto-configuration state.
      *
      * @param string $state Current state.
+     *
+     * @return void
      */
-    public function setAutoConfigurationState($state): void
+    public function setAutoConfigurationState($state)
     {
         $this->saveConfigValue('autoConfigurationState', $state);
     }
@@ -368,8 +390,10 @@ abstract class Configuration extends Singleton
      *
      * @param string $domain A domain for which to save configuration options.
      * @param Options[] $options HTTP configuration options
+     *
+     * @return void
      */
-    public function setHttpConfigurationOptions($domain, array $options): void
+    public function setHttpConfigurationOptions($domain, array $options)
     {
         // get all current options and append new ones for given domain
         $data = json_decode($this->getConfigValue('httpConfigurationOptions', '[]'), true);

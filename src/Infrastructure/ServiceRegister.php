@@ -49,7 +49,7 @@ class ServiceRegister
      *
      * @return ServiceRegister
      */
-    public static function getInstance(): ServiceRegister
+    public static function getInstance()
     {
         if (self::$instance === null) {
             self::$instance = new ServiceRegister();
@@ -67,7 +67,7 @@ class ServiceRegister
      *
      * @return T
      */
-    public static function getService(string $type)
+    public static function getService($type)
     {
         return self::getInstance()->get($type);
     }
@@ -78,10 +78,12 @@ class ServiceRegister
      * @param string $type Type of service. Should be fully qualified class name.
      * @param callable $delegate Delegate that will give instance of registered service.
      *
+     * @return void
+     *
      * @throws InvalidArgumentException
      *  In case delegate is not a callable.
      */
-    public static function registerService(string $type, callable $delegate): void
+    public static function registerService($type, $delegate)
     {
         self::getInstance()->register($type, $delegate);
     }
@@ -92,10 +94,12 @@ class ServiceRegister
      * @param string $type Type of service. Should be fully qualified class name.
      * @param callable $delegate Delegate that will give instance of registered service.
      *
+     * @return void
+     *
      * @throws InvalidArgumentException
      *  In case delegate is not a callable.
      */
-    protected function register(string $type, callable $delegate): void
+    protected function register(string $type, callable $delegate)
     {
         if (!is_callable($delegate)) {
             throw new InvalidArgumentException("$type delegate is not callable.");

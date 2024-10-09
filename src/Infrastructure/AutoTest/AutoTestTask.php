@@ -4,7 +4,6 @@ namespace SeQura\Core\Infrastructure\AutoTest;
 
 use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
-use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\TaskExecution\Task;
 
@@ -39,7 +38,7 @@ class AutoTestTask extends Task
     /**
      * @inheritDoc
      */
-    public static function fromArray(array $array): Serializable
+    public static function fromArray(array $array)
     {
         return new static($array['data']);
     }
@@ -47,7 +46,7 @@ class AutoTestTask extends Task
     /**
      * @inheritDoc
      */
-    public function toArray(): array
+    public function toArray()
     {
         return array('data' => $this->data);
     }
@@ -63,17 +62,15 @@ class AutoTestTask extends Task
     /**
      * @inheritDoc
      */
-    public function __unserialize($data): void
+    public function __unserialize($data)
     {
         $this->data = $data['data'];
     }
 
     /**
-     * String representation of object.
-     *
-     * @return string The string representation of the object or null.
+     * @inheritDoc
      */
-    public function serialize(): ?string
+    public function serialize()
     {
         return Serializer::serialize(array($this->data));
     }
@@ -91,9 +88,9 @@ class AutoTestTask extends Task
     }
 
     /**
-     * Runs task logic.
+     * @inheritDoc
      */
-    public function execute(): void
+    public function execute()
     {
         $this->reportProgress(5);
         Logger::logInfo('Auto-test task started');

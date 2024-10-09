@@ -75,8 +75,10 @@ class ExecutionDetails implements Serializable
 
     /**
      * @param float $progress
+     *
+     * @return void
      */
-    public function setProgress(float $progress): void
+    public function setProgress($progress)
     {
         $this->progress = $progress;
     }
@@ -100,7 +102,7 @@ class ExecutionDetails implements Serializable
     /**
      * @inheritDoc
      */
-    public function toArray(): array
+    public function toArray()
     {
         return [
             'progress' => $this->getProgress(),
@@ -120,7 +122,7 @@ class ExecutionDetails implements Serializable
     /**
      * @inheritDoc
      */
-    public function __unserialize($data): void
+    public function __unserialize($data)
     {
         $this->progress = $data['progress'];
         $this->executionId = $data['executionId'];
@@ -130,7 +132,7 @@ class ExecutionDetails implements Serializable
     /**
      * @return ExecutionDetails
      */
-    public static function fromArray(array $array): Serializable
+    public static function fromArray(array $array)
     {
         $entity = new static($array['executionId'], $array['weight']);
         $entity->setProgress($array['progress']);

@@ -69,7 +69,7 @@ abstract class DataTransferObject
      *
      * @return mixed[] Array representation of data transfer object.
      */
-    abstract public function toArray(): array;
+    abstract public function toArray();
 
     /**
      * Retrieves value from raw data.

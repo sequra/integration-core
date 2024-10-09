@@ -61,7 +61,7 @@ class QueueItemStarter implements Runnable
      * @return Serializable
      *      Instance of serialized object.
      */
-    public static function fromArray(array $array): Serializable
+    public static function fromArray(array $array)
     {
         return new static($array['queue_item_id']);
     }

@@ -23,8 +23,10 @@ interface TransactionLogAwareInterface
      * Sets transaction log.
      *
      * @param TransactionLog $transactionLog
+     *
+     * @return void
      */
-    public function setTransactionLog(TransactionLog $transactionLog): void;
+    public function setTransactionLog(TransactionLog $transactionLog);
 
     /**
      * Gets the store id for which the transactional task is created

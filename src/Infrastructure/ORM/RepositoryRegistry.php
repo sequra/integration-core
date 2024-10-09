@@ -33,7 +33,7 @@ class RepositoryRegistry
      *
      * @throws RepositoryNotRegisteredException
      */
-    public static function getRepository(string $entityClass): RepositoryInterface
+    public static function getRepository($entityClass)
     {
         if (!static::isRegistered($entityClass)) {
             throw new RepositoryNotRegisteredException("Repository for entity $entityClass not found or registered.");
@@ -58,9 +58,11 @@ class RepositoryRegistry
      * @param string $entityClass Class name of entity.
      * @param string $repositoryClass Class name of repository.
      *
+     * @return void
+     *
      * @throws RepositoryClassException
      */
-    public static function registerRepository(string $entityClass, string $repositoryClass): void
+    public static function registerRepository($entityClass, $repositoryClass)
     {
         if (!is_subclass_of($repositoryClass, RepositoryInterface::CLASS_NAME)) {
             throw new RepositoryClassException("Class $repositoryClass is not implementation of RepositoryInterface.");
@@ -77,7 +79,7 @@ class RepositoryRegistry
      *
      * @return boolean Returns TRUE if repository has been registered; FALSE otherwise.
      */
-    public static function isRegistered(string $entityClass): bool
+    public static function isRegistered($entityClass)
     {
         return isset(static::$repositories[$entityClass]);
     }
@@ -90,7 +92,7 @@ class RepositoryRegistry
      * @throws RepositoryClassException
      * @throws RepositoryNotRegisteredException
      */
-    public static function getQueueItemRepository(): QueueItemRepository
+    public static function getQueueItemRepository()
     {
         /**
          * @var QueueItemRepository $repository

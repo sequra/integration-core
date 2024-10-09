@@ -45,15 +45,17 @@ class IntermediateObject
     /**
      * @return string|null
      */
-    public function getIndex1(): ?string
+    public function getIndex1()
     {
         return $this->index1;
     }
 
     /**
      * @param string $index1
+     *
+     * @return void
      */
-    public function setIndex1(string $index1): void
+    public function setIndex1($index1)
     {
         $this->index1 = $index1;
     }
@@ -61,15 +63,17 @@ class IntermediateObject
     /**
      * @return string|null
      */
-    public function getIndex2(): ?string
+    public function getIndex2()
     {
         return $this->index2;
     }
 
     /**
      * @param string $index2
+     *
+     * @return void
      */
-    public function setIndex2(string $index2): void
+    public function setIndex2($index2)
     {
         $this->index2 = $index2;
     }
@@ -84,8 +88,10 @@ class IntermediateObject
 
     /**
      * @param string $index3
+     *
+     * @return void
      */
-    public function setIndex3(string $index3): void
+    public function setIndex3($index3)
     {
         $this->index3 = $index3;
     }
@@ -93,15 +99,17 @@ class IntermediateObject
     /**
      * @return string|null
      */
-    public function getIndex4(): ?string
+    public function getIndex4()
     {
         return $this->index4;
     }
 
     /**
      * @param string $index4
+     *
+     * @return void
      */
-    public function setIndex4(string $index4): void
+    public function setIndex4($index4)
     {
         $this->index4 = $index4;
     }
@@ -109,15 +117,17 @@ class IntermediateObject
     /**
      * @return string|null
      */
-    public function getIndex5(): ?string
+    public function getIndex5()
     {
         return $this->index5;
     }
 
     /**
      * @param string $index5
+     *
+     * @return void
      */
-    public function setIndex5(string $index5): void
+    public function setIndex5($index5)
     {
         $this->index5 = $index5;
     }
@@ -125,15 +135,17 @@ class IntermediateObject
     /**
      * @return string|null
      */
-    public function getIndex6(): ?string
+    public function getIndex6()
     {
         return $this->index6;
     }
 
     /**
      * @param string $index6
+     *
+     * @return void
      */
-    public function setIndex6(string $index6): void
+    public function setIndex6($index6)
     {
         $this->index6 = $index6;
     }
@@ -141,15 +153,17 @@ class IntermediateObject
     /**
      * @return string|null
      */
-    public function getData(): ?string
+    public function getData()
     {
         return $this->data;
     }
 
     /**
      * @param string $data
+     *
+     * @return void
      */
-    public function setData(string $data): void
+    public function setData($data)
     {
         $this->data = $data;
     }
@@ -159,8 +173,10 @@ class IntermediateObject
      *
      * @param mixed $index
      * @param mixed $value
+     *
+     * @return void
      */
-    public function setIndexValue($index, $value): void
+    public function setIndexValue($index, $value)
     {
         if (!is_int($index) || $index < 1 || !is_string($value)) {
             return;
@@ -181,7 +197,7 @@ class IntermediateObject
      *
      * @return string|null
      */
-    public function getIndexValue($index): ?string
+    public function getIndexValue($index)
     {
         $value = null;
         if (!is_int($index) || $index < 1) {

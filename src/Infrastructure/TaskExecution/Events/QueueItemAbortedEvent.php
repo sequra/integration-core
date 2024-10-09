@@ -22,7 +22,7 @@ class QueueItemAbortedEvent extends BaseQueueItemEvent
      * @param QueueItem $queueItem
      * @param string $abortDescription
      */
-    public function __construct(QueueItem $queueItem, string $abortDescription)
+    public function __construct(QueueItem $queueItem, $abortDescription)
     {
         parent::__construct($queueItem);
         $this->abortDescription = $abortDescription;

@@ -40,7 +40,7 @@ class FakeRunnable implements Runnable
     /**
      * @inheritDoc
      */
-    public static function fromArray(array $array): Serializable
+    public static function fromArray(array $array)
     {
         $instance = new self($array['testProperty']);
 
