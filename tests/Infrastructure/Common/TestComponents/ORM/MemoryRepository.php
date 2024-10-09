@@ -335,7 +335,7 @@ class MemoryRepository implements RepositoryInterface, MassInsert
     private function sliceResults(QueryFilter $filter, array $result)
     {
         if ($filter->getLimit()) {
-            $result = array_slice($result, $filter->getOffset(), $filter->getLimit());
+            $result = array_slice($result, $filter->getOffset()??0, $filter->getLimit());
         }
 
         return $result;
