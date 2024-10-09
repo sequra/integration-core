@@ -3,10 +3,12 @@
 namespace SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories;
 
 use DateTime;
+use RuntimeException;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use SeQura\Core\Infrastructure\ORM\Interfaces\ConditionallyDeletes;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
@@ -185,7 +187,9 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
             ->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
         $queryFilter->setLimit($limit);
 
-        // @phpstan-ignore-next-line
+        if (! $this->repository instanceof ConditionallyDeletes) {
+            throw new RuntimeException('Repository does not support deleteWhere method');
+        }
         $this->repository->deleteWhere($queryFilter);
     }
 
@@ -199,7 +203,9 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
         $queryFilter = new QueryFilter();
         $queryFilter->where('id', Operators::EQUALS, $id);
 
-        // @phpstan-ignore-next-line
+        if (! $this->repository instanceof ConditionallyDeletes) {
+            throw new RuntimeException('Repository does not support deleteWhere method');
+        }
         $this->repository->deleteWhere($queryFilter);
     }
 
