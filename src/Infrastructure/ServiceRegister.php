@@ -61,8 +61,10 @@ class ServiceRegister
     /**
      * Gets service for specified type.
      *
-     * @template T
      * @param class-string<T> $type
+     *
+     * @template T
+     *
      * @return T
      */
     public static function getService(string $type)
