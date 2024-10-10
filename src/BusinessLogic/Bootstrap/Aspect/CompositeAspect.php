@@ -7,7 +7,7 @@ namespace SeQura\Core\BusinessLogic\Bootstrap\Aspect;
  *
  * @package SeQura\Core\BusinessLogic\Bootstrap\Aspect
  */
-class CompositeAspect
+class CompositeAspect implements Aspect
 {
     /**
      * @var Aspect
@@ -29,6 +29,11 @@ class CompositeAspect
     }
 
     /**
+     * @param callable $callee
+     * @param mixed[] $params
+     *
+     * @return mixed
+     *
      * @throws \Exception
      */
     public function applyOn(callable $callee, array $params = [])
@@ -41,6 +46,12 @@ class CompositeAspect
         return $this->aspect->applyOn($callback, $params);
     }
 
+    /**
+     * @param callable $callee
+     * @param mixed[] $params
+     *
+     * @return \Closure
+     */
     protected function getNextCallee(callable $callee, array $params = []): \Closure
     {
         return function () use ($callee, $params) {

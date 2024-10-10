@@ -33,11 +33,11 @@ class TransactionData extends DataTransferObject
     protected $isSuccessful;
 
     /**
-     * @param $merchantReference
-     * @param $eventCode
-     * @param $timestamp
-     * @param $reason
-     * @param $isSuccessful
+     * @param int|string $merchantReference
+     * @param string $eventCode
+     * @param int $timestamp
+     * @param string $reason
+     * @param bool $isSuccessful
      */
     public function __construct($merchantReference, $eventCode, $timestamp, $reason, $isSuccessful)
     {

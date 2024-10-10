@@ -7,18 +7,18 @@ use SeQura\Core\Infrastructure\ServiceRegister;
 /**
  * Class Aspects
  *
- * @template T
+ * @phpstan-consistent-constructor
  *
  * @package SeQura\Core\BusinessLogic\Bootstrap\Aspect
  */
 class Aspects
 {
     /**
-     * @var T|null
+     * @var object|null
      */
     protected $subject;
     /**
-     * @var class-string<T>|null
+     * @var class-string|null
      */
     protected $subjectClassName;
     /**
@@ -26,17 +26,22 @@ class Aspects
      */
     protected $aspect;
 
+    /**
+     * Aspects constructor.
+     *
+     * @param Aspect $aspect
+     */
     protected function __construct(Aspect $aspect)
     {
         $this->aspect = $aspect;
     }
 
-    public static function run(Aspect $aspect): self
+    public static function run(Aspect $aspect): Aspects
     {
         return new static($aspect);
     }
 
-    public function andRun(Aspect $aspect): self
+    public function andRun(Aspect $aspect): Aspects
     {
         $this->aspect = new CompositeAspect($this->aspect);
         $this->aspect->append($aspect);
@@ -45,31 +50,37 @@ class Aspects
     }
 
     /**
-     * @param T $subject
+     * @param object $subject
      *
-     * @return T
+     * @return Aspects
      */
-    public function beforeEachMethodOfInstance($subject)
+    public function beforeEachMethodOfInstance($subject): Aspects
     {
         $this->subject = $subject;
         $this->subjectClassName = null;
-
         return $this;
     }
 
     /**
-     * @param class-string<T> $serviceClass
+     * @param class-string $serviceClass
      *
-     * @return T
+     * @return Aspects
      */
-    public function beforeEachMethodOfService(string $serviceClass)
+    public function beforeEachMethodOfService(string $serviceClass): Aspects
     {
         $this->subjectClassName = $serviceClass;
         $this->subject = null;
-
         return $this;
     }
 
+    /**
+     * @param string $methodName
+     * @param mixed[] $arguments
+     *
+     * @return mixed
+     *
+     * @throws \Exception
+     */
     public function __call($methodName, $arguments)
     {
         if ($this->subject) {

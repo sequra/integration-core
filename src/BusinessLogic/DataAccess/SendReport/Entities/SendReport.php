@@ -55,7 +55,7 @@ class SendReport extends Entity
         $sendData = $data['sendData'] ?? [];
 
 
-        $this->sendReport = new DomainSendReport(self::getArrayValue($sendData, 'sendReportTime'));
+        $this->sendReport = new DomainSendReport((int)self::getArrayValue($sendData, 'sendReportTime', 0));
     }
 
     /**

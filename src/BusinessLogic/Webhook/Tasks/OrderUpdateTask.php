@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
+use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Task;
@@ -15,6 +16,9 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  * Class OrderUpdateTask
  *
  * @package SeQura\Core\BusinessLogic\Webhook\Tasks
+ */
+/**
+ * @phpstan-consistent-constructor
  */
 class OrderUpdateTask extends Task
 {
@@ -29,15 +33,11 @@ class OrderUpdateTask extends Task
     protected $storeId;
 
     /**
-     * Transforms array into an order update task object,
-     *
-     * @param array $array Data that is used to instantiate serializable object.
-     *
-     * @return OrderUpdateTask  Instance of an order update task object.
+     * @inheritDoc
      *
      * @throws Exception
      */
-    public static function fromArray(array $array): OrderUpdateTask
+    public static function fromArray(array $array): Serializable
     {
         return StoreContext::doWithStore($array['storeId'], static function () use ($array) {
             return new static(
@@ -51,6 +51,7 @@ class OrderUpdateTask extends Task
      */
     public function __construct(Webhook $webhook)
     {
+        parent::__construct();
         $this->webhook = $webhook;
         $this->storeId = StoreContext::getInstance()->getStoreId();
     }
@@ -86,9 +87,7 @@ class OrderUpdateTask extends Task
     }
 
     /**
-     * Transforms serializable object into an array.
-     *
-     * @return array Array representation of a serializable object.
+     * @inheritDoc
      */
     public function toArray(): array
     {

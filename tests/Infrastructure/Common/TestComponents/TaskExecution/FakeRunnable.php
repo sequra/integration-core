@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution;
 
+use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Runnable;
 
@@ -39,11 +40,11 @@ class FakeRunnable implements Runnable
     /**
      * @inheritDoc
      */
-    public static function fromArray(array $data)
+    public static function fromArray(array $array): Serializable
     {
-        $instance = new self($data['testProperty']);
+        $instance = new self($array['testProperty']);
 
-        $instance->callHistory = $data['callHistory'];
+        $instance->callHistory = $array['callHistory'];
 
         return $instance;
     }
@@ -51,7 +52,7 @@ class FakeRunnable implements Runnable
     /**
      * @inheritDoc
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array(
             'testProperty' => $this->testProperty,
@@ -70,7 +71,7 @@ class FakeRunnable implements Runnable
     /**
      * @inheritDoc
      */
-    public function __unserialize($data)
+    public function __unserialize($data): void
     {
         $this->testProperty = $data['testProperty'];
         $this->callHistory = $data['callHistory'];
@@ -79,7 +80,7 @@ class FakeRunnable implements Runnable
     /**
      * Starts runnable run logic.
      */
-    public function run()
+    public function run(): void
     {
         $this->callHistory['run'][] = array();
     }

@@ -15,7 +15,7 @@ class FooOrchestrator extends Orchestrator
      */
     public $taskList = [];
 
-    protected function getSubTask()
+    protected function getSubTask(): ?ExecutionDetails
     {
         if (count($this->taskList) === self::SUB_JOB_COUNT) {
             return null;

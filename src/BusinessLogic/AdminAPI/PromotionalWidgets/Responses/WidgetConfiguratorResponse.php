@@ -11,6 +11,9 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
  */
 class WidgetConfiguratorResponse extends Response
 {
+    /**
+     * @var mixed
+     */
     protected $widgetConfigurator;
 
     /**

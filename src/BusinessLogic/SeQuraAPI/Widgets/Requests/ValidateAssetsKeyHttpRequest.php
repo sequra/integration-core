@@ -27,7 +27,7 @@ class ValidateAssetsKeyHttpRequest extends HttpRequest
     }
 
     /**
-     * @param array $paymentMethodIds
+     * @param mixed[] $paymentMethodIds
      *
      * @return string
      *

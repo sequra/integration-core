@@ -84,7 +84,7 @@ class ServiceRegisterTest extends TestCase
      */
     public function testRegisteringServiceWhenDelegateIsNotCallable()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(\TypeError::class);
         new TestServiceRegister(
             array(
                 TestService::CLASS_NAME => 'Some non callable string',

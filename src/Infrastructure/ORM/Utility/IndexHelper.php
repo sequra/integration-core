@@ -17,9 +17,9 @@ class IndexHelper
      *
      * @param Entity $entity Entity whose indexes are mapped
      *
-     * @return array Map of property indexes
+     * @return array<string,int> Map of property indexes
      */
-    public static function mapFieldsToIndexes(Entity $entity)
+    public static function mapFieldsToIndexes(Entity $entity): array
     {
         $result = array();
         $config = $entity->getConfig();
@@ -38,7 +38,7 @@ class IndexHelper
      *
      * @return string[]
      */
-    public static function transformFieldsToIndexes(Entity $entity)
+    public static function transformFieldsToIndexes(Entity $entity): array
     {
         $result = array();
         $config = $entity->getConfig();
@@ -57,9 +57,9 @@ class IndexHelper
      * @param mixed $value Raw value
      * @param string $type Type of the value
      *
-     * @return array|string|null
+     * @return mixed[]|string|null
      */
-    public static function castFieldValue($value, $type)
+    public static function castFieldValue($value, string $type)
     {
         if ($value === null || is_string($value)) {
             return $value;

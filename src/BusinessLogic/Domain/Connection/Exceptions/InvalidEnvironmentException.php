@@ -13,6 +13,9 @@ use Throwable;
  */
 class InvalidEnvironmentException extends BaseTranslatableException
 {
+    /**
+     * @var int
+     */
     protected $code = 401;
 
     public function __construct(Throwable $previous = null)

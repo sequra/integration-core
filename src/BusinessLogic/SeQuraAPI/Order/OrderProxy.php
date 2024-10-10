@@ -100,7 +100,7 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
     /**
      * Retrieves SeQura's order ID from the location header.
      *
-     * @param array $headers
+     * @param array<string,string> $headers
      *
      * @return string
      */
@@ -115,7 +115,7 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
     /**
      * Gets a list of SeQuraPaymentMethods from the raw response data.
      *
-     * @param array $responseData
+     * @param mixed[] $responseData
      *
      * @return SeQuraPaymentMethod[]
      *
@@ -137,7 +137,7 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
     /**
      * Gets a list of SeQuraPaymentMethodCategories from the raw response data.
      *
-     * @param array $responseData
+     * @param mixed[] $responseData
      *
      * @return SeQuraPaymentMethodCategory[]
      *

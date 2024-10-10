@@ -95,7 +95,7 @@ class TaskRunner
      *
      * @param string $guid Runner guid to set.
      */
-    public function setGuid($guid)
+    public function setGuid(string $guid): void
     {
         $this->guid = $guid;
     }
@@ -103,7 +103,7 @@ class TaskRunner
     /**
      * Starts task runner lifecycle.
      */
-    public function run()
+    public function run(): void
     {
         try {
             $this->keepAlive();
@@ -143,7 +143,7 @@ class TaskRunner
      * @throws QueueStorageUnavailableException
      * @throws TaskRunnerStatusStorageUnavailableException
      */
-    protected function failOrRequeueExpiredTasks()
+    protected function failOrRequeueExpiredTasks(): void
     {
         $this->logDebug(array('Message' => 'Task runner: expired tasks cleanup started.'));
 
@@ -185,7 +185,7 @@ class TaskRunner
      * @throws QueueItemDeserializationException
      * @throws QueueStorageUnavailableException
      */
-    protected function failOrRequeueExpiredTask(QueueItem $item)
+    protected function failOrRequeueExpiredTask(QueueItem $item): void
     {
         if (!$this->isItemExpired($item)) {
             return;
@@ -218,7 +218,7 @@ class TaskRunner
      * @throws QueueItemDeserializationException
      * @throws TaskRunnerStatusStorageUnavailableException
      */
-    protected function startOldestQueuedItems()
+    protected function startOldestQueuedItems(): void
     {
         $this->keepAlive();
 
@@ -283,7 +283,7 @@ class TaskRunner
      * @throws TaskRunnerStatusChangeException
      * @throws TaskRunnerStatusStorageUnavailableException
      */
-    protected function wakeup()
+    protected function wakeup(): void
     {
         $this->logDebug(array('Message' => 'Task runner: starting self deactivation.'));
 
@@ -303,7 +303,7 @@ class TaskRunner
      *
      * @throws TaskRunnerStatusStorageUnavailableException
      */
-    protected function keepAlive()
+    protected function keepAlive(): void
     {
         $currentTime = $this->getTimeProvider()->getCurrentLocalTime()->getTimestamp();
         if (($currentTime - $this->aliveSinceUpdatedAt) < self::TASK_RUNNER_KEEP_ALIVE_PERIOD) {
@@ -321,7 +321,7 @@ class TaskRunner
      *
      * @throws TaskRunnerStatusStorageUnavailableException
      */
-    protected function isCurrentRunnerAlive()
+    protected function isCurrentRunnerAlive(): bool
     {
         $runnerStatus = $this->getRunnerStorage()->getStatus();
         $runnerExpired = $runnerStatus->isExpired();
@@ -347,7 +347,7 @@ class TaskRunner
      *
      * @throws QueueItemDeserializationException
      */
-    protected function isItemExpired(QueueItem $item)
+    protected function isItemExpired(QueueItem $item): bool
     {
         $currentTimestamp = $this->getTimeProvider()->getCurrentLocalTime()->getTimestamp();
         $maxTaskInactivityPeriod = $item->getTask()->getMaxInactivityPeriod();
@@ -364,7 +364,7 @@ class TaskRunner
      *
      * @throws QueueItemDeserializationException
      */
-    protected function getItemDescription(QueueItem $item)
+    protected function getItemDescription(QueueItem $item): string
     {
         return "{$item->getId()}({$item->getTaskType()})";
     }
@@ -374,7 +374,7 @@ class TaskRunner
      *
      * @see QueueService service instance.
      */
-    protected function getQueue()
+    protected function getQueue(): QueueService
     {
         if ($this->queueService === null) {
             $this->queueService = ServiceRegister::getService(QueueService::CLASS_NAME);
@@ -388,7 +388,7 @@ class TaskRunner
      *
      * @see TaskRunnerStatusStorageInterface service instance.
      */
-    protected function getRunnerStorage()
+    protected function getRunnerStorage(): TaskRunnerStatusStorage
     {
         if ($this->runnerStorage === null) {
             $this->runnerStorage = ServiceRegister::getService(TaskRunnerStatusStorage::CLASS_NAME);
@@ -402,7 +402,7 @@ class TaskRunner
      *
      * @return ConfigurationManager Configuration manager instance.
      */
-    public function getConfigurationManager()
+    public function getConfigurationManager(): ConfigurationManager
     {
         if ($this->configurationManager === null) {
             $this->configurationManager = ServiceRegister::getService(ConfigurationManager::CLASS_NAME);
@@ -416,7 +416,7 @@ class TaskRunner
      *
      * @see Configuration service instance.
      */
-    protected function getConfigurationService()
+    protected function getConfigurationService(): Configuration
     {
         if ($this->configurationService === null) {
             $this->configurationService = ServiceRegister::getService(Configuration::CLASS_NAME);
@@ -430,7 +430,7 @@ class TaskRunner
      *
      * @see TimeProvider instance.
      */
-    protected function getTimeProvider()
+    protected function getTimeProvider(): TimeProvider
     {
         if ($this->timeProvider === null) {
             $this->timeProvider = ServiceRegister::getService(TimeProvider::CLASS_NAME);
@@ -444,7 +444,7 @@ class TaskRunner
      *
      * @see TaskRunnerWakeupInterface service instance.
      */
-    protected function getTaskWakeup()
+    protected function getTaskWakeup(): TaskRunnerWakeup
     {
         if ($this->taskWakeup === null) {
             $this->taskWakeup = ServiceRegister::getService(TaskRunnerWakeup::CLASS_NAME);
@@ -458,13 +458,13 @@ class TaskRunner
      *
      * @return int Wakeup delay in seconds.
      */
-    protected function getWakeupDelay()
+    protected function getWakeupDelay(): int
     {
         $configurationValue = $this->getConfigurationService()->getTaskRunnerWakeupDelay();
 
         $minimalSleepTime = $configurationValue !== null ? $configurationValue : self::WAKEUP_DELAY;
 
-        return $minimalSleepTime + ceil($this->batchSleepTime);
+        return $minimalSleepTime + (int)ceil($this->batchSleepTime);
     }
 
     /**
@@ -475,7 +475,7 @@ class TaskRunner
      *
      * @throws QueueItemDeserializationException
      */
-    protected function logMessageFor(QueueItem $queueItem, $message)
+    protected function logMessageFor(QueueItem $queueItem, string $message): void
     {
         $this->logDebug(
             array(
@@ -493,9 +493,9 @@ class TaskRunner
     /**
      * Helper methods to encapsulate debug level logging.
      *
-     * @param array $debugContent Array of debug content for logging.
+     * @param array<mixed> $debugContent Array of debug content for logging.
      */
-    protected function logDebug(array $debugContent)
+    protected function logDebug(array $debugContent): void
     {
         $debugContent['RunnerGuid'] = $this->guid;
         Logger::logDebug($debugContent['Message'], 'Core', $debugContent);
@@ -504,9 +504,9 @@ class TaskRunner
     /**
      * Helper methods to encapsulate warning level logging.
      *
-     * @param array $debugContent Array of debug content for logging.
+     * @param array<mixed> $debugContent Array of debug content for logging.
      */
-    protected function logWarning(array $debugContent)
+    protected function logWarning(array $debugContent): void
     {
         $debugContent['RunnerGuid'] = $this->guid;
         Logger::logWarning($debugContent['Message'], 'Core', $debugContent);

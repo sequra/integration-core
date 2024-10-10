@@ -134,7 +134,7 @@ class ConnectionData extends Entity
      */
     protected function getEncryptorUtility(): EncryptorInterface
     {
-        if (empty($this->encryptor)) {
+        if ($this->encryptor === null) {
             $this->encryptor = ServiceRegister::getService(EncryptorInterface::class);
         }
 

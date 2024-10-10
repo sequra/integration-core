@@ -15,9 +15,9 @@ abstract class OrderRequestDTO extends DataTransferObject
      * Returns an array of all class properties where array keys are equal to property names but in snake case,
      * excluding properties with null values.
      *
-     * @param array $properties An array of key value pairs representing property name and property value.
+     * @param mixed[] $properties An array of key value pairs representing property name and property value.
      *
-     * @return array
+     * @return mixed[]
      */
     public function transformPropertiesToAnArray(array $properties): array
     {
@@ -53,11 +53,11 @@ abstract class OrderRequestDTO extends DataTransferObject
     /**
      * Handles case when property is of type array.
      *
-     * @param array $arrayData
+     * @param mixed[] $arrayData
      * @param string $name
-     * @param array $value
+     * @param mixed[] $value
      *
-     * @return array
+     * @return mixed[]
      */
     protected function handleArrayProperty(array $arrayData, string $name, array $value): array
     {

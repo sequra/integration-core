@@ -46,7 +46,7 @@ class CreateOrderRequest extends BaseOrderRequest
      * @param Address $invoiceAddress
      * @param Gui $gui
      * @param MerchantReference|null $merchantReference
-     * @param array|null $trackings
+     * @param mixed[]|null $trackings
      */
     public function __construct(
         string $state,
@@ -77,7 +77,7 @@ class CreateOrderRequest extends BaseOrderRequest
     /**
      * Create a CreateOrderRequest instance from an array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return CreateOrderRequest
      * @throws InvalidCartItemsException

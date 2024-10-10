@@ -21,7 +21,7 @@ class TaskRunnerManager implements BaseService
     /**
      * Halts task runner.
      */
-    public function halt()
+    public function halt(): void
     {
         $this->getConfiguration()->setTaskRunnerHalted(true);
     }
@@ -29,7 +29,7 @@ class TaskRunnerManager implements BaseService
     /**
      * Resumes task execution.
      */
-    public function resume()
+    public function resume(): void
     {
         $this->getConfiguration()->setTaskRunnerHalted(false);
         $this->getTaskRunnerWakeupService()->wakeup();
@@ -40,7 +40,7 @@ class TaskRunnerManager implements BaseService
      *
      * @return Configuration Configuration instance.
      */
-    protected function getConfiguration()
+    protected function getConfiguration(): Configuration
     {
         if ($this->configuration === null) {
             $this->configuration = ServiceRegister::getService(Configuration::CLASS_NAME);
@@ -54,7 +54,7 @@ class TaskRunnerManager implements BaseService
      *
      * @return TaskRunnerWakeup Task runner wakeup instance.
      */
-    protected function getTaskRunnerWakeupService()
+    protected function getTaskRunnerWakeupService(): TaskRunnerWakeup
     {
         if ($this->tasRunnerWakeupService === null) {
             $this->tasRunnerWakeupService = ServiceRegister::getService(TaskRunnerWakeup::CLASS_NAME);

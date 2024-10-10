@@ -27,7 +27,7 @@ class Statistics extends OrderRequestDTO
     /**
      * Creates a new Statistics instance from an input array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return self
      */
@@ -41,7 +41,7 @@ class Statistics extends OrderRequestDTO
     }
 
     /**
-     * @return OrderReport[]
+     * @return OrderStatistics[]
      */
     public function getOrders(): array
     {

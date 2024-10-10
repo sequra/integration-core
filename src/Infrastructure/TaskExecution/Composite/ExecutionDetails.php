@@ -12,6 +12,9 @@ use SeQura\Core\Infrastructure\Serializer\Serializer;
  *
  * @access protected
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 class ExecutionDetails implements Serializable
 {
     /**
@@ -73,7 +76,7 @@ class ExecutionDetails implements Serializable
     /**
      * @param float $progress
      */
-    public function setProgress($progress)
+    public function setProgress(float $progress): void
     {
         $this->progress = $progress;
     }
@@ -97,7 +100,7 @@ class ExecutionDetails implements Serializable
     /**
      * @inheritDoc
      */
-    public function toArray()
+    public function toArray(): array
     {
         return [
             'progress' => $this->getProgress(),
@@ -117,7 +120,7 @@ class ExecutionDetails implements Serializable
     /**
      * @inheritDoc
      */
-    public function __unserialize($data)
+    public function __unserialize($data): void
     {
         $this->progress = $data['progress'];
         $this->executionId = $data['executionId'];
@@ -125,9 +128,9 @@ class ExecutionDetails implements Serializable
     }
 
     /**
-     * @inheritDoc
+     * @return ExecutionDetails
      */
-    public static function fromArray(array $array)
+    public static function fromArray(array $array): Serializable
     {
         $entity = new static($array['executionId'], $array['weight']);
         $entity->setProgress($array['progress']);

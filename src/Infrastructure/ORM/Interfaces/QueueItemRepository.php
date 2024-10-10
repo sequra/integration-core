@@ -34,7 +34,7 @@ interface QueueItemRepository extends RepositoryInterface
      * update will be performed.
      *
      * @param QueueItem $queueItem Item to save
-     * @param array $additionalWhere List of key/value pairs that must be satisfied upon saving queue item. Key is
+     * @param array<string,mixed> $additionalWhere List of key/value pairs that must be satisfied upon saving queue item. Key is
      *  queue item property and value is condition value for that property. Example for MySql storage:
      *  $storage->save($queueItem, array('status' => 'queued')) should produce query
      *  UPDATE queue_storage_table SET .... WHERE .... AND status => 'queued'
@@ -42,15 +42,15 @@ interface QueueItemRepository extends RepositoryInterface
      * @return int Id of saved queue item
      * @throws QueueItemSaveException if queue item could not be saved
      */
-    public function saveWithCondition(QueueItem $queueItem, array $additionalWhere = array());
+    public function saveWithCondition(QueueItem $queueItem, array $additionalWhere = array()): int;
 
     /**
      * Updates status of a batch of queue items.
      *
-     * @param array $ids
+     * @param mixed[] $ids
      * @param string $status
      *
      * @return void
      */
-    public function batchStatusUpdate(array $ids, $status);
+    public function batchStatusUpdate(array $ids, $status): void;
 }

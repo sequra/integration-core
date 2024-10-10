@@ -175,12 +175,12 @@ class AsyncBatchStarterTest extends TestCase
 
         $this->assertSame('B(B(R, R), R)', (string)$batchStarter1);
         $this->assertSame(1, $batchStarter1->getMaxNestingLevels());
-        $this->assertSame(1, $batchStarter1->getWaitTime($requestTimeout), 'Wait time should be calculated as batchSize * maxNestingLevel * requestTimeout - runners out of batch * requestTimeout');
+        $this->assertSame(1.0, $batchStarter1->getWaitTime($requestTimeout), 'Wait time should be calculated as batchSize * maxNestingLevel * requestTimeout - runners out of batch * requestTimeout');
         $this->assertSame('B(B(B(R, R), B(R, R), R), B(B(R, R), R, R), R, R)', (string)$batchStarter2);
         $this->assertSame(2, $batchStarter2->getMaxNestingLevels());
-        $this->assertSame(2, $batchStarter2->getWaitTime($requestTimeout), 'Wait time should be calculated as batchSize * maxNestingLevel * requestTimeout - runners out of batch * requestTimeout');
+        $this->assertSame(2.0, $batchStarter2->getWaitTime($requestTimeout), 'Wait time should be calculated as batchSize * maxNestingLevel * requestTimeout - runners out of batch * requestTimeout');
         $this->assertSame('B(B(R, R, R), B(R, R, R), B(R, R, R), R)', (string)$batchStarter3);
         $this->assertSame(1, $batchStarter3->getMaxNestingLevels());
-        $this->assertSame(2, $batchStarter3->getWaitTime($requestTimeout), 'Wait time should be calculated as batchSize * maxNestingLevel * requestTimeout - runners out of batch * requestTimeout');
+        $this->assertSame(2.0, $batchStarter3->getWaitTime($requestTimeout), 'Wait time should be calculated as batchSize * maxNestingLevel * requestTimeout - runners out of batch * requestTimeout');
     }
 }

@@ -32,7 +32,7 @@ class JsonSerializer extends Serializer
             $data->className = get_class($data);
         }
 
-        return json_encode($data, true);
+        return json_encode($data);
     }
 
     /**

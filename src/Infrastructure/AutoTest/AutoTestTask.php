@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Infrastructure\AutoTest;
 
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
@@ -11,6 +12,9 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  * Class AutoTestTask.
  *
  * @package SeQura\Core\Infrastructure\AutoTest
+ */
+/**
+ * @phpstan-consistent-constructor
  */
 class AutoTestTask extends Task
 {
@@ -28,28 +32,22 @@ class AutoTestTask extends Task
      */
     public function __construct($data)
     {
+        parent::__construct();
         $this->data = $data;
     }
 
     /**
-     * Transforms array into an serializable object,
-     *
-     * @param array $array Data that is used to instantiate serializable object.
-     *
-     * @return Serializable
-     *      Instance of serialized object.
+     * @inheritDoc
      */
-    public static function fromArray(array $array)
+    public static function fromArray(array $array): Serializable
     {
         return new static($array['data']);
     }
 
     /**
-     * Transforms serializable object into an array.
-     *
-     * @return array Array representation of a serializable object.
+     * @inheritDoc
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array('data' => $this->data);
     }
@@ -65,7 +63,7 @@ class AutoTestTask extends Task
     /**
      * @inheritDoc
      */
-    public function __unserialize($data)
+    public function __unserialize($data): void
     {
         $this->data = $data['data'];
     }
@@ -75,7 +73,7 @@ class AutoTestTask extends Task
      *
      * @return string The string representation of the object or null.
      */
-    public function serialize()
+    public function serialize(): ?string
     {
         return Serializer::serialize(array($this->data));
     }
@@ -95,13 +93,17 @@ class AutoTestTask extends Task
     /**
      * Runs task logic.
      */
-    public function execute()
+    public function execute(): void
     {
         $this->reportProgress(5);
         Logger::logInfo('Auto-test task started');
 
         $this->reportProgress(50);
-        Logger::logInfo('Auto-test task parameters', 'Core', [$this->data]);
+        Logger::logInfo(
+            'Auto-test task parameters',
+            'Core',
+            [new LogContextData('context', $this->data)]
+        );
 
         $this->reportProgress(100);
         Logger::logInfo('Auto-test task ended');

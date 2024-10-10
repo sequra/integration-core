@@ -47,13 +47,13 @@ class Webhook
     /**
      * Transforms array into a webhook object,
      *
-     * @param array $array Data that is used to instantiate serializable object.
+     * @param mixed[] $array Data that is used to instantiate serializable object.
      *
      * @return Webhook  Instance of serialized object.
      */
     public static function fromArray(array $array): Webhook
     {
-        $webhook = new static();
+        $webhook = new self();
 
         $webhook->setSignature($array['signature'] ?? '');
         $webhook->setOrderRef($array['order_ref'] ?? '');
@@ -69,7 +69,7 @@ class Webhook
     /**
      * Transforms serializable object into an array.
      *
-     * @return array Array representation of a serializable object.
+     * @return mixed[] Array representation of a serializable object.
      */
     public function toArray(): array
     {

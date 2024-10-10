@@ -41,7 +41,7 @@ class EventsWebhook extends OrderRequestDTO
     /**
      * Create a new EventsWebhook instance from an array of data.
      *
-     * @param array $data Array containing the data.
+     * @param mixed[] $data Array containing the data.
      *
      * @return EventsWebhook Returns a new EventsWebhook instance.
      * @throws InvalidUrlException

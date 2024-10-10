@@ -9,6 +9,9 @@ use Throwable;
  *
  * @package SeQura\Core\BusinessLogic\AdminAPI\Response
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 class ErrorResponse extends Response
 {
     /**
@@ -34,8 +37,8 @@ class ErrorResponse extends Response
     /**
      * Implementation is swallowing all undefined calls to avoid undefined method call exceptions when
      *
-     * @param $methodName
-     * @param $arguments
+     * @param string $methodName
+     * @param mixed[] $arguments
      *
      * @see ErrorHandlingAspect already hanled the API call exception but because of chaining calle will trigger
      * API controller messages on instance of the @see self.

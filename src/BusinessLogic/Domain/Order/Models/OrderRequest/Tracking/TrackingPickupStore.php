@@ -193,7 +193,7 @@ class TrackingPickupStore extends Tracking
     /**
      * Create a new TrackingPickupStore instance from an array of data.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return Tracking
      *

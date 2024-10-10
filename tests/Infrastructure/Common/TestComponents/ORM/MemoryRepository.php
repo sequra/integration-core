@@ -117,7 +117,7 @@ class MemoryRepository implements RepositoryInterface, MassInsert
     /**
      * @inheritdoc
      */
-    public function massInsert(array $entities)
+    public function massInsert(array $entities): void
     {
         foreach ($entities as $entity) {
             // This is mock implementation DO NOT implement this method like this in integrations unless it is unavoidable
@@ -174,7 +174,7 @@ class MemoryRepository implements RepositoryInterface, MassInsert
      *
      * @param string $entityClass
      */
-    public function setEntityClass($entityClass)
+    public function setEntityClass(string $entityClass): void
     {
         $this->entityClass = $entityClass;
     }

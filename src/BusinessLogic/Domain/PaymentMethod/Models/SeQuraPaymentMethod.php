@@ -333,7 +333,7 @@ class SeQuraPaymentMethod
     /**
      * Creates an instance of SeQuraPaymentMethod from given array data.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return SeQuraPaymentMethod
      *

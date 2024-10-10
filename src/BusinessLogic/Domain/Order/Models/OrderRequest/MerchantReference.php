@@ -7,6 +7,9 @@ namespace SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest;
  *
  * @package SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 class MerchantReference extends OrderRequestDTO
 {
     /**
@@ -32,7 +35,7 @@ class MerchantReference extends OrderRequestDTO
     /**
      * Creates a new MerchantReference instance from an array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return MerchantReference
      */

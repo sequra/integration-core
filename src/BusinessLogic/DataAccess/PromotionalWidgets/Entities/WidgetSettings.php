@@ -31,7 +31,7 @@ class WidgetSettings extends Entity
     /**
      * @inheritDoc
      */
-    public function inflate(array $data)
+    public function inflate(array $data): void
     {
         parent::inflate($data);
 
@@ -41,11 +41,11 @@ class WidgetSettings extends Entity
 
         $this->storeId = $data['storeId'] ?? '';
         $this->widgetSettings = new DomainWidgetSettings(
-            self::getArrayValue($widgetSettings, 'enabled', false),
+            (bool)self::getArrayValue($widgetSettings, 'enabled', false),
             self::getArrayValue($widgetSettings, 'assetsKey', ''),
-            self::getArrayValue($widgetSettings, 'displayOnProductPage', false),
-            self::getArrayValue($widgetSettings, 'showInstallmentsInProductListing', false),
-            self::getArrayValue($widgetSettings, 'showInstallmentsInCartPage', false),
+            (bool)self::getArrayValue($widgetSettings, 'displayOnProductPage', false),
+            (bool)self::getArrayValue($widgetSettings, 'showInstallmentsInProductListing', false),
+            (bool)self::getArrayValue($widgetSettings, 'showInstallmentsInCartPage', false),
             self::getArrayValue($widgetSettings, 'miniWidgetSelector', ''),
             self::getArrayValue($widgetSettings, 'widgetConfiguration', ''),
             $widgetLabels ? new DomainWidgetLabels(

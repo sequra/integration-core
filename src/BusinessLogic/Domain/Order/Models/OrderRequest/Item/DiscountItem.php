@@ -35,7 +35,7 @@ class DiscountItem extends Item
     /**
      * Create DiscountItem object from array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return DiscountItem
      */

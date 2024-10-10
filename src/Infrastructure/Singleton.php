@@ -10,8 +10,14 @@ use RuntimeException;
  *
  * @package SeQura\Core\Infrastructure
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 abstract class Singleton
 {
+    /**
+     * @var Singleton|null
+     */
     protected static $instance;
 
     /**
@@ -42,7 +48,7 @@ abstract class Singleton
     /**
      * Resets singleton instance. Required for proper tests.
      */
-    public static function resetInstance()
+    public static function resetInstance(): void
     {
         static::$instance = null;
     }

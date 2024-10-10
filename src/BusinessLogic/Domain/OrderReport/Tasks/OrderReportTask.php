@@ -18,6 +18,9 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  *
  * @package SeQura\Core\BusinessLogic\Domain\OrderReport\Tasks
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 class OrderReportTask extends Task
 {
     /**
@@ -49,6 +52,7 @@ class OrderReportTask extends Task
      */
     public function __construct(string $merchantId, array $reportOrderIds, ?array $statisticsOrderIds = null)
     {
+        parent::__construct();
         $this->merchantId = $merchantId;
         $this->reportOrderIds = $reportOrderIds;
         $this->statisticsOrderIds = $statisticsOrderIds;
@@ -56,11 +60,7 @@ class OrderReportTask extends Task
     }
 
     /**
-     * Transforms array into a serializable object,
-     *
-     * @param array $array
-     *
-     * @return Serializable
+     * @inheritDoc
      *
      * @throws Exception
      */
@@ -72,9 +72,7 @@ class OrderReportTask extends Task
     }
 
     /**
-     * Transforms serializable object into an array.
-     *
-     * @return array Array representation of a serializable object.
+     * @inheritDoc
      */
     public function toArray(): array
     {

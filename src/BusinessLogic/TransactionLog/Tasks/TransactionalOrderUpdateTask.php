@@ -15,6 +15,9 @@ use SeQura\Core\Infrastructure\ServiceRegister;
  *
  * @package SeQura\Core\BusinessLogic\TransactionLog\Tasks
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 class TransactionalOrderUpdateTask extends TransactionalTask
 {
     /**
@@ -38,6 +41,7 @@ class TransactionalOrderUpdateTask extends TransactionalTask
      */
     public function __construct(OrderUpdateData $orderUpdateData, TransactionData $transactionData)
     {
+        parent::__construct();
         $this->orderUpdateData = $orderUpdateData;
         $this->transactionData = $transactionData;
         $this->storeId = StoreContext::getInstance()->getStoreId();
@@ -85,7 +89,7 @@ class TransactionalOrderUpdateTask extends TransactionalTask
      *
      * @throws Exception
      */
-    public static function fromArray(array $array): TransactionalOrderUpdateTask
+    public static function fromArray(array $array): \SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable
     {
         return StoreContext::doWithStore($array['storeId'], static function () use ($array) {
             return new static(

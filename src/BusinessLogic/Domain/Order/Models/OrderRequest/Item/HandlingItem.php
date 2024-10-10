@@ -35,7 +35,7 @@ class HandlingItem extends Item
     /**
      * Create a new HandlingItem instance from an array of properties.
      *
-     * @param array $data An associative array of HandlingItem properties.
+     * @param mixed[] $data An associative array of HandlingItem properties.
      *
      * @return HandlingItem A new HandlingItem instance with the given properties.
      */

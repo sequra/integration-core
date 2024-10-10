@@ -71,7 +71,7 @@ class UpdateOrderRequest extends BaseOrderRequest
     /**
      * Create a UpdateOrderRequest instance from an array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return UpdateOrderRequest
      * @throws InvalidCartItemsException

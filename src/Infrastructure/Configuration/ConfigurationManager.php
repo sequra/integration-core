@@ -42,7 +42,7 @@ class ConfigurationManager extends Singleton
      *
      * @param string $context Context to set.
      */
-    public function setContext($context)
+    public function setContext($context): void
     {
         $this->context = $context;
     }

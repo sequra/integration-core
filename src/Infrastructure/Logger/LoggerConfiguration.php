@@ -58,7 +58,7 @@ class LoggerConfiguration extends Singleton
      *
      * @param bool $status
      */
-    public static function setDefaultLoggerEnabled($status)
+    public static function setDefaultLoggerEnabled($status): void
     {
         self::getInstance()->setIsDefaultLoggerEnabled($status);
     }
@@ -69,7 +69,7 @@ class LoggerConfiguration extends Singleton
      * @return bool
      *   Logger status true => enabled, false => disabled.
      */
-    public function isDefaultLoggerEnabled()
+    public function isDefaultLoggerEnabled(): bool
     {
         if (empty($this->isDefaultLoggerEnabled)) {
             try {
@@ -90,7 +90,7 @@ class LoggerConfiguration extends Singleton
      *
      * @param bool $loggerStatus Logger status true => enabled, false => disabled.
      */
-    public function setIsDefaultLoggerEnabled($loggerStatus)
+    public function setIsDefaultLoggerEnabled($loggerStatus): void
     {
         $this->getShopConfiguration()->setDefaultLoggerEnabled($loggerStatus);
         $this->isDefaultLoggerEnabled = $loggerStatus;
@@ -106,7 +106,7 @@ class LoggerConfiguration extends Singleton
      *    - info => 2
      *    - debug => 3
      */
-    public function getMinLogLevel()
+    public function getMinLogLevel(): int
     {
         if ($this->minLogLevel === null) {
             try {
@@ -126,7 +126,7 @@ class LoggerConfiguration extends Singleton
      *
      * @param int $minLogLevel Log level.
      */
-    public function setMinLogLevel($minLogLevel)
+    public function setMinLogLevel($minLogLevel): void
     {
         $this->getShopConfiguration()->saveMinLogLevel($minLogLevel);
         $this->minLogLevel = $minLogLevel;

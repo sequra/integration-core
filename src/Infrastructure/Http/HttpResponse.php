@@ -28,7 +28,7 @@ class HttpResponse
     /**
      * HTTP headers.
      *
-     * @var array
+     * @var array<string,string>
      */
     protected $headers;
 
@@ -36,7 +36,7 @@ class HttpResponse
      * HttpResponse constructor.
      *
      * @param int $status HTTP status
-     * @param array $headers HTTPS headers
+     * @param array<string,string> $headers HTTPS headers
      * @param string $body Response body
      */
     public function __construct($status, $headers, $body)
@@ -69,9 +69,9 @@ class HttpResponse
     /**
      * Returns json decoded response body.
      *
-     * @return array Response body decoded as json decode.
+     * @return mixed[] Response body decoded as json decode.
      */
-    public function decodeBodyToArray()
+    public function decodeBodyToArray(): array
     {
         $result = json_decode($this->body, true);
 
@@ -81,7 +81,7 @@ class HttpResponse
     /**
      * Return. response headers.
      *
-     * @return array Array of HTTP headers.
+     * @return array<string,string> Array of HTTP headers.
      */
     public function getHeaders()
     {

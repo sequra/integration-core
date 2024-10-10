@@ -21,7 +21,7 @@ class CheckoutAPI
     /**
      * Gets an CheckoutAPI instance.
      *
-     * @return CheckoutAPI
+     * @return Aspects
      */
     public static function get(): object
     {
@@ -31,7 +31,7 @@ class CheckoutAPI
     /**
      * @param string $storeId
      *
-     * @return SolicitationController
+     * @return object
      */
     public function solicitation(string $storeId): object
     {

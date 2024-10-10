@@ -5,6 +5,7 @@ namespace SeQura\Core\Infrastructure\TaskExecution;
 use SeQura\Core\Infrastructure\Configuration\Configuration;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\Http\HttpClient;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
@@ -79,7 +80,7 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
      * @throws HttpRequestException
      * @throws ProcessStarterSaveException
      */
-    public function start(Runnable $runner)
+    public function start(Runnable $runner): void
     {
         $guid = trim($this->guidProvider->generateGuid());
 
@@ -92,7 +93,7 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
      *
      * @param string $guid Identifier of process.
      */
-    public function runProcess($guid)
+    public function runProcess($guid): void
     {
         try {
             $filter = new QueryFilter();
@@ -107,7 +108,14 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
                 $this->processRepository->delete($process);
             }
         } catch (Exception $e) {
-            Logger::logError($e->getMessage(), 'Core', ['guid' => $guid, 'trace' => $e->getTraceAsString()]);
+            Logger::logError(
+                $e->getMessage(),
+                'Core',
+                [
+                    new LogContextData('guid', $guid),
+                    new LogContextData('trace', $e->getTraceAsString())
+                ]
+            );
         }
     }
 
@@ -119,7 +127,7 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
      *
      * @throws ProcessStarterSaveException
      */
-    protected function saveGuidAndRunner($guid, Runnable $runner)
+    protected function saveGuidAndRunner(string $guid, Runnable $runner): void
     {
         try {
             $process = new Process();
@@ -140,7 +148,7 @@ class AsyncProcessStarterService extends Singleton implements AsyncProcessServic
      *
      * @throws HttpRequestException
      */
-    protected function startRunnerAsynchronously($guid)
+    protected function startRunnerAsynchronously(string $guid): void
     {
         try {
             $this->httpClient->requestAsync(

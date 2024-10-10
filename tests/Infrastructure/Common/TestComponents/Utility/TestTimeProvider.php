@@ -45,7 +45,7 @@ class TestTimeProvider extends TimeProvider
      *
      * @throws \Exception
      */
-    public function sleep($sleepTime)
+    public function sleep(int $sleepTime): void
     {
         $currentTime = $this->getCurrentLocalTime();
         $this->setCurrentLocalTime($currentTime->add(new \DateInterval("PT{$sleepTime}S")));

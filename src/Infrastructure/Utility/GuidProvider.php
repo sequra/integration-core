@@ -7,6 +7,9 @@ namespace SeQura\Core\Infrastructure\Utility;
  *
  * @package SeQura\Core\Infrastructure\Utility
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 class GuidProvider
 {
     /**

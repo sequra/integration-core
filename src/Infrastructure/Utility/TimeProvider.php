@@ -9,6 +9,9 @@ use DateTime;
  *
  * @package SeQura\Core\Infrastructure\Utility
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 class TimeProvider
 {
     /**
@@ -63,7 +66,7 @@ class TimeProvider
      * @return DateTime Object from timestamp.
      * @see    \DateTime object from timestamp.
      */
-    public function getDateTime($timestamp)
+    public function getDateTime(int $timestamp)
     {
         return new DateTime("@{$timestamp}");
     }
@@ -93,7 +96,7 @@ class TimeProvider
      *
      * @param int $sleepTime Sleep time in seconds.
      */
-    public function sleep($sleepTime)
+    public function sleep(int $sleepTime): void
     {
         sleep($sleepTime);
     }

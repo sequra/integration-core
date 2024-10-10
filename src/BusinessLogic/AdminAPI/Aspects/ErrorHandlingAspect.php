@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableExceptio
 use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableUnhandledException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiUnauthorizedException;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use Throwable;
 
@@ -33,9 +34,9 @@ class ErrorHandlingAspect implements Aspect
                 $e->getMessage(),
                 'Core',
                 [
-                    'message' => $e->getMessage(),
-                    'type' => get_class($e),
-                    'trace' => $e->getTraceAsString(),
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', get_class($e)),
+                    new LogContextData('trace', $e->getTraceAsString()),
                 ]
             );
 
@@ -45,9 +46,9 @@ class ErrorHandlingAspect implements Aspect
                 $e->getMessage(),
                 'Core',
                 [
-                    'message' => $e->getMessage(),
-                    'type' => get_class($e),
-                    'trace' => $e->getTraceAsString(),
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', get_class($e)),
+                    new LogContextData('trace', $e->getTraceAsString()),
                 ]
             );
 
@@ -57,9 +58,9 @@ class ErrorHandlingAspect implements Aspect
                 $e->getMessage(),
                 'Core',
                 [
-                    'message' => $e->getMessage(),
-                    'type' => get_class($e),
-                    'trace' => $e->getTraceAsString(),
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', get_class($e)),
+                    new LogContextData('trace', $e->getTraceAsString()),
                 ]
             );
 
@@ -69,9 +70,9 @@ class ErrorHandlingAspect implements Aspect
                 'Unhandled error occurred.',
                 'Core',
                 [
-                    'message' => $e->getMessage(),
-                    'type' => get_class($e),
-                    'trace' => $e->getTraceAsString(),
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', get_class($e)),
+                    new LogContextData('trace', $e->getTraceAsString()),
                 ]
             );
 

@@ -91,7 +91,12 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
             $queryFilter->where('timestamp', Operators::GREATER_THAN, $disconnectTime);
         }
 
-        return $this->repository->select($queryFilter);
+        return array_filter(
+            $this->repository->select($queryFilter),
+            function ($transactionLog) {
+                return $transactionLog instanceof TransactionLog;
+            }
+        );
     }
 
     /**
@@ -180,6 +185,7 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
             ->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
         $queryFilter->setLimit($limit);
 
+        // @phpstan-ignore-next-line
         $this->repository->deleteWhere($queryFilter);
     }
 
@@ -193,6 +199,7 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
         $queryFilter = new QueryFilter();
         $queryFilter->where('id', Operators::EQUALS, $id);
 
+        // @phpstan-ignore-next-line
         $this->repository->deleteWhere($queryFilter);
     }
 

@@ -62,7 +62,7 @@ class SendOrderReportRequest extends OrderRequestDTO
     /**
      * Creates a new OrderDeliveryReportRequest instance from an array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return self
      *

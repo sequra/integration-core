@@ -11,6 +11,9 @@ use SeQura\Core\BusinessLogic\Utility\StringValidator;
  *
  * @package SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 abstract class Tracking extends OrderRequestDTO
 {
     /**
@@ -60,7 +63,7 @@ abstract class Tracking extends OrderRequestDTO
     /**
      * Creates a new Tracking instance from the given array.
      *
-     * @param array $data An array with data to create a new instance.
+     * @param mixed[] $data An array with data to create a new instance.
      *
      * @return static A new Tracking instance.
      *

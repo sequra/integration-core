@@ -11,5 +11,5 @@ interface MassInsert
      *
      * @param Entity[] $entities
      */
-    public function massInsert(array $entities);
+    public function massInsert(array $entities): void;
 }

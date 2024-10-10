@@ -106,7 +106,7 @@ class Vehicle extends OrderRequestDTO
     /**
      * Create a new Vehicle instance from an array of data.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return Vehicle
      */

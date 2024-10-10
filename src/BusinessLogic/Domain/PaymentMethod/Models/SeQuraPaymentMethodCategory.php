@@ -107,7 +107,7 @@ class SeQuraPaymentMethodCategory
     /**
      * Creates an instance of SeQuraPaymentMethodCategory from given array data.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return SeQuraPaymentMethodCategory
      *

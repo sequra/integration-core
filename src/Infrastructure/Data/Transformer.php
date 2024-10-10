@@ -14,9 +14,9 @@ class Transformer
      *
      * @param DataTransferObject $transformable Object to be transformed.
      *
-     * @return array Transformed result.
+     * @return mixed[] Transformed result.
      */
-    public static function transform(DataTransferObject $transformable)
+    public static function transform(DataTransferObject $transformable): array
     {
         return $transformable->toArray();
     }
@@ -26,7 +26,7 @@ class Transformer
      *
      * @param DataTransferObject[] $batch Batch of transformable objects.
      *
-     * @return array Batch of transformed objects.
+     * @return mixed[] Batch of transformed objects.
      */
     public static function batchTransform($batch)
     {
@@ -46,9 +46,9 @@ class Transformer
     /**
      * Trims empty arrays or null values.
      *
-     * @param array $data
+     * @param mixed[] $data
      */
-    protected static function trim(array &$data)
+    protected static function trim(array &$data): void
     {
         foreach ($data as $key => $value) {
             if (is_array($value)) {

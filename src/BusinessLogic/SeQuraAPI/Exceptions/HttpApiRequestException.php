@@ -10,12 +10,20 @@ use SeQura\Core\Infrastructure\Http\HttpResponse;
  *
  * @package SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 class HttpApiRequestException extends HttpRequestException
 {
     /**
      * @var string[]
      */
     protected $errors = [];
+
+    public function __construct(string $message = '', int $code = 0, HttpRequestException $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
+    }
 
     /**
      * Creates an instance of HttpApiRequestException.

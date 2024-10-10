@@ -50,6 +50,9 @@ class SolicitationResponse extends Response
         return $this->availablePaymentMethods;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function toArray(): array
     {
         return [

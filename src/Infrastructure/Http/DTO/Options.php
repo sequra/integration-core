@@ -9,26 +9,29 @@ use SeQura\Core\Infrastructure\Data\DataTransferObject;
  *
  * @package SeQura\Core\Infrastructure\Http\DTO
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 class Options extends DataTransferObject
 {
     /**
      * Name of the option.
      *
-     * @var string
+     * @var mixed
      */
     protected $name;
     /**
      * Value of the option.
      *
-     * @var string
+     * @var mixed
      */
     protected $value;
 
     /**
      * Options constructor.
      *
-     * @param string $name Name of the option.
-     * @param string $value Value of the option.
+     * @param mixed $name Name of the option.
+     * @param mixed $value Value of the option.
      */
     public function __construct($name, $value)
     {
@@ -39,7 +42,7 @@ class Options extends DataTransferObject
     /**
      * Gets name of the option.
      *
-     * @return string Name of the option.
+     * @return mixed Name of the option.
      */
     public function getName()
     {
@@ -49,7 +52,7 @@ class Options extends DataTransferObject
     /**
      * Gets value of the option.
      *
-     * @return string Value of the option.
+     * @return mixed Value of the option.
      */
     public function getValue()
     {
@@ -59,9 +62,9 @@ class Options extends DataTransferObject
     /**
      * Transforms DTO to an array representation.
      *
-     * @return array DTO in array format.
+     * @return mixed[] DTO in array format.
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array(
             'name' => $this->getName(),
@@ -72,7 +75,7 @@ class Options extends DataTransferObject
     /**
      * Transforms raw array data to Options.
      *
-     * @param array $raw Raw array data.
+     * @param mixed[] $raw Raw array data.
      *
      * @return Options Transformed object.
      */

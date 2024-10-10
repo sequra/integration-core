@@ -67,7 +67,7 @@ class LogContextData extends DataTransferObject
     /**
      * @inheritDoc
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array(
             'name' => $this->getName(),

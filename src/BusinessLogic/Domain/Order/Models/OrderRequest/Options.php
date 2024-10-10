@@ -51,7 +51,7 @@ class Options extends OrderRequestDTO
     /**
      * Create a new Options instance from an array of data.
      *
-     * @param array $data Array containing the data.
+     * @param mixed[] $data Array containing the data.
      *
      * @return Options Returns a new Options instance.
      */

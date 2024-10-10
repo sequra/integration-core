@@ -29,15 +29,7 @@ class AsyncSocketHttpClient extends CurlHttpClient
     public const FWRITE_SLEEP_USECONDS = 300000;
 
     /**
-     * Create and send request asynchronously.
-     *
-     * @param string $method HTTP method (GET, POST, PUT, DELETE etc.)
-     * @param string $url Request URL. Full URL where request should be sent.
-     * @param array|null $headers Request headers to send. Key as header name and value as header content. Optional.
-     * @param string $body Request payload. String data to send as HTTP request payload. Optional.  Default value for
-     * request body is '' to ensure minimal request data in case of POST, PUT, PATCH methods.
-     *
-     * @return void
+     * @inheritDoc
      *
      * @throws HttpRequestException
      */
@@ -66,7 +58,7 @@ class AsyncSocketHttpClient extends CurlHttpClient
     /**
      * Deduces transfer protocol based ont the url scheme.
      *
-     * @param array $urlDetails URL details formatted as the output of the parse_url method.
+     * @param mixed[] $urlDetails URL details formatted as the output of the parse_url method.
      *
      * @return string Returns ssl:// if scheme is HTTPS, tcp:// otherwise.
      */
@@ -86,7 +78,7 @@ class AsyncSocketHttpClient extends CurlHttpClient
      * Otherwise, if the scheme is HTTPS returns 443;
      * Otherwise, returns 80.
      *
-     * @param array $urlDetails URL details formatted as the output of the parse_url method.
+     * @param mixed[] $urlDetails URL details formatted as the output of the parse_url method.
      *
      * @return int Request port.
      */
@@ -106,7 +98,7 @@ class AsyncSocketHttpClient extends CurlHttpClient
     /**
      * Retrieves request path based on url details.
      *
-     * @param array $urlDetails URL details formatted as the output of the parse_url method.
+     * @param mixed[] $urlDetails URL details formatted as the output of the parse_url method.
      *
      * @return string Request path.
      */
@@ -133,7 +125,7 @@ class AsyncSocketHttpClient extends CurlHttpClient
      * @param string $method Request HTTP method.
      * @param string $host Request host.
      * @param string $path Request path.
-     * @param array $headers List of request headers.
+     * @param array<string,string> $headers List of request headers.
      * @param string $body Request body.
      *
      * @return string

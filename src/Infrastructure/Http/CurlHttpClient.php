@@ -36,7 +36,7 @@ class CurlHttpClient extends HttpClient
     /**
      * CURL options for the request.
      *
-     * @var array
+     * @var mixed[]
      */
     protected $curlOptions;
     /**
@@ -57,7 +57,7 @@ class CurlHttpClient extends HttpClient
      *
      * @param string $method HTTP method (GET, POST, PUT, DELETE etc.)
      * @param string $url Request URL. Full URL where request should be sent.
-     * @param array|null $headers Request headers to send. Key as header name and value as header content. Optional.
+     * @param array<string,string>|null $headers Request headers to send. Key as header name and value as header content. Optional.
      * @param string $body Request payload. String data to send as HTTP request payload. Optional.
      *
      * @return HttpResponse Response object.
@@ -84,7 +84,7 @@ class CurlHttpClient extends HttpClient
      *
      * @param string $method HTTP method (GET, POST, PUT, DELETE etc.)
      * @param string $url Request URL. Full URL where request should be sent.
-     * @param array|null $headers [Optional] Request headers to send. Key as header name and value as header content.
+     * @param array<string,string>|null $headers [Optional] Request headers to send. Key as header name and value as header content.
      * @param string $body [Optional] Request payload. String data to send as HTTP request payload. Default value for
      *     request body is '' to ensure minimal request data in case of POST, PUT, PATCH methods. This will ensure
      *     that we have the upload progress and enable the async request termination as soon as the upload is finished
@@ -157,7 +157,7 @@ class CurlHttpClient extends HttpClient
      *
      * @param string $method Request method.
      * @param string $url Request URL.
-     * @param array $headers Array of request headers.
+     * @param array<string,string> $headers Array of request headers.
      * @param string $body Request body.
      *
      * @return void
@@ -212,7 +212,7 @@ class CurlHttpClient extends HttpClient
      *
      * @param string $method Request method.
      * @param string $url Request URL.
-     * @param array $headers Array of request headers.
+     * @param array<string,string> $headers Array of request headers.
      * @param string $body Request body.
      *
      * @return void
@@ -309,7 +309,7 @@ class CurlHttpClient extends HttpClient
     /**
      * Executes cURL request and returns response and status code.
      *
-     * @return array Array with plain response as the first item, status code as the second item and headers as third.
+     * @return mixed[] Array with plain response as the first item, status code as the second item and headers as third.
      */
     protected function executeCurlRequest(): array
     {
@@ -339,7 +339,7 @@ class CurlHttpClient extends HttpClient
      * @param string $method HTTP method (GET, POST, PUT, DELETE etc.)
      * @param string $url Request URL. Full URL where request should be sent.
      *
-     * @return array
+     * @return mixed[]
      *  Array of additional options combinations. Each array item should be an array of Options instances.
      */
     protected function getAutoConfigurationOptionsCombinations(string $method, string $url): array

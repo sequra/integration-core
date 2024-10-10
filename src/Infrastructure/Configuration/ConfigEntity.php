@@ -36,9 +36,7 @@ class ConfigEntity extends Entity
      */
     protected $context;
     /**
-     * Array of field names.
-     *
-     * @var array
+     * @inheritDocs
      */
     protected $fields = array('id', 'name', 'value', 'context');
 
@@ -47,7 +45,7 @@ class ConfigEntity extends Entity
      *
      * @return EntityConfiguration Configuration object.
      */
-    public function getConfig()
+    public function getConfig(): EntityConfiguration
     {
         $map = new IndexMap();
         $map->addStringIndex('name')
@@ -71,7 +69,7 @@ class ConfigEntity extends Entity
      *
      * @param string $name Configuration property name.
      */
-    public function setName($name)
+    public function setName($name): void
     {
         $this->name = $name;
     }
@@ -91,7 +89,7 @@ class ConfigEntity extends Entity
      *
      * @param mixed $value Configuration property value.
      */
-    public function setValue($value)
+    public function setValue($value): void
     {
         $this->value = $value;
     }
@@ -101,7 +99,7 @@ class ConfigEntity extends Entity
      *
      * @param string $context
      */
-    public function setContext($context)
+    public function setContext($context): void
     {
         $this->context = $context;
     }

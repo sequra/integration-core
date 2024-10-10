@@ -30,7 +30,7 @@ class BootstrapComponent
     /**
      * Initializes infrastructure components.
      */
-    public static function init()
+    public static function init(): void
     {
         static::initServices();
         static::initRepositories();
@@ -40,7 +40,7 @@ class BootstrapComponent
     /**
      * Initializes services and utilities.
      */
-    protected static function initServices()
+    protected static function initServices(): void
     {
         ServiceRegister::registerService(
             ConfigurationManager::CLASS_NAME,
@@ -119,14 +119,14 @@ class BootstrapComponent
     /**
      * Initializes repositories.
      */
-    protected static function initRepositories()
+    protected static function initRepositories(): void
     {
     }
 
     /**
      * Initializes events.
      */
-    protected static function initEvents()
+    protected static function initEvents(): void
     {
     }
 }

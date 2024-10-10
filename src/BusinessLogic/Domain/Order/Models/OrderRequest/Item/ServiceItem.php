@@ -61,7 +61,7 @@ class ServiceItem extends Item
     protected $rendered;
 
     /**
-     * @param $reference
+     * @param mixed $reference
      * @param string $name
      * @param int $priceWithTax
      * @param int $quantity

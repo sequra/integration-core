@@ -7,6 +7,9 @@ namespace SeQura\Core\Infrastructure\Utility\Events;
  *
  * @package SeQura\Core\Infrastructure\Utility\Events
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 class EventBus extends EventEmitter
 {
     /**
@@ -16,7 +19,7 @@ class EventBus extends EventEmitter
     /**
      * Singleton instance of this class.
      *
-     * @var EventBus
+     * @var EventBus | null
      */
     protected static $instance;
 
@@ -32,7 +35,7 @@ class EventBus extends EventEmitter
      *
      * @return EventBus Instance of EventBus class.
      */
-    public static function getInstance()
+    public static function getInstance(): ?EventBus
     {
         if (static::$instance === null) {
             static::$instance = new static();
@@ -44,7 +47,7 @@ class EventBus extends EventEmitter
     /**
      * Resets singleton instance. Required for proper tests.
      */
-    public static function resetInstance()
+    public static function resetInstance(): void
     {
         static::$instance = null;
     }
@@ -54,7 +57,7 @@ class EventBus extends EventEmitter
      *
      * @param Event $event Event to fire.
      */
-    public function fire(Event $event)
+    public function fire(Event $event): void
     {
         // just changed access type from protected to public
         parent::fire($event);

@@ -46,7 +46,7 @@ class PaymentMethodsService
      *
      * @param string $merchantId
      *
-     * @return array
+     * @return string[]
      *
      * @throws HttpRequestException
      */

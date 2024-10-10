@@ -9,6 +9,9 @@ use Exception;
  *
  * @package SeQura\Core\BusinessLogic\Domain\Multistore
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 class StoreContext
 {
     /**
@@ -39,7 +42,7 @@ class StoreContext
      *
      * @param string $storeId
      * @param callable $callback
-     * @param array $params
+     * @param mixed[] $params
      *
      * @throws Exception
      *

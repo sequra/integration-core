@@ -49,7 +49,7 @@ class FooEntity extends Entity
      *
      * @return EntityConfiguration
      */
-    public function getConfig()
+    public function getConfig(): EntityConfiguration
     {
         $map = new IndexMap();
         $map->addStringIndex('text');

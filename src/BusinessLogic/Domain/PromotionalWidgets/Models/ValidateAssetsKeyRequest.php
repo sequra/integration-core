@@ -14,7 +14,7 @@ class ValidateAssetsKeyRequest
      */
     protected $merchantId;
     /**
-     * @var array
+     * @var mixed[]
      */
     protected $paymentMethodIds;
     /**
@@ -28,7 +28,7 @@ class ValidateAssetsKeyRequest
 
     /**
      * @param string $merchantId
-     * @param array $paymentMethodIds
+     * @param mixed[] $paymentMethodIds
      * @param string $assetsKey
      * @param string $mode
      */
@@ -50,6 +50,9 @@ class ValidateAssetsKeyRequest
         return $this->merchantId;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getPaymentMethodIds(): array
     {
         return $this->paymentMethodIds;

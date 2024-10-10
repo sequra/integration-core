@@ -6,6 +6,7 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Response\IdentificationFo
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Response\SolicitationResponse;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
  * Class SolicitationController
@@ -34,12 +35,22 @@ class SolicitationController
         );
     }
 
+    /**
+     * @param string $cartId
+     * @param string|null $product
+     * @param string|null $campaign
+     * @param bool $ajax
+     *
+     * @return IdentificationFormResponse
+     *
+     * @throws HttpRequestException
+     */
     public function getIdentificationForm(
         string $cartId,
         string $product = null,
         string $campaign = null,
         bool $ajax = true
-    ) {
+    ): IdentificationFormResponse {
         return new IdentificationFormResponse(
             $this->orderService->getIdentificationForm($cartId, $product, $campaign, $ajax)
         );

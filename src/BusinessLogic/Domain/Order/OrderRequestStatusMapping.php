@@ -15,7 +15,7 @@ class OrderRequestStatusMapping
     /**
      * Map of seQura response states to seQura request states.
      *
-     * @var array
+     * @var array<string,string>
      */
     protected static $statusMap = [
         OrderStates::STATE_APPROVED => OrderRequestStates::CONFIRMED,

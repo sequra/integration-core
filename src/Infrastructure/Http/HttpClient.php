@@ -69,7 +69,7 @@ abstract class HttpClient
     /**
      * An array of additional HTTP configuration options.
      *
-     * @var array
+     * @var mixed[] | null
      */
     protected $httpConfigurationOptions;
 
@@ -78,7 +78,7 @@ abstract class HttpClient
      *
      * @param string $method HTTP method (GET, POST, PUT, DELETE etc.)
      * @param string $url Request URL. Full URL where request should be sent.
-     * @param array|null $headers Request headers to send. Key as header name and value as header content. Optional.
+     * @param array<string,string>|null $headers Request headers to send. Key as header name and value as header content. Optional.
      * @param string $body Request payload. String data to send as HTTP request payload. Optional.
      *
      * @return HttpResponse Response from making HTTP request.
@@ -95,7 +95,7 @@ abstract class HttpClient
      *
      * @param string $method HTTP method (GET, POST, PUT, DELETE etc.)
      * @param string $url Request URL. Full URL where request should be sent.
-     * @param array|null $headers Request headers to send. Key as header name and value as header content. Optional.
+     * @param array<string,string>|null $headers Request headers to send. Key as header name and value as header content. Optional.
      * @param string $body Request payload. String data to send as HTTP request payload. Optional.
      */
     public function requestAsync(string $method, string $url, ?array $headers = array(), string $body = ''): void
@@ -109,7 +109,7 @@ abstract class HttpClient
      *
      * @param string $method HTTP method (GET, POST, PUT, DELETE etc.)
      * @param string $url Request URL. Full URL where request should be sent.
-     * @param array|null $headers Request headers to send. Key as header name and value as header content. Optional.
+     * @param array<string,string>|null $headers Request headers to send. Key as header name and value as header content. Optional.
      * @param string $body Request payload. String data to send as HTTP request payload. Optional.
      *
      * @return bool TRUE if configuration went successfully; otherwise, FALSE.
@@ -145,7 +145,7 @@ abstract class HttpClient
      *
      * @param string $method HTTP method (GET, POST, PUT, DELETE etc.)
      * @param string $url Request URL. Full URL where request should be sent.
-     * @param array|null $headers Request headers to send. Key as header name and value as header content. Optional.
+     * @param array<string,string>|null $headers Request headers to send. Key as header name and value as header content. Optional.
      * @param string $body Request payload. String data to send as HTTP request payload. Optional.
      *
      * @return HttpResponse Response object.
@@ -165,7 +165,7 @@ abstract class HttpClient
      *
      * @param string $method HTTP method (GET, POST, PUT, DELETE etc.)
      * @param string $url Request URL. Full URL where request should be sent.
-     * @param array|null $headers Request headers to send. Key as header name and value as header content. Optional.
+     * @param array<string,string>|null $headers Request headers to send. Key as header name and value as header content. Optional.
      * @param string $body Request payload. String data to send as HTTP request payload. Optional.  Default value for
      * request body is '1' to ensure minimal request data in case of POST, PUT, PATCH methods.
      *
@@ -184,7 +184,7 @@ abstract class HttpClient
      * @param string $method HTTP method (GET, POST, PUT, DELETE etc.)
      * @param string $url Request URL.
      *
-     * @return array
+     * @return mixed[]
      *  Array of additional options combinations. Each array item should be an array of Options instances.
      *
      * @noinspection PhpUnusedParameterInspection
@@ -224,7 +224,7 @@ abstract class HttpClient
      *
      * @param string $domain A domain for which to get configuration options.
      *
-     * @return array A key-value array of HTTP configuration options.
+     * @return mixed[] A key-value array of HTTP configuration options.
      */
     protected function getAdditionalOptions(string $domain): array
     {
@@ -244,7 +244,7 @@ abstract class HttpClient
      *
      * @param string $method HTTP method (GET, POST, PUT, DELETE etc.)
      * @param string $url Request URL. Full URL where request should be sent.
-     * @param array|null $headers Request headers to send. Key as header name and value as header content. Optional.
+     * @param array<string,string>|null $headers Request headers to send. Key as header name and value as header content. Optional.
      * @param string $body Request payload. String data to send as HTTP request payload. Optional.
      *
      * @return bool TRUE if request was successful; otherwise, FALSE.
@@ -271,7 +271,7 @@ abstract class HttpClient
      */
     protected function getConfigService(): Configuration
     {
-        if (empty($this->configService)) {
+        if ($this->configService === null) {
             $this->configService = ServiceRegister::getService(Configuration::CLASS_NAME);
         }
 

@@ -2,12 +2,16 @@
 
 namespace SeQura\Core\Infrastructure\TaskExecution;
 
+use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\ProcessStarterSaveException;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\AsyncProcessService;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Runnable;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class AsyncBatchStarter implements Runnable
 {
     /**
@@ -44,7 +48,7 @@ class AsyncBatchStarter implements Runnable
     /**
      * @inheritDoc
      */
-    public function serialize()
+    public function serialize(): ?string
     {
         return Serializer::serialize(array($this->batchSize, $this->subBatches, $this->runners, $this->addIndex));
     }
@@ -52,32 +56,32 @@ class AsyncBatchStarter implements Runnable
     /**
      * @inheritDoc
      */
-    public function unserialize($serialized)
+    public function unserialize($data)
     {
         list(
             $this->batchSize, $this->subBatches, $this->runners, $this->addIndex
             ) =
-            Serializer::unserialize($serialized);
+            Serializer::unserialize($data);
     }
 
     /**
      * @inheritDoc
      */
-    public static function fromArray(array $data)
+    public static function fromArray(array $array): Serializable
     {
         $runners = array();
         $subBatches = array();
-        foreach ($data['runners'] as $runner) {
+        foreach ($array['runners'] as $runner) {
             $runners[] = Serializer::unserialize($runner);
         }
 
-        foreach ($data['subBatches'] as $subBatch) {
+        foreach ($array['subBatches'] as $subBatch) {
             $subBatches[] = Serializer::unserialize($subBatch);
         }
 
-        $instance = new self($data['batchSize'], $runners);
+        $instance = new static($array['batchSize'], $runners);
         $instance->subBatches = $subBatches;
-        $instance->addIndex = $data['addIndex'];
+        $instance->addIndex = $array['addIndex'];
 
         return $instance;
     }
@@ -85,7 +89,7 @@ class AsyncBatchStarter implements Runnable
     /**
      * @inheritDoc
      */
-    public function toArray()
+    public function toArray(): array
     {
         $runners = array();
         $subBatches = array();
@@ -116,7 +120,7 @@ class AsyncBatchStarter implements Runnable
     /**
      * @inheritDoc
      */
-    public function __unserialize($data)
+    public function __unserialize($data): void
     {
         $this->batchSize = $data['batchSize'];
         $this->addIndex = $data['addIndex'];
@@ -142,7 +146,7 @@ class AsyncBatchStarter implements Runnable
      * @param int $batchSize
      * @param Runnable[] $runners
      */
-    public function __construct($batchSize, array $runners = array())
+    public function __construct(int $batchSize, array $runners = array())
     {
         $this->batchSize = $batchSize;
         foreach ($runners as $runner) {
@@ -155,7 +159,7 @@ class AsyncBatchStarter implements Runnable
      *
      * @param Runnable $runner
      */
-    public function addRunner(Runnable $runner)
+    public function addRunner(Runnable $runner): void
     {
         if ($this->isCapacityFull()) {
             $this->subBatches[$this->addIndex]->addRunner($runner);
@@ -177,7 +181,7 @@ class AsyncBatchStarter implements Runnable
      *
      * @throws ProcessStarterSaveException
      */
-    public function run()
+    public function run(): void
     {
         foreach ($this->subBatches as $subBatch) {
             $this->getAsyncProcessStarter()->start($subBatch);
@@ -194,7 +198,7 @@ class AsyncBatchStarter implements Runnable
      *
      * @return int Max number of nested sub-batch levels
      */
-    public function getMaxNestingLevels()
+    public function getMaxNestingLevels(): int
     {
         if (empty($this->subBatches)) {
             return 0;
@@ -219,7 +223,7 @@ class AsyncBatchStarter implements Runnable
      *
      * @return float Wait period in micro seconds that is required for whole batch (with sub-batches) to run
      */
-    public function getWaitTime($requestDuration)
+    public function getWaitTime(float $requestDuration)
     {
         // Without sub-batches all requests are started as soon as run method is done
         if (empty($this->subBatches)) {
@@ -250,7 +254,7 @@ class AsyncBatchStarter implements Runnable
      * @return bool
      *      True if current batch cant take any more runners nor create any more sub-batches itself; False otherwise
      */
-    protected function isCapacityFull()
+    protected function isCapacityFull(): bool
     {
         return $this->isRunnersCapacityFull() && $this->isSubBatchCapacityFull();
     }
@@ -259,7 +263,7 @@ class AsyncBatchStarter implements Runnable
      * @return bool
      *      True if current batch cant create any more sub-batches itself; False otherwise
      */
-    protected function isSubBatchCapacityFull()
+    protected function isSubBatchCapacityFull(): bool
     {
         return count($this->subBatches) >= $this->batchSize;
     }
@@ -268,7 +272,7 @@ class AsyncBatchStarter implements Runnable
      * @return bool
      *      True if current batch cant take any more runners itself; False otherwise
      */
-    protected function isRunnersCapacityFull()
+    protected function isRunnersCapacityFull(): bool
     {
         return count($this->runners) >= $this->batchSize;
     }
@@ -279,7 +283,7 @@ class AsyncBatchStarter implements Runnable
      * @return AsyncProcessService
      *   Instance of async process starter.
      */
-    protected function getAsyncProcessStarter()
+    protected function getAsyncProcessStarter(): AsyncProcessService
     {
         if ($this->asyncProcessStarter === null) {
             $this->asyncProcessStarter = ServiceRegister::getService(AsyncProcessService::CLASS_NAME);

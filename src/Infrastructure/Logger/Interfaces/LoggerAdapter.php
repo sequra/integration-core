@@ -16,5 +16,5 @@ interface LoggerAdapter
      *
      * @param LogData $data
      */
-    public function logMessage(LogData $data);
+    public function logMessage(LogData $data): void;
 }

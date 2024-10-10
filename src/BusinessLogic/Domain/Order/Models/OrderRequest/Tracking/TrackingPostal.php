@@ -77,7 +77,7 @@ class TrackingPostal extends Tracking
     /**
      * Create a new TrackingPostal instance from an array of data.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return Tracking
      *

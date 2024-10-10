@@ -199,7 +199,7 @@ class OrderReport extends OrderRequestDTO
     /**
      * Creates a new OrderReport instance from an array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return self
      *

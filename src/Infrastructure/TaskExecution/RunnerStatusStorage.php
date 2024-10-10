@@ -29,7 +29,7 @@ class RunnerStatusStorage implements TaskRunnerStatusStorage
      *
      * @throws TaskRunnerStatusStorageUnavailableException
      */
-    public function getStatus()
+    public function getStatus(): TaskRunnerStatus
     {
         $result = $this->getConfigService()->getTaskRunnerStatus();
         if (empty($result)) {
@@ -49,7 +49,7 @@ class RunnerStatusStorage implements TaskRunnerStatusStorage
      * @throws TaskRunnerStatusChangeException
      * @throws TaskRunnerStatusStorageUnavailableException
      */
-    public function setStatus(TaskRunnerStatus $status)
+    public function setStatus(TaskRunnerStatus $status): void
     {
         $this->checkTaskRunnerStatusChangeAvailability($status);
         $this->getConfigService()->setTaskRunnerStatus($status->getGuid(), $status->getAliveSinceTimestamp());
@@ -63,7 +63,7 @@ class RunnerStatusStorage implements TaskRunnerStatusStorage
      * @throws TaskRunnerStatusChangeException
      * @throws TaskRunnerStatusStorageUnavailableException
      */
-    protected function checkTaskRunnerStatusChangeAvailability(TaskRunnerStatus $status)
+    protected function checkTaskRunnerStatusChangeAvailability(TaskRunnerStatus $status): void
     {
         $currentGuid = $this->getStatus()->getGuid();
         $guidForUpdate = $status->getGuid();
@@ -80,7 +80,7 @@ class RunnerStatusStorage implements TaskRunnerStatusStorage
      *
      * @see Configuration service.
      */
-    protected function getConfigService()
+    protected function getConfigService(): Configuration
     {
         if ($this->configService === null) {
             $this->configService = ServiceRegister::getService(Configuration::CLASS_NAME);

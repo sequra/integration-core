@@ -113,7 +113,7 @@ class Customer extends OrderRequestDTO
      * @param string|null $givenNames
      * @param string|null $surnames
      * @param string|null $title
-     * @param $ref
+     * @param mixed $ref
      * @param string|null $dateOfBirth
      * @param string|null $nin
      * @param string|null $company
@@ -122,7 +122,7 @@ class Customer extends OrderRequestDTO
      * @param string|null $updatedAt
      * @param int|null $rating
      * @param string|null $ninControl
-     * @param array|null $previousOrders
+     * @param mixed[]|null $previousOrders
      * @param Vehicle|null $vehicle
      * @param boolean|string $loggedIn
      */
@@ -171,7 +171,7 @@ class Customer extends OrderRequestDTO
     /**
      * Create a new Customer instance from an array of data.
      *
-     * @param array $data Array containing the data.
+     * @param mixed[] $data Array containing the data.
      *
      * @return Customer Returns a new Customer instance.
      */

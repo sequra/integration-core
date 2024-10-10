@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Tasks\OrderReportTask;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
+use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Composite\ExecutionDetails;
@@ -22,12 +23,18 @@ use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableE
 class OrderReporter extends Orchestrator
 {
     protected const ORDERS_PER_BACH = 5000;
+    /**
+     * @var int
+     */
     protected $page = 1;
-
+    /**
+     * @var string
+     */
     protected $storeId;
 
     public function __construct()
     {
+        parent::__construct();
         $this->storeId = StoreContext::getInstance()->getStoreId();
     }
 
@@ -46,11 +53,11 @@ class OrderReporter extends Orchestrator
     /**
      * @inheritDoc
      */
-    public static function fromArray(array $array)
+    public static function fromArray(array $array): Serializable
     {
         $entity = parent::fromArray($array);
-        $entity->page = $array['page'];
-        $entity->storeId = $array['storeId'];
+        $entity->page = intval($array['page']);
+        $entity->storeId = (string) $array['storeId'];
 
         return $entity;
     }

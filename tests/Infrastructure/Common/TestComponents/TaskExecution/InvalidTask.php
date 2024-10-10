@@ -12,7 +12,7 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  */
 class InvalidTask extends Task
 {
-    public function execute()
+    public function execute(): void
     {
     }
 
@@ -29,7 +29,7 @@ class InvalidTask extends Task
      * @inheritDoc
      * @throws QueueItemDeserializationException
      */
-    public static function fromArray(array $array)
+    public static function fromArray(array $array): \SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable
     {
         throw new QueueItemDeserializationException("Failed to deserialize task.");
     }
@@ -44,7 +44,7 @@ class InvalidTask extends Task
      * @return mixed
      * @throws QueueItemDeserializationException
      */
-    public function __unserialize($data)
+    public function __unserialize($data): void
     {
         throw new QueueItemDeserializationException("Failed to deserialize task.");
     }

@@ -25,7 +25,7 @@ class SendOrderReportHttpRequest extends HttpRequest
      *
      * @param SendOrderReportRequest $request
      *
-     * @return array
+     * @return mixed[]
      */
     protected function transformBody(SendOrderReportRequest $request): array
     {

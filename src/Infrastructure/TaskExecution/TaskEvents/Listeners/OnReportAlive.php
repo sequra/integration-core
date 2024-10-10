@@ -22,7 +22,7 @@ class OnReportAlive
      *
      * @throws QueueStorageUnavailableException
      */
-    public static function handle(QueueItem $queueItem)
+    public static function handle(QueueItem $queueItem): void
     {
         $queue = static::getQueue();
         $queue->keepAlive($queueItem);
@@ -44,7 +44,7 @@ class OnReportAlive
      *
      * @return QueueService
      */
-    protected static function getQueue()
+    protected static function getQueue(): QueueService
     {
         return ServiceRegister::getService(QueueService::CLASS_NAME);
     }

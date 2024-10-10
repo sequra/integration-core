@@ -14,7 +14,7 @@ use SeQura\Core\BusinessLogic\WebhookAPI\Controller\WebhookController;
 class WebhookAPI
 {
     /**
-     * @return WebhookController
+     * @return object
      */
     public static function webhookHandler(string $storeId = ''): object
     {

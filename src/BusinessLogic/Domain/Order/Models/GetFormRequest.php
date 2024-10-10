@@ -80,7 +80,7 @@ class GetFormRequest extends DataTransferObject
     /**
      * Create a GetFormRequest instance from an array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return GetFormRequest
      */

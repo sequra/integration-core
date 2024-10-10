@@ -38,14 +38,14 @@ class IntermediateObject
      */
     protected $data;
     /**
-     * @var array
+     * @var array<string,mixed>
      */
     protected $otherIndexes = array();
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getIndex1()
+    public function getIndex1(): ?string
     {
         return $this->index1;
     }
@@ -53,15 +53,15 @@ class IntermediateObject
     /**
      * @param string $index1
      */
-    public function setIndex1($index1)
+    public function setIndex1(string $index1): void
     {
         $this->index1 = $index1;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getIndex2()
+    public function getIndex2(): ?string
     {
         return $this->index2;
     }
@@ -69,15 +69,15 @@ class IntermediateObject
     /**
      * @param string $index2
      */
-    public function setIndex2($index2)
+    public function setIndex2(string $index2): void
     {
         $this->index2 = $index2;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getIndex3()
+    public function getIndex3(): ?string
     {
         return $this->index3;
     }
@@ -85,15 +85,15 @@ class IntermediateObject
     /**
      * @param string $index3
      */
-    public function setIndex3($index3)
+    public function setIndex3(string $index3): void
     {
         $this->index3 = $index3;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getIndex4()
+    public function getIndex4(): ?string
     {
         return $this->index4;
     }
@@ -101,15 +101,15 @@ class IntermediateObject
     /**
      * @param string $index4
      */
-    public function setIndex4($index4)
+    public function setIndex4(string $index4): void
     {
         $this->index4 = $index4;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getIndex5()
+    public function getIndex5(): ?string
     {
         return $this->index5;
     }
@@ -117,15 +117,15 @@ class IntermediateObject
     /**
      * @param string $index5
      */
-    public function setIndex5($index5)
+    public function setIndex5(string $index5): void
     {
         $this->index5 = $index5;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getIndex6()
+    public function getIndex6(): ?string
     {
         return $this->index6;
     }
@@ -133,15 +133,15 @@ class IntermediateObject
     /**
      * @param string $index6
      */
-    public function setIndex6($index6)
+    public function setIndex6(string $index6): void
     {
         $this->index6 = $index6;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getData()
+    public function getData(): ?string
     {
         return $this->data;
     }
@@ -149,7 +149,7 @@ class IntermediateObject
     /**
      * @param string $data
      */
-    public function setData($data)
+    public function setData(string $data): void
     {
         $this->data = $data;
     }
@@ -157,16 +157,16 @@ class IntermediateObject
     /**
      * Sets index value
      *
-     * @param int $index
-     * @param string $value
+     * @param mixed $index
+     * @param mixed $value
      */
-    public function setIndexValue($index, $value)
+    public function setIndexValue($index, $value): void
     {
         if (!is_int($index) || $index < 1 || !is_string($value)) {
             return;
         }
 
-        if ($index >= 1 && $index <= 6) {
+        if ($index <= 6) {
             $methodName = 'setIndex' . $index;
             $this->$methodName($value);
         } else {
@@ -177,18 +177,18 @@ class IntermediateObject
     /**
      * Returns index value
      *
-     * @param int $index
+     * @param mixed $index
      *
      * @return string|null
      */
-    public function getIndexValue($index)
+    public function getIndexValue($index): ?string
     {
         $value = null;
         if (!is_int($index) || $index < 1) {
             return $value;
         }
 
-        if ($index >= 1 && $index <= 6) {
+        if ($index <= 6) {
             $methodName = 'getIndex' . $index;
             $value = $this->$methodName();
         } elseif (array_key_exists('index_' . $index, $this->otherIndexes)) {

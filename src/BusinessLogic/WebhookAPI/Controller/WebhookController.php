@@ -47,7 +47,7 @@ class WebhookController
      * the target shop order status, it should respond with a 410 Gone response, to indicate to SeQura that the
      * target shop refuses to accept the order status update.
      *
-     * @param array $payload
+     * @param mixed[] $payload
      *
      * @return Response
      */

@@ -160,7 +160,7 @@ abstract class BaseProxy
     /**
      * Retrieves default request headers.
      *
-     * @return array Complete list of default request headers.
+     * @return array<string,string> Complete list of default request headers.
      */
     protected function getHeaders(): array
     {

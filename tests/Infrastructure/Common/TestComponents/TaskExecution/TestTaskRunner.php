@@ -13,12 +13,12 @@ class TestTaskRunner extends TaskRunner
         return !empty($this->callHistory[$methodName]) ? $this->callHistory[$methodName] : array();
     }
 
-    public function run()
+    public function run(): void
     {
         $this->callHistory['run'][] = array();
     }
 
-    public function setGuid($guid)
+    public function setGuid($guid): void
     {
         $this->callHistory['setGuid'][] = array('guid' => $guid);
         parent::setGuid($guid);

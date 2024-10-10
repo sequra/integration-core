@@ -3,6 +3,7 @@
 namespace SeQura\Core\Infrastructure\TaskExecution;
 
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\ProcessStarterSaveException;
@@ -25,13 +26,13 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
     /**
      * Service instance.
      *
-     * @var AsyncProcessStarterService
+     * @var AsyncProcessService
      */
     protected $asyncProcessStarter;
     /**
      * Service instance.
      *
-     * @var RunnerStatusStorage
+     * @var TaskRunnerStatusStorage
      */
     protected $runnerStatusStorage;
     /**
@@ -50,7 +51,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
     /**
      * Wakes up @see TaskRunner instance asynchronously if active instance is not already running.
      */
-    public function wakeup()
+    public function wakeup(): void
     {
         try {
             $this->doWakeup();
@@ -59,8 +60,8 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
                 'Fail to wakeup task runner. Runner status storage failed to set new active state.',
                 'Core',
                 array(
-                    'ExceptionMessage' => $ex->getMessage(),
-                    'ExceptionTrace' => $ex->getTraceAsString(),
+                    new LogContextData('ExceptionMessage', $ex->getMessage()),
+                    new LogContextData('ExceptionTrace', $ex->getTraceAsString()),
                 )
             );
         } catch (TaskRunnerStatusStorageUnavailableException $ex) {
@@ -68,8 +69,8 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
                 'Fail to wakeup task runner. Runner status storage unavailable.',
                 'Core',
                 array(
-                    'ExceptionMessage' => $ex->getMessage(),
-                    'ExceptionTrace' => $ex->getTraceAsString(),
+                    new LogContextData('ExceptionMessage', $ex->getMessage()),
+                    new LogContextData('ExceptionTrace', $ex->getTraceAsString()),
                 )
             );
         } catch (Exception $ex) {
@@ -77,8 +78,8 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
                 'Fail to wakeup task runner. Unexpected error occurred.',
                 'Core',
                 array(
-                    'ExceptionMessage' => $ex->getMessage(),
-                    'ExceptionTrace' => $ex->getTraceAsString(),
+                    new LogContextData('ExceptionMessage', $ex->getMessage()),
+                    new LogContextData('ExceptionTrace', $ex->getTraceAsString()),
                 )
             );
         }
@@ -92,7 +93,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      * @throws TaskRunnerStatusStorageUnavailableException
      * @throws HttpRequestException
      */
-    protected function doWakeup()
+    protected function doWakeup(): void
     {
         $runnerStatus = $this->getRunnerStorage()->getStatus();
         $currentGuid = $runnerStatus->getGuid();
@@ -122,7 +123,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @see TaskRunnerStatusStorageInterface.
      */
-    protected function getRunnerStorage()
+    protected function getRunnerStorage(): TaskRunnerStatusStorage
     {
         if ($this->runnerStatusStorage === null) {
             $this->runnerStatusStorage = ServiceRegister::getService(TaskRunnerStatusStorage::CLASS_NAME);
@@ -136,7 +137,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @see GuidProvider.
      */
-    protected function getGuidProvider()
+    protected function getGuidProvider(): GuidProvider
     {
         if ($this->guidProvider === null) {
             $this->guidProvider = ServiceRegister::getService(GuidProvider::CLASS_NAME);
@@ -150,7 +151,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @see TimeProvider.
      */
-    protected function getTimeProvider()
+    protected function getTimeProvider(): TimeProvider
     {
         if ($this->timeProvider === null) {
             $this->timeProvider = ServiceRegister::getService(TimeProvider::CLASS_NAME);
@@ -164,7 +165,7 @@ class TaskRunnerWakeupService implements TaskRunnerWakeup
      *
      * @see AsyncProcessStarterService.
      */
-    protected function getAsyncProcessStarter()
+    protected function getAsyncProcessStarter(): AsyncProcessService
     {
         if ($this->asyncProcessStarter === null) {
             $this->asyncProcessStarter = ServiceRegister::getService(AsyncProcessService::CLASS_NAME);

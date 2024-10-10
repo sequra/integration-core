@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Infrastructure\TaskExecution;
 
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
@@ -19,6 +20,10 @@ use Exception;
  * Class TaskRunnerStarter.
  *
  * @package SeQura\Core\Infrastructure\TaskExecution
+ */
+
+/**
+ * @phpstan-consistent-constructor
  */
 class TaskRunnerStarter implements Runnable
 {
@@ -60,12 +65,12 @@ class TaskRunnerStarter implements Runnable
     /**
      * Transforms array into an serializable object,
      *
-     * @param array $array Data that is used to instantiate serializable object.
+     * @param array<string> $array Data that is used to instantiate serializable object.
      *
      * @return Serializable
      *      Instance of serialized object.
      */
-    public static function fromArray(array $array)
+    public static function fromArray(array $array): Serializable
     {
         return new static($array['guid']);
     }
@@ -73,9 +78,9 @@ class TaskRunnerStarter implements Runnable
     /**
      * Transforms serializable object into an array.
      *
-     * @return array Array representation of a serializable object.
+     * @return array<mixed> Array representation of a serializable object.
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array('guid' => $this->guid);
     }
@@ -83,15 +88,17 @@ class TaskRunnerStarter implements Runnable
     /**
      * @inheritDoc
      */
-    public function __serialize()
+    public function __serialize(): array
     {
         return $this->toArray();
     }
 
     /**
-     * @inheritDoc
+     * @param array<mixed> $data
+     *
+     * @return void
      */
-    public function __unserialize($data)
+    public function __unserialize(array $data): void
     {
         $this->guid = $data['guid'];
     }
@@ -129,7 +136,7 @@ class TaskRunnerStarter implements Runnable
     /**
      * Starts synchronously currently active task runner instance.
      */
-    public function run()
+    public function run(): void
     {
         try {
             $this->doRun();
@@ -137,31 +144,33 @@ class TaskRunnerStarter implements Runnable
             Logger::logError(
                 'Failed to run task runner. Runner status storage unavailable.',
                 'Core',
-                array('ExceptionMessage' => $ex->getMessage())
+                array(new LogContextData('ExceptionMessage', $ex->getMessage()))
             );
             Logger::logDebug(
                 'Failed to run task runner. Runner status storage unavailable.',
                 'Core',
                 array(
-                    'ExceptionMessage' => $ex->getMessage(),
-                    'ExceptionTrace' => $ex->getTraceAsString(),
+                    new LogContextData('ExceptionMessage', $ex->getMessage()),
+                    new LogContextData('ExceptionTrace', $ex->getTraceAsString()),
                 )
             );
         } catch (TaskRunnerRunException $ex) {
             Logger::logInfo($ex->getMessage());
-            Logger::logDebug($ex->getMessage(), 'Core', array('ExceptionTrace' => $ex->getTraceAsString()));
+            Logger::logDebug($ex->getMessage(), 'Core', array(new LogContextData('ExceptionTrace', $ex->getTraceAsString())));
         } catch (Exception $ex) {
             Logger::logError(
                 'Failed to run task runner. Unexpected error occurred.',
                 'Core',
-                array('ExceptionMessage' => $ex->getMessage())
+                array(
+                    new LogContextData('ExceptionMessage', $ex->getMessage())
+                )
             );
             Logger::logDebug(
                 'Failed to run task runner. Unexpected error occurred.',
                 'Core',
                 array(
-                    'ExceptionMessage' => $ex->getMessage(),
-                    'ExceptionTrace' => $ex->getTraceAsString(),
+                    new LogContextData('ExceptionMessage', $ex->getMessage()),
+                    new LogContextData('ExceptionTrace', $ex->getTraceAsString()),
                 )
             );
         }
@@ -172,8 +181,9 @@ class TaskRunnerStarter implements Runnable
      *
      * @throws TaskRunnerRunException
      * @throws TaskRunnerStatusStorageUnavailableException
+     * @throws Exception
      */
-    protected function doRun()
+    protected function doRun(): void
     {
         $runnerStatus = $this->getRunnerStorage()->getStatus();
         if ($this->guid !== $runnerStatus->getGuid()) {
@@ -203,7 +213,7 @@ class TaskRunnerStarter implements Runnable
      *
      * @return TaskRunnerStatusStorage Instance of runner status storage service.
      */
-    protected function getRunnerStorage()
+    protected function getRunnerStorage(): TaskRunnerStatusStorage
     {
         if ($this->runnerStatusStorage === null) {
             $this->runnerStatusStorage = ServiceRegister::getService(TaskRunnerStatusStorage::CLASS_NAME);
@@ -217,7 +227,7 @@ class TaskRunnerStarter implements Runnable
      *
      * @return TaskRunner Instance of runner service.
      */
-    protected function getTaskRunner()
+    protected function getTaskRunner(): TaskRunner
     {
         if ($this->taskRunner === null) {
             $this->taskRunner = ServiceRegister::getService(TaskRunner::CLASS_NAME);
@@ -231,7 +241,7 @@ class TaskRunnerStarter implements Runnable
      *
      * @return TaskRunnerWakeup Instance of runner wakeup service.
      */
-    protected function getTaskWakeup()
+    protected function getTaskWakeup(): TaskRunnerWakeup
     {
         if ($this->taskWakeup === null) {
             $this->taskWakeup = ServiceRegister::getService(TaskRunnerWakeup::CLASS_NAME);
