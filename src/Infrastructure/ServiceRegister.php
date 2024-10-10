@@ -61,11 +61,13 @@ class ServiceRegister
     /**
      * Gets service for specified type.
      *
-     * @template T
      * @param class-string<T> $type
+     *
+     * @template T of object
+     *
      * @return T
      */
-    public static function getService(string $type)
+    public static function getService(string $type): object
     {
         return self::getInstance()->get($type);
     }
