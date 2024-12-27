@@ -17,7 +17,7 @@ class ValidateConnectionHttpRequest extends HttpRequest
     public function __construct(ValidateConnectionRequest $request)
     {
         parent::__construct(
-            '/merchants/' . $request->getConnectionData()->getMerchantId() . '/payment_methods',
+            '/merchants/credentials',
             [],
             [],
             $this->generateAuthHeaderForValidation($request->getConnectionData()->getAuthorizationCredentials())
