@@ -63,8 +63,8 @@ class ConnectionProxyTest extends BaseTestCase
     public function testConnectionRequestUrl(): void
     {
         $this->httpClient->setMockResponses([
-            new HttpResponse(200, [], file_get_contents(
-                __DIR__ . '/../../Common/ApiResponses/Merchant/GetPaymentMethodsResponses/SuccessfulResponse.json'
+            new HttpResponse(204, [], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/Connection/SuccessfulResponse.json'
             ))
         ]);
 
@@ -77,7 +77,7 @@ class ConnectionProxyTest extends BaseTestCase
         $this->proxy->validateConnection(new ValidateConnectionRequest($connectionData));
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
-        self::assertStringContainsString('merchants/test/payment_methods', $lastRequest['url']);
+        self::assertStringContainsString('merchants/credentials', $lastRequest['url']);
     }
 
     /**
@@ -89,8 +89,8 @@ class ConnectionProxyTest extends BaseTestCase
     public function testConnectionRequestAuthHeader(): void
     {
         $this->httpClient->setMockResponses([
-            new HttpResponse(200, [], file_get_contents(
-                __DIR__ . '/../../Common/ApiResponses/Merchant/GetPaymentMethodsResponses/SuccessfulResponse.json'
+            new HttpResponse(204, [], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/Connection/SuccessfulResponse.json'
             ))
         ]);
 
@@ -115,8 +115,8 @@ class ConnectionProxyTest extends BaseTestCase
     public function testConnectionRequestMethod(): void
     {
         $this->httpClient->setMockResponses([
-            new HttpResponse(200, [], file_get_contents(
-                __DIR__ . '/../../Common/ApiResponses/Merchant/GetPaymentMethodsResponses/SuccessfulResponse.json'
+            new HttpResponse(204, [], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/Connection/SuccessfulResponse.json'
             ))
         ]);
 
@@ -141,10 +141,10 @@ class ConnectionProxyTest extends BaseTestCase
     {
         $exception = null;
         $rawResponseBody = file_get_contents(
-            __DIR__ . '/../../Common/ApiResponses/Merchant/GetPaymentMethodsResponses/SuccessfulResponse.json'
+            __DIR__ . '/../../Common/ApiResponses/Connection/SuccessfulResponse.json'
         );
 
-        $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody)]);
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], $rawResponseBody)]);
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'test',
@@ -165,43 +165,10 @@ class ConnectionProxyTest extends BaseTestCase
      * @throws HttpRequestException
      * @throws InvalidEnvironmentException
      */
-    public function testConnectionRequestInvalidMerchantIdResponse(): void
-    {
-        $exception = null;
-        $rawResponseBody = file_get_contents(
-            __DIR__ . '/../../Common/ApiResponses/Merchant/GetPaymentMethodsResponses/InvalidMerchantIdResponse.json'
-        );
-
-        $connectionData = new ConnectionData(
-            BaseProxy::TEST_MODE,
-            'test',
-            new AuthorizationCredentials('test_username', 'test_password')
-        );
-
-        $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody)]);
-
-        try {
-            $this->proxy->validateConnection(new ValidateConnectionRequest($connectionData));
-        } catch (HttpApiInvalidUrlParameterException $exception) {
-        }
-
-        $responseBody = json_decode($rawResponseBody, true);
-        self::assertNotNull($exception);
-        self::assertEquals('Access forbidden.', $exception->getMessage());
-        self::assertEquals(403, $exception->getCode());
-        self::assertEquals($responseBody['errors'] ?? [], $exception->getErrors());
-    }
-
-    /**
-     * @return void
-     *
-     * @throws HttpRequestException
-     * @throws InvalidEnvironmentException
-     */
     public function testConnectionRequestUnauthorizedResponse(): void
     {
         $exception = null;
-        $rawResponseBody = file_get_contents(__DIR__ . '/../../Common/ApiResponses/InvalidCredentialsResponse.txt');
+        $rawResponseBody = file_get_contents(__DIR__ . '/../../Common/ApiResponses/Connection/InvalidCredentialsResponse.json');
         $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody)]);
 
         $connectionData = new ConnectionData(
@@ -215,10 +182,14 @@ class ConnectionProxyTest extends BaseTestCase
         } catch (HttpApiUnauthorizedException $exception) {
         }
 
-        $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);
-        self::assertEquals('Wrong credentials.', $exception->getMessage());
         self::assertEquals(401, $exception->getCode());
+
+        $responseBody = json_decode($rawResponseBody, true);
+        $errors = $responseBody['errors'] ?? [];
+
+        self::assertCount(1, $errors);
+        self::assertEquals('Access denied', $errors[0]);
         self::assertEquals($responseBody['errors'] ?? [], $exception->getErrors());
     }
 }
