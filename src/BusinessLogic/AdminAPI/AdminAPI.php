@@ -14,6 +14,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
+use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspect;
 use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspects;
 
 /**
@@ -44,9 +45,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return object
+     * @return Aspects
      */
-    public function connection(string $storeId): object
+    public function connection(string $storeId): Aspects
     {
 
         return Aspects
@@ -61,9 +62,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return object
+     * @return Aspects
      */
-    public function store(string $storeId): object
+    public function store(string $storeId): Aspects
     {
 
         return Aspects
@@ -78,9 +79,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return object
+     * @return Aspects
      */
-    public function countryConfiguration(string $storeId): object
+    public function countryConfiguration(string $storeId): Aspects
     {
 
         return Aspects
@@ -95,9 +96,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return object
+     * @return Aspects
      */
-    public function widgetConfiguration(string $storeId): object
+    public function widgetConfiguration(string $storeId): Aspects
     {
 
         return Aspects
@@ -112,9 +113,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return object
+     * @return Aspects
      */
-    public function paymentMethods(string $storeId): object
+    public function paymentMethods(string $storeId): Aspects
     {
 
         return Aspects
@@ -129,9 +130,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return object
+     * @return Aspects
      */
-    public function generalSettings(string $storeId): object
+    public function generalSettings(string $storeId): Aspects
     {
 
         return Aspects
@@ -146,9 +147,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return object
+     * @return Aspects
      */
-    public function orderStatusSettings(string $storeId): object
+    public function orderStatusSettings(string $storeId): Aspects
     {
 
         return Aspects
@@ -163,9 +164,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return object
+     * @return Aspects
      */
-    public function transactionLogs(string $storeId): object
+    public function transactionLogs(string $storeId): Aspects
     {
 
         return Aspects
@@ -180,9 +181,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return object
+     * @return Aspects
      */
-    public function integration(string $storeId): object
+    public function integration(string $storeId): Aspects
     {
 
         return Aspects
@@ -197,9 +198,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return object
+     * @return Aspects
      */
-    public function disconnect(string $storeId): object
+    public function disconnect(string $storeId): Aspects
     {
 
         return Aspects

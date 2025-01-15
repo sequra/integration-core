@@ -14,9 +14,9 @@ use SeQura\Core\BusinessLogic\WebhookAPI\Controller\WebhookController;
 class WebhookAPI
 {
     /**
-     * @return object
+     * @return Aspects
      */
-    public static function webhookHandler(string $storeId = ''): object
+    public static function webhookHandler(string $storeId = ''): Aspects
     {
         return Aspects
             ::run(new StoreContextAspect($storeId))
