@@ -68,6 +68,9 @@ class WebhookHandler
      */
     private function validateOrder(Webhook $webhook): void
     {
+        if ($webhook->getSqState() === OrderStates::STATE_CANCELLED) {
+            return;
+        }
         try {
             $this->acknowledgeOrder($webhook->getOrderRef(), $webhook->getSqState());
         } catch (Exception $e) {
