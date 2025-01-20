@@ -60,7 +60,7 @@ class ConnectionProxyTest extends BaseTestCase
      * @throws InvalidEnvironmentException
      * @throws HttpRequestException
      */
-    public function testConnectionRequestUrl(): void
+    public function testConnectionRequestUrlWithMerchantRef(): void
     {
         $this->httpClient->setMockResponses([
             new HttpResponse(204, [], file_get_contents(
@@ -71,6 +71,33 @@ class ConnectionProxyTest extends BaseTestCase
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'test',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+
+        $this->proxy->validateConnection(new ValidateConnectionRequest($connectionData));
+        self::assertCount(1, $this->httpClient->getHistory());
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertStringContainsString('merchants/test/credentials', $lastRequest['url']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws HttpRequestException
+     */
+    public function testConnectionRequestUrlWithoutMerchantRef(): void
+    {
+        $this->httpClient->setMockResponses([
+            new HttpResponse(204, [], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/Connection/SuccessfulResponse.json'
+            ))
+        ]);
+
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            null,
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
