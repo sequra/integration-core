@@ -11,5 +11,4 @@ use SeQura\Core\Infrastructure\Exceptions\BaseException;
  */
 class PaymentMethodNotFoundException extends BaseException
 {
-
 }

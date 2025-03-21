@@ -40,6 +40,7 @@ class PaymentMethodsService
      *
      * @param  string $merchantId
      * @param  bool $cache
+     *
      * @return SeQuraPaymentMethod[]
      *
      * @throws HttpRequestException

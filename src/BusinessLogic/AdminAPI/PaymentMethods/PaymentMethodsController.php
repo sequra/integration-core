@@ -29,6 +29,7 @@ class PaymentMethodsController
 
     /**
      * @param PaymentMethodsService $paymentMethodsService
+     * @param CachedPaymentMethodsService $cachedPaymentMethodsService
      */
     public function __construct(PaymentMethodsService $paymentMethodsService, CachedPaymentMethodsService $cachedPaymentMethodsService)
     {
@@ -40,6 +41,7 @@ class PaymentMethodsController
      * Gets all the available payment methods for the merchant.
      *
      * @param  GetPaymentMethodsRequest $request
+     *
      * @return PaymentMethodsResponse
      *
      * @throws HttpRequestException
