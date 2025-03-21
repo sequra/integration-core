@@ -331,6 +331,30 @@ class SeQuraPaymentMethod
     }
 
     /**
+     * Returns array representation of this entity.
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [
+            'product' => $this->product,
+            'title' => $this->title,
+            'long_title' => $this->longTitle,
+            'cost' => $this->cost->toArray(),
+            'starts_at' => $this->startsAt->format('Y-m-d H:i:s'),
+            'ends_at' => $this->endsAt->format('Y-m-d H:i:s'),
+            'campaign' => $this->campaign,
+            'claim' => $this->claim,
+            'description' => $this->description,
+            'icon' => $this->icon,
+            'cost_description' => $this->costDescription,
+            'min_amount' => $this->minAmount,
+            'max_amount' => $this->maxAmount,
+        ];
+    }
+
+    /**
      * Creates an instance of SeQuraPaymentMethod from given array data.
      *
      * @param mixed[] $data

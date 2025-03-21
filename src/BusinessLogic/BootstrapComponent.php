@@ -22,6 +22,7 @@ use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSet
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusSettings;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
+use SeQura\Core\BusinessLogic\DataAccess\PaymentMethod\Repositories\PaymentMethodRepository;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSettings;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\SendReport\Entities\SendReport;
@@ -61,6 +62,8 @@ use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\ShopOrderStatusesService;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\CachedPaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
@@ -218,6 +221,16 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+
+        ServiceRegister::registerService(
+            PaymentMethodRepositoryInterface::class,
+            static function () {
+                return new PaymentMethodRepository(
+                    RepositoryRegistry::getRepository(DataAccess\PaymentMethod\PaymentMethod::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
     }
 
     /**
@@ -289,10 +302,21 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            CachedPaymentMethodsService::class,
+            function () {
+                return new CachedPaymentMethodsService(
+                    ServiceRegister::getService(PaymentMethodRepositoryInterface::class),
+                    ServiceRegister::getService(MerchantProxyInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             PaymentMethodsService::class,
             static function () {
                 return new PaymentMethodsService(
-                    ServiceRegister::getService(MerchantProxyInterface::class)
+                    ServiceRegister::getService(MerchantProxyInterface::class),
+                    ServiceRegister::getService(CachedPaymentMethodsService::class)
                 );
             }
         );
@@ -506,7 +530,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             PaymentMethodsController::class,
             static function () {
                 return new PaymentMethodsController(
-                    ServiceRegister::getService(PaymentMethodsService::class)
+                    ServiceRegister::getService(PaymentMethodsService::class),
+                    ServiceRegister::getService(CachedPaymentMethodsService::class)
                 );
             }
         );

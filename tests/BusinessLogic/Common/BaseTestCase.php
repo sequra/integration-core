@@ -21,6 +21,8 @@ use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSet
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusSettings;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
+use SeQura\Core\BusinessLogic\DataAccess\PaymentMethod\PaymentMethod;
+use SeQura\Core\BusinessLogic\DataAccess\PaymentMethod\Repositories\PaymentMethodRepository;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSettings;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\SendReport\Entities\SendReport;
@@ -57,6 +59,8 @@ use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\ShopOrderStatusesService;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\CachedPaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
@@ -215,9 +219,16 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(ConnectionProxyInterface::class)
                 );
             },
+            CachedPaymentMethodsService::class => static function () {
+                return new CachedPaymentMethodsService(
+                    TestServiceRegister::getService(PaymentMethodRepositoryInterface::class),
+                    TestServiceRegister::getService(MerchantProxyInterface::class)
+                );
+            },
             PaymentMethodsService::class => static function () {
                 return new PaymentMethodsService(
-                    TestServiceRegister::getService(MerchantProxyInterface::class)
+                    TestServiceRegister::getService(MerchantProxyInterface::class),
+                    TestServiceRegister::getService(CachedPaymentMethodsService::class)
                 );
             },
             StatisticalDataService::class => static function () {
@@ -313,7 +324,8 @@ class BaseTestCase extends TestCase
             },
             PaymentMethodsController::class => function () {
                 return new PaymentMethodsController(
-                    TestServiceRegister::getService(PaymentMethodsService::class)
+                    TestServiceRegister::getService(PaymentMethodsService::class),
+                    TestServiceRegister::getService(CachedPaymentMethodsService::class)
                 );
             },
             IntegrationController::class => function () {
@@ -337,6 +349,12 @@ class BaseTestCase extends TestCase
             WidgetSettingsRepositoryInterface::class => function () {
                 return new WidgetSettingsRepository(
                     TestRepositoryRegistry::getRepository(WidgetSettings::getClassName()),
+                    TestServiceRegister::getService(StoreContext::class)
+                );
+            },
+            PaymentMethodRepositoryInterface::class => function () {
+                return new PaymentMethodRepository(
+                    TestRepositoryRegistry::getRepository(PaymentMethod::getClassName()),
                     TestServiceRegister::getService(StoreContext::class)
                 );
             },
@@ -494,6 +512,7 @@ class BaseTestCase extends TestCase
             TransactionLog::getClassName(),
             MemoryRepositoryWithConditionalDelete::getClassName()
         );
+        TestRepositoryRegistry::registerRepository(PaymentMethod::getClassName(), MemoryRepository::getClassName());
     }
 
     /**
