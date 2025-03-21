@@ -114,8 +114,6 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
     /**
      * @inheritDoc
      *
-     * @param SeQuraPaymentMethod $paymentMethod
-     *
      * @throws PaymentMethodNotFoundException
      * @throws QueryFilterInvalidParamException
      */

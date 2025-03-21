@@ -52,7 +52,6 @@ class PaymentMethod extends Entity
 
     /**
      * @inheritDoc
-     * @throws \Exception
      */
     public function inflate(array $data): void
     {
