@@ -71,7 +71,9 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
             ->where('product', Operators::EQUALS, $product);
-        /** @var PaymentMethod|null $paymentMethod */
+        /**
+         * @var PaymentMethod|null $paymentMethod
+         */
         $paymentMethod = $this->repository->selectOne($queryFilter);
 
         if ($paymentMethod !== null) {
@@ -88,7 +90,9 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
      */
     public function setPaymentMethod(string $merchantId, SeQuraPaymentMethod $paymentMethod): void
     {
-        /** @var PaymentMethod $paymentMethodEntity */
+        /**
+         * @var PaymentMethod $paymentMethodEntity
+         */
         $paymentMethodEntity = $this->getPaymentMethodEntity($paymentMethod);
 
         if ($paymentMethodEntity === null) {
@@ -117,7 +121,9 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
      */
     public function deletePaymentMethod(SeQuraPaymentMethod $paymentMethod): void
     {
-        /** @var PaymentMethod $paymentMethodEntity */
+        /**
+         * @var PaymentMethod $paymentMethodEntity
+         */
         $paymentMethodEntity = $this->getPaymentMethodEntity($paymentMethod);
 
         if ($paymentMethodEntity === null) {

@@ -86,18 +86,18 @@ class PaymentMethodsService
     {
         $cachedPaymentMethods = $this->paymentMethodsRepository->getPaymentMethods($merchantId);
         if (!empty($cachedPaymentMethods)) {
-           return $cachedPaymentMethods;
+            return $cachedPaymentMethods;
         }
 
         // No cached payment methods found. Fetch them from the API.
         $cachedPaymentMethods = $this->merchantProxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest($merchantId));
 
         foreach ($cachedPaymentMethods as $paymentMethod) {
-           $this->paymentMethodsRepository->setPaymentMethod($merchantId, $paymentMethod);
+            $this->paymentMethodsRepository->setPaymentMethod($merchantId, $paymentMethod);
         }
 
-    return $cachedPaymentMethods;
-}
+        return $cachedPaymentMethods;
+    }
 
     /**
      * Caches payment methods.

@@ -39,14 +39,14 @@ class PaymentMethodsRepositoryTest extends BaseTestCase
             null
         );
 
-        StoreContext::doWithStore('1', function() use ($seQuraPaymentMethod) {
+        StoreContext::doWithStore('1', function () use ($seQuraPaymentMethod) {
             $this->repository->setPaymentMethod('test', $seQuraPaymentMethod);
         });
     }
 
     public function testGetPaymentMethodsCount()
     {
-        StoreContext::doWithStore('1', function() {
+        StoreContext::doWithStore('1', function () {
             $paymentMethods = $this->repository->getPaymentMethods('test');
 
             self::assertEquals(1, count($paymentMethods));
@@ -75,7 +75,7 @@ class PaymentMethodsRepositoryTest extends BaseTestCase
 
     public function testGetPaymentMethodByProduct()
     {
-        StoreContext::doWithStore('1', function() {
+        StoreContext::doWithStore('1', function () {
             $paymentMethod = $this->repository->getPaymentMethodByProduct('i1');
 
             self::assertNotNull($paymentMethod);
@@ -85,7 +85,7 @@ class PaymentMethodsRepositoryTest extends BaseTestCase
 
     public function testDeletePaymentMethod()
     {
-        StoreContext::doWithStore('1', function() {
+        StoreContext::doWithStore('1', function () {
             $seQuraPaymentMethod = new SeQuraPaymentMethod(
                 'i1',
                 'Paga Después',

@@ -121,7 +121,7 @@ class PaymentMethodsControllerTest extends BaseTestCase
     {
         $repository = TestServiceRegister::getService(PaymentMethodRepositoryInterface::class);
 
-        StoreContext::doWithStore('1', function () use ($repository){
+        StoreContext::doWithStore('1', function () use ($repository) {
             self::assertEquals(0, count($repository->getPaymentMethods('test')));
         });
 
@@ -130,7 +130,7 @@ class PaymentMethodsControllerTest extends BaseTestCase
 
         // Assert
         self::assertTrue($response->isSuccessful());
-        StoreContext::doWithStore('1', function () use ($repository){
+        StoreContext::doWithStore('1', function () use ($repository) {
             self::assertEquals(3, count($repository->getPaymentMethods('test')));
         });
     }

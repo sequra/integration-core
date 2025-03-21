@@ -107,6 +107,7 @@ class PaymentMethod extends Entity
 
     /**
      * @param string $merchantId
+     *
      * @return void
      */
     public function setMerchantId(string $merchantId): void
@@ -123,7 +124,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param  string $product
+     * @param string $product
      *
      * @return void
      */
