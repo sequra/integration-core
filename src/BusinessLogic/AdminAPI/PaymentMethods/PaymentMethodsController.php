@@ -39,7 +39,7 @@ class PaymentMethodsController
     /**
      * Gets all the available payment methods for the merchant.
      *
-     * @param GetPaymentMethodsRequest $request
+     * @param  GetPaymentMethodsRequest $request
      * @return PaymentMethodsResponse
      *
      * @throws HttpRequestException

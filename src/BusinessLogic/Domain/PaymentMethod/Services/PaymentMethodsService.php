@@ -38,8 +38,8 @@ class PaymentMethodsService
     /**
      * Gets available payment methods for merchant.
      *
-     * @param string $merchantId
-     * @param bool $cache
+     * @param  string $merchantId
+     * @param  bool $cache
      * @return SeQuraPaymentMethod[]
      *
      * @throws HttpRequestException

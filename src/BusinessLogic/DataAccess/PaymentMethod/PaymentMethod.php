@@ -137,7 +137,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param string $product
+     * @param  string $product
      * @return void
      */
     public function setProduct(string $product): void
@@ -154,7 +154,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param string $title
+     * @param  string $title
      * @return void
      */
     public function setTitle(string $title): void
@@ -171,7 +171,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param string $longTitle
+     * @param  string $longTitle
      * @return void
      */
     public function setLongTitle(string $longTitle): void
@@ -188,7 +188,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param string $startsAt
+     * @param  string $startsAt
      * @return void
      */
     public function setStartsAt(string $startsAt): void
@@ -205,7 +205,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param string $endsAt
+     * @param  string $endsAt
      * @return void
      */
     public function setEndsAt(string $endsAt): void
@@ -222,7 +222,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param string $campaign
+     * @param  string $campaign
      * @return void
      */
     public function setCampaign(string $campaign): void
@@ -239,7 +239,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param string $claim
+     * @param  string $claim
      * @return void
      */
     public function setClaim(string $claim): void
@@ -256,7 +256,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param string $description
+     * @param  string $description
      * @return void
      */
     public function setDescription(string $description): void
@@ -273,7 +273,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param string $icon
+     * @param  string $icon
      * @return void
      */
     public function setIcon(string $icon): void
@@ -290,7 +290,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param string $costDescription
+     * @param  string $costDescription
      * @return void
      */
     public function setCostDescription(string $costDescription): void
@@ -307,7 +307,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param int $minAmount
+     * @param  int $minAmount
      * @return void
      */
     public function setMinAmount(int $minAmount): void
@@ -324,7 +324,7 @@ class PaymentMethod extends Entity
     }
 
     /**
-     * @param int $maxAmount
+     * @param  int $maxAmount
      * @return void
      */
     public function setMaxAmount(int $maxAmount): void

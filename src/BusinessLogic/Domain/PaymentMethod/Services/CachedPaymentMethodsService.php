@@ -75,11 +75,11 @@ class CachedPaymentMethodsService
 
         $apiProducts = array_map(function (SeQuraPaymentMethod $method) {
                 return $method->getProduct();
-            }, $paymentMethods);
+        }, $paymentMethods);
 
         $cachedProducts = array_map(function (PaymentMethod $method) {
                 return $method->getProduct();
-            }, $cachedPaymentMethods);
+        }, $cachedPaymentMethods);
 
         $productsToRemove = array_diff($cachedProducts, $apiProducts);
         foreach ($productsToRemove as $product) {
