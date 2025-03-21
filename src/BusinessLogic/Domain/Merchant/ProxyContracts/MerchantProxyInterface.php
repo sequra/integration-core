@@ -2,7 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts;
 
-use SeQura\Core\BusinessLogic\Domain\Merchant\Models\GetAvailablePaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 

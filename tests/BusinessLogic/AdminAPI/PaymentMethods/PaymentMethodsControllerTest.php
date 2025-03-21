@@ -4,15 +4,15 @@ namespace SeQura\Core\Tests\BusinessLogic\AdminAPI\PaymentMethods;
 
 use DateTime;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
+use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetPaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Responses\PaymentMethodsResponse;
-use SeQura\Core\BusinessLogic\DataAccess\PaymentMethod\Repositories\PaymentMethodRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
-use SeQura\Core\BusinessLogic\Domain\Merchant\Models\GetPaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
-use SeQura\Core\BusinessLogic\Domain\Merchant\Models\GetAvailablePaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
@@ -80,11 +80,15 @@ class PaymentMethodsControllerTest extends BaseTestCase
     public function testGetPaymentMethodsUpdatesCachedMethods(): void
     {
         $repository = TestServiceRegister::getService(PaymentMethodRepositoryInterface::class);
-        self::assertEquals(0, count($repository->getPaymentMethods()));
+        StoreContext::doWithStore('1', function () use ($repository) {
+            self::assertEquals(0, count($repository->getPaymentMethods('test')));
+        });
 
-        // Act
+
         AdminAPI::get()->paymentMethods('1')->getPaymentMethods(new GetPaymentMethodsRequest('test', true));
-        self::assertEquals(3, count($repository->getPaymentMethods()));
+        StoreContext::doWithStore('1', function () use ($repository) {
+            self::assertEquals(3, count($repository->getPaymentMethods('test')));
+        });
 
         $this->httpClient->setMockResponses([
             new HttpResponse(200, [], file_get_contents(
@@ -93,7 +97,9 @@ class PaymentMethodsControllerTest extends BaseTestCase
         ]);
 
         AdminAPI::get()->paymentMethods('1')->getPaymentMethods(new GetPaymentMethodsRequest('test', true));
-        self::assertEquals(2, count($repository->getPaymentMethods()));
+        StoreContext::doWithStore('1', function () use ($repository) {
+            self::assertEquals(2, count($repository->getPaymentMethods('test')));
+        });
     }
 
     /**
@@ -114,14 +120,19 @@ class PaymentMethodsControllerTest extends BaseTestCase
     public function testGetCachedPaymentMethodsWhenNoPaymentMethodsAreStored(): void
     {
         $repository = TestServiceRegister::getService(PaymentMethodRepositoryInterface::class);
-        self::assertEquals(0, count($repository->getPaymentMethods()));
+
+        StoreContext::doWithStore('1', function () use ($repository){
+            self::assertEquals(0, count($repository->getPaymentMethods('test')));
+        });
 
         // Act
         $response = AdminAPI::get()->paymentMethods('1')->getCachedPaymentMethods(new GetAvailablePaymentMethodsRequest('test'));
 
         // Assert
         self::assertTrue($response->isSuccessful());
-        self::assertEquals(3, count($repository->getPaymentMethods()));
+        StoreContext::doWithStore('1', function () use ($repository){
+            self::assertEquals(3, count($repository->getPaymentMethods('test')));
+        });
     }
 
     /**
@@ -204,7 +215,6 @@ class PaymentMethodsControllerTest extends BaseTestCase
      */
     public function testGetProducts(): void
     {
-        // act
         $response = AdminAPI::get()->paymentMethods('1')->getProducts(new GetAvailablePaymentMethodsRequest('test'));
 
         // assert
@@ -214,11 +224,16 @@ class PaymentMethodsControllerTest extends BaseTestCase
     public function testGetProductsWhenNoPaymentMethodsAreStored()
     {
         $repository = TestServiceRegister::getService(PaymentMethodRepositoryInterface::class);
-        self::assertEquals(0, count($repository->getPaymentMethods()));
+        StoreContext::doWithStore('1', function () use ($repository) {
+            self::assertEquals(0, count($repository->getPaymentMethods('test')));
+        });
 
         $response = AdminAPI::get()->paymentMethods('1')->getProducts(new GetAvailablePaymentMethodsRequest('test'));
 
-        self::assertEquals(3, count($repository->getPaymentMethods()));
+        StoreContext::doWithStore('1', function () use ($repository) {
+            self::assertEquals(3, count($repository->getPaymentMethods('test')));
+        });
+
         self::assertEquals(['i1', 'pp5', 'pp3'], $response->toArray());
     }
 

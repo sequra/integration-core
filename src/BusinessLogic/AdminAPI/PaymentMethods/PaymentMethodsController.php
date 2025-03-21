@@ -2,13 +2,13 @@
 
 namespace SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods;
 
+use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetPaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Responses\PaymentMethodsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Responses\ProductsResponse;
-use SeQura\Core\BusinessLogic\Domain\Merchant\Models\GetAvailablePaymentMethodsRequest;
-use SeQura\Core\BusinessLogic\Domain\Merchant\Models\GetPaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
-use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\CachedPaymentMethodsService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 
 /**
@@ -22,30 +22,25 @@ class PaymentMethodsController
      * @var PaymentMethodsService
      */
     protected $paymentMethodsService;
-    /**
-     * @var CachedPaymentMethodsService
-     */
-    protected $cachedPaymentMethodsService;
 
     /**
      * @param PaymentMethodsService $paymentMethodsService
-     * @param CachedPaymentMethodsService $cachedPaymentMethodsService
      */
-    public function __construct(PaymentMethodsService $paymentMethodsService, CachedPaymentMethodsService $cachedPaymentMethodsService)
+    public function __construct(PaymentMethodsService $paymentMethodsService)
     {
         $this->paymentMethodsService = $paymentMethodsService;
-        $this->cachedPaymentMethodsService = $cachedPaymentMethodsService;
     }
 
     /**
      * Gets all the available payment methods for the merchant.
      *
-     * @param  GetPaymentMethodsRequest $request
+     * @param GetPaymentMethodsRequest $request
      *
      * @return PaymentMethodsResponse
      *
      * @throws HttpRequestException
      * @throws QueryFilterInvalidParamException
+     * @throws PaymentMethodNotFoundException
      */
     public function getPaymentMethods(GetPaymentMethodsRequest $request): PaymentMethodsResponse
     {
@@ -60,11 +55,10 @@ class PaymentMethodsController
      * @return PaymentMethodsResponse
      *
      * @throws HttpRequestException
-     * @throws QueryFilterInvalidParamException
      */
     public function getCachedPaymentMethods(GetAvailablePaymentMethodsRequest $request): PaymentMethodsResponse
     {
-        return new PaymentMethodsResponse($this->cachedPaymentMethodsService->getCachedPaymentMethods($request->getMerchantId()));
+        return new PaymentMethodsResponse($this->paymentMethodsService->getCachedPaymentMethods($request->getMerchantId()));
     }
 
     /**
@@ -73,9 +67,6 @@ class PaymentMethodsController
      * @param GetAvailablePaymentMethodsRequest $request
      *
      * @return ProductsResponse
-     *
-     * @throws HttpRequestException
-     * @throws QueryFilterInvalidParamException
      */
     public function getProducts(GetAvailablePaymentMethodsRequest $request): ProductsResponse
     {

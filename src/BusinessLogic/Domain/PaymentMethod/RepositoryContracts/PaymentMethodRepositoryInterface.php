@@ -2,9 +2,8 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts;
 
-use SeQura\Core\BusinessLogic\DataAccess\PaymentMethod\PaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
-use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 
 /**
  * Interface PaymentMethodRepositoryInterface
@@ -16,36 +15,39 @@ interface PaymentMethodRepositoryInterface
     /**
      * Gets all available payment methods.
      *
-     * @return PaymentMethod[]
+     * @param string $merchantId
+     *
+     * @return SeQuraPaymentMethod[]
      */
-    public function getPaymentMethods(): array;
+    public function getPaymentMethods(string $merchantId): array;
 
     /**
      * Gets Sequra order by shop order reference
      *
      * @param string $product SeQura product code.
      *
-     * @return PaymentMethod|null
+     * @return SeQuraPaymentMethod|null
      */
-    public function getPaymentMethod(string $product): ?PaymentMethod;
+    public function getPaymentMethodByProduct(string $product): ?SeQuraPaymentMethod;
 
     /**
      * Inserts/updates SeQura payment method information.
      *
-     * @param PaymentMethod $paymentMethod
+     * @param string $merchantId
+     * @param SeQuraPaymentMethod $paymentMethod
      *
      * @return void
      */
-    public function setPaymentMethod(PaymentMethod $paymentMethod): void;
+    public function setPaymentMethod(string $merchantId, SeQuraPaymentMethod $paymentMethod): void;
 
     /**
      * Deletes a stored payment method.
      *
-     * @param PaymentMethod $paymentMethod
+     * @param SeQuraPaymentMethod $paymentMethod
      *
      * @return void
      */
-    public function deletePaymentMethod(PaymentMethod $paymentMethod): void;
+    public function deletePaymentMethod(SeQuraPaymentMethod $paymentMethod): void;
 
     /**
      * Deletes a stored payment method by product code.
@@ -55,7 +57,6 @@ interface PaymentMethodRepositoryInterface
      * @return void
      *
      * @throws PaymentMethodNotFoundException
-     * @throws QueryFilterInvalidParamException
      */
     public function deletePaymentMethodByProductCode(string $product): void;
 }

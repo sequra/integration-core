@@ -1,6 +1,6 @@
 <?php
 
-namespace SeQura\Core\BusinessLogic\Domain\Merchant\Models;
+namespace SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests;
 
 use SeQura\Core\Infrastructure\Data\DataTransferObject;
 

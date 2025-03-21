@@ -2,7 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\Requests;
 
-use SeQura\Core\BusinessLogic\Domain\Merchant\Models\GetAvailablePaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\HttpRequest;
 
 /**

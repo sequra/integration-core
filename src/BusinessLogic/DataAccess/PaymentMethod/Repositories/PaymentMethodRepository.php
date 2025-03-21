@@ -2,12 +2,13 @@
 
 namespace SeQura\Core\BusinessLogic\DataAccess\PaymentMethod\Repositories;
 
-use SeQura\Core\BusinessLogic\DataAccess\PaymentMethod\PaymentMethod;
+use SeQura\Core\BusinessLogic\DataAccess\PaymentMethod\Entities\PaymentMethod;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
+use SeQura\Core\Infrastructure\ORM\Entity;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
-use SeQura\Core\Infrastructure\ORM\Interfaces\ConditionallyDeletes;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
@@ -43,14 +44,20 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
      */
-    public function getPaymentMethods(): array
+    public function getPaymentMethods(string $merchantId): array
     {
-        return array_filter(
-            $this->repository->select(),
-            function ($paymentMethod) {
-                return $paymentMethod instanceof PaymentMethod;
-            }
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
+        $queryFilter->where('merchantId', Operators::EQUALS, $merchantId);
+
+        return array_map(
+            function (PaymentMethod $paymentMethod) {
+                return $paymentMethod->getSequraPaymentMethod();
+            },
+            $this->repository->select($queryFilter)
         );
     }
 
@@ -59,15 +66,16 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function getPaymentMethod(string $product): ?PaymentMethod
+    public function getPaymentMethodByProduct(string $product): ?SeQuraPaymentMethod
     {
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
             ->where('product', Operators::EQUALS, $product);
+        /** @var PaymentMethod|null $paymentMethod */
         $paymentMethod = $this->repository->selectOne($queryFilter);
 
-        if ($paymentMethod instanceof PaymentMethod) {
-            return $paymentMethod;
+        if ($paymentMethod !== null) {
+            return $paymentMethod->getSeQuraPaymentMethod();
         }
 
         return null;
@@ -78,40 +86,75 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function setPaymentMethod(PaymentMethod $paymentMethod): void
+    public function setPaymentMethod(string $merchantId, SeQuraPaymentMethod $paymentMethod): void
     {
-        $savedPaymentMethod = $this->getPaymentMethod($paymentMethod->getProduct());
-        if (!$savedPaymentMethod) {
-            $paymentMethod->setStoreId($this->storeContext->getStoreId());
-            $this->repository->save($paymentMethod);
+        /** @var PaymentMethod $paymentMethodEntity */
+        $paymentMethodEntity = $this->getPaymentMethodEntity($paymentMethod);
+
+        if ($paymentMethodEntity === null) {
+            $paymentMethodEntity = new PaymentMethod();
+
+            $paymentMethodEntity->setStoreId($this->storeContext->getStoreId());
+            $paymentMethodEntity->setMerchantId($merchantId);
+            $paymentMethodEntity->setProduct($paymentMethod->getProduct());
+            $paymentMethodEntity->setSeQuraPaymentMethod($paymentMethod);
+            $this->repository->save($paymentMethodEntity);
 
             return;
         }
 
-        $paymentMethod->setId($savedPaymentMethod->getId());
-        $this->repository->update($paymentMethod);
+        $paymentMethodEntity->setSeQuraPaymentMethod($paymentMethod);
+        $this->repository->update($paymentMethodEntity);
     }
 
     /**
      * @inheritDoc
+     *
+     * @param SeQuraPaymentMethod $paymentMethod
+     *
+     * @throws PaymentMethodNotFoundException
+     * @throws QueryFilterInvalidParamException
      */
-    public function deletePaymentMethod(PaymentMethod $paymentMethod): void
+    public function deletePaymentMethod(SeQuraPaymentMethod $paymentMethod): void
     {
-        $this->repository->delete($paymentMethod);
-    }
+        /** @var PaymentMethod $paymentMethodEntity */
+        $paymentMethodEntity = $this->getPaymentMethodEntity($paymentMethod);
 
+        if ($paymentMethodEntity === null) {
+            throw new PaymentMethodNotFoundException("Payment method with product code {{$paymentMethod->getProduct()}} not found");
+        }
+
+        $this->repository->delete($paymentMethodEntity);
+    }
 
     /**
      * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
      */
     public function deletePaymentMethodByProductCode(string $product): void
     {
-        $paymentMethod = $this->getPaymentMethod($product);
+        $paymentMethod = $this->getPaymentMethodByProduct($product);
 
-        if ($paymentMethod === null) {
-            throw new PaymentMethodNotFoundException("Payment method with product code $product not found");
-        }
+        $this->deletePaymentMethod($paymentMethod);
+    }
 
-        $this->repository->delete($paymentMethod);
+
+    /**
+     * Returns the payment method entity.
+     *
+     * @param SeQuraPaymentMethod $paymentMethod
+     *
+     * @return Entity|null
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    private function getPaymentMethodEntity(SeQuraPaymentMethod $paymentMethod): ?Entity
+    {
+        $filter = new QueryFilter();
+        $filter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
+            ->where('product', Operators::EQUALS, $paymentMethod->getProduct());
+
+        return $this->repository->selectOne($filter);
     }
 }
