@@ -1,6 +1,6 @@
 <?php
 
-namespace SeQura\Core\Tests\BusinessLogic\Domain\PaymentMethod;
+namespace SeQura\Core\Tests\BusinessLogic\Domain\PaymentMethod\Models;
 
 use DateTime;
 use Exception;

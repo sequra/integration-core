@@ -121,7 +121,7 @@ class PaymentMethodsService
 
         $productsToRemove = array_diff($cachedProducts, $apiProducts);
         foreach ($productsToRemove as $product) {
-            $this->paymentMethodsRepository->deletePaymentMethodByProductCode($product);
+            $this->paymentMethodsRepository->deletePaymentMethodByProductCode($product, $merchantId);
         }
 
         foreach ($paymentMethods as $paymentMethod) {

@@ -22,6 +22,7 @@ class GetPaymentMethodsRequest extends DataTransferObject
 
     /**
      * @param string $merchantId
+     * @param bool $cache
      */
     public function __construct(string $merchantId, bool $cache = false)
     {
@@ -40,23 +41,19 @@ class GetPaymentMethodsRequest extends DataTransferObject
         return $data;
     }
 
+    /**
+     * @return string
+     */
     public function getMerchantId(): string
     {
         return $this->merchantId;
     }
 
-    public function setMerchantId(string $merchantId): void
-    {
-        $this->merchantId = $merchantId;
-    }
-
+    /**
+     * @return bool
+     */
     public function isCache(): bool
     {
         return $this->cache;
-    }
-
-    public function setCache(bool $cache): void
-    {
-        $this->cache = $cache;
     }
 }

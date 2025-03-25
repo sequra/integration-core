@@ -9,7 +9,6 @@ use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Responses\ProductsResponse
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
-use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 
 /**
  * Class PaymentMethodsController
@@ -39,7 +38,6 @@ class PaymentMethodsController
      * @return PaymentMethodsResponse
      *
      * @throws HttpRequestException
-     * @throws QueryFilterInvalidParamException
      * @throws PaymentMethodNotFoundException
      */
     public function getPaymentMethods(GetPaymentMethodsRequest $request): PaymentMethodsResponse
@@ -67,6 +65,8 @@ class PaymentMethodsController
      * @param GetAvailablePaymentMethodsRequest $request
      *
      * @return ProductsResponse
+     *
+     * @throws HttpRequestException
      */
     public function getProducts(GetAvailablePaymentMethodsRequest $request): ProductsResponse
     {

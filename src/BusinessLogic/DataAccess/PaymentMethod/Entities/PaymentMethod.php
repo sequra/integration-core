@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\DataAccess\PaymentMethod\Entities;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\Infrastructure\ORM\Configuration\EntityConfiguration;
 use SeQura\Core\Infrastructure\ORM\Configuration\IndexMap;
@@ -52,6 +53,8 @@ class PaymentMethod extends Entity
 
     /**
      * @inheritDoc
+     *
+     * @throws Exception
      */
     public function inflate(array $data): void
     {

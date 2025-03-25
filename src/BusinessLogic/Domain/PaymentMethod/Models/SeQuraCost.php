@@ -46,7 +46,7 @@ class SeQuraCost
     /**
      * Returns array representation of this entity.
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {

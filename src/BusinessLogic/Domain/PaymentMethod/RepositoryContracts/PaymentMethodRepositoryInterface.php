@@ -22,15 +22,6 @@ interface PaymentMethodRepositoryInterface
     public function getPaymentMethods(string $merchantId): array;
 
     /**
-     * Gets Sequra order by shop order reference
-     *
-     * @param string $product SeQura product code.
-     *
-     * @return SeQuraPaymentMethod|null
-     */
-    public function getPaymentMethodByProduct(string $product): ?SeQuraPaymentMethod;
-
-    /**
      * Inserts/updates SeQura payment method information.
      *
      * @param string $merchantId
@@ -41,22 +32,14 @@ interface PaymentMethodRepositoryInterface
     public function setPaymentMethod(string $merchantId, SeQuraPaymentMethod $paymentMethod): void;
 
     /**
-     * Deletes a stored payment method.
-     *
-     * @param SeQuraPaymentMethod $paymentMethod
-     *
-     * @return void
-     */
-    public function deletePaymentMethod(SeQuraPaymentMethod $paymentMethod): void;
-
-    /**
      * Deletes a stored payment method by product code.
      *
      * @param string $product
+     * @param string $merchantId
      *
      * @return void
      *
      * @throws PaymentMethodNotFoundException
      */
-    public function deletePaymentMethodByProductCode(string $product): void;
+    public function deletePaymentMethodByProductCode(string $product, string $merchantId): void;
 }

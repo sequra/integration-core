@@ -35,10 +35,8 @@ class AdminAPI
      */
     public static function get(): object
     {
-
         return Aspects::run(new ErrorHandlingAspect())->beforeEachMethodOfInstance(new AdminAPI());
     }
-
 
     /**
      * Returns a ConnectionController instance.
@@ -47,13 +45,11 @@ class AdminAPI
      *
      * @return Aspects
      */
-    public function connection(string $storeId): Aspects
+    public function connection(string $storeId): object
     {
-
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
-
             ->beforeEachMethodOfService(ConnectionController::class);
     }
 
@@ -66,11 +62,9 @@ class AdminAPI
      */
     public function store(string $storeId): Aspects
     {
-
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
-
             ->beforeEachMethodOfService(StoreController::class);
     }
 
@@ -83,11 +77,9 @@ class AdminAPI
      */
     public function countryConfiguration(string $storeId): Aspects
     {
-
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
-
             ->beforeEachMethodOfService(CountryConfigurationController::class);
     }
 
@@ -100,11 +92,9 @@ class AdminAPI
      */
     public function widgetConfiguration(string $storeId): Aspects
     {
-
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
-
             ->beforeEachMethodOfService(PromotionalWidgetsController::class);
     }
 
@@ -117,11 +107,9 @@ class AdminAPI
      */
     public function paymentMethods(string $storeId): Aspects
     {
-
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
-
             ->beforeEachMethodOfService(PaymentMethodsController::class);
     }
 
@@ -134,11 +122,9 @@ class AdminAPI
      */
     public function generalSettings(string $storeId): Aspects
     {
-
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
-
             ->beforeEachMethodOfService(GeneralSettingsController::class);
     }
 
@@ -151,11 +137,9 @@ class AdminAPI
      */
     public function orderStatusSettings(string $storeId): Aspects
     {
-
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
-
             ->beforeEachMethodOfService(OrderStatusSettingsController::class);
     }
 
@@ -168,11 +152,9 @@ class AdminAPI
      */
     public function transactionLogs(string $storeId): Aspects
     {
-
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
-
             ->beforeEachMethodOfService(TransactionLogsController::class);
     }
 
@@ -185,11 +167,9 @@ class AdminAPI
      */
     public function integration(string $storeId): Aspects
     {
-
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
-
             ->beforeEachMethodOfService(IntegrationController::class);
     }
 
@@ -202,11 +182,9 @@ class AdminAPI
      */
     public function disconnect(string $storeId): Aspects
     {
-
         return Aspects
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
-
             ->beforeEachMethodOfService(DisconnectController::class);
     }
 }
