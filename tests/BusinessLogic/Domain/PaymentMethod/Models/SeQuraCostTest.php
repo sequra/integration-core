@@ -1,6 +1,6 @@
 <?php
 
-namespace SeQura\Core\Tests\BusinessLogic\Domain\PaymentMethod;
+namespace SeQura\Core\Tests\BusinessLogic\Domain\PaymentMethod\Models;
 
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;

@@ -44,6 +44,21 @@ class SeQuraCost
     }
 
     /**
+     * Returns array representation of this entity.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'setup_fee' => $this->setupFee,
+            'instalment_fee' => $this->instalmentFee,
+            'down_payment_fees' => $this->downPaymentFees,
+            'instalment_total' => $this->instalmentTotal,
+        ];
+    }
+
+    /**
      * @return int
      */
     public function getSetupFee(): int

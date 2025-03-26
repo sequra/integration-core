@@ -22,6 +22,7 @@ use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSet
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusSettings;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
+use SeQura\Core\BusinessLogic\DataAccess\PaymentMethod\Repositories\PaymentMethodRepository;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSettings;
 use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Repositories\WidgetSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\SendReport\Entities\SendReport;
@@ -61,6 +62,7 @@ use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\ShopOrderStatusesService;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
@@ -77,8 +79,8 @@ use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
-use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\AbortedListener;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\CreateListener;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\FailedListener;
@@ -218,6 +220,16 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+
+        ServiceRegister::registerService(
+            PaymentMethodRepositoryInterface::class,
+            static function () {
+                return new PaymentMethodRepository(
+                    RepositoryRegistry::getRepository(DataAccess\PaymentMethod\Entities\PaymentMethod::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
     }
 
     /**
@@ -292,7 +304,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             PaymentMethodsService::class,
             static function () {
                 return new PaymentMethodsService(
-                    ServiceRegister::getService(MerchantProxyInterface::class)
+                    ServiceRegister::getService(MerchantProxyInterface::class),
+                    ServiceRegister::getService(PaymentMethodRepositoryInterface::class)
                 );
             }
         );

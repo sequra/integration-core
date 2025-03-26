@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 
 /**
  * Class WidgetSettingsService
@@ -95,6 +96,7 @@ class WidgetSettingsService
      * @return bool
      *
      * @throws HttpRequestException
+     * @throws QueryFilterInvalidParamException
      */
     public function isAssetsKeyValid(string $assetsKey): bool
     {
