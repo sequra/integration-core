@@ -29,8 +29,10 @@ class PaymentMethodsService
      * @param MerchantProxyInterface $merchantProxy
      * @param PaymentMethodRepositoryInterface $paymentMethodsRepository
      */
-    public function __construct(MerchantProxyInterface $merchantProxy, PaymentMethodRepositoryInterface $paymentMethodsRepository)
-    {
+    public function __construct(
+        MerchantProxyInterface $merchantProxy,
+        PaymentMethodRepositoryInterface $paymentMethodsRepository
+    ) {
         $this->merchantProxy = $merchantProxy;
         $this->paymentMethodsRepository = $paymentMethodsRepository;
     }
@@ -65,6 +67,7 @@ class PaymentMethodsService
      * @return string[]
      *
      * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
      */
     public function getMerchantProducts(string $merchantId): array
     {
@@ -81,6 +84,7 @@ class PaymentMethodsService
      * @return SeQuraPaymentMethod[]
      *
      * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
      */
     public function getCachedPaymentMethods(string $merchantId): array
     {
@@ -89,14 +93,8 @@ class PaymentMethodsService
             return $cachedPaymentMethods;
         }
 
-        // No cached payment methods found. Fetch them from the API.
-        $cachedPaymentMethods = $this->merchantProxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest($merchantId));
-
-        foreach ($cachedPaymentMethods as $paymentMethod) {
-            $this->paymentMethodsRepository->setPaymentMethod($merchantId, $paymentMethod);
-        }
-
-        return $cachedPaymentMethods;
+        // No cached payment methods found. Fetch them from the API as fallback.
+        return $this->getMerchantsPaymentMethods($merchantId, true);
     }
 
     /**
@@ -109,20 +107,7 @@ class PaymentMethodsService
      */
     private function cachePaymentMethods(string $merchantId, array $paymentMethods): void
     {
-        $cachedPaymentMethods = $this->paymentMethodsRepository->getPaymentMethods($merchantId);
-
-        $apiProducts = array_map(function (SeQuraPaymentMethod $method) {
-            return $method->getProduct();
-        }, $paymentMethods);
-
-        $cachedProducts = array_map(function (SeQuraPaymentMethod $method) {
-            return $method->getProduct();
-        }, $cachedPaymentMethods);
-
-        $productsToRemove = array_diff($cachedProducts, $apiProducts);
-        foreach ($productsToRemove as $product) {
-            $this->paymentMethodsRepository->deletePaymentMethodByProductCode($product, $merchantId);
-        }
+        $this->paymentMethodsRepository->deletePaymentMethods($merchantId);
 
         foreach ($paymentMethods as $paymentMethod) {
             $this->paymentMethodsRepository->setPaymentMethod($merchantId, $paymentMethod);

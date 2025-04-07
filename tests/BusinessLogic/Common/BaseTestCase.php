@@ -12,6 +12,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
@@ -336,6 +337,11 @@ class BaseTestCase extends TestCase
                 return new WebhookController(
                     TestServiceRegister::getService(WebhookValidator::class),
                     TestServiceRegister::getService(WebhookHandler::class)
+                );
+            },
+            CachedPaymentMethodsController::class => function () {
+                return new CachedPaymentMethodsController(
+                    TestServiceRegister::getService(PaymentMethodsService::class)
                 );
             },
             WidgetSettingsRepositoryInterface::class => function () {

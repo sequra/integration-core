@@ -1,86 +1,73 @@
 <?php
 
-namespace SeQura\Core\Tests\BusinessLogic\AdminAPI\PaymentMethods;
+namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\PaymentMethods;
 
-use DateTime;
-use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
-use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest;
-use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetPaymentMethodsRequest;
-use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Responses\PaymentMethodsResponse;
-use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
-use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
-use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
-use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
+use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\Requests\GetCachedPaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
-use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
-use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
-use SeQura\Core\Infrastructure\Http\HttpClient;
-use SeQura\Core\Infrastructure\Http\HttpResponse;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
+use DateTime;
 
 /**
- * Class PaymentMethodsControllerTest
+ * Class CachedPaymentMethodsApiTest.
  *
- * @package SeQura\Core\Tests\BusinessLogic\AdminAPI\PaymentMethods
+ * @package SeQura\Core\Tests\BusinessLogic\CheckoutAPI\PaymentMethods
  */
-class PaymentMethodsControllerTest extends BaseTestCase
+class CachedPaymentMethodsApiTest extends BaseTestCase
 {
     /**
+     * @var MockPaymentMethodService
+     */
+    private $mockPaymentMethodService;
+
+    /**
      * @throws RepositoryClassException
-     * @throws InvalidEnvironmentException
      */
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->proxy = TestServiceRegister::getService(MerchantProxyInterface::class);
-        $repository = TestServiceRegister::getService(ConnectionDataRepositoryInterface::class);
-        $httpClient = TestServiceRegister::getService(HttpClient::class);
-        $this->httpClient = $httpClient;
-        TestServiceRegister::registerService(HttpClient::class, function () {
-            return $this->httpClient;
-        });
-
-        // Arrange
-        $connectionData = new ConnectionData(
-            BaseProxy::TEST_MODE,
-            'test',
-            new AuthorizationCredentials('test_username', 'test_password')
+        $this->mockPaymentMethodService = new MockPaymentMethodService(
+            TestServiceRegister::getService(MerchantProxyInterface::class),
+            TestServiceRegister::getService(PaymentMethodRepositoryInterface::class)
         );
 
-        $repository->setConnectionData($connectionData);
-        $this->httpClient->setMockResponses([
-            new HttpResponse(200, [], file_get_contents(
-                __DIR__ . '/../../Common/ApiResponses/Merchant/GetPaymentMethodsResponses/SuccessfulResponse.json'
-            ))
-        ]);
+        TestServiceRegister::registerService(PaymentMethodsService::class, function () {
+            return $this->mockPaymentMethodService;
+        });
     }
 
     /**
      * @throws HttpRequestException
      */
-    public function testIsGetPaymentMethodsResponseSuccessful(): void
+    public function testGetPaymentMethodsUpdatesCachedMethodsNoMethodsReturned(): void
     {
-        // Act
-        $response = AdminAPI::get()->paymentMethods('1')->getPaymentMethods(new GetPaymentMethodsRequest('test'));
+        //Arrange
 
-        // Assert
+        //Act
+        $response = CheckoutAPI::get()->cachedPaymentMethods('1')
+            ->getCachedPaymentMethods(new GetCachedPaymentMethodsRequest('merchant1'));
+
+        //Assert
         self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
     }
 
     /**
      * @throws HttpRequestException
-     * @throws PaymentMethodNotFoundException
      */
-    public function testGetPaymentMethodsResponse(): void
+    public function testGetPaymentMethodsUpdatesCachedMethods(): void
     {
-        // Arrange
-        $expectedResponse = new PaymentMethodsResponse([
+        //Arrange
+        $this->mockPaymentMethodService->setMockPaymentMethods([
             new SeQuraPaymentMethod(
                 'i1',
                 'Paga Después',
@@ -128,37 +115,14 @@ class PaymentMethodsControllerTest extends BaseTestCase
             )
         ]);
 
-        // Act
-        $response = AdminAPI::get()->paymentMethods('1')->getPaymentMethods(new GetPaymentMethodsRequest('test'));
+        //Act
+        $response = CheckoutAPI::get()->cachedPaymentMethods('1')
+            ->getCachedPaymentMethods(new GetCachedPaymentMethodsRequest('merchant1'));
 
-        // Assert
-        self::assertEquals($expectedResponse, $response);
-    }
-
-    /**
-     * @throws HttpRequestException
-     * @throws PaymentMethodNotFoundException
-     */
-    public function testGetPaymentMethodsResponseToArray(): void
-    {
-        // Act
-        $response = AdminAPI::get()->paymentMethods('1')->getPaymentMethods(new GetPaymentMethodsRequest('test'));
-
-        // Assert
-        self::assertEquals($this->expectedToArrayResponse(), $response->toArray());
-    }
-
-    /**
-     * @return void
-     *
-     * @throws HttpRequestException
-     */
-    public function testGetProducts(): void
-    {
-        $response = AdminAPI::get()->paymentMethods('1')->getProducts(new GetAvailablePaymentMethodsRequest('test'));
-
-        // assert
-        self::assertEquals(['i1', 'pp5', 'pp3'], $response->toArray());
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertNotEmpty($response->toArray());
+        self::assertEquals($response->toArray(), $this->expectedToArrayResponse());
     }
 
     /**
