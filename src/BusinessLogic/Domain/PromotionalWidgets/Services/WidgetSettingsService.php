@@ -5,13 +5,13 @@ namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\ValidateAssetsKeyRequest;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
-use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 
 /**
  * Class WidgetSettingsService
@@ -96,7 +96,7 @@ class WidgetSettingsService
      * @return bool
      *
      * @throws HttpRequestException
-     * @throws QueryFilterInvalidParamException
+     * @throws PaymentMethodNotFoundException
      */
     public function isAssetsKeyValid(string $assetsKey): bool
     {

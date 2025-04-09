@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\CheckoutAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\Aspects\ErrorHandlingAspect;
 use SeQura\Core\BusinessLogic\AdminAPI\Aspects\StoreContextAspect;
 use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspects;
+use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
 
 /**
@@ -39,5 +40,18 @@ class CheckoutAPI
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
             ->beforeEachMethodOfService(SolicitationController::class);
+    }
+
+    /**
+     * @param string $storeId
+     *
+     * @return object
+     */
+    public function cachedPaymentMethods(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(CachedPaymentMethodsController::class);
     }
 }

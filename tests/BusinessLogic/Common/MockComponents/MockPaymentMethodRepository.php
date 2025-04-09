@@ -34,16 +34,9 @@ class MockPaymentMethodRepository implements PaymentMethodRepositoryInterface
     /**
      * @inheritDoc
      */
-    public function deletePaymentMethodByProductCode(string $product, string $merchantId): void
+    public function deletePaymentMethods(string $merchantId): void
     {
-        $this->paymentMethods = array_filter(
-            $this->paymentMethods,
-            function (SeQuraPaymentMethod $paymentMethod) use ($product) {
-                return $paymentMethod->getProduct() !== $product;
-            }
-        );
-
-        $this->paymentMethods = array_values($this->paymentMethods);
+        $this->paymentMethods = [];
     }
 
     /**

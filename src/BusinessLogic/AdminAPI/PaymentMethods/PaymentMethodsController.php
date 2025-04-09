@@ -46,20 +46,6 @@ class PaymentMethodsController
     }
 
     /**
-     * Returns available payment methods from the database cache.
-     *
-     * @param GetAvailablePaymentMethodsRequest $request
-     *
-     * @return PaymentMethodsResponse
-     *
-     * @throws HttpRequestException
-     */
-    public function getCachedPaymentMethods(GetAvailablePaymentMethodsRequest $request): PaymentMethodsResponse
-    {
-        return new PaymentMethodsResponse($this->paymentMethodsService->getCachedPaymentMethods($request->getMerchantId()));
-    }
-
-    /**
      * Gets all products for the merchant.
      *
      * @param GetAvailablePaymentMethodsRequest $request
@@ -67,6 +53,7 @@ class PaymentMethodsController
      * @return ProductsResponse
      *
      * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
      */
     public function getProducts(GetAvailablePaymentMethodsRequest $request): ProductsResponse
     {

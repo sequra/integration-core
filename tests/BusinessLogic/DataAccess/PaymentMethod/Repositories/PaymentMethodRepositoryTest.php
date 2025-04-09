@@ -211,7 +211,7 @@ class PaymentMethodRepositoryTest extends BaseTestCase
         // act
         StoreContext::doWithStore(
             '1',
-            [$this->paymentMethodRepository, 'deletePaymentMethodByProductCode'],
+            [$this->paymentMethodRepository, 'deletePaymentMethods'],
             ['i2', 'merchant1']
         );
 
@@ -252,8 +252,8 @@ class PaymentMethodRepositoryTest extends BaseTestCase
         // act
         StoreContext::doWithStore(
             '1',
-            [$this->paymentMethodRepository, 'deletePaymentMethodByProductCode'],
-            ['i1', 'merchant1']
+            [$this->paymentMethodRepository, 'deletePaymentMethods'],
+            ['merchant1']
         );
 
         // assert

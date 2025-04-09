@@ -97,14 +97,13 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function deletePaymentMethodByProductCode(string $product, string $merchantId): void
+    public function deletePaymentMethods(string $merchantId): void
     {
-        $paymentMethod = $this->getPaymentMethodByProduct($product, $merchantId);
-        if (!$paymentMethod) {
-            return;
-        }
+        $paymentMethods = $this->getPaymentMethods($merchantId);
 
-        $this->deletePaymentMethod($paymentMethod, $merchantId);
+        foreach ($paymentMethods as $paymentMethod) {
+            $this->deletePaymentMethod($paymentMethod, $merchantId);
+        }
     }
 
     /**
@@ -125,33 +124,6 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
             ->where('merchantId', Operators::EQUALS, $merchantId);
 
         return $this->repository->selectOne($filter);
-    }
-
-    /**
-     * @param string $product
-     * @param string $merchantId
-     *
-     * @return ?SeQuraPaymentMethod
-     *
-     * @throws QueryFilterInvalidParamException
-     */
-    private function getPaymentMethodByProduct(string $product, string $merchantId): ?SeQuraPaymentMethod
-    {
-        $queryFilter = new QueryFilter();
-        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
-            ->where('product', Operators::EQUALS, $product)
-            ->where('merchantId', Operators::EQUALS, $merchantId);
-
-        /**
-         * @var ?PaymentMethod $paymentMethod
-         */
-        $paymentMethod = $this->repository->selectOne($queryFilter);
-
-        if ($paymentMethod !== null) {
-            return $paymentMethod->getSeQuraPaymentMethod();
-        }
-
-        return null;
     }
 
     /**

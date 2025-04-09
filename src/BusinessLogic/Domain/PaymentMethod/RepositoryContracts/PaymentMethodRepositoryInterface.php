@@ -34,12 +34,11 @@ interface PaymentMethodRepositoryInterface
     /**
      * Deletes a stored payment method by product code.
      *
-     * @param string $product
      * @param string $merchantId
      *
      * @return void
      *
      * @throws PaymentMethodNotFoundException
      */
-    public function deletePaymentMethodByProductCode(string $product, string $merchantId): void;
+    public function deletePaymentMethods(string $merchantId): void;
 }
