@@ -37,7 +37,7 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
 
     public function setShippingCountry(string $shippingCountry): void
     {
-       $this->shippingCountry = $shippingCountry;
+        $this->shippingCountry = $shippingCountry;
     }
 
     public function getCurrentCountry(): string
@@ -45,16 +45,15 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
         return $this->currentCountry;
     }
 
-    public function setCurrentCountry($currentCountry): void
+    public function setCurrentCountry(string $currentCountry): void
     {
         $this->currentCountry = $currentCountry;
     }
 
     /**
-     *  Create a PromotionalWidgetsCheckoutRequest instance from an array.
+     * @param array<string> $data
      *
-     * @param array $data
-     * @return self
+     * @return PromotionalWidgetsCheckoutRequest
      */
     public static function fromArray(array $data): self
     {

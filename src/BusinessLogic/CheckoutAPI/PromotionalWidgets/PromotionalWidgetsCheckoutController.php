@@ -23,8 +23,7 @@ class PromotionalWidgetsCheckoutController
 
     public function __construct(
         WidgetSettingsService $promotionalWidgetsService
-    )
-    {
+    ) {
         $this->promotionalWidgetsService = $promotionalWidgetsService;
     }
 
@@ -34,14 +33,12 @@ class PromotionalWidgetsCheckoutController
      * @throws PaymentMethodNotFoundException
      * @throws HttpRequestException
      */
-    public function getPromotionalWidgetInitializeData
-    (
+    public function getPromotionalWidgetInitializeData(
         PromotionalWidgetsCheckoutRequest $request
-    ): PromotionalWidgetsCheckoutResponse
-    {
+    ): PromotionalWidgetsCheckoutResponse {
         return new PromotionalWidgetsCheckoutResponse($this->promotionalWidgetsService->getWidgetInitializeData(
             $request->getShippingCountry(),
-            $request->getCurrentCountry())
-        );
+            $request->getCurrentCountry()
+        ));
     }
 }

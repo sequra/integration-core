@@ -53,11 +53,11 @@ class WidgetSettingsService
      */
     public function __construct(
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
-        PaymentMethodsService             $paymentMethodsService,
-        CountryConfigurationService       $countryConfigService,
-        ConnectionService                 $connectionService,
-        WidgetsProxyInterface             $widgetsProxy
-    ){
+        PaymentMethodsService $paymentMethodsService,
+        CountryConfigurationService $countryConfigService,
+        ConnectionService $connectionService,
+        WidgetsProxyInterface $widgetsProxy
+    ) {
         $this->widgetSettingsRepository = $widgetSettingsRepository;
         $this->paymentMethodsService = $paymentMethodsService;
         $this->countryConfigService = $countryConfigService;
@@ -192,6 +192,7 @@ class WidgetSettingsService
      *
      * @param string $shippingCountry
      * @param string $currentCountry
+     *
      * @return string
      */
     protected function getMerchantId(string $shippingCountry, string $currentCountry): string
@@ -217,7 +218,8 @@ class WidgetSettingsService
      * Returns available widget products for given merchant id
      *
      * @param string $merchantId
-     * @return array
+     *
+     * @return array<string>
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
      */
@@ -232,7 +234,6 @@ class WidgetSettingsService
             if (in_array($paymentMethod, self::WIDGET_PAYMENT_METHODS, true)) {
                 $widgetSupportedPaymentMethods [] = $paymentMethod;
             }
-
         }
 
         return $widgetSupportedPaymentMethods;

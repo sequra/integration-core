@@ -20,8 +20,7 @@ class PromotionalWidgetsCheckoutResponse extends Response
 
     public function __construct(
         WidgetInitializer $widgetInitializer
-    )
-    {
+    ) {
         $this->widgetInitializer = $widgetInitializer;
     }
 

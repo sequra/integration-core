@@ -18,7 +18,7 @@ class WidgetInitializer
      */
     protected $merchantId;
     /**
-     * @var array
+     * @var array<string>
      */
     protected $products;
     /**
@@ -42,6 +42,16 @@ class WidgetInitializer
      */
     protected $thousandSeparator;
 
+    /**
+     * @param string $assetKey
+     * @param string $merchantId
+     * @param array<string> $products
+     * @param string $scriptUri
+     * @param string $locale
+     * @param string $currency
+     * @param string $decimalSeparator
+     * @param string $thousandSeparator
+     */
     public function __construct(
         string $assetKey,
         string $merchantId,
@@ -51,8 +61,7 @@ class WidgetInitializer
         string $currency = 'eur',
         string $decimalSeparator = ',',
         string $thousandSeparator = '.'
-    )
-    {
+    ) {
         $this->assetKey = $assetKey;
         $this->merchantId = $merchantId;
         $this->products = $products;
@@ -63,41 +72,65 @@ class WidgetInitializer
         $this->thousandSeparator = $thousandSeparator;
     }
 
+    /**
+     * @return string
+     */
     public function getAssetKey(): string
     {
         return $this->assetKey;
     }
 
+    /**
+     * @return string
+     */
     public function getMerchantId(): string
     {
         return $this->merchantId;
     }
 
+    /**
+     * @return string[]
+     */
     public function getProducts(): array
     {
         return $this->products;
     }
 
+    /**
+     * @return string
+     */
     public function getScriptUri(): string
     {
         return $this->scriptUri;
     }
 
+    /**
+     * @return string
+     */
     public function getLocale(): string
     {
         return $this->locale;
     }
 
+    /**
+     * @return string
+     */
     public function getCurrency(): string
     {
         return $this->currency;
     }
 
+    /**
+     * @return string
+     */
     public function getDecimalSeparator(): string
     {
         return $this->decimalSeparator;
     }
 
+    /**
+     * @return string
+     */
     public function getThousandSeparator(): string
     {
         return $this->thousandSeparator;
