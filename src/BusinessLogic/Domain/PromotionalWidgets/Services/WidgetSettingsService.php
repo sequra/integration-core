@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfig
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\ValidateAssetsKeyRequest;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
@@ -20,6 +21,8 @@ use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
  */
 class WidgetSettingsService
 {
+    public const WIDGET_PAYMENT_METHODS = ['i1', 'pp5', 'pp3', 'pp6', 'pp9', 'sp1'];
+
     /**
      * @var WidgetSettingsRepositoryInterface
      */
@@ -50,11 +53,11 @@ class WidgetSettingsService
      */
     public function __construct(
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
-        PaymentMethodsService $paymentMethodsService,
-        CountryConfigurationService $countryConfigService,
-        ConnectionService $connectionService,
-        WidgetsProxyInterface $widgetsProxy
-    ) {
+        PaymentMethodsService             $paymentMethodsService,
+        CountryConfigurationService       $countryConfigService,
+        ConnectionService                 $connectionService,
+        WidgetsProxyInterface             $widgetsProxy
+    ){
         $this->widgetSettingsRepository = $widgetSettingsRepository;
         $this->paymentMethodsService = $paymentMethodsService;
         $this->countryConfigService = $countryConfigService;
@@ -103,7 +106,7 @@ class WidgetSettingsService
         $countryConfig = $this->countryConfigService->getCountryConfiguration();
         $connectionSettings = $this->connectionService->getConnectionData();
 
-        if (empty($countryConfig) || !isset($countryConfig[0]) || empty($connectionSettings)) {
+        if (empty($countryConfig) || !isset($countryConfig[0]) || $connectionSettings === null) {
             return false;
         }
 
@@ -128,5 +131,110 @@ class WidgetSettingsService
         } catch (Exception $e) {
             return false;
         }
+    }
+
+
+    /**
+     * Returns widget initialize data
+     *
+     * @param string $shippingCountry
+     * @param string $currentCountry
+     *
+     * @return WidgetInitializer
+     *
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     * @throws Exception
+     */
+    public function getWidgetInitializeData(string $shippingCountry, string $currentCountry): WidgetInitializer
+    {
+        $merchantId = $this->getMerchantId($shippingCountry, $currentCountry);
+
+        return new WidgetInitializer(
+            $this->getAssetsKey(),
+            $merchantId,
+            $this->getWidgetSupportedProducts($merchantId),
+            $this->getScriptUri()
+        );
+    }
+
+    /**
+     * Returns script uri
+     *
+     * @return string
+     * @throws Exception
+     */
+    protected function getScriptUri(): string
+    {
+        $settings = $this->connectionService->getConnectionData();
+        if (!$settings || !$settings->getEnvironment()) {
+            return '';
+        }
+
+        return "https://{$settings->getEnvironment()}.sequracdn.com/assets/sequra-checkout.min.js";
+    }
+
+    /**
+     * Returns asset key
+     *
+     * @return string
+     * @throws Exception
+     */
+    protected function getAssetsKey(): string
+    {
+        $settings = $this->getWidgetSettings();
+
+        return $settings ? $settings->getAssetsKey() : '';
+    }
+
+    /**
+     * Returns the merchant id for given country
+     *
+     * @param string $shippingCountry
+     * @param string $currentCountry
+     * @return string
+     */
+    protected function getMerchantId(string $shippingCountry, string $currentCountry): string
+    {
+        $countryConfigurations = $this->countryConfigService->getCountryConfiguration();
+
+        foreach ($countryConfigurations as $country) {
+            if ($country->getCountryCode() === $shippingCountry && !empty($country->getMerchantId())) {
+                return $country->getMerchantId();
+            }
+        }
+
+        foreach ($countryConfigurations as $country) {
+            if ($country->getCountryCode() === $currentCountry && !empty($country->getMerchantId())) {
+                return $country->getMerchantId();
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Returns available widget products for given merchant id
+     *
+     * @param string $merchantId
+     * @return array
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     */
+    protected function getWidgetSupportedProducts(string $merchantId): array
+    {
+        $paymentMethods = $this->paymentMethodsService->getMerchantProducts(
+            $merchantId
+        );
+        $widgetSupportedPaymentMethods = [];
+
+        foreach ($paymentMethods as $paymentMethod) {
+            if (in_array($paymentMethod, self::WIDGET_PAYMENT_METHODS, true)) {
+                $widgetSupportedPaymentMethods [] = $paymentMethod;
+            }
+
+        }
+
+        return $widgetSupportedPaymentMethods;
     }
 }
