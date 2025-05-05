@@ -17,6 +17,7 @@ use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
+use SeQura\Core\BusinessLogic\DataAccess\Credentials\Entities\Credentials;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
@@ -34,7 +35,9 @@ use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
@@ -102,6 +105,7 @@ use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MemoryRepositoryWithConditionalDelete;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
 use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestShopLogger;
@@ -216,7 +220,14 @@ class BaseTestCase extends TestCase
             },
             ConnectionService::class => static function () {
                 return new ConnectionService(
-                    TestServiceRegister::getService(ConnectionProxyInterface::class)
+                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                    TestServiceRegister::getService(CredentialsService::class)
+                );
+            },
+            CredentialsService::class => static function () {
+                return new CredentialsService(
+                    TestServiceRegister::getService(ConnectionProxyInterface::class),
+                    TestServiceRegister::getService(CredentialsRepositoryInterface::class)
                 );
             },
             PaymentMethodsService::class => static function () {
@@ -235,7 +246,7 @@ class BaseTestCase extends TestCase
             CountryConfigurationService::class => static function () {
                 return new CountryConfigurationService(
                     TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
-                    TestServiceRegister::getService(SellingCountriesServiceInterface::class)
+                    TestServiceRegister::getService(SellingCountriesService::class)
                 );
             },
             GeneralSettingsService::class => static function () {
@@ -252,7 +263,8 @@ class BaseTestCase extends TestCase
             },
             SellingCountriesService::class => static function () {
                 return new SellingCountriesService(
-                    TestServiceRegister::getService(SellingCountriesServiceInterface::class)
+                    TestServiceRegister::getService(SellingCountriesServiceInterface::class),
+                    TestServiceRegister::getService(ConnectionService::class)
                 );
             },
             ShopOrderStatusesService::class => static function () {
@@ -487,6 +499,13 @@ class BaseTestCase extends TestCase
             }
         );
 
+        TestServiceRegister::registerService(
+            CredentialsRepositoryInterface::class,
+            static function () {
+                return new MockCredentialsRepository();
+            }
+        );
+
         TestRepositoryRegistry::registerRepository(ConfigEntity::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(
             QueueItem::getClassName(),
@@ -511,6 +530,7 @@ class BaseTestCase extends TestCase
             MemoryRepositoryWithConditionalDelete::getClassName()
         );
         TestRepositoryRegistry::registerRepository(PaymentMethod::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(Credentials::getClassName(), MemoryRepository::getClassName());
     }
 
     /**

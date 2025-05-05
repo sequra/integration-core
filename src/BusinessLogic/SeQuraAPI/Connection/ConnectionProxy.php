@@ -2,7 +2,8 @@
 
 namespace SeQura\Core\BusinessLogic\SeQuraAPI\Connection;
 
-use SeQura\Core\BusinessLogic\Domain\Connection\Models\ValidateConnectionRequest;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\CredentialsRequest;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\Request\ValidateConnectionHttpRequest;
@@ -17,9 +18,21 @@ class ConnectionProxy extends BaseProxy implements ConnectionProxyInterface
     /**
      * @inheritDoc
      */
-    public function validateConnection(ValidateConnectionRequest $request): void
+    public function getCredentials(CredentialsRequest $request): array
     {
         $this->mode = $request->getConnectionData()->getEnvironment();
-        $this->get(new ValidateConnectionHttpRequest($request))->decodeBodyToArray();
+        $credentialsResponse = $this->get(new ValidateConnectionHttpRequest($request))->decodeBodyToArray();
+
+        return array_map(
+            function ($item) {
+                return new Credentials(
+                    $item['ref'] ?? '',
+                    $item['country'] ?? '',
+                    $item['currency'] ?? '',
+                    $item['assets_key'] ?? ''
+                );
+            },
+            $credentialsResponse
+        );
     }
 }

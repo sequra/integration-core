@@ -36,13 +36,11 @@ class WidgetSettings extends Entity
         parent::inflate($data);
 
         $widgetSettings = $data['widgetSettings'] ?? [];
-        $widgetConfiguration = $widgetSettings['widgetConfiguration'] ?? [];
         $widgetLabels = $widgetSettings['widgetLabels'] ?? [];
 
         $this->storeId = $data['storeId'] ?? '';
         $this->widgetSettings = new DomainWidgetSettings(
             (bool)self::getArrayValue($widgetSettings, 'enabled', false),
-            self::getArrayValue($widgetSettings, 'assetsKey', ''),
             (bool)self::getArrayValue($widgetSettings, 'displayOnProductPage', false),
             (bool)self::getArrayValue($widgetSettings, 'showInstallmentsInProductListing', false),
             (bool)self::getArrayValue($widgetSettings, 'showInstallmentsInCartPage', false),
@@ -67,7 +65,6 @@ class WidgetSettings extends Entity
         $data['storeId'] = $this->storeId;
         $data['widgetSettings'] = [
             'enabled' => $this->widgetSettings->isEnabled(),
-            'assetsKey' => $this->widgetSettings->getAssetsKey(),
             'displayOnProductPage' => $this->widgetSettings->isDisplayOnProductPage(),
             'showInstallmentsInProductListing' => $this->widgetSettings->isShowInstallmentsInProductListing(),
             'showInstallmentsInCartPage' => $this->widgetSettings->isShowInstallmentsInCartPage(),

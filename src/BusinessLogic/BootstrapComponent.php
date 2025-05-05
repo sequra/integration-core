@@ -18,6 +18,8 @@ use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
+use SeQura\Core\BusinessLogic\DataAccess\Credentials\Entities\Credentials;
+use SeQura\Core\BusinessLogic\DataAccess\Credentials\Repositories\CredentialsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
@@ -34,7 +36,9 @@ use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
@@ -231,6 +235,16 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+
+        ServiceRegister::registerService(
+            CredentialsRepositoryInterface::class,
+            static function () {
+                return new CredentialsRepository(
+                    RepositoryRegistry::getRepository(Credentials::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
     }
 
     /**
@@ -264,7 +278,20 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             ConnectionService::class,
             static function () {
-                return new ConnectionService(ServiceRegister::getService(ConnectionProxyInterface::class));
+                return new ConnectionService(
+                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                    ServiceRegister::getService(CredentialsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            CredentialsService::class,
+            static function () {
+                return new CredentialsService(
+                    ServiceRegister::getService(ConnectionProxyInterface::class),
+                    ServiceRegister::getService(CredentialsRepositoryInterface::class)
+                );
             }
         );
 
@@ -284,7 +311,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new CountryConfigurationService(
                     ServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
-                    ServiceRegister::getService(SellingCountriesServiceInterface::class)
+                    ServiceRegister::getService(SellingCountriesService::class)
                 );
             }
         );
@@ -324,7 +351,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             SellingCountriesService::class,
             static function () {
                 return new SellingCountriesService(
-                    ServiceRegister::getService(SellingCountriesServiceInterface::class)
+                    ServiceRegister::getService(SellingCountriesServiceInterface::class),
+                    ServiceRegister::getService(ConnectionService::class)
                 );
             }
         );
@@ -644,8 +672,8 @@ class BootstrapComponent extends BaseBootstrapComponent
         EventBus::getInstance()->when(TickEvent::class, TickEventListener::class . '::handle');
 
         /**
-        * @var QueueItemStateTransitionEventBus $queueBus
-        */
+         * @var QueueItemStateTransitionEventBus $queueBus
+         */
         $queueBus = ServiceRegister::getService(QueueItemStateTransitionEventBus::CLASS_NAME);
 
         $queueBus->when(

@@ -146,4 +146,30 @@ class ConnectionController
     {
         return new ConnectionSettingsResponse($this->connectionService->getConnectionData());
     }
+
+    /**
+     * Validates connection data.
+     *
+     * @param OnboardingRequest $onboardingRequest
+     *
+     * @return Response
+     *
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     */
+    public function connect(OnboardingRequest $onboardingRequest): Response
+    {
+        try {
+            $this->connectionService->connect($onboardingRequest->transformToDomainModel()->getConnectionData());
+            $this->statisticalDataService->saveStatisticalData(
+                new StatisticalData($onboardingRequest->transformToDomainModel()->isSendStatisticalData())
+            );
+        } catch (BadMerchantIdException $e) {
+            return new ConnectionValidationResponse(false, 'merchantId');
+        } catch (WrongCredentialsException $e) {
+            return new ConnectionValidationResponse(false, 'username/password');
+        }
+
+        return new SuccessfulConnectionResponse();
+    }
 }

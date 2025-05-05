@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Enum\SellingCountries;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
@@ -21,9 +22,21 @@ class SellingCountriesService
      */
     protected $integrationSellingCountriesService;
 
-    public function __construct(SellingCountriesServiceInterface $integrationSellingCountriesService)
-    {
+    /**
+     * @var ConnectionService $connectionService
+     */
+    protected $connectionService;
+
+    /**
+     * @param SellingCountriesServiceInterface $integrationSellingCountriesService
+     * @param ConnectionService $connectionService
+     */
+    public function __construct(
+        SellingCountriesServiceInterface $integrationSellingCountriesService,
+        ConnectionService $connectionService
+    ) {
         $this->integrationSellingCountriesService = $integrationSellingCountriesService;
+        $this->connectionService = $connectionService;
     }
 
     /**
@@ -37,17 +50,30 @@ class SellingCountriesService
     {
         try {
             $storeConfiguredCountryCodes = $this->integrationSellingCountriesService->getSellingCountries();
+            $credentials = $this->connectionService->getCredentials();
+
+            $credentialsByCountry = [];
+            foreach ($credentials as $credential) {
+                $credentialsByCountry[$credential->getCountry()] = $credential->getMerchantId();
+            }
 
             $sellingCountries = [];
             foreach ($storeConfiguredCountryCodes as $code) {
-                if (array_key_exists($code, SellingCountries::SELLING_COUNTRIES)) {
-                    $sellingCountries[] = new SellingCountry($code, SellingCountries::SELLING_COUNTRIES[$code]);
+                if (isset($credentialsByCountry[$code])) {
+                    $sellingCountries[] = new SellingCountry(
+                        $code,
+                        SellingCountries::SELLING_COUNTRIES[$code] ?? $code,
+                        $credentialsByCountry[$code]
+                    );
                 }
             }
 
             return $sellingCountries;
         } catch (Exception $e) {
-            throw new FailedToRetrieveSellingCountriesException(new TranslatableLabel('Failed to retrieve selling countries.', 'general.errors.countries.sellingCountries'));
+            throw new FailedToRetrieveSellingCountriesException(new TranslatableLabel(
+                'Failed to retrieve selling countries.',
+                'general.errors.countries.sellingCountries'
+            ));
         }
     }
 }

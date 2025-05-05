@@ -100,7 +100,7 @@ class IntegrationControllerTest extends BaseTestCase
     {
         $this->httpClient->setMockResponses([
             new HttpResponse(200, [], file_get_contents(
-                __DIR__ . '/../../Common/ApiResponses/Merchant/GetPaymentMethodsResponses/SuccessfulResponse.json'
+                __DIR__ . '/../../Common/ApiResponses/Connection/SuccessfulResponse.json'
             ))
         ]);
 

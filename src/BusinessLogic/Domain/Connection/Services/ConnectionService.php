@@ -5,14 +5,9 @@ namespace SeQura\Core\BusinessLogic\Domain\Connection\Services;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
-use SeQura\Core\BusinessLogic\Domain\Connection\Models\ValidateConnectionRequest;
-use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
-use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
-use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiUnauthorizedException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
-use SeQura\Core\Infrastructure\Http\HttpClient;
-use SeQura\Core\Infrastructure\ServiceRegister;
 
 /**
  * Class ConnectionService
@@ -22,16 +17,40 @@ use SeQura\Core\Infrastructure\ServiceRegister;
 class ConnectionService
 {
     /**
-     * @var ConnectionProxyInterface
+     * @var ConnectionDataRepositoryInterface $connectionDataRepository
      */
-    protected $connectionProxy;
+    protected $connectionDataRepository;
 
     /**
-     * @param ConnectionProxyInterface $connectionProxy
+     * @var CredentialsService $credentialsService
      */
-    public function __construct(ConnectionProxyInterface $connectionProxy)
+    protected $credentialsService;
+
+    /**
+     * @param ConnectionDataRepositoryInterface $connectionDataRepository
+     * @param CredentialsService $credentialsService
+     */
+    public function __construct(
+        ConnectionDataRepositoryInterface $connectionDataRepository,
+        CredentialsService $credentialsService
+    ) {
+        $this->connectionDataRepository = $connectionDataRepository;
+        $this->credentialsService = $credentialsService;
+    }
+
+    /**
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function connect(ConnectionData $connectionData): void
     {
-        $this->connectionProxy = $connectionProxy;
+        $this->credentialsService->validateAndUpdateCredentials($connectionData);
+        $this->saveConnectionData($connectionData);
     }
 
     /**
@@ -47,14 +66,9 @@ class ConnectionService
      */
     public function isConnectionDataValid(ConnectionData $connectionData): bool
     {
-        try {
-            $this->connectionProxy->validateConnection(new ValidateConnectionRequest($connectionData));
-        } catch (HttpApiUnauthorizedException $exception) {
-            throw new WrongCredentialsException();
-        } catch (HttpApiInvalidUrlParameterException $exception) {
-            throw new BadMerchantIdException();
-        }
+        $this->credentialsService->validateAndUpdateCredentials($connectionData);
 
+        //salee
         return true;
     }
 
@@ -65,7 +79,7 @@ class ConnectionService
      */
     public function getConnectionData(): ?ConnectionData
     {
-        return $this->getConnectionDataRepository()->getConnectionData();
+        return $this->connectionDataRepository->getConnectionData();
     }
 
     /**
@@ -77,16 +91,26 @@ class ConnectionService
      */
     public function saveConnectionData(ConnectionData $connectionData): void
     {
-        $this->getConnectionDataRepository()->setConnectionData($connectionData);
+        $this->connectionDataRepository->setConnectionData($connectionData);
     }
 
     /**
-     * Returns an instance of the connection data repository.
+     * @return Credentials[]
      *
-     * @return ConnectionDataRepositoryInterface
+     * @throws BadMerchantIdException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
      */
-    protected function getConnectionDataRepository(): ConnectionDataRepositoryInterface
+    public function getCredentials(): array
     {
-        return ServiceRegister::getService(ConnectionDataRepositoryInterface::class);
+        $credentials = $this->credentialsService->getCredentials();
+
+        if (!empty($credentials)) {
+            return $credentials;
+        }
+
+        $connectionData = $this->getConnectionData();
+
+        return $connectionData ? $this->credentialsService->validateAndUpdateCredentials($connectionData) : [];
     }
 }

@@ -18,10 +18,6 @@ class WidgetSettingsRequest extends Request
      */
     protected $enabled;
     /**
-     * @var string|null
-     */
-    protected $assetsKey;
-    /**
      * @var bool
      */
     protected $displayOnProductPage;
@@ -50,10 +46,8 @@ class WidgetSettingsRequest extends Request
      */
     protected $messagesBelowLimit;
 
-
     /**
      * @param bool $enabled
-     * @param string|null $assetsKey
      * @param bool $displayOnProductPage
      * @param bool $showInstallmentsInProductListing
      * @param bool $showInstallmentsInCartPage
@@ -64,7 +58,6 @@ class WidgetSettingsRequest extends Request
      */
     public function __construct(
         bool $enabled,
-        ?string $assetsKey,
         bool $displayOnProductPage,
         bool $showInstallmentsInProductListing,
         bool $showInstallmentsInCartPage,
@@ -74,7 +67,6 @@ class WidgetSettingsRequest extends Request
         array $messagesBelowLimit = []
     ) {
         $this->enabled = $enabled;
-        $this->assetsKey = $assetsKey;
         $this->displayOnProductPage = $displayOnProductPage;
         $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
         $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
@@ -93,7 +85,6 @@ class WidgetSettingsRequest extends Request
     {
         return new WidgetSettings(
             $this->enabled,
-            $this->assetsKey,
             $this->displayOnProductPage,
             $this->showInstallmentsInProductListing,
             $this->showInstallmentsInCartPage,

@@ -35,7 +35,8 @@ class SellingCountriesResponse extends Response
         foreach ($this->sellingCountries as $country) {
             $countries[] = [
                 'code' => $country->getCode(),
-                'name' => $country->getName()
+                'name' => $country->getName(),
+                'merchantId' => $country->getMerchantId()
             ];
         }
 

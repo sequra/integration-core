@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services;
 
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
@@ -97,6 +98,7 @@ class WidgetSettingsService
      *
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
+     * @throws FailedToRetrieveSellingCountriesException
      */
     public function isAssetsKeyValid(string $assetsKey): bool
     {
