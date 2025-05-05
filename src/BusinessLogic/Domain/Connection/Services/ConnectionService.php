@@ -68,7 +68,6 @@ class ConnectionService
     {
         $this->credentialsService->validateAndUpdateCredentials($connectionData);
 
-        //salee
         return true;
     }
 
