@@ -51,6 +51,7 @@ class PaymentMethodsController
      * Returns available payment method titles for all merchants, grouped by category and product type.
      *
      * @param GetFormattedPaymentMethodsRequest $request
+     *
      * @return FormattedPaymentMethodsResponse
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException

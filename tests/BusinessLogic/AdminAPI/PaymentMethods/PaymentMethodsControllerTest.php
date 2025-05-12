@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentExc
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
@@ -21,6 +22,7 @@ use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\Http\HttpResponse;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -37,6 +39,10 @@ class PaymentMethodsControllerTest extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        TestServiceRegister::registerService(SellingCountriesServiceInterface::class, static function () {
+            return new MockSellingCountriesService();
+        });
 
         $this->proxy = TestServiceRegister::getService(MerchantProxyInterface::class);
         $repository = TestServiceRegister::getService(ConnectionDataRepositoryInterface::class);
@@ -85,6 +91,7 @@ class PaymentMethodsControllerTest extends BaseTestCase
                 'i1',
                 'Paga Después',
                 'Paga después. 7 días desde el envío',
+                'pay_later',
                 new SeQuraCost(0, 0, 0, 0),
                 new DateTime('2000-02-22T21:22:00Z'),
                 new DateTime('2222-02-22T21:22:00Z'),
@@ -100,6 +107,7 @@ class PaymentMethodsControllerTest extends BaseTestCase
                 'pp5',
                 'Paga el mes que viene',
                 'Paga el mes que viene',
+                'pay_later',
                 new SeQuraCost(0, 0, 0, 0),
                 new DateTime('0022-02-22T22:36:44Z'),
                 new DateTime('2222-02-22T21:02:00Z'),
@@ -115,6 +123,7 @@ class PaymentMethodsControllerTest extends BaseTestCase
                 'pp3',
                 'Desde 0,00 €/mes',
                 'Desde 0,00 €/mes o en 3 plazos sin coste',
+                'part_payment',
                 new SeQuraCost(0, 0, 0, 0),
                 new DateTime('2000-02-22T21:22:00Z'),
                 new DateTime('2222-02-22T21:22:00Z'),
@@ -171,6 +180,7 @@ class PaymentMethodsControllerTest extends BaseTestCase
                 'product' => 'i1',
                 'title' => 'Paga Después',
                 'longTitle' => 'Paga después. 7 días desde el envío',
+                'category' => 'pay_later',
                 'cost' => [
                     'setupFee' => 0,
                     'instalmentFee' => 0,
@@ -191,6 +201,7 @@ class PaymentMethodsControllerTest extends BaseTestCase
                 'product' => 'pp5',
                 'title' => 'Paga el mes que viene',
                 'longTitle' => 'Paga el mes que viene',
+                'category' => 'pay_later',
                 'cost' => [
                     'setupFee' => 0,
                     'instalmentFee' => 0,
@@ -211,6 +222,7 @@ class PaymentMethodsControllerTest extends BaseTestCase
                 'product' => 'pp3',
                 'title' => 'Desde 0,00 €/mes',
                 'longTitle' => 'Desde 0,00 €/mes o en 3 plazos sin coste',
+                'category' => 'part_payment',
                 'cost' => [
                     'setupFee' => 0,
                     'instalmentFee' => 0,

@@ -37,11 +37,10 @@ class PaymentMethodsService
      * @param CountryConfigurationService $countryConfigurationService
      */
     public function __construct(
-        MerchantProxyInterface           $merchantProxy,
+        MerchantProxyInterface $merchantProxy,
         PaymentMethodRepositoryInterface $paymentMethodsRepository,
-        CountryConfigurationService      $countryConfigurationService
-    )
-    {
+        CountryConfigurationService $countryConfigurationService
+    ) {
         $this->merchantProxy = $merchantProxy;
         $this->paymentMethodsRepository = $paymentMethodsRepository;
         $this->countryConfigurationService = $countryConfigurationService;

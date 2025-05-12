@@ -4,6 +4,7 @@ namespace SeQura\Core\Tests\BusinessLogic\Domain\PaymentMethod\Services;
 
 use DateTime;
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
@@ -14,6 +15,7 @@ use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -49,6 +51,11 @@ class PaymentMethodServiceTest extends BaseTestCase
 
         $this->repository = new MockPaymentMethodRepository();
         $this->merchantProxy = new MockMerchantProxy();
+
+
+        TestServiceRegister::registerService(SellingCountriesServiceInterface::class, static function () {
+            return new MockSellingCountriesService();
+        });
 
         TestServiceRegister::registerService(PaymentMethodRepositoryInterface::class, function () {
             return $this->repository;
@@ -134,6 +141,7 @@ class PaymentMethodServiceTest extends BaseTestCase
                 'i11',
                 'Paga Después1',
                 'Paga después. 7 días desde el envío1',
+                'pay_later',
                 new SeQuraCost(0, 0, 0, 0),
                 new DateTime('2000-02-22T21:22:00Z'),
                 new DateTime('2222-02-22T21:22:00Z'),
@@ -147,6 +155,7 @@ class PaymentMethodServiceTest extends BaseTestCase
             ),
             new SeQuraPaymentMethod(
                 'i25',
+                'pay_later',
                 'Paga Después',
                 'Paga después. 7 días desde el envío',
                 new SeQuraCost(0, 0, 0, 0),
@@ -184,6 +193,7 @@ class PaymentMethodServiceTest extends BaseTestCase
                 'i1',
                 'Paga Después',
                 'Paga después. 7 días desde el envío',
+                'pay_later',
                 new SeQuraCost(0, 0, 0, 0),
                 new DateTime('2000-02-22T21:22:00Z'),
                 new DateTime('2222-02-22T21:22:00Z'),
@@ -199,6 +209,7 @@ class PaymentMethodServiceTest extends BaseTestCase
                 'pp5',
                 'Paga el mes que viene',
                 'Paga el mes que viene',
+                'pay_later',
                 new SeQuraCost(0, 0, 0, 0),
                 new DateTime('0022-02-22T22:36:44Z'),
                 new DateTime('2222-02-22T21:02:00Z'),
@@ -214,6 +225,7 @@ class PaymentMethodServiceTest extends BaseTestCase
                 'pp3',
                 'Desde 0,00 €/mes',
                 'Desde 0,00 €/mes o en 3 plazos sin coste',
+                'part_payment',
                 new SeQuraCost(0, 0, 0, 0),
                 new DateTime('2000-02-22T21:22:00Z'),
                 new DateTime('2222-02-22T21:22:00Z'),

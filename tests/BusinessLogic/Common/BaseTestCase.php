@@ -222,7 +222,8 @@ class BaseTestCase extends TestCase
             PaymentMethodsService::class => static function () {
                 return new PaymentMethodsService(
                     TestServiceRegister::getService(MerchantProxyInterface::class),
-                    TestServiceRegister::getService(PaymentMethodRepositoryInterface::class)
+                    TestServiceRegister::getService(PaymentMethodRepositoryInterface::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class)
                 );
             },
             StatisticalDataService::class => static function () {

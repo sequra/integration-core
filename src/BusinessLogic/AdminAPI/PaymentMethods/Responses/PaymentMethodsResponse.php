@@ -36,6 +36,7 @@ class PaymentMethodsResponse extends Response
                 'product' => $paymentMethod->getProduct(),
                 'title' => $paymentMethod->getTitle(),
                 'longTitle' => $paymentMethod->getLongTitle(),
+                'category' => $paymentMethod->getCategory(),
                 'cost' => [
                     'setupFee' => $paymentMethod->getCost()->getSetupFee(),
                     'instalmentFee' => $paymentMethod->getCost()->getInstalmentFee(),
