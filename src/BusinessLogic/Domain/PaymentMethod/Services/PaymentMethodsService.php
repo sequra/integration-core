@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services;
 
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
@@ -26,15 +27,24 @@ class PaymentMethodsService
     protected $paymentMethodsRepository;
 
     /**
+     * @var CountryConfigurationService
+     */
+    protected $countryConfigurationService;
+
+    /**
      * @param MerchantProxyInterface $merchantProxy
      * @param PaymentMethodRepositoryInterface $paymentMethodsRepository
+     * @param CountryConfigurationService $countryConfigurationService
      */
     public function __construct(
-        MerchantProxyInterface $merchantProxy,
-        PaymentMethodRepositoryInterface $paymentMethodsRepository
-    ) {
+        MerchantProxyInterface           $merchantProxy,
+        PaymentMethodRepositoryInterface $paymentMethodsRepository,
+        CountryConfigurationService      $countryConfigurationService
+    )
+    {
         $this->merchantProxy = $merchantProxy;
         $this->paymentMethodsRepository = $paymentMethodsRepository;
+        $this->countryConfigurationService = $countryConfigurationService;
     }
 
     /**
@@ -57,6 +67,31 @@ class PaymentMethodsService
         }
 
         return $availablePaymentMethods;
+    }
+
+    /**
+     *  Returns available payment methods for all enabled merchants.
+     *
+     * @param bool $cache
+     *
+     * @return SeQuraPaymentMethod[]
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     */
+    public function getAvailablePaymentMethodsForAllMerchants(bool $cache = false): array
+    {
+        $availablePaymentMethods = [];
+        $merchantIds = $this->getMerchantIds();
+
+        foreach ($merchantIds as $merchantId) {
+            $methods = $this->getMerchantsPaymentMethods($merchantId, $cache);
+
+            if (!empty($methods)) {
+                $availablePaymentMethods[] = $methods;
+            }
+        }
+
+        return !empty($availablePaymentMethods) ? array_merge(...$availablePaymentMethods) : [];
     }
 
     /**
@@ -112,5 +147,22 @@ class PaymentMethodsService
         foreach ($paymentMethods as $paymentMethod) {
             $this->paymentMethodsRepository->setPaymentMethod($merchantId, $paymentMethod);
         }
+    }
+
+    /**
+     * Retrieves available merchant ids from database.
+     *
+     * @return string[]
+     */
+    private function getMerchantIds(): array
+    {
+        $countryConfigurations = $this->countryConfigurationService->getCountryConfiguration();
+        if (empty($countryConfigurations)) {
+            return [];
+        }
+
+        return array_map(function ($config) {
+            return $config->getMerchantId();
+        }, $countryConfigurations);
     }
 }

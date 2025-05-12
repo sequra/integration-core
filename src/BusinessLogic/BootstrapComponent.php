@@ -307,7 +307,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new PaymentMethodsService(
                     ServiceRegister::getService(MerchantProxyInterface::class),
-                    ServiceRegister::getService(PaymentMethodRepositoryInterface::class)
+                    ServiceRegister::getService(PaymentMethodRepositoryInterface::class),
+                    ServiceRegister::getService(CountryConfigurationService::class)
                 );
             }
         );
