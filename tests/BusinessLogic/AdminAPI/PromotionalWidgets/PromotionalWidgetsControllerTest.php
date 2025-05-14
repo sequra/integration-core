@@ -100,7 +100,15 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
             true,
             true,
             '',
-            'banner'
+            'banner',
+            '.price',
+            '.location',
+            '.price',
+            '.location',
+            'pp3',
+            '.price',
+            '.location',
+            'pp3'
         );
 
         // act

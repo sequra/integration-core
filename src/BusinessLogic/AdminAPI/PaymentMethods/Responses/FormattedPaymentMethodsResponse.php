@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Responses;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 
 /**
  * Class FormattedPaymentMethodsResponse
@@ -32,8 +33,12 @@ class FormattedPaymentMethodsResponse extends Response
     {
         $methods = [];
         foreach ($this->paymentMethods as $paymentMethod) {
-            $category = $paymentMethod->getCategory();
             $product = $paymentMethod->getProduct();
+            if (!in_array($product, WidgetSettingsService::WIDGET_PAYMENT_METHODS)) {
+                continue;
+            }
+
+            $category = $paymentMethod->getCategory();
             $title = $paymentMethod->getTitle();
 
             if (!isset($methods[$category])) {
@@ -41,14 +46,20 @@ class FormattedPaymentMethodsResponse extends Response
             }
 
             if (!isset($methods[$category][$product])) {
-                $methods[$category][$product] = $title;
+                $methods[$category][$product] = [
+                    'category' => $category,
+                    'product' => $product,
+                    'title' => $title,
+                ];
 
                 continue;
             }
 
-            $methods[$category][$product] .= '/' . $title;
+            $methods[$category][$product]['title'] .= '/' . $title;
         }
 
-        return $methods;
+        return array_map(static function ($categoryMethods) {
+            return array_values($categoryMethods);
+        }, $methods);
     }
 }

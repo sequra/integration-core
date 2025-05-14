@@ -41,6 +41,18 @@ class WidgetSettings
      * @var WidgetLabels
      */
     protected $widgetLabels;
+    /**
+     * @var WidgetSelectorSettings|null
+     */
+    protected $widgetSettingsForProduct;
+    /**
+     * @var WidgetSelectorSettings|null
+     */
+    protected $widgetSettingsForCart;
+    /**
+     * @var WidgetSelectorSettings|null
+     */
+    protected $widgetSettingsForListing;
 
     /**
      * @param bool $enabled
@@ -51,6 +63,9 @@ class WidgetSettings
      * @param string $miniWidgetSelector
      * @param string|null $widgetConfig
      * @param WidgetLabels|null $widgetLabels
+     * @param WidgetSelectorSettings|null $widgetSettingsForProduct
+     * @param WidgetSelectorSettings|null $widgetSettingsForCart
+     * @param WidgetSelectorSettings|null $widgetSettingsForListing
      */
     public function __construct(
         bool $enabled,
@@ -60,7 +75,10 @@ class WidgetSettings
         bool $showInstallmentsInCartPage = false,
         string $miniWidgetSelector = '',
         string $widgetConfig = null,
-        WidgetLabels $widgetLabels = null
+        WidgetLabels $widgetLabels = null,
+        WidgetSelectorSettings $widgetSettingsForProduct = null,
+        WidgetSelectorSettings $widgetSettingsForCart = null,
+        WidgetSelectorSettings $widgetSettingsForListing = null
     ) {
         $this->enabled = $enabled;
         $this->assetsKey = $assetsKey;
@@ -70,6 +88,9 @@ class WidgetSettings
         $this->miniWidgetSelector = $miniWidgetSelector;
         $this->widgetConfig = $widgetConfig;
         $this->widgetLabels = $widgetLabels;
+        $this->widgetSettingsForProduct = $widgetSettingsForProduct;
+        $this->widgetSettingsForCart = $widgetSettingsForCart;
+        $this->widgetSettingsForListing = $widgetSettingsForListing;
     }
 
     public function isEnabled(): bool
@@ -150,5 +171,53 @@ class WidgetSettings
     public function setMiniWidgetSelector(string $miniWidgetSelector): void
     {
         $this->miniWidgetSelector = $miniWidgetSelector;
+    }
+
+    /**
+     * @return WidgetSelectorSettings|null
+     */
+    public function getWidgetSettingsForProduct(): ?WidgetSelectorSettings
+    {
+        return $this->widgetSettingsForProduct;
+    }
+
+    /**
+     * @param WidgetSelectorSettings|null $widgetSettingsForProduct
+     */
+    public function setWidgetSettingsForProduct(?WidgetSelectorSettings $widgetSettingsForProduct): void
+    {
+        $this->widgetSettingsForProduct = $widgetSettingsForProduct;
+    }
+
+    /**
+     * @return WidgetSelectorSettings|null
+     */
+    public function getWidgetSettingsForCart(): ?WidgetSelectorSettings
+    {
+        return $this->widgetSettingsForCart;
+    }
+
+    /**
+     * @param WidgetSelectorSettings|null $widgetSettingsForCart
+     */
+    public function setWidgetSettingsForCart(?WidgetSelectorSettings $widgetSettingsForCart): void
+    {
+        $this->widgetSettingsForCart = $widgetSettingsForCart;
+    }
+
+    /**
+     * @return WidgetSelectorSettings|null
+     */
+    public function getWidgetSettingsForListing(): ?WidgetSelectorSettings
+    {
+        return $this->widgetSettingsForListing;
+    }
+
+    /**
+     * @param WidgetSelectorSettings|null $widgetSettingsForListing
+     */
+    public function setWidgetSettingsForListing(?WidgetSelectorSettings $widgetSettingsForListing): void
+    {
+        $this->widgetSettingsForListing = $widgetSettingsForListing;
     }
 }
