@@ -180,10 +180,10 @@ class WidgetSettingsRequest extends Request
 
         foreach ($this->customLocations as $customLocation) {
             $customLocationModels[] = new CustomWidgetsSettings(
-                $customLocation['selForTarget'],
-                $customLocation['product'],
-                $customLocation['displayWidget'],
-                $customLocation['widgetStyles']
+                $customLocation['selForTarget'] ?? '',
+                $customLocation['product'] ?? '',
+                $customLocation['displayWidget'] ?? '',
+                $customLocation['widgetStyles'] ?? ''
             );
         }
 

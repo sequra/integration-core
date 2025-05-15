@@ -15,6 +15,9 @@ class MockPaymentMethodService extends PaymentMethodsService
     /** @var SeQuraPaymentMethod[] */
     private $paymentMethods = [];
 
+    /** @var string[] */
+    private $products = [];
+
     /**
      * Gets available payment methods for merchant.
      *
@@ -37,7 +40,7 @@ class MockPaymentMethodService extends PaymentMethodsService
      */
     public function getMerchantProducts(string $merchantId): array
     {
-        return [];
+        return $this->products;
     }
 
     /**
@@ -58,5 +61,15 @@ class MockPaymentMethodService extends PaymentMethodsService
     public function setMockPaymentMethods(array $paymentMethods): void
     {
         $this->paymentMethods = $paymentMethods;
+    }
+
+    /**
+     * @param string[] $products
+     *
+     * @return void
+     */
+    public function setMockProducts(array $products): void
+    {
+        $this->products = $products;
     }
 }
