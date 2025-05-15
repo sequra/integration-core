@@ -57,6 +57,16 @@ class WidgetSettingsResponse extends Response
             $widgetSettingsArray['defaultProductLocationSelector'] = $widgetSettingsForProduct->getLocationSelector();
             $widgetSettingsArray['altProductPriceSelector'] = $widgetSettingsForProduct->getAltPriceSelector();
             $widgetSettingsArray['altProductPriceTriggerSelector'] = $widgetSettingsForProduct->getAltPriceTriggerSelector();
+            $widgetSettingsArray['customLocations'] = [];
+
+            foreach ($widgetSettingsForProduct->getCustomWidgetsSettings() as $customWidgetSettings) {
+                $widgetSettingsArray['customLocations'][] = [
+                    'product' => $customWidgetSettings->getProduct(),
+                    'selForTarget' => $customWidgetSettings->getCustomLocationSelector(),
+                    'displayWidget' => $customWidgetSettings->isDisplayWidget(),
+                    'widgetStyles' => $customWidgetSettings->getCustomWidgetStyle()
+                ];
+            }
         }
 
         if ($widgetSettingsForCart) {

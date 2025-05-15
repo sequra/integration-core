@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Requests;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Request\Request;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\CustomWidgetsSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetLabels;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSelectorSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
@@ -90,6 +91,10 @@ class WidgetSettingsRequest extends Request
      * @var string
      */
     protected $widgetOnListingPage;
+    /**
+     * @var mixed[]
+     */
+    protected $customLocations;
 
     /**
      * @param bool $enabled
@@ -109,8 +114,9 @@ class WidgetSettingsRequest extends Request
      * @param string $widgetOnListingPage
      * @param string $altProductPriceSelector
      * @param string $altProductPriceTriggerSelector
-     * @param string[]  $messages
-     * @param string[]  $messagesBelowLimit
+     * @param string[] $messages
+     * @param string[] $messagesBelowLimit
+     * @param mixed[] $customLocations
      */
     public function __construct(
         bool $enabled,
@@ -131,7 +137,8 @@ class WidgetSettingsRequest extends Request
         string $altProductPriceSelector = '',
         string $altProductPriceTriggerSelector = '',
         array $messages = [],
-        array $messagesBelowLimit = []
+        array $messagesBelowLimit = [],
+        array $customLocations = []
     ) {
         $this->enabled = $enabled;
         $this->assetsKey = $assetsKey;
@@ -152,6 +159,7 @@ class WidgetSettingsRequest extends Request
         $this->altProductPriceTriggerSelector = $altProductPriceTriggerSelector;
         $this->messages = $messages;
         $this->messagesBelowLimit = $messagesBelowLimit;
+        $this->customLocations = $customLocations;
     }
 
     /**
@@ -161,6 +169,26 @@ class WidgetSettingsRequest extends Request
      */
     public function transformToDomainModel(): object
     {
+        $productWidgetSettings = new WidgetSelectorSettings(
+            $this->productPriceSelector,
+            $this->defaultProductLocationSelector,
+            '',
+            $this->altProductPriceSelector,
+            $this->altProductPriceTriggerSelector
+        );
+        $customLocationModels = [];
+
+        foreach ($this->customLocations as $customLocation) {
+            $customLocationModels[] = new CustomWidgetsSettings(
+                $customLocation['selForTarget'],
+                $customLocation['product'],
+                $customLocation['displayWidget'],
+                $customLocation['widgetStyles']
+            );
+        }
+
+        $productWidgetSettings->setCustomWidgetsSettings($customLocationModels);
+
         return new WidgetSettings(
             $this->enabled,
             $this->assetsKey,
@@ -173,13 +201,7 @@ class WidgetSettingsRequest extends Request
                 $this->messages,
                 $this->messagesBelowLimit
             ),
-            new WidgetSelectorSettings(
-                $this->productPriceSelector,
-                $this->defaultProductLocationSelector,
-                '',
-                $this->altProductPriceSelector,
-                $this->altProductPriceTriggerSelector
-            ),
+            $productWidgetSettings,
             new WidgetSelectorSettings(
                 $this->cartPriceSelector,
                 $this->cartLocationSelector,

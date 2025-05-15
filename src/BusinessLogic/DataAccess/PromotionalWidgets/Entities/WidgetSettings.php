@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities;
 
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\CustomWidgetsSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetLabels as DomainWidgetLabels;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSelectorSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings as DomainWidgetSettings;
@@ -38,9 +39,6 @@ class WidgetSettings extends Entity
 
         $widgetSettings = $data['widgetSettings'] ?? [];
         $widgetLabels = $widgetSettings['widgetLabels'] ?? [];
-        $widgetSettingsForProduct = $widgetSettings['widgetSettingsForProduct'] ?? [];
-        $widgetSettingsForCart = $widgetSettings['widgetSettingsForCart'] ?? [];
-        $widgetSettingsForListing = $widgetSettings['widgetSettingsForListing'] ?? [];
 
         $this->storeId = $data['storeId'] ?? '';
         $this->widgetSettings = new DomainWidgetSettings(
@@ -55,23 +53,12 @@ class WidgetSettings extends Entity
                 static::getDataValue($widgetLabels, 'messages', []),
                 static::getDataValue($widgetLabels, 'messagesBelowLimit', [])
             ) : null,
-            $widgetSettingsForProduct ? new WidgetSelectorSettings(
-                static::getDataValue($widgetSettingsForProduct, 'priceSelector', ''),
-                static::getDataValue($widgetSettingsForProduct, 'locationSelector', ''),
-                '',
-                static::getDataValue($widgetSettingsForProduct, 'altPriceSelector', ''),
-                static::getDataValue($widgetSettingsForProduct, 'altPriceTriggerSelector', '')
-            ) : null,
-            $widgetSettingsForCart ? new WidgetSelectorSettings(
-                static::getDataValue($widgetSettingsForCart, 'priceSelector', ''),
-                static::getDataValue($widgetSettingsForCart, 'locationSelector', ''),
-                static::getDataValue($widgetSettingsForCart, 'widgetProduct', '')
-            ) : null,
-            $widgetSettingsForListing ? new WidgetSelectorSettings(
-                static::getDataValue($widgetSettingsForListing, 'priceSelector', ''),
-                static::getDataValue($widgetSettingsForListing, 'locationSelector', ''),
-                static::getDataValue($widgetSettingsForListing, 'widgetProduct', '')
-            ) : null
+            $widgetSettings['widgetSettingsForProduct'] ?
+                $this->inflateWidgetSettingsForProductModel($widgetSettings['widgetSettingsForProduct']) : null,
+            $widgetSettings['widgetSettingsForCart'] ?
+                $this->inflateWidgetSettingsForCartModel($widgetSettings['widgetSettingsForCart']) : null,
+            $widgetSettings['widgetSettingsForListing'] ?
+                $this->inflateWidgetSettingsForProductListingModel($widgetSettings['widgetSettingsForListing']) : null
         );
     }
 
@@ -100,12 +87,8 @@ class WidgetSettings extends Entity
                 'messages' => $labels->getMessages(),
                 'messagesBelowLimit' => $labels->getMessagesBelowLimit(),
             ] : [],
-            'widgetSettingsForProduct' => $widgetSettingsForProduct ? [
-                'priceSelector' => $widgetSettingsForProduct->getPriceSelector(),
-                'locationSelector' => $widgetSettingsForProduct->getLocationSelector(),
-                'altPriceSelector' => $widgetSettingsForProduct->getAltPriceSelector(),
-                'altPriceTriggerSelector' => $widgetSettingsForProduct->getAltPriceTriggerSelector(),
-            ] : [],
+            'widgetSettingsForProduct' => $widgetSettingsForProduct ?
+                $this->widgetSettingsForProductModelArray($widgetSettingsForProduct) : [],
             'widgetSettingsForCart' => $widgetSettingsForCart ? [
                 'priceSelector' => $widgetSettingsForCart->getPriceSelector(),
                 'locationSelector' => $widgetSettingsForCart->getLocationSelector(),
@@ -163,5 +146,91 @@ class WidgetSettings extends Entity
     public function setWidgetSettings(DomainWidgetSettings $widgetSettings): void
     {
         $this->widgetSettings = $widgetSettings;
+    }
+
+    /**
+     * @param mixed[] $widgetSettingsForProduct
+     *
+     * @return WidgetSelectorSettings
+     */
+    protected function inflateWidgetSettingsForProductModel(array $widgetSettingsForProduct): WidgetSelectorSettings
+    {
+        $widgetSettingsForProductModel = new WidgetSelectorSettings(
+            static::getDataValue($widgetSettingsForProduct, 'priceSelector', ''),
+            static::getDataValue($widgetSettingsForProduct, 'locationSelector', ''),
+            '',
+            static::getDataValue($widgetSettingsForProduct, 'altPriceSelector', ''),
+            static::getDataValue($widgetSettingsForProduct, 'altPriceTriggerSelector', '')
+        );
+
+        $customWidgetSettings = static::getDataValue($widgetSettingsForProduct, 'customWidgetSettings', []);
+        $arrayOfCustomWidgetsSettings = [];
+        foreach ($customWidgetSettings as $customWidgetSetting) {
+            $arrayOfCustomWidgetsSettings [] = new CustomWidgetsSettings(
+                $customWidgetSetting['customLocationSelector'],
+                $customWidgetSetting['product'],
+                $customWidgetSetting['displayWidget'],
+                $customWidgetSetting['customWidgetStyle']
+            );
+        }
+
+        $widgetSettingsForProductModel->setCustomWidgetsSettings($arrayOfCustomWidgetsSettings);
+
+        return $widgetSettingsForProductModel;
+    }
+
+    /**
+     * @param mixed[] $widgetSettingsForCart
+     *
+     * @return WidgetSelectorSettings
+     */
+    protected function inflateWidgetSettingsForCartModel(array $widgetSettingsForCart): WidgetSelectorSettings
+    {
+        return new WidgetSelectorSettings(
+            static::getDataValue($widgetSettingsForCart, 'priceSelector', ''),
+            static::getDataValue($widgetSettingsForCart, 'locationSelector', ''),
+            static::getDataValue($widgetSettingsForCart, 'widgetProduct', '')
+        );
+    }
+
+    /**
+     * @param mixed[] $widgetSettingsForListing
+     *
+     * @return WidgetSelectorSettings
+     */
+    protected function inflateWidgetSettingsForProductListingModel(array $widgetSettingsForListing): WidgetSelectorSettings
+    {
+        return new WidgetSelectorSettings(
+            static::getDataValue($widgetSettingsForListing, 'priceSelector', ''),
+            static::getDataValue($widgetSettingsForListing, 'locationSelector', ''),
+            static::getDataValue($widgetSettingsForListing, 'widgetProduct', '')
+        );
+    }
+
+    /**
+     * @param WidgetSelectorSettings $widgetSettingsForProduct
+     *
+     * @return mixed[]
+     */
+    protected function widgetSettingsForProductModelArray(WidgetSelectorSettings $widgetSettingsForProduct): array
+    {
+        $widgetSettingsForProductArray = [
+            'priceSelector' => $widgetSettingsForProduct->getPriceSelector(),
+            'locationSelector' => $widgetSettingsForProduct->getLocationSelector(),
+            'altPriceSelector' => $widgetSettingsForProduct->getAltPriceSelector(),
+            'altPriceTriggerSelector' => $widgetSettingsForProduct->getAltPriceTriggerSelector(),
+            'customWidgetSettings' => []
+        ];
+
+        foreach ($widgetSettingsForProduct->getCustomWidgetsSettings() as $customWidgetSetting) {
+            $widgetSettingsForProductArray ['customWidgetSettings'][] = [
+                'customLocationSelector' => $customWidgetSetting->getCustomLocationSelector(),
+                'product' => $customWidgetSetting->getProduct(),
+                'displayWidget' => $customWidgetSetting->isDisplayWidget(),
+                'customWidgetStyle' => $customWidgetSetting->getCustomWidgetStyle()
+            ];
+        }
+
+        return $widgetSettingsForProductArray;
     }
 }

@@ -29,6 +29,10 @@ class WidgetSelectorSettings
      * @var string
      */
     protected $widgetProduct;
+    /**
+     * @var CustomWidgetsSettings[]
+     */
+    protected $customWidgetsSettings;
 
     /**
      * @param string $priceSelector
@@ -36,19 +40,22 @@ class WidgetSelectorSettings
      * @param string $widgetProduct
      * @param string $altPriceSelector
      * @param string $altPriceTriggerSelector
+     * @param CustomWidgetsSettings[] $customWidgetsSettings
      */
     public function __construct(
         string $priceSelector,
         string $locationSelector,
         string $widgetProduct = '',
         string $altPriceSelector = '',
-        string $altPriceTriggerSelector = ''
+        string $altPriceTriggerSelector = '',
+        array $customWidgetsSettings = []
     ) {
         $this->priceSelector = $priceSelector;
         $this->locationSelector = $locationSelector;
         $this->widgetProduct = $widgetProduct;
         $this->altPriceSelector = $altPriceSelector;
         $this->altPriceTriggerSelector = $altPriceTriggerSelector;
+        $this->customWidgetsSettings = $customWidgetsSettings;
     }
 
     /**
@@ -129,5 +136,21 @@ class WidgetSelectorSettings
     public function setWidgetProduct(string $widgetProduct): void
     {
         $this->widgetProduct = $widgetProduct;
+    }
+
+    /**
+     * @return CustomWidgetsSettings[]
+     */
+    public function getCustomWidgetsSettings(): array
+    {
+        return $this->customWidgetsSettings;
+    }
+
+    /**
+     * @param CustomWidgetsSettings[] $customWidgetsSettings
+     */
+    public function setCustomWidgetsSettings(array $customWidgetsSettings): void
+    {
+        $this->customWidgetsSettings = $customWidgetsSettings;
     }
 }
