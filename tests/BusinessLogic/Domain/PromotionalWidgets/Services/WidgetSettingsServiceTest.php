@@ -82,9 +82,11 @@ class WidgetSettingsServiceTest extends BaseTestCase
         });
 
         TestServiceRegister::registerService(
-            SellingCountriesServiceInterface::class, static function () {
-            return new MockSellingCountriesService();
-        });
+            SellingCountriesServiceInterface::class,
+            static function () {
+                return new MockSellingCountriesService();
+            }
+        );
 
         $this->paymentMethodsService = new MockPaymentMethodService(
             TestServiceRegister::getService(MerchantProxyInterface::class),
@@ -375,7 +377,8 @@ class WidgetSettingsServiceTest extends BaseTestCase
                     new \DateTime('0022-02-22T22:36:44Z'),
                     new \DateTime('0022-02-22T22:36:44Z'),
                     null,
-                    ''),
+                    ''
+                ),
                 new SeQuraPaymentMethod(
                     'pp5',
                     'Payment2',
@@ -385,7 +388,8 @@ class WidgetSettingsServiceTest extends BaseTestCase
                     new \DateTime('0022-02-22T22:36:44Z'),
                     new \DateTime('0022-02-22T22:36:44Z'),
                     null,
-                    ''),
+                    ''
+                ),
                 new SeQuraPaymentMethod(
                     'pp3',
                     'Payment3',
@@ -395,7 +399,8 @@ class WidgetSettingsServiceTest extends BaseTestCase
                     new \DateTime('0022-02-22T22:36:44Z'),
                     new \DateTime('0022-02-22T22:36:44Z'),
                     null,
-                    ''),
+                    ''
+                ),
                 new SeQuraPaymentMethod(
                     'payment7',
                     'Payment7',
@@ -405,7 +410,8 @@ class WidgetSettingsServiceTest extends BaseTestCase
                     new \DateTime('0022-02-22T22:36:44Z'),
                     new \DateTime('0022-02-22T22:36:44Z'),
                     null,
-                    ''),
+                    ''
+                ),
                 new SeQuraPaymentMethod(
                     'payment5',
                     'Payment5',
@@ -415,7 +421,8 @@ class WidgetSettingsServiceTest extends BaseTestCase
                     new \DateTime('0022-02-22T22:36:44Z'),
                     new \DateTime('0022-02-22T22:36:44Z'),
                     null,
-                    '')
+                    ''
+                )
             ]
         );
 

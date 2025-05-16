@@ -42,9 +42,11 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         parent::setUp();
 
         TestServiceRegister::registerService(
-            SellingCountriesServiceInterface::class, static function () {
-            return new MockSellingCountriesService();
-        });
+            SellingCountriesServiceInterface::class,
+            static function () {
+                return new MockSellingCountriesService();
+            }
+        );
 
         $this->mockWidgetSettingsService = new MockWidgetSettingsService(
             TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
@@ -55,9 +57,11 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         );
 
         TestServiceRegister::registerService(
-            WidgetSettingsService::class, function () {
-            return $this->mockWidgetSettingsService;
-        });
+            WidgetSettingsService::class,
+            function () {
+                return $this->mockWidgetSettingsService;
+            }
+        );
     }
 
     /**
@@ -71,7 +75,8 @@ class PromotionalWidgetsApiTest extends BaseTestCase
                 'assets',
                 'merchant1',
                 ['product1', 'product2'],
-                'test')
+                'test'
+            )
         );
 
         //Act
