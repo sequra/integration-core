@@ -6,8 +6,10 @@ use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\ValidateAssetsKeyRequest;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
@@ -156,6 +158,66 @@ class WidgetSettingsService
             $this->getWidgetSupportedProducts($merchantId),
             $this->getScriptUri()
         );
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return Widget|null
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     * @throws Exception
+     */
+    public function getAvailableWidgetsForCartPage(string $merchantId): ?Widget
+    {
+        $widgetSettings = $this->getWidgetSettings();
+        if (!$widgetSettings || !$widgetSettings->isEnabled()) {
+            return null;
+        }
+
+        $widgetSettingsForCart = $widgetSettings->getWidgetSettingsForCart();
+        if (!$widgetSettingsForCart) {
+            return null;
+        }
+
+        $sequraPaymentMethods = $this->paymentMethodsService->getCachedPaymentMethods($merchantId);
+
+        if (empty($sequraPaymentMethods)) {
+            return null;
+        }
+
+        $selectedProduct = $widgetSettingsForCart->getWidgetProduct();
+        $filteredMethod = $this->findPaymentMethod($selectedProduct, $sequraPaymentMethods);
+
+        if (!$filteredMethod) {
+            return null;
+        }
+
+        return new Widget(
+            $selectedProduct,
+            $filteredMethod->getCampaign(),
+            $widgetSettingsForCart->getPriceSelector(),
+            $widgetSettingsForCart->getLocationSelector(),
+            $widgetSettings->getWidgetConfig(),
+            "0"
+        );
+    }
+
+    /**
+     * @param string $selectedProduct
+     * @param SeQuraPaymentMethod[] $sequraPaymentMethods
+     *
+     * @return SeQuraPaymentMethod|null
+     */
+    protected function findPaymentMethod(string $selectedProduct, array $sequraPaymentMethods): ?SeQuraPaymentMethod
+    {
+        foreach ($sequraPaymentMethods as $method) {
+            if (isset($method['product']) && $method['product'] === $selectedProduct) {
+                return $method;
+            }
+        }
+
+        return null;
     }
 
     /**
