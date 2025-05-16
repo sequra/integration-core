@@ -195,11 +195,11 @@ class WidgetSettingsService
 
         return new Widget(
             $selectedProduct,
-            $filteredMethod->getCampaign(),
+            $filteredMethod->getCampaign() ?? '',
             $widgetSettingsForCart->getPriceSelector(),
             $widgetSettingsForCart->getLocationSelector(),
             $widgetSettings->getWidgetConfig(),
-            "0"
+            '0'
         );
     }
 
@@ -212,7 +212,7 @@ class WidgetSettingsService
     protected function findPaymentMethod(string $selectedProduct, array $sequraPaymentMethods): ?SeQuraPaymentMethod
     {
         foreach ($sequraPaymentMethods as $method) {
-            if (isset($method['product']) && $method['product'] === $selectedProduct) {
+            if ($method->getProduct() === $selectedProduct) {
                 return $method;
             }
         }

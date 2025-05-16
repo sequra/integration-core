@@ -34,11 +34,11 @@ class Widget
 */
     protected $reverse;
     /**
- * @var string $minAmount
+ * @var int $minAmount
 */
     protected $minAmount;
     /**
- * @var string $maxAmount
+ * @var int $maxAmount
 */
     protected $maxAmount;
     /**
@@ -57,8 +57,8 @@ class Widget
      * @param string $dest
      * @param string $theme
      * @param string $reverse
-     * @param string $minAmount
-     * @param string $maxAmount
+     * @param int $minAmount
+     * @param int $maxAmount
      * @param string $altPriceSel
      * @param bool $isAltSel
      */
@@ -69,8 +69,8 @@ class Widget
         string $dest,
         string $theme,
         string $reverse,
-        string $minAmount = '',
-        string $maxAmount = '',
+        int $minAmount = 0,
+        int $maxAmount = 0,
         string $altPriceSel = '',
         bool $isAltSel = false
     ) {
@@ -167,33 +167,33 @@ class Widget
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getMinAmount(): string
+    public function getMinAmount(): int
     {
         return $this->minAmount;
     }
 
     /**
-     * @param string $minAmount
+     * @param int $minAmount
      */
-    public function setMinAmount(string $minAmount): void
+    public function setMinAmount(int $minAmount): void
     {
         $this->minAmount = $minAmount;
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getMaxAmount(): string
+    public function getMaxAmount(): int
     {
         return $this->maxAmount;
     }
 
     /**
-     * @param string $maxAmount
+     * @param int $maxAmount
      */
-    public function setMaxAmount(string $maxAmount): void
+    public function setMaxAmount(int $maxAmount): void
     {
         $this->maxAmount = $maxAmount;
     }
