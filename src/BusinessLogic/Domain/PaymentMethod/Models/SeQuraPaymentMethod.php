@@ -395,7 +395,7 @@ class SeQuraPaymentMethod
             $data['product'],
             $data['title'],
             $data['long_title'],
-            $data['category'],
+            $data['category'] ?? '',
             $cost,
             new DateTime($data['starts_at']),
             new DateTime($data['ends_at']),
