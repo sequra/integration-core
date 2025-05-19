@@ -16,7 +16,6 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsPr
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
-use SeQura\Core\Infrastructure\ServiceRegister;
 
 /**
  * Class WidgetSettingsService
@@ -146,7 +145,6 @@ class WidgetSettingsService
         }
     }
 
-
     /**
      * Returns widget initialize data
      *
@@ -168,10 +166,10 @@ class WidgetSettingsService
             $merchantId,
             $this->getWidgetSupportedProducts($merchantId),
             $this->getScriptUri(),
-            $this->getWidgetConfigurator()->getLocale(),
-            $this->getWidgetConfigurator()->getCurrency(),
-            $this->getWidgetConfigurator()->getDecimalSeparator(),
-            $this->getWidgetConfigurator()->getThousandsSeparator()
+            $this->widgetConfigurator->getLocale() ?? 'es_ES',
+            $this->widgetConfigurator->getCurrency() ?? 'EUR',
+            $this->widgetConfigurator->getDecimalSeparator() ?? ',',
+            $this->widgetConfigurator->getThousandsSeparator() ?? '.'
         );
     }
 
@@ -444,19 +442,5 @@ class WidgetSettingsService
         }
 
         return $widgetSupportedPaymentMethods;
-    }
-
-    /**
-     * Widget configurator instance.
-     *
-     * @return WidgetConfiguratorInterface Widget configurator instance.
-     */
-    protected function getWidgetConfigurator(): WidgetConfiguratorInterface
-    {
-        if ($this->widgetConfigurator === null) {
-            $this->widgetConfigurator = ServiceRegister::getService(WidgetConfiguratorInterface::class);
-        }
-
-        return $this->widgetConfigurator;
     }
 }

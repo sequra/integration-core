@@ -57,8 +57,8 @@ class WidgetInitializer
         string $merchantId,
         array $products,
         string $scriptUri,
-        string $locale = 'es-ES',
-        string $currency = 'eur',
+        string $locale = 'es_ES',
+        string $currency = 'EUR',
         string $decimalSeparator = ',',
         string $thousandSeparator = '.'
     ) {

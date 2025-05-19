@@ -4,15 +4,18 @@ namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\PromotionalWidgets;
 
 use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Requests\PromotionalWidgetsCheckoutRequest;
+use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\GetWidgetsCheckoutResponse;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\PromotionalWidgetsCheckoutResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
@@ -53,7 +56,8 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             TestServiceRegister::getService(PaymentMethodsService::class),
             TestServiceRegister::getService(CountryConfigurationService::class),
             TestServiceRegister::getService(ConnectionService::class),
-            TestServiceRegister::getService(WidgetsProxyInterface::class)
+            TestServiceRegister::getService(WidgetsProxyInterface::class),
+            TestServiceRegister::getService(WidgetConfiguratorInterface::class)
         );
 
         TestServiceRegister::registerService(
@@ -122,5 +126,205 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             'decimalSeparator' => ',',
             'thousandSeparator' => '.',
         ], $response->toArray());
+    }
+
+    /**
+     * @throws HttpRequestException
+     */
+    public function testGetAvailableWidgetForCartPageSuccess(): void
+    {
+        //Arrange
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetForCartPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+    }
+
+    /**
+     * @throws HttpRequestException
+     */
+    public function testGetAvailableWidgetForCartPageToArray(): void
+    {
+        //Arrange
+        $this->mockWidgetSettingsService->setMockWidget(new Widget(
+            'product1',
+            'campaign',
+            'priceSel',
+            'destination',
+            'theme',
+            '0',
+            123,
+            321,
+            'altPrice',
+            'triggerSel'
+        ));
+
+        //Act
+        /** @var GetWidgetsCheckoutResponse $response */
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetForCartPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+
+        //Assert
+        self::assertEquals(
+            [
+                [
+                    'product' => 'product1',
+                    'dest' => 'destination',
+                    'theme' => 'theme',
+                    'reverse' => '0',
+                    'campaign' => 'campaign',
+                    'priceSel' => 'priceSel',
+                    'altPriceSel' => 'altPrice',
+                    'altTriggerSelector' => 'triggerSel',
+                    'minAmount' => 123,
+                    'maxAmount' => 321
+                ]
+            ],
+            $response->toArray()
+        );
+    }
+
+    /**
+     * @throws HttpRequestException
+     */
+    public function testGetAvailableMiniWidgetForProductListingPageSuccess(): void
+    {
+        //Arrange
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableMiniWidgetForProductListingPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+    }
+
+    /**
+     * @throws HttpRequestException
+     */
+    public function testGetAvailableMiniWidgetForProductListingPageToArray(): void
+    {
+        //Arrange
+        $this->mockWidgetSettingsService->setMockWidget(new Widget(
+            'product1',
+            'campaign',
+            'priceSel',
+            'destination',
+            'theme',
+            '0',
+            123,
+            321,
+            'altPrice',
+            'triggerSel'
+        ));
+
+        //Act
+        /** @var GetWidgetsCheckoutResponse $response */
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableMiniWidgetForProductListingPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+
+        //Assert
+        self::assertEquals(
+            [
+                [
+                    'product' => 'product1',
+                    'dest' => 'destination',
+                    'theme' => 'theme',
+                    'reverse' => '0',
+                    'campaign' => 'campaign',
+                    'priceSel' => 'priceSel',
+                    'altPriceSel' => 'altPrice',
+                    'altTriggerSelector' => 'triggerSel',
+                    'minAmount' => 123,
+                    'maxAmount' => 321
+                ]
+            ],
+            $response->toArray()
+        );
+    }
+
+    /**
+     * @throws HttpRequestException
+     */
+    public function testGetAvailableWidgetsForProductPageSuccess(): void
+    {
+        //Arrange
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetsForProductPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+    }
+
+    /**
+     * @throws HttpRequestException
+     */
+    public function testGetAvailableWidgetsForProductPageToArray(): void
+    {
+        //Arrange
+        $this->mockWidgetSettingsService->setMockWidgets([
+            new Widget(
+                'product1',
+                'campaign',
+                'priceSel',
+                'destination',
+                'theme',
+                '0',
+                123,
+                321,
+                'altPrice',
+                'triggerSel'
+            ),
+            new Widget(
+                'product2',
+                'campaign2',
+                'priceSel2',
+                'destination2',
+                'theme2',
+                '0',
+                125,
+                311,
+                'altPrice2',
+                'triggerSel2'
+            )
+        ]);
+
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetsForProductPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+
+        //Assert
+        self::assertEquals(
+            [
+                [
+                    'product' => 'product1',
+                    'dest' => 'destination',
+                    'theme' => 'theme',
+                    'reverse' => '0',
+                    'campaign' => 'campaign',
+                    'priceSel' => 'priceSel',
+                    'altPriceSel' => 'altPrice',
+                    'altTriggerSelector' => 'triggerSel',
+                    'minAmount' => 123,
+                    'maxAmount' => 321
+                ],
+                [
+                    'product' => 'product2',
+                    'dest' => 'destination2',
+                    'theme' => 'theme2',
+                    'reverse' => '0',
+                    'campaign' => 'campaign2',
+                    'priceSel' => 'priceSel2',
+                    'altPriceSel' => 'altPrice2',
+                    'altTriggerSelector' => 'triggerSel2',
+                    'minAmount' => 125,
+                    'maxAmount' => 311
+                ]
+            ],
+            $response->toArray()
+        );
     }
 }

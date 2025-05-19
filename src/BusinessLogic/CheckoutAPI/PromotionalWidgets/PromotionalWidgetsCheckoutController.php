@@ -78,16 +78,16 @@ class PromotionalWidgetsCheckoutController
     public function getAvailableMiniWidgetForProductListingPage(
         PromotionalWidgetsCheckoutRequest $request
     ): GetWidgetsCheckoutResponse {
-        $availableMiniWidgetForProductListingPAge = $this->promotionalWidgetsService->getAvailableMiniWidget(
+        $availableMiniWidgetForProductListingPage = $this->promotionalWidgetsService->getAvailableMiniWidget(
             $request->getShippingCountry(),
             $request->getCurrentCountry()
         );
 
-        if (!$availableMiniWidgetForProductListingPAge) {
+        if (!$availableMiniWidgetForProductListingPage) {
             return new GetWidgetsCheckoutResponse([]);
         }
 
-        return new GetWidgetsCheckoutResponse([$availableMiniWidgetForProductListingPAge]);
+        return new GetWidgetsCheckoutResponse([$availableMiniWidgetForProductListingPage]);
     }
 
     /**

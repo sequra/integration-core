@@ -12,28 +12,28 @@ interface WidgetConfiguratorInterface
     /**
      * Returns locale
      *
-     * @return string
+     * @return ?string
      */
-    public function getLocale(): string;
+    public function getLocale(): ?string;
 
     /**
      * Returns currency
      *
-     * @return string
+     * @return ?string
      */
-    public function getCurrency(): string;
+    public function getCurrency(): ?string;
 
     /**
      * Returns decimal separator
      *
-     * @return string
+     * @return ?string
      */
-    public function getDecimalSeparator(): string;
+    public function getDecimalSeparator(): ?string;
 
     /**
      * Returns thousand separator
      *
-     * @return string
+     * @return ?string
      */
-    public function getThousandsSeparator(): string;
+    public function getThousandsSeparator(): ?string;
 }
