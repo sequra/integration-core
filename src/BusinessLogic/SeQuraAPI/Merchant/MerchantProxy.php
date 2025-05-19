@@ -43,7 +43,7 @@ class MerchantProxy extends AuthorizedProxy implements MerchantProxyInterface
 
         foreach ($responseData['payment_options'] as $option) {
             foreach ($option['methods'] as $method) {
-                $method['category'] = $option['category'];
+                $method['category'] = $option['category'] ?? '';
                 $paymentMethods[] = SeQuraPaymentMethod::fromArray($method);
             }
         }

@@ -14,7 +14,9 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Infrastructure\ServiceRegister;
 
 /**
  * Class WidgetSettingsService
@@ -47,6 +49,10 @@ class WidgetSettingsService
      * @var WidgetsProxyInterface
      */
     protected $widgetsProxy;
+    /**
+     * @var WidgetConfiguratorInterface
+     */
+    protected $widgetConfigurator;
 
     /**
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
@@ -54,19 +60,22 @@ class WidgetSettingsService
      * @param CountryConfigurationService $countryConfigService
      * @param ConnectionService $connectionService
      * @param WidgetsProxyInterface $widgetsProxy
+     * @param WidgetConfiguratorInterface $widgetConfigurator
      */
     public function __construct(
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
         PaymentMethodsService $paymentMethodsService,
         CountryConfigurationService $countryConfigService,
         ConnectionService $connectionService,
-        WidgetsProxyInterface $widgetsProxy
+        WidgetsProxyInterface $widgetsProxy,
+        WidgetConfiguratorInterface $widgetConfigurator
     ) {
         $this->widgetSettingsRepository = $widgetSettingsRepository;
         $this->paymentMethodsService = $paymentMethodsService;
         $this->countryConfigService = $countryConfigService;
         $this->connectionService = $connectionService;
         $this->widgetsProxy = $widgetsProxy;
+        $this->widgetConfigurator = $widgetConfigurator;
     }
 
     /**
@@ -158,7 +167,11 @@ class WidgetSettingsService
             $this->getAssetsKey(),
             $merchantId,
             $this->getWidgetSupportedProducts($merchantId),
-            $this->getScriptUri()
+            $this->getScriptUri(),
+            $this->getWidgetConfigurator()->getLocale(),
+            $this->getWidgetConfigurator()->getCurrency(),
+            $this->getWidgetConfigurator()->getDecimalSeparator(),
+            $this->getWidgetConfigurator()->getThousandsSeparator()
         );
     }
 
@@ -431,5 +444,19 @@ class WidgetSettingsService
         }
 
         return $widgetSupportedPaymentMethods;
+    }
+
+    /**
+     * Widget configurator instance.
+     *
+     * @return WidgetConfiguratorInterface Widget configurator instance.
+     */
+    protected function getWidgetConfigurator(): WidgetConfiguratorInterface
+    {
+        if ($this->widgetConfigurator === null) {
+            $this->widgetConfigurator = ServiceRegister::getService(WidgetConfiguratorInterface::class);
+        }
+
+        return $this->widgetConfigurator;
     }
 }
