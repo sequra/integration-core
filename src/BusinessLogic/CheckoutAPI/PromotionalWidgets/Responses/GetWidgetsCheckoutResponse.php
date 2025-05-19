@@ -6,24 +6,24 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
 
 /**
- * Class PromotionalWidgetsCheckoutResponse.
+ * Class GetWidgetsCheckoutResponse.
  *
  * @package SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses
  */
 class GetWidgetsCheckoutResponse extends Response
 {
     /**
-     * @var Widget
+     * @var Widget[]
      */
-    protected $widget;
+    protected $widgets;
 
     /**
-     * @param Widget $widget
+     * @param Widget[] $widgets
      */
     public function __construct(
-        Widget $widget
+        array $widgets
     ) {
-        $this->widget = $widget;
+        $this->widgets = $widgets;
     }
 
     /**
@@ -31,15 +31,22 @@ class GetWidgetsCheckoutResponse extends Response
      */
     public function toArray(): array
     {
-        return [
-            'product' => $this->widget->getProduct(),
-            'dest' => $this->widget->getDest(),
-            'theme' => $this->widget->getTheme(),
-            'reverse' => $this->widget->getReverse(),
-            'campaign' => $this->widget->getCampaign(),
-            'priceSel' => $this->widget->getPriceSel(),
-            'altPriceSel' => $this->widget->getAltPriceSel(),
-            'isAltSel' => $this->widget->isAltSel(),
-        ];
+        $arrayOfWidgets = [];
+        foreach ($this->widgets as $widget) {
+            $arrayOfWidgets[] = [
+                'product' => $widget->getProduct(),
+                'dest' => $widget->getDest(),
+                'theme' => $widget->getTheme(),
+                'reverse' => $widget->getReverse(),
+                'campaign' => $widget->getCampaign(),
+                'priceSel' => $widget->getPriceSel(),
+                'altPriceSel' => $widget->getAltPriceSel(),
+                'altTriggerSelector' => $widget->getAltTriggerSelector(),
+                'minAmount' => $widget->getMinAmount(),
+                'maxAmount' => $widget->getMaxAmount()
+            ];
+        }
+
+        return $arrayOfWidgets;
     }
 }

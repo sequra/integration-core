@@ -2,7 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets;
 
-use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Requests\GetWidgetsCheckoutRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Requests\PromotionalWidgetsCheckoutRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\GetWidgetsCheckoutResponse;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\PromotionalWidgetsCheckoutResponse;
@@ -47,13 +46,65 @@ class PromotionalWidgetsCheckoutController
     /**
      * Returns available widget for cart page
      *
-     * @throws PaymentMethodNotFoundException
+     * @param PromotionalWidgetsCheckoutRequest $request
+     *
+     * @return GetWidgetsCheckoutResponse
      * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
      */
-    public function getAvailableWidgetForCartPage(GetWidgetsCheckoutRequest $request): GetWidgetsCheckoutResponse
+    public function getAvailableWidgetForCartPage(PromotionalWidgetsCheckoutRequest $request): GetWidgetsCheckoutResponse
     {
-        return new GetWidgetsCheckoutResponse($this->promotionalWidgetsService->getAvailableWidgetsForCartPage(
-            $request->getMerchantId()
+        $availableWidgetForCartPage = $this->promotionalWidgetsService->getAvailableWidgetForCartPage(
+            $request->getShippingCountry(),
+            $request->getCurrentCountry()
+        );
+
+        if (!$availableWidgetForCartPage) {
+            return new GetWidgetsCheckoutResponse([]);
+        }
+
+        return new GetWidgetsCheckoutResponse([$availableWidgetForCartPage]);
+    }
+
+    /**
+     * Returns available mini-widget for product listing page
+     *
+     * @param PromotionalWidgetsCheckoutRequest $request
+     *
+     * @return GetWidgetsCheckoutResponse
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     */
+    public function getAvailableMiniWidgetForProductListingPage(
+        PromotionalWidgetsCheckoutRequest $request
+    ): GetWidgetsCheckoutResponse {
+        $availableMiniWidgetForProductListingPAge = $this->promotionalWidgetsService->getAvailableMiniWidget(
+            $request->getShippingCountry(),
+            $request->getCurrentCountry()
+        );
+
+        if (!$availableMiniWidgetForProductListingPAge) {
+            return new GetWidgetsCheckoutResponse([]);
+        }
+
+        return new GetWidgetsCheckoutResponse([$availableMiniWidgetForProductListingPAge]);
+    }
+
+    /**
+     * Returns available widgets for product page
+     *
+     * @param PromotionalWidgetsCheckoutRequest $request
+     *
+     * @return GetWidgetsCheckoutResponse
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     */
+    public function getAvailableWidgetsForProductPage(
+        PromotionalWidgetsCheckoutRequest $request
+    ): GetWidgetsCheckoutResponse {
+        return new GetWidgetsCheckoutResponse($this->promotionalWidgetsService->getAvailableWidgetsForProductPage(
+            $request->getShippingCountry(),
+            $request->getCurrentCountry()
         ));
     }
 }

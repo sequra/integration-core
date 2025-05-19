@@ -46,9 +46,9 @@ class Widget
 */
     protected $altPriceSel;
     /**
- * @var bool $isAltSel
+ * @var string $altTriggerSelector
 */
-    protected $isAltSel;
+    protected $altTriggerSelector;
 
     /**
      * @param string $product
@@ -60,7 +60,7 @@ class Widget
      * @param int $minAmount
      * @param int $maxAmount
      * @param string $altPriceSel
-     * @param bool $isAltSel
+     * @param string $altTriggerSelector
      */
     public function __construct(
         string $product,
@@ -72,7 +72,7 @@ class Widget
         int $minAmount = 0,
         int $maxAmount = 0,
         string $altPriceSel = '',
-        bool $isAltSel = false
+        string $altTriggerSelector = ''
     ) {
         $this->product = $product;
         $this->campaign = $campaign;
@@ -83,7 +83,7 @@ class Widget
         $this->minAmount = $minAmount;
         $this->maxAmount = $maxAmount;
         $this->altPriceSel = $altPriceSel;
-        $this->isAltSel = $isAltSel;
+        $this->altTriggerSelector = $altTriggerSelector;
     }
 
     /**
@@ -231,18 +231,18 @@ class Widget
     }
 
     /**
-     * @return bool
+     * @return string
      */
-    public function isAltSel(): bool
+    public function getAltTriggerSelector(): string
     {
-        return $this->isAltSel;
+        return $this->altTriggerSelector;
     }
 
     /**
-     * @param bool $isAltSel
+     * @param string $altTriggerSelector
      */
-    public function setIsAltSel(bool $isAltSel): void
+    public function setAltTriggerSelector(string $altTriggerSelector): void
     {
-        $this->isAltSel = $isAltSel;
+        $this->altTriggerSelector = $altTriggerSelector;
     }
 }

@@ -25,6 +25,8 @@ class WidgetSettingsService
 {
     public const WIDGET_PAYMENT_METHODS = ['i1', 'pp5', 'pp3', 'pp6', 'pp9', 'sp1'];
 
+    public const SUPPORTED_CATEGORIES_ON_PRODUCT_PAGE = ['part_payment', 'pay_later'];
+
     /**
      * @var WidgetSettingsRepositoryInterface
      */
@@ -161,14 +163,17 @@ class WidgetSettingsService
     }
 
     /**
-     * @param string $merchantId
+     * Returns available widget on cart page
+     *
+     * @param string $shippingCountry
+     * @param string $currentCountry
      *
      * @return Widget|null
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
      * @throws Exception
      */
-    public function getAvailableWidgetsForCartPage(string $merchantId): ?Widget
+    public function getAvailableWidgetForCartPage(string $shippingCountry, string $currentCountry): ?Widget
     {
         $widgetSettings = $this->getWidgetSettings();
         if (!$widgetSettings || !$widgetSettings->isEnabled()) {
@@ -180,15 +185,8 @@ class WidgetSettingsService
             return null;
         }
 
-        $sequraPaymentMethods = $this->paymentMethodsService->getCachedPaymentMethods($merchantId);
-
-        if (empty($sequraPaymentMethods)) {
-            return null;
-        }
-
         $selectedProduct = $widgetSettingsForCart->getWidgetProduct();
-        $filteredMethod = $this->findPaymentMethod($selectedProduct, $sequraPaymentMethods);
-
+        $filteredMethod = $this->findPaymentMethod($shippingCountry, $currentCountry, $selectedProduct);
         if (!$filteredMethod) {
             return null;
         }
@@ -204,14 +202,148 @@ class WidgetSettingsService
     }
 
     /**
+     * Returns available mini-widget on product listing page
+     *
+     * @param string $shippingCountry
+     * @param string $currentCountry
+     *
+     * @return Widget|null
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     * @throws Exception
+     */
+    public function getAvailableMiniWidget(string $shippingCountry, string $currentCountry): ?Widget
+    {
+        $widgetSettings = $this->getWidgetSettings();
+        if (!$widgetSettings || !$widgetSettings->isEnabled()) {
+            return null;
+        }
+
+        $widgetSettingsForProductListing = $widgetSettings->getWidgetSettingsForListing();
+        if (!$widgetSettingsForProductListing) {
+            return null;
+        }
+
+        $selectedProduct = $widgetSettingsForProductListing->getWidgetProduct();
+        $filteredMethod = $this->findPaymentMethod($shippingCountry, $currentCountry, $selectedProduct);
+        if (!$filteredMethod) {
+            return null;
+        }
+
+        return new Widget(
+            $selectedProduct,
+            $filteredMethod->getCampaign() ?? '',
+            $widgetSettingsForProductListing->getPriceSelector(),
+            $widgetSettingsForProductListing->getLocationSelector(),
+            $widgetSettings->getWidgetConfig(),
+            '0',
+            $filteredMethod->getMinAmount() ?? 0,
+            $filteredMethod->getMaxAmount() ?? 0
+        );
+    }
+
+
+    /**
+     * Returns available widgets on product page
+     *
+     * @param string $shippingCountry
+     * @param string $currentCountry
+     *
+     * @return Widget[]
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     * @throws Exception
+     */
+    public function getAvailableWidgetsForProductPage(string $shippingCountry, string $currentCountry): array
+    {
+        $widgetSettings = $this->getWidgetSettings();
+        if (!$widgetSettings || !$widgetSettings->isEnabled()) {
+            return [];
+        }
+
+        $widgetSettingsForProduct = $widgetSettings->getWidgetSettingsForProduct();
+        if (!$widgetSettingsForProduct) {
+            return [];
+        }
+
+        $customWidgetSettings = $widgetSettingsForProduct->getCustomWidgetsSettings();
+        $customSettingsByProduct = [];
+        foreach ($customWidgetSettings as $customWidgetSetting) {
+            $customSettingsByProduct[$customWidgetSetting->getProduct()] = $customWidgetSetting;
+        }
+
+        $supportedPaymentMethods = $this->filterPaymentMethodsSupportedOnProductPage($shippingCountry, $currentCountry);
+        $widgets = [];
+
+        foreach ($supportedPaymentMethods as $paymentMethod) {
+            $product = $paymentMethod->getProduct();
+            $customSetting = $customSettingsByProduct[$product] ?? null;
+
+            if ($customSetting && !$customSetting->isDisplayWidget()) {
+                continue;
+            }
+
+            $widgets[] = new Widget(
+                $product,
+                $paymentMethod->getCampaign() ?? '',
+                $widgetSettingsForProduct->getPriceSelector(),
+                ($customSetting &&  !empty($customSetting->getCustomLocationSelector())) ?
+                    $customSetting->getCustomLocationSelector() : $widgetSettingsForProduct->getLocationSelector(),
+                ($customSetting && !empty($customSetting->getCustomWidgetStyle())) ?
+                    $customSetting->getCustomWidgetStyle() : $widgetSettings->getWidgetConfig(),
+                '0',
+                $paymentMethod->getMinAmount() ?? 0,
+                $paymentMethod->getMaxAmount() ?? 0,
+                $widgetSettingsForProduct->getAltPriceSelector(),
+                $widgetSettingsForProduct->getAltPriceTriggerSelector()
+            );
+        }
+
+        return $widgets;
+    }
+
+    /**
+     * Returns payment methods that are supported on product page
+     *
+     * @param string $shippingCountry
+     * @param string $currentCountry
+     *
+     * @return SeQuraPaymentMethod[]
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     */
+    protected function filterPaymentMethodsSupportedOnProductPage(string $shippingCountry, string $currentCountry): array
+    {
+        $paymentMethods = $this->paymentMethodsService->getCachedPaymentMethods(
+            $this->getMerchantId($shippingCountry, $currentCountry)
+        );
+
+        return array_filter($paymentMethods, function ($method) {
+            return in_array($method->getCategory(), self::SUPPORTED_CATEGORIES_ON_PRODUCT_PAGE);
+        });
+    }
+
+    /**
+     * Finds selected payment method
+     *
+     * @param string $shippingCountry
+     * @param string $currentCountry
      * @param string $selectedProduct
-     * @param SeQuraPaymentMethod[] $sequraPaymentMethods
      *
      * @return SeQuraPaymentMethod|null
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
      */
-    protected function findPaymentMethod(string $selectedProduct, array $sequraPaymentMethods): ?SeQuraPaymentMethod
-    {
-        foreach ($sequraPaymentMethods as $method) {
+    protected function findPaymentMethod(
+        string $shippingCountry,
+        string $currentCountry,
+        string $selectedProduct
+    ): ?SeQuraPaymentMethod {
+        $paymentMethods = $this->paymentMethodsService->getCachedPaymentMethods(
+            $this->getMerchantId($shippingCountry, $currentCountry)
+        );
+
+        foreach ($paymentMethods as $method) {
             if ($method->getProduct() === $selectedProduct) {
                 return $method;
             }
