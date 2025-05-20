@@ -4,7 +4,6 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Requests;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Request\Request;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\CustomWidgetsSettings;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetLabels;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSelectorSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 
@@ -38,19 +37,7 @@ class WidgetSettingsRequest extends Request
     /**
      * @var string
      */
-    protected $miniWidgetSelector;
-    /**
-     * @var string
-     */
     protected $widgetConfiguration;
-    /**
-     * @var string[]
-     */
-    protected $messages;
-    /**
-     * @var string[]
-     */
-    protected $messagesBelowLimit;
     /**
      * @var string
      */
@@ -92,7 +79,7 @@ class WidgetSettingsRequest extends Request
      */
     protected $widgetOnListingPage;
     /**
-     * @var mixed[]
+     * @var array<string,string>
      */
     protected $customLocations;
 
@@ -102,7 +89,6 @@ class WidgetSettingsRequest extends Request
      * @param bool $displayOnProductPage
      * @param bool $showInstallmentsInProductListing
      * @param bool $showInstallmentsInCartPage
-     * @param string $miniWidgetSelector
      * @param string $widgetConfiguration
      * @param string $productPriceSelector
      * @param string $defaultProductLocationSelector
@@ -114,9 +100,7 @@ class WidgetSettingsRequest extends Request
      * @param string $widgetOnListingPage
      * @param string $altProductPriceSelector
      * @param string $altProductPriceTriggerSelector
-     * @param string[] $messages
-     * @param string[] $messagesBelowLimit
-     * @param mixed[] $customLocations
+     * @param array<string,string> $customLocations
      */
     public function __construct(
         bool $enabled,
@@ -124,7 +108,6 @@ class WidgetSettingsRequest extends Request
         bool $displayOnProductPage,
         bool $showInstallmentsInProductListing,
         bool $showInstallmentsInCartPage,
-        string $miniWidgetSelector,
         string $widgetConfiguration,
         string $productPriceSelector,
         string $defaultProductLocationSelector,
@@ -136,8 +119,6 @@ class WidgetSettingsRequest extends Request
         string $widgetOnListingPage,
         string $altProductPriceSelector = '',
         string $altProductPriceTriggerSelector = '',
-        array $messages = [],
-        array $messagesBelowLimit = [],
         array $customLocations = []
     ) {
         $this->enabled = $enabled;
@@ -145,7 +126,6 @@ class WidgetSettingsRequest extends Request
         $this->displayOnProductPage = $displayOnProductPage;
         $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
         $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
-        $this->miniWidgetSelector = $miniWidgetSelector;
         $this->widgetConfiguration = $widgetConfiguration;
         $this->productPriceSelector = $productPriceSelector;
         $this->defaultProductLocationSelector = $defaultProductLocationSelector;
@@ -157,8 +137,6 @@ class WidgetSettingsRequest extends Request
         $this->widgetOnListingPage = $widgetOnListingPage;
         $this->altProductPriceSelector = $altProductPriceSelector;
         $this->altProductPriceTriggerSelector = $altProductPriceTriggerSelector;
-        $this->messages = $messages;
-        $this->messagesBelowLimit = $messagesBelowLimit;
         $this->customLocations = $customLocations;
     }
 
@@ -182,7 +160,7 @@ class WidgetSettingsRequest extends Request
             $customLocationModels[] = new CustomWidgetsSettings(
                 $customLocation['selForTarget'] ?? '',
                 $customLocation['product'] ?? '',
-                $customLocation['displayWidget'] ?? '',
+                $customLocation['displayWidget'] ?? false,
                 $customLocation['widgetStyles'] ?? ''
             );
         }
@@ -195,12 +173,7 @@ class WidgetSettingsRequest extends Request
             $this->displayOnProductPage,
             $this->showInstallmentsInProductListing,
             $this->showInstallmentsInCartPage,
-            $this->miniWidgetSelector,
             $this->widgetConfiguration,
-            new WidgetLabels(
-                $this->messages,
-                $this->messagesBelowLimit
-            ),
             $productWidgetSettings,
             new WidgetSelectorSettings(
                 $this->cartPriceSelector,

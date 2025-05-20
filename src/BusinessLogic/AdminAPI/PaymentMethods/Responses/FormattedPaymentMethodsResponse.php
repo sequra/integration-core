@@ -33,12 +33,12 @@ class FormattedPaymentMethodsResponse extends Response
     {
         $methods = [];
         foreach ($this->paymentMethods as $paymentMethod) {
-            $product = $paymentMethod->getProduct();
-            if (!in_array($product, WidgetSettingsService::WIDGET_PAYMENT_METHODS)) {
+            $category = $paymentMethod->getCategory();
+            if (!in_array($category, WidgetSettingsService::WIDGET_SUPPORTED_CATEGORIES)) {
                 continue;
             }
 
-            $category = $paymentMethod->getCategory();
+            $product = $paymentMethod->getProduct();
             $title = $paymentMethod->getTitle();
 
             if (!isset($methods[$category])) {

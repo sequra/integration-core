@@ -24,9 +24,7 @@ use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
  */
 class WidgetSettingsService
 {
-    public const WIDGET_PAYMENT_METHODS = ['i1', 'pp5', 'pp3', 'pp6', 'pp9', 'sp1'];
-
-    public const SUPPORTED_CATEGORIES_ON_PRODUCT_PAGE = ['part_payment', 'pay_later'];
+    public const WIDGET_SUPPORTED_CATEGORIES = ['part_payment', 'pay_later'];
 
     /**
      * @var WidgetSettingsRepositoryInterface
@@ -166,7 +164,7 @@ class WidgetSettingsService
             $merchantId,
             $this->getWidgetSupportedProducts($merchantId),
             $this->getScriptUri(),
-            $this->widgetConfigurator->getLocale() ?? 'es_ES',
+            $this->widgetConfigurator->getLocale() ?? 'es-ES',
             $this->widgetConfigurator->getCurrency() ?? 'EUR',
             $this->widgetConfigurator->getDecimalSeparator() ?? ',',
             $this->widgetConfigurator->getThousandsSeparator() ?? '.'
@@ -330,7 +328,7 @@ class WidgetSettingsService
         );
 
         return array_filter($paymentMethods, function ($method) {
-            return in_array($method->getCategory(), self::SUPPORTED_CATEGORIES_ON_PRODUCT_PAGE);
+            return in_array($method->getCategory(), self::WIDGET_SUPPORTED_CATEGORIES);
         });
     }
 
@@ -355,7 +353,8 @@ class WidgetSettingsService
         );
 
         foreach ($paymentMethods as $method) {
-            if ($method->getProduct() === $selectedProduct) {
+            if ($method->getProduct() === $selectedProduct &&
+                in_array($method->getCategory(), self::WIDGET_SUPPORTED_CATEGORIES)) {
                 return $method;
             }
         }
@@ -430,17 +429,17 @@ class WidgetSettingsService
      */
     protected function getWidgetSupportedProducts(string $merchantId): array
     {
-        $paymentMethods = $this->paymentMethodsService->getMerchantProducts(
+        $paymentMethods = $this->paymentMethodsService->getCachedPaymentMethods(
             $merchantId
         );
-        $widgetSupportedPaymentMethods = [];
+        $widgetSupportedProducts = [];
 
         foreach ($paymentMethods as $paymentMethod) {
-            if (in_array($paymentMethod, self::WIDGET_PAYMENT_METHODS, true)) {
-                $widgetSupportedPaymentMethods [] = $paymentMethod;
+            if (in_array($paymentMethod->getCategory(), self::WIDGET_SUPPORTED_CATEGORIES, true)) {
+                $widgetSupportedProducts [] = $paymentMethod->getProduct();
             }
         }
 
-        return $widgetSupportedPaymentMethods;
+        return $widgetSupportedProducts;
     }
 }

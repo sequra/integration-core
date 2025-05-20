@@ -38,7 +38,6 @@ class WidgetSettings extends Entity
         parent::inflate($data);
 
         $widgetSettings = $data['widgetSettings'] ?? [];
-        $widgetLabels = $widgetSettings['widgetLabels'] ?? [];
 
         $this->storeId = $data['storeId'] ?? '';
         $this->widgetSettings = new DomainWidgetSettings(
@@ -47,12 +46,7 @@ class WidgetSettings extends Entity
             (bool)self::getArrayValue($widgetSettings, 'displayOnProductPage', false),
             (bool)self::getArrayValue($widgetSettings, 'showInstallmentsInProductListing', false),
             (bool)self::getArrayValue($widgetSettings, 'showInstallmentsInCartPage', false),
-            self::getArrayValue($widgetSettings, 'miniWidgetSelector', ''),
             self::getArrayValue($widgetSettings, 'widgetConfiguration', ''),
-            $widgetLabels ? new DomainWidgetLabels(
-                static::getDataValue($widgetLabels, 'messages', []),
-                static::getDataValue($widgetLabels, 'messagesBelowLimit', [])
-            ) : null,
             $widgetSettings['widgetSettingsForProduct'] ?
                 $this->inflateWidgetSettingsForProductModel($widgetSettings['widgetSettingsForProduct']) : null,
             $widgetSettings['widgetSettingsForCart'] ?
@@ -69,7 +63,6 @@ class WidgetSettings extends Entity
     {
         $data = parent::toArray();
 
-        $labels = $this->widgetSettings->getWidgetLabels();
         $widgetSettingsForProduct = $this->widgetSettings->getWidgetSettingsForProduct();
         $widgetSettingsForCart = $this->widgetSettings->getWidgetSettingsForCart();
         $widgetSettingsForListing = $this->widgetSettings->getWidgetSettingsForListing();
@@ -81,12 +74,7 @@ class WidgetSettings extends Entity
             'displayOnProductPage' => $this->widgetSettings->isDisplayOnProductPage(),
             'showInstallmentsInProductListing' => $this->widgetSettings->isShowInstallmentsInProductListing(),
             'showInstallmentsInCartPage' => $this->widgetSettings->isShowInstallmentsInCartPage(),
-            'miniWidgetSelector' => $this->widgetSettings->getMiniWidgetSelector(),
             'widgetConfiguration' => $this->widgetSettings->getWidgetConfig(),
-            'widgetLabels' => $labels ? [
-                'messages' => $labels->getMessages(),
-                'messagesBelowLimit' => $labels->getMessagesBelowLimit(),
-            ] : [],
             'widgetSettingsForProduct' => $widgetSettingsForProduct ?
                 $this->widgetSettingsForProductModelArray($widgetSettingsForProduct) : [],
             'widgetSettingsForCart' => $widgetSettingsForCart ? [

@@ -30,17 +30,9 @@ class WidgetSettings
      */
     protected $showInstallmentsInCartPage;
     /**
-     * @var string
-     */
-    protected $miniWidgetSelector;
-    /**
-     * @var string
+     * @var string|null
      */
     protected $widgetConfig;
-    /**
-     * @var WidgetLabels
-     */
-    protected $widgetLabels;
     /**
      * @var WidgetSelectorSettings|null
      */
@@ -60,9 +52,7 @@ class WidgetSettings
      * @param bool $displayOnProductPage
      * @param bool $showInstallmentsInProductListing
      * @param bool $showInstallmentsInCartPage
-     * @param string $miniWidgetSelector
      * @param string|null $widgetConfig
-     * @param WidgetLabels|null $widgetLabels
      * @param WidgetSelectorSettings|null $widgetSettingsForProduct
      * @param WidgetSelectorSettings|null $widgetSettingsForCart
      * @param WidgetSelectorSettings|null $widgetSettingsForListing
@@ -73,9 +63,7 @@ class WidgetSettings
         bool $displayOnProductPage = false,
         bool $showInstallmentsInProductListing = false,
         bool $showInstallmentsInCartPage = false,
-        string $miniWidgetSelector = '',
-        string $widgetConfig = null,
-        WidgetLabels $widgetLabels = null,
+        ?string $widgetConfig = null,
         WidgetSelectorSettings $widgetSettingsForProduct = null,
         WidgetSelectorSettings $widgetSettingsForCart = null,
         WidgetSelectorSettings $widgetSettingsForListing = null
@@ -85,9 +73,7 @@ class WidgetSettings
         $this->displayOnProductPage = $displayOnProductPage;
         $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
         $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
-        $this->miniWidgetSelector = $miniWidgetSelector;
         $this->widgetConfig = $widgetConfig;
-        $this->widgetLabels = $widgetLabels;
         $this->widgetSettingsForProduct = $widgetSettingsForProduct;
         $this->widgetSettingsForCart = $widgetSettingsForCart;
         $this->widgetSettingsForListing = $widgetSettingsForListing;
@@ -151,26 +137,6 @@ class WidgetSettings
     public function setWidgetConfig(?string $widgetConfig): void
     {
         $this->widgetConfig = $widgetConfig;
-    }
-
-    public function getWidgetLabels(): ?WidgetLabels
-    {
-        return $this->widgetLabels;
-    }
-
-    public function setWidgetLabels(?WidgetLabels $widgetLabels): void
-    {
-        $this->widgetLabels = $widgetLabels;
-    }
-
-    public function getMiniWidgetSelector(): string
-    {
-        return $this->miniWidgetSelector;
-    }
-
-    public function setMiniWidgetSelector(string $miniWidgetSelector): void
-    {
-        $this->miniWidgetSelector = $miniWidgetSelector;
     }
 
     /**

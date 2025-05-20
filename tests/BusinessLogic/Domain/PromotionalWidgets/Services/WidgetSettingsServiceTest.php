@@ -448,8 +448,8 @@ class WidgetSettingsServiceTest extends BaseTestCase
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('FR', 'FR');
 
         // assert
-        self::assertEquals(['i1', 'pp5', 'pp3'], $widgetInitialize->getProducts());
-        self::assertEquals('es_ES', $widgetInitialize->getLocale());
+        self::assertEquals(['i1', 'pp5', 'pp3', 'payment7', 'payment5'], $widgetInitialize->getProducts());
+        self::assertEquals('es-ES', $widgetInitialize->getLocale());
         self::assertEquals('EUR', $widgetInitialize->getCurrency());
         self::assertEquals(',', $widgetInitialize->getDecimalSeparator());
         self::assertEquals('.', $widgetInitialize->getThousandSeparator());
@@ -548,7 +548,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('FR', 'FR');
 
         // assert
-        self::assertEquals(['i1', 'pp5', 'pp3'], $widgetInitialize->getProducts());
+        self::assertEquals(['i1', 'pp5', 'pp3', 'payment7', 'payment5'], $widgetInitialize->getProducts());
         self::assertEquals('en-US', $widgetInitialize->getLocale());
         self::assertEquals('USD', $widgetInitialize->getCurrency());
         self::assertEquals('!', $widgetInitialize->getDecimalSeparator());
@@ -687,8 +687,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
             false,
             false,
             '',
-            '',
-            null,
             null,
             new WidgetSelectorSettings('test', 'test'),
             null
@@ -733,8 +731,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
             false,
             false,
             '',
-            '',
-            null,
             null,
             new WidgetSelectorSettings('test', 'test', 'i1'),
             null
@@ -826,9 +822,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             false,
             false,
             false,
-            '',
             'configTest',
-            null,
             null,
             new WidgetSelectorSettings('location1', 'location2', 'i1'),
             null
@@ -890,7 +884,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
         self::assertEquals('i1', $widget->getProduct());
         self::assertEquals('campaign1', $widget->getCampaign());
         self::assertEquals('location2', $widget->getDest());
-        self::assertEquals('location1', $widget->getPriceSel());
+        self::assertEquals('location1', $widget->getPriceSelector());
         self::assertEquals('configTest', $widget->getTheme());
         self::assertEquals('0', $widget->getReverse());
     }
@@ -993,8 +987,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
             false,
             false,
             '',
-            '',
-            null,
             null,
             null,
             new WidgetSelectorSettings('test', 'test')
@@ -1038,9 +1030,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             false,
             false,
             false,
-            '',
             'configTest',
-            null,
             null,
             null,
             new WidgetSelectorSettings('test1', 'test2', 'i1')
@@ -1101,7 +1091,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
         self::assertNotNull($widget);
         self::assertEquals('i1', $widget->getProduct());
         self::assertEquals('campaign1', $widget->getCampaign());
-        self::assertEquals('test1', $widget->getPriceSel());
+        self::assertEquals('test1', $widget->getPriceSelector());
         self::assertEquals('test2', $widget->getDest());
         self::assertEquals('configTest', $widget->getTheme());
         self::assertEquals('0', $widget->getReverse());
@@ -1205,7 +1195,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
             false,
             false,
             '',
-            '',
             null,
             new WidgetSelectorSettings(
                 'testPriceSelector',
@@ -1259,8 +1248,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
             false,
             false,
             '',
-            '',
-            null,
             new WidgetSelectorSettings(
                 'testPriceSelector',
                 'testLocationSelector',
@@ -1339,26 +1326,26 @@ class WidgetSettingsServiceTest extends BaseTestCase
         $widget = $widgets[0];
 
         self::assertEquals('i1', $widget->getProduct());
-        self::assertEquals('testPriceSelector', $widget->getPriceSel());
+        self::assertEquals('testPriceSelector', $widget->getPriceSelector());
         self::assertEquals('customLocationSelector', $widget->getDest());
         self::assertEquals('style', $widget->getTheme());
         self::assertEquals('0', $widget->getReverse());
         self::assertEquals(0, $widget->getMinAmount());
         self::assertEquals(0, $widget->getMaxAmount());
-        self::assertEquals('altPriceSelector', $widget->getAltPriceSel());
+        self::assertEquals('altPriceSelector', $widget->getAltPriceSelector());
         self::assertEquals('altPriceTriggerSelector', $widget->getAltTriggerSelector());
 
         /** @var Widget $widget */
         $widget = $widgets[1];
 
         self::assertEquals('pp4', $widget->getProduct());
-        self::assertEquals('testPriceSelector', $widget->getPriceSel());
+        self::assertEquals('testPriceSelector', $widget->getPriceSelector());
         self::assertEquals('customLocationSelector', $widget->getDest());
         self::assertEquals('style', $widget->getTheme());
         self::assertEquals('0', $widget->getReverse());
         self::assertEquals(10, $widget->getMinAmount());
         self::assertEquals(20, $widget->getMaxAmount());
-        self::assertEquals('altPriceSelector', $widget->getAltPriceSel());
+        self::assertEquals('altPriceSelector', $widget->getAltPriceSelector());
         self::assertEquals('altPriceTriggerSelector', $widget->getAltTriggerSelector());
     }
 }

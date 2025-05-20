@@ -39,8 +39,8 @@ class GetWidgetsCheckoutResponse extends Response
                 'theme' => $widget->getTheme(),
                 'reverse' => $widget->getReverse(),
                 'campaign' => $widget->getCampaign(),
-                'priceSel' => $widget->getPriceSel(),
-                'altPriceSel' => $widget->getAltPriceSel(),
+                'priceSel' => $widget->getPriceSelector(),
+                'altPriceSel' => $widget->getAltPriceSelector(),
                 'altTriggerSelector' => $widget->getAltTriggerSelector(),
                 'minAmount' => $widget->getMinAmount(),
                 'maxAmount' => $widget->getMaxAmount()

@@ -18,9 +18,9 @@ class Widget
 */
     protected $campaign;
     /**
- * @var string $priceSel
+ * @var string $priceSelector
 */
-    protected $priceSel;
+    protected $priceSelector;
     /**
  * @var string $dest
 */
@@ -42,9 +42,9 @@ class Widget
 */
     protected $maxAmount;
     /**
- * @var string $altPriceSel
+ * @var string $altPriceSelector
 */
-    protected $altPriceSel;
+    protected $altPriceSelector;
     /**
  * @var string $altTriggerSelector
 */
@@ -53,36 +53,36 @@ class Widget
     /**
      * @param string $product
      * @param string $campaign
-     * @param string $priceSel
+     * @param string $priceSelector
      * @param string $dest
      * @param string $theme
      * @param string $reverse
      * @param int $minAmount
      * @param int $maxAmount
-     * @param string $altPriceSel
+     * @param string $altPriceSelector
      * @param string $altTriggerSelector
      */
     public function __construct(
         string $product,
         string $campaign,
-        string $priceSel,
+        string $priceSelector,
         string $dest,
         string $theme,
         string $reverse,
-        int $minAmount = 0,
-        int $maxAmount = 0,
-        string $altPriceSel = '',
+        int    $minAmount = 0,
+        int    $maxAmount = 0,
+        string $altPriceSelector = '',
         string $altTriggerSelector = ''
     ) {
         $this->product = $product;
         $this->campaign = $campaign;
-        $this->priceSel = $priceSel;
+        $this->priceSelector = $priceSelector;
         $this->dest = $dest;
         $this->theme = $theme;
         $this->reverse = $reverse;
         $this->minAmount = $minAmount;
         $this->maxAmount = $maxAmount;
-        $this->altPriceSel = $altPriceSel;
+        $this->altPriceSelector = $altPriceSelector;
         $this->altTriggerSelector = $altTriggerSelector;
     }
 
@@ -121,17 +121,17 @@ class Widget
     /**
      * @return string
      */
-    public function getAltPriceSel(): string
+    public function getAltPriceSelector(): string
     {
-        return $this->altPriceSel;
+        return $this->altPriceSelector;
     }
 
     /**
-     * @param string $altPriceSel
+     * @param string $altPriceSelector
      */
-    public function setAltPriceSel(string $altPriceSel): void
+    public function setAltPriceSelector(string $altPriceSelector): void
     {
-        $this->altPriceSel = $altPriceSel;
+        $this->altPriceSelector = $altPriceSelector;
     }
 
     /**
@@ -201,17 +201,17 @@ class Widget
     /**
      * @return string
      */
-    public function getPriceSel(): string
+    public function getPriceSelector(): string
     {
-        return $this->priceSel;
+        return $this->priceSelector;
     }
 
     /**
-     * @param string $priceSel
+     * @param string $priceSelector
      */
-    public function setPriceSel(string $priceSel): void
+    public function setPriceSelector(string $priceSelector): void
     {
-        $this->priceSel = $priceSel;
+        $this->priceSelector = $priceSelector;
     }
 
     /**
