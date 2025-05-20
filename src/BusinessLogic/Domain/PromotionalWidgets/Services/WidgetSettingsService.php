@@ -353,8 +353,10 @@ class WidgetSettingsService
         );
 
         foreach ($paymentMethods as $method) {
-            if ($method->getProduct() === $selectedProduct &&
-                in_array($method->getCategory(), self::WIDGET_SUPPORTED_CATEGORIES)) {
+            if (
+                $method->getProduct() === $selectedProduct &&
+                in_array($method->getCategory(), self::WIDGET_SUPPORTED_CATEGORIES)
+            ) {
                 return $method;
             }
         }

@@ -69,8 +69,8 @@ class Widget
         string $dest,
         string $theme,
         string $reverse,
-        int    $minAmount = 0,
-        int    $maxAmount = 0,
+        int $minAmount = 0,
+        int $maxAmount = 0,
         string $altPriceSelector = '',
         string $altTriggerSelector = ''
     ) {
