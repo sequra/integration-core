@@ -10,45 +10,53 @@ namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models;
 class Widget
 {
     /**
- * @var string $product
-*/
+     * @var string $product
+     */
     protected $product;
     /**
- * @var string $campaign
-*/
+     * @var string $campaign
+     */
     protected $campaign;
     /**
- * @var string $priceSelector
-*/
+     * @var string $priceSelector
+     */
     protected $priceSelector;
     /**
- * @var string $dest
-*/
+     * @var string $dest
+     */
     protected $dest;
     /**
- * @var string $theme
-*/
+     * @var string $theme
+     */
     protected $theme;
     /**
- * @var string $reverse
-*/
+     * @var string $reverse
+     */
     protected $reverse;
     /**
- * @var int $minAmount
-*/
+     * @var int $minAmount
+     */
     protected $minAmount;
     /**
- * @var int $maxAmount
-*/
+     * @var int $maxAmount
+     */
     protected $maxAmount;
     /**
- * @var string $altPriceSelector
-*/
+     * @var string $altPriceSelector
+     */
     protected $altPriceSelector;
     /**
- * @var string $altTriggerSelector
-*/
+     * @var string $altTriggerSelector
+     */
     protected $altTriggerSelector;
+    /**
+     * @var string $miniWidgetMessage
+     */
+    protected $miniWidgetMessage;
+    /**
+     * @var string $miniWidgetBelowLimitMessage
+     */
+    protected $miniWidgetBelowLimitMessage;
 
     /**
      * @param string $product
@@ -61,6 +69,8 @@ class Widget
      * @param int $maxAmount
      * @param string $altPriceSelector
      * @param string $altTriggerSelector
+     * @param string $miniWidgetMessage
+     * @param string $miniWidgetBelowLimitMessage
      */
     public function __construct(
         string $product,
@@ -72,7 +82,9 @@ class Widget
         int $minAmount = 0,
         int $maxAmount = 0,
         string $altPriceSelector = '',
-        string $altTriggerSelector = ''
+        string $altTriggerSelector = '',
+        string $miniWidgetMessage = '',
+        string $miniWidgetBelowLimitMessage = ''
     ) {
         $this->product = $product;
         $this->campaign = $campaign;
@@ -84,6 +96,8 @@ class Widget
         $this->maxAmount = $maxAmount;
         $this->altPriceSelector = $altPriceSelector;
         $this->altTriggerSelector = $altTriggerSelector;
+        $this->miniWidgetMessage = $miniWidgetMessage;
+        $this->miniWidgetBelowLimitMessage = $miniWidgetBelowLimitMessage;
     }
 
     /**
@@ -244,5 +258,37 @@ class Widget
     public function setAltTriggerSelector(string $altTriggerSelector): void
     {
         $this->altTriggerSelector = $altTriggerSelector;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMiniWidgetMessage(): string
+    {
+        return $this->miniWidgetMessage;
+    }
+
+    /**
+     * @param string $miniWidgetMessage
+     */
+    public function setMiniWidgetMessage(string $miniWidgetMessage): void
+    {
+        $this->miniWidgetMessage = $miniWidgetMessage;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMiniWidgetBelowLimitMessage(): string
+    {
+        return $this->miniWidgetBelowLimitMessage;
+    }
+
+    /**
+     * @param string $miniWidgetBelowLimitMessage
+     */
+    public function setMiniWidgetBelowLimitMessage(string $miniWidgetBelowLimitMessage): void
+    {
+        $this->miniWidgetBelowLimitMessage = $miniWidgetBelowLimitMessage;
     }
 }

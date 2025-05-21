@@ -43,7 +43,9 @@ class GetWidgetsCheckoutResponse extends Response
                 'altPriceSel' => $widget->getAltPriceSelector(),
                 'altTriggerSelector' => $widget->getAltTriggerSelector(),
                 'minAmount' => $widget->getMinAmount(),
-                'maxAmount' => $widget->getMaxAmount()
+                'maxAmount' => $widget->getMaxAmount(),
+                'miniWidgetMessage' => $widget->getMiniWidgetMessage(),
+                'miniWidgetBelowLimitMessage' => $widget->getMiniWidgetBelowLimitMessage()
             ];
         }
 

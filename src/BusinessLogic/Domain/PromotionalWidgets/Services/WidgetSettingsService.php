@@ -15,6 +15,7 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -52,6 +53,10 @@ class WidgetSettingsService
      * @var WidgetConfiguratorInterface
      */
     protected $widgetConfigurator;
+    /**
+     * @var MiniWidgetMessagesProviderInterface
+     */
+    protected $miniWidgetMessagesProvider;
 
     /**
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
@@ -60,6 +65,7 @@ class WidgetSettingsService
      * @param ConnectionService $connectionService
      * @param WidgetsProxyInterface $widgetsProxy
      * @param WidgetConfiguratorInterface $widgetConfigurator
+     * @param MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider
      */
     public function __construct(
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
@@ -67,7 +73,8 @@ class WidgetSettingsService
         CountryConfigurationService $countryConfigService,
         ConnectionService $connectionService,
         WidgetsProxyInterface $widgetsProxy,
-        WidgetConfiguratorInterface $widgetConfigurator
+        WidgetConfiguratorInterface $widgetConfigurator,
+        MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider
     ) {
         $this->widgetSettingsRepository = $widgetSettingsRepository;
         $this->paymentMethodsService = $paymentMethodsService;
@@ -75,6 +82,7 @@ class WidgetSettingsService
         $this->connectionService = $connectionService;
         $this->widgetsProxy = $widgetsProxy;
         $this->widgetConfigurator = $widgetConfigurator;
+        $this->miniWidgetMessagesProvider = $miniWidgetMessagesProvider;
     }
 
     /**
@@ -259,7 +267,11 @@ class WidgetSettingsService
             $widgetSettings->getWidgetConfig(),
             '0',
             $filteredMethod->getMinAmount() ?? 0,
-            $filteredMethod->getMaxAmount() ?? 0
+            $filteredMethod->getMaxAmount() ?? 0,
+            '',
+            '',
+            $this->miniWidgetMessagesProvider->getMessage() ?? '',
+            $this->miniWidgetMessagesProvider->getBelowLimitMessage() ?? ''
         );
     }
 

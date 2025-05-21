@@ -15,6 +15,7 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
@@ -57,7 +58,8 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             TestServiceRegister::getService(CountryConfigurationService::class),
             TestServiceRegister::getService(ConnectionService::class),
             TestServiceRegister::getService(WidgetsProxyInterface::class),
-            TestServiceRegister::getService(WidgetConfiguratorInterface::class)
+            TestServiceRegister::getService(WidgetConfiguratorInterface::class),
+            TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
         );
 
         TestServiceRegister::registerService(
@@ -158,7 +160,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             123,
             321,
             'altPrice',
-            'triggerSel'
+            'triggerSel',
+            'message',
+            'below message'
         ));
 
         //Act
@@ -179,7 +183,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
                     'altPriceSel' => 'altPrice',
                     'altTriggerSelector' => 'triggerSel',
                     'minAmount' => 123,
-                    'maxAmount' => 321
+                    'maxAmount' => 321,
+                    'miniWidgetMessage' => 'message',
+                    'miniWidgetBelowLimitMessage' => 'below message'
                 ]
             ],
             $response->toArray()
@@ -216,7 +222,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             123,
             321,
             'altPrice',
-            'triggerSel'
+            'triggerSel',
+            'message',
+            'below message'
         ));
 
         //Act
@@ -237,7 +245,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
                     'altPriceSel' => 'altPrice',
                     'altTriggerSelector' => 'triggerSel',
                     'minAmount' => 123,
-                    'maxAmount' => 321
+                    'maxAmount' => 321,
+                    'miniWidgetMessage' => 'message',
+                    'miniWidgetBelowLimitMessage' => 'below message'
                 ]
             ],
             $response->toArray()
@@ -275,7 +285,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
                 123,
                 321,
                 'altPrice',
-                'triggerSel'
+                'triggerSel',
+                'message',
+                'below message'
             ),
             new Widget(
                 'product2',
@@ -287,7 +299,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
                 125,
                 311,
                 'altPrice2',
-                'triggerSel2'
+                'triggerSel2',
+                'message2',
+                'below message2'
             )
         ]);
 
@@ -309,7 +323,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
                     'altPriceSel' => 'altPrice',
                     'altTriggerSelector' => 'triggerSel',
                     'minAmount' => 123,
-                    'maxAmount' => 321
+                    'maxAmount' => 321,
+                    'miniWidgetMessage' => 'message',
+                    'miniWidgetBelowLimitMessage' => 'below message'
                 ],
                 [
                     'product' => 'product2',
@@ -321,7 +337,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
                     'altPriceSel' => 'altPrice2',
                     'altTriggerSelector' => 'triggerSel2',
                     'minAmount' => 125,
-                    'maxAmount' => 311
+                    'maxAmount' => 311,
+                    'miniWidgetMessage' => 'message2',
+                    'miniWidgetBelowLimitMessage' => 'below message2'
                 ]
             ],
             $response->toArray()
