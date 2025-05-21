@@ -24,8 +24,9 @@ use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
  */
 class WidgetSettingsService
 {
-    public const WIDGET_SUPPORTED_CATEGORIES = ['part_payment', 'pay_later'];
-    public const MINI_WIDGET_SUPPORTED_CATEGORIES = ['part_payment'];
+    public const WIDGET_SUPPORTED_CATEGORIES_ON_PRODUCT_PAGE = ['part_payment', 'pay_later'];
+    public const WIDGET_SUPPORTED_CATEGORIES_ON_CART_PAGE = ['part_payment', 'pay_later'];
+    public const MINI_WIDGET_SUPPORTED_CATEGORIES_ON_PRODUCT_LISTING_PAGE = ['part_payment'];
 
     /**
      * @var WidgetSettingsRepositoryInterface
@@ -200,7 +201,7 @@ class WidgetSettingsService
             $shippingCountry,
             $currentCountry,
             $selectedProduct,
-            self::WIDGET_SUPPORTED_CATEGORIES
+            self::WIDGET_SUPPORTED_CATEGORIES_ON_CART_PAGE
         );
         if (!$filteredMethod) {
             return null;
@@ -244,7 +245,7 @@ class WidgetSettingsService
             $shippingCountry,
             $currentCountry,
             $selectedProduct,
-            self::MINI_WIDGET_SUPPORTED_CATEGORIES
+            self::MINI_WIDGET_SUPPORTED_CATEGORIES_ON_PRODUCT_LISTING_PAGE
         );
         if (!$filteredMethod) {
             return null;
@@ -307,7 +308,7 @@ class WidgetSettingsService
                 $product,
                 $paymentMethod->getCampaign() ?? '',
                 $widgetSettingsForProduct->getPriceSelector(),
-                ($customSetting &&  !empty($customSetting->getCustomLocationSelector())) ?
+                ($customSetting && !empty($customSetting->getCustomLocationSelector())) ?
                     $customSetting->getCustomLocationSelector() : $widgetSettingsForProduct->getLocationSelector(),
                 ($customSetting && !empty($customSetting->getCustomWidgetStyle())) ?
                     $customSetting->getCustomWidgetStyle() : $widgetSettings->getWidgetConfig(),
@@ -339,7 +340,7 @@ class WidgetSettingsService
         );
 
         return array_filter($paymentMethods, static function ($method) {
-            return in_array($method->getCategory(), self::WIDGET_SUPPORTED_CATEGORIES);
+            return in_array($method->getCategory(), self::WIDGET_SUPPORTED_CATEGORIES_ON_PRODUCT_PAGE);
         });
     }
 
@@ -444,13 +445,17 @@ class WidgetSettingsService
      */
     protected function getWidgetSupportedProducts(string $merchantId): array
     {
-        $paymentMethods = $this->paymentMethodsService->getCachedPaymentMethods(
-            $merchantId
-        );
+        $paymentMethods = $this->paymentMethodsService->getCachedPaymentMethods($merchantId);
+        $supportedCategories = array_unique(array_merge(
+            self::WIDGET_SUPPORTED_CATEGORIES_ON_PRODUCT_PAGE,
+            self::WIDGET_SUPPORTED_CATEGORIES_ON_CART_PAGE,
+            self::MINI_WIDGET_SUPPORTED_CATEGORIES_ON_PRODUCT_LISTING_PAGE
+        ));
+
         $widgetSupportedProducts = [];
 
         foreach ($paymentMethods as $paymentMethod) {
-            if (in_array($paymentMethod->getCategory(), self::WIDGET_SUPPORTED_CATEGORIES, true)) {
+            if (in_array($paymentMethod->getCategory(), $supportedCategories, true)) {
                 $widgetSupportedProducts [] = $paymentMethod->getProduct();
             }
         }

@@ -33,8 +33,14 @@ class FormattedPaymentMethodsResponse extends Response
     {
         $methods = [];
         foreach ($this->paymentMethods as $paymentMethod) {
+            $supportedCategories = array_unique(array_merge(
+                WidgetSettingsService::WIDGET_SUPPORTED_CATEGORIES_ON_PRODUCT_PAGE,
+                WidgetSettingsService::WIDGET_SUPPORTED_CATEGORIES_ON_CART_PAGE,
+                WidgetSettingsService::MINI_WIDGET_SUPPORTED_CATEGORIES_ON_PRODUCT_LISTING_PAGE
+            ));
+
             $category = $paymentMethod->getCategory();
-            if (!in_array($category, WidgetSettingsService::WIDGET_SUPPORTED_CATEGORIES)) {
+            if (!in_array($category, $supportedCategories, true)) {
                 continue;
             }
 
