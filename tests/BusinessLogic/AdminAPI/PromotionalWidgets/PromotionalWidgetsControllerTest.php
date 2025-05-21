@@ -53,18 +53,7 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
             false,
             false,
             false,
-            '',
-            '{"alignment":"center","amount-font-bold":"true","amount-font-color":"#1c1c1c","amount-font-size":"15","background-color":"white","border-color":"#ce5c00","border-radius":"","class":"","font-color":"#1c1c1c","link-font-color":"#1c1c1c","link-underline":"true","no-costs-claim":"","size":"M","starting-text":"only","type":"banner"}',
-            new WidgetLabels(
-                [
-                    'ES' => 'test es',
-                    'IT' => 'test it',
-                ],
-                [
-                    'ES' => 'test test es',
-                    'IT' => 'test test it',
-                ]
-            )
+            '{"alignment":"center","amount-font-bold":"true","amount-font-color":"#1c1c1c","amount-font-size":"15","background-color":"white","border-color":"#ce5c00","border-radius":"","class":"","font-color":"#1c1c1c","link-font-color":"#1c1c1c","link-underline":"true","no-costs-claim":"","size":"M","starting-text":"only","type":"banner"}'
         );
         StoreContext::doWithStore('store1', [$this->widgetSettingsRepository, 'setWidgetSettings'], [$settings]);
 
@@ -79,12 +68,7 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
                 'showInstallmentAmountInProductListing' => $settings->isShowInstallmentsInProductListing(),
                 'showInstallmentAmountInCartPage' => $settings->isShowInstallmentsInCartPage(),
                 'assetsKey' => $settings->getAssetsKey(),
-                'miniWidgetSelector' => '',
-                'widgetConfiguration' => '{"alignment":"center","amount-font-bold":"true","amount-font-color":"#1c1c1c","amount-font-size":"15","background-color":"white","border-color":"#ce5c00","border-radius":"","class":"","font-color":"#1c1c1c","link-font-color":"#1c1c1c","link-underline":"true","no-costs-claim":"","size":"M","starting-text":"only","type":"banner"}',
-                'widgetLabels' => [
-                    'messages' => $settings->getWidgetLabels()->getMessages(),
-                    'messagesBelowLimit' => $settings->getWidgetLabels()->getMessagesBelowLimit(),
-                ],
+                'widgetConfiguration' => '{"alignment":"center","amount-font-bold":"true","amount-font-color":"#1c1c1c","amount-font-size":"15","background-color":"white","border-color":"#ce5c00","border-radius":"","class":"","font-color":"#1c1c1c","link-font-color":"#1c1c1c","link-underline":"true","no-costs-claim":"","size":"M","starting-text":"only","type":"banner"}'
             ],
             $result->toArray()
         );
@@ -99,8 +83,18 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
             false,
             true,
             true,
-            '',
-            'banner'
+            'banner',
+            '.price',
+            '.location',
+            '.price',
+            '.location',
+            'pp3',
+            '.price',
+            '.location',
+            'pp3',
+            'test',
+            'test',
+            ['selForTarget' => 'target', 'product' => 'i1', 'displayWidget' => 'true', 'widgetStyles' => 'styles']
         );
 
         // act

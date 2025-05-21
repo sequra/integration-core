@@ -30,17 +30,21 @@ class WidgetSettings
      */
     protected $showInstallmentsInCartPage;
     /**
-     * @var string
-     */
-    protected $miniWidgetSelector;
-    /**
-     * @var string
+     * @var string|null
      */
     protected $widgetConfig;
     /**
-     * @var WidgetLabels
+     * @var WidgetSelectorSettings|null
      */
-    protected $widgetLabels;
+    protected $widgetSettingsForProduct;
+    /**
+     * @var WidgetSelectorSettings|null
+     */
+    protected $widgetSettingsForCart;
+    /**
+     * @var WidgetSelectorSettings|null
+     */
+    protected $widgetSettingsForListing;
 
     /**
      * @param bool $enabled
@@ -48,9 +52,10 @@ class WidgetSettings
      * @param bool $displayOnProductPage
      * @param bool $showInstallmentsInProductListing
      * @param bool $showInstallmentsInCartPage
-     * @param string $miniWidgetSelector
      * @param string|null $widgetConfig
-     * @param WidgetLabels|null $widgetLabels
+     * @param WidgetSelectorSettings|null $widgetSettingsForProduct
+     * @param WidgetSelectorSettings|null $widgetSettingsForCart
+     * @param WidgetSelectorSettings|null $widgetSettingsForListing
      */
     public function __construct(
         bool $enabled,
@@ -58,18 +63,20 @@ class WidgetSettings
         bool $displayOnProductPage = false,
         bool $showInstallmentsInProductListing = false,
         bool $showInstallmentsInCartPage = false,
-        string $miniWidgetSelector = '',
-        string $widgetConfig = null,
-        WidgetLabels $widgetLabels = null
+        ?string $widgetConfig = null,
+        WidgetSelectorSettings $widgetSettingsForProduct = null,
+        WidgetSelectorSettings $widgetSettingsForCart = null,
+        WidgetSelectorSettings $widgetSettingsForListing = null
     ) {
         $this->enabled = $enabled;
         $this->assetsKey = $assetsKey;
         $this->displayOnProductPage = $displayOnProductPage;
         $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
         $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
-        $this->miniWidgetSelector = $miniWidgetSelector;
         $this->widgetConfig = $widgetConfig;
-        $this->widgetLabels = $widgetLabels;
+        $this->widgetSettingsForProduct = $widgetSettingsForProduct;
+        $this->widgetSettingsForCart = $widgetSettingsForCart;
+        $this->widgetSettingsForListing = $widgetSettingsForListing;
     }
 
     public function isEnabled(): bool
@@ -132,23 +139,51 @@ class WidgetSettings
         $this->widgetConfig = $widgetConfig;
     }
 
-    public function getWidgetLabels(): ?WidgetLabels
+    /**
+     * @return WidgetSelectorSettings|null
+     */
+    public function getWidgetSettingsForProduct(): ?WidgetSelectorSettings
     {
-        return $this->widgetLabels;
+        return $this->widgetSettingsForProduct;
     }
 
-    public function setWidgetLabels(?WidgetLabels $widgetLabels): void
+    /**
+     * @param WidgetSelectorSettings|null $widgetSettingsForProduct
+     */
+    public function setWidgetSettingsForProduct(?WidgetSelectorSettings $widgetSettingsForProduct): void
     {
-        $this->widgetLabels = $widgetLabels;
+        $this->widgetSettingsForProduct = $widgetSettingsForProduct;
     }
 
-    public function getMiniWidgetSelector(): string
+    /**
+     * @return WidgetSelectorSettings|null
+     */
+    public function getWidgetSettingsForCart(): ?WidgetSelectorSettings
     {
-        return $this->miniWidgetSelector;
+        return $this->widgetSettingsForCart;
     }
 
-    public function setMiniWidgetSelector(string $miniWidgetSelector): void
+    /**
+     * @param WidgetSelectorSettings|null $widgetSettingsForCart
+     */
+    public function setWidgetSettingsForCart(?WidgetSelectorSettings $widgetSettingsForCart): void
     {
-        $this->miniWidgetSelector = $miniWidgetSelector;
+        $this->widgetSettingsForCart = $widgetSettingsForCart;
+    }
+
+    /**
+     * @return WidgetSelectorSettings|null
+     */
+    public function getWidgetSettingsForListing(): ?WidgetSelectorSettings
+    {
+        return $this->widgetSettingsForListing;
+    }
+
+    /**
+     * @param WidgetSelectorSettings|null $widgetSettingsForListing
+     */
+    public function setWidgetSettingsForListing(?WidgetSelectorSettings $widgetSettingsForListing): void
+    {
+        $this->widgetSettingsForListing = $widgetSettingsForListing;
     }
 }

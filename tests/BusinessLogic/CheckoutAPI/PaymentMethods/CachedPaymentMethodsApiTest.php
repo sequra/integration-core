@@ -4,6 +4,8 @@ namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\PaymentMethods;
 
 use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\Requests\GetCachedPaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
@@ -13,6 +15,7 @@ use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 use DateTime;
 
@@ -35,9 +38,14 @@ class CachedPaymentMethodsApiTest extends BaseTestCase
     {
         parent::setUp();
 
+        TestServiceRegister::registerService(SellingCountriesServiceInterface::class, static function () {
+            return new MockSellingCountriesService();
+        });
+
         $this->mockPaymentMethodService = new MockPaymentMethodService(
             TestServiceRegister::getService(MerchantProxyInterface::class),
-            TestServiceRegister::getService(PaymentMethodRepositoryInterface::class)
+            TestServiceRegister::getService(PaymentMethodRepositoryInterface::class),
+            TestServiceRegister::getService(CountryConfigurationService::class)
         );
 
         TestServiceRegister::registerService(PaymentMethodsService::class, function () {
@@ -72,6 +80,7 @@ class CachedPaymentMethodsApiTest extends BaseTestCase
                 'i1',
                 'Paga Después',
                 'Paga después. 7 días desde el envío',
+                'pay_later',
                 new SeQuraCost(0, 0, 0, 0),
                 new DateTime('2000-02-22T21:22:00Z'),
                 new DateTime('2222-02-22T21:22:00Z'),
@@ -87,6 +96,7 @@ class CachedPaymentMethodsApiTest extends BaseTestCase
                 'pp5',
                 'Paga el mes que viene',
                 'Paga el mes que viene',
+                'pay_later',
                 new SeQuraCost(0, 0, 0, 0),
                 new DateTime('0022-02-22T22:36:44Z'),
                 new DateTime('2222-02-22T21:02:00Z'),
@@ -102,6 +112,7 @@ class CachedPaymentMethodsApiTest extends BaseTestCase
                 'pp3',
                 'Desde 0,00 €/mes',
                 'Desde 0,00 €/mes o en 3 plazos sin coste',
+                'part_payment',
                 new SeQuraCost(0, 0, 0, 0),
                 new DateTime('2000-02-22T21:22:00Z'),
                 new DateTime('2222-02-22T21:22:00Z'),

@@ -2,8 +2,10 @@
 
 namespace SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods;
 
+use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetFormattedPaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetPaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Responses\FormattedPaymentMethodsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Responses\PaymentMethodsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Responses\ProductsResponse;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
@@ -43,6 +45,22 @@ class PaymentMethodsController
     public function getPaymentMethods(GetPaymentMethodsRequest $request): PaymentMethodsResponse
     {
         return new PaymentMethodsResponse($this->paymentMethodsService->getMerchantsPaymentMethods($request->getMerchantId(), $request->isCache()));
+    }
+
+    /**
+     * Returns available payment method titles for all merchants, grouped by category and product type.
+     *
+     * @param GetFormattedPaymentMethodsRequest $request
+     *
+     * @return FormattedPaymentMethodsResponse
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     */
+    public function getAllAvailablePaymentMethods(GetFormattedPaymentMethodsRequest $request): FormattedPaymentMethodsResponse
+    {
+        return new FormattedPaymentMethodsResponse(
+            $this->paymentMethodsService->getAvailablePaymentMethodsForAllMerchants($request->isCache())
+        );
     }
 
     /**
