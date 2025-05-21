@@ -1041,7 +1041,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
                     'i1',
                     'Payment2',
                     'Description2',
-                    'pay_later',
+                    'part_payment',
                     new SeQuraCost(0, 0, 0, 0),
                     new \DateTime('0022-02-22T22:36:44Z'),
                     new \DateTime('0022-02-22T22:36:44Z'),

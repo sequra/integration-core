@@ -25,6 +25,7 @@ use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 class WidgetSettingsService
 {
     public const WIDGET_SUPPORTED_CATEGORIES = ['part_payment', 'pay_later'];
+    public const MINI_WIDGET_SUPPORTED_CATEGORIES = ['part_payment'];
 
     /**
      * @var WidgetSettingsRepositoryInterface
@@ -195,7 +196,12 @@ class WidgetSettingsService
         }
 
         $selectedProduct = $widgetSettingsForCart->getWidgetProduct();
-        $filteredMethod = $this->findPaymentMethod($shippingCountry, $currentCountry, $selectedProduct);
+        $filteredMethod = $this->findPaymentMethod(
+            $shippingCountry,
+            $currentCountry,
+            $selectedProduct,
+            self::WIDGET_SUPPORTED_CATEGORIES
+        );
         if (!$filteredMethod) {
             return null;
         }
@@ -234,7 +240,12 @@ class WidgetSettingsService
         }
 
         $selectedProduct = $widgetSettingsForProductListing->getWidgetProduct();
-        $filteredMethod = $this->findPaymentMethod($shippingCountry, $currentCountry, $selectedProduct);
+        $filteredMethod = $this->findPaymentMethod(
+            $shippingCountry,
+            $currentCountry,
+            $selectedProduct,
+            self::MINI_WIDGET_SUPPORTED_CATEGORIES
+        );
         if (!$filteredMethod) {
             return null;
         }
@@ -327,7 +338,7 @@ class WidgetSettingsService
             $this->getMerchantId($shippingCountry, $currentCountry)
         );
 
-        return array_filter($paymentMethods, function ($method) {
+        return array_filter($paymentMethods, static function ($method) {
             return in_array($method->getCategory(), self::WIDGET_SUPPORTED_CATEGORIES);
         });
     }
@@ -338,6 +349,7 @@ class WidgetSettingsService
      * @param string $shippingCountry
      * @param string $currentCountry
      * @param string $selectedProduct
+     * @param string[] $categories
      *
      * @return SeQuraPaymentMethod|null
      * @throws HttpRequestException
@@ -346,7 +358,8 @@ class WidgetSettingsService
     protected function findPaymentMethod(
         string $shippingCountry,
         string $currentCountry,
-        string $selectedProduct
+        string $selectedProduct,
+        array $categories
     ): ?SeQuraPaymentMethod {
         $paymentMethods = $this->paymentMethodsService->getCachedPaymentMethods(
             $this->getMerchantId($shippingCountry, $currentCountry)
@@ -355,7 +368,7 @@ class WidgetSettingsService
         foreach ($paymentMethods as $method) {
             if (
                 $method->getProduct() === $selectedProduct &&
-                in_array($method->getCategory(), self::WIDGET_SUPPORTED_CATEGORIES)
+                in_array($method->getCategory(), $categories, true)
             ) {
                 return $method;
             }
