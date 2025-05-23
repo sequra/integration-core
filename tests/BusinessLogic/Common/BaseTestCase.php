@@ -66,7 +66,6 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsServic
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
@@ -105,7 +104,6 @@ use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MemoryRepositoryWithConditionalDelete;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
 use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
@@ -374,8 +372,7 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(CountryConfigurationService::class),
                     TestServiceRegister::getService(ConnectionService::class),
                     TestServiceRegister::getService(WidgetsProxyInterface::class),
-                    TestServiceRegister::getService(WidgetConfiguratorInterface::class),
-                    TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
+                    TestServiceRegister::getService(WidgetConfiguratorInterface::class)
                 );
             },
             PromotionalWidgetsController::class => function () {
@@ -388,9 +385,6 @@ class BaseTestCase extends TestCase
             },
             WidgetConfiguratorInterface::class => function () {
                 return new MockWidgetConfigurator();
-            },
-            MiniWidgetMessagesProviderInterface::class => function () {
-                return new MockMiniWidgetMessagesProvider();
             }
         ]);
 

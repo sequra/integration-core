@@ -15,7 +15,6 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
@@ -58,8 +57,7 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             TestServiceRegister::getService(CountryConfigurationService::class),
             TestServiceRegister::getService(ConnectionService::class),
             TestServiceRegister::getService(WidgetsProxyInterface::class),
-            TestServiceRegister::getService(WidgetConfiguratorInterface::class),
-            TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
+            TestServiceRegister::getService(WidgetConfiguratorInterface::class)
         );
 
         TestServiceRegister::registerService(
