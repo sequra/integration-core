@@ -497,6 +497,6 @@ class WidgetSettingsService
     {
         $locale = $this->widgetConfigurator->getLocale();
 
-        return substr($locale, strpos($locale, '_') + 1);
+        return substr($locale, strpos($locale, '-') + 1);
     }
 }
