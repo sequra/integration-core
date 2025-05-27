@@ -136,7 +136,14 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         //Arrange
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
-            ->getAvailableWidgetForCartPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+            ->getAvailableWidgetForCartPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
 
         //Assert
         self::assertTrue($response->isSuccessful());
@@ -166,7 +173,14 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         //Act
         /** @var GetWidgetsCheckoutResponse $response */
         $response = CheckoutAPI::get()->promotionalWidgets('1')
-            ->getAvailableWidgetForCartPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+            ->getAvailableWidgetForCartPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
 
         //Assert
         self::assertEquals(
@@ -198,7 +212,14 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         //Arrange
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
-            ->getAvailableMiniWidgetForProductListingPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+            ->getAvailableMiniWidgetForProductListingPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
 
         //Assert
         self::assertTrue($response->isSuccessful());
@@ -228,7 +249,14 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         //Act
         /** @var GetWidgetsCheckoutResponse $response */
         $response = CheckoutAPI::get()->promotionalWidgets('1')
-            ->getAvailableMiniWidgetForProductListingPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+            ->getAvailableMiniWidgetForProductListingPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
 
         //Assert
         self::assertEquals(
@@ -306,7 +334,14 @@ class PromotionalWidgetsApiTest extends BaseTestCase
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
-            ->getAvailableWidgetsForProductPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+            ->getAvailableWidgetsForProductPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
 
         //Assert
         self::assertEquals(

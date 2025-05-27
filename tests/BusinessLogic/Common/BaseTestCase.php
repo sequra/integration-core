@@ -66,6 +66,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsServic
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
@@ -350,7 +351,8 @@ class BaseTestCase extends TestCase
             },
             PromotionalWidgetsCheckoutController::class => function () {
                 return new PromotionalWidgetsCheckoutController(
-                    TestServiceRegister::getService(WidgetSettingsService::class)
+                    TestServiceRegister::getService(WidgetSettingsService::class),
+                    TestServiceRegister::getService(WidgetValidationService::class)
                 );
             },
             WidgetSettingsRepositoryInterface::class => function () {
@@ -373,6 +375,11 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(ConnectionService::class),
                     TestServiceRegister::getService(WidgetsProxyInterface::class),
                     TestServiceRegister::getService(WidgetConfiguratorInterface::class)
+                );
+            },
+            WidgetValidationService::class => function () {
+                return new WidgetValidationService(
+                    TestServiceRegister::getService(GeneralSettingsService::class)
                 );
             },
             PromotionalWidgetsController::class => function () {

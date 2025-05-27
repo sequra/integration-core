@@ -69,6 +69,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsServic
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
@@ -436,6 +437,15 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            WidgetValidationService::class,
+            static function () {
+                return new WidgetValidationService(
+                    ServiceRegister::getService(GeneralSettingsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             TransactionLogService::class,
             static function () {
                 return new TransactionLogService(
@@ -585,7 +595,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             PromotionalWidgetsCheckoutController::class,
             static function () {
                 return new PromotionalWidgetsCheckoutController(
-                    ServiceRegister::getService(WidgetSettingsService::class)
+                    ServiceRegister::getService(WidgetSettingsService::class),
+                    ServiceRegister::getService(WidgetValidationService::class)
                 );
             }
         );

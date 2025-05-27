@@ -47,11 +47,11 @@ class WidgetSettings extends Entity
             (bool)self::getArrayValue($widgetSettings, 'showInstallmentsInProductListing', false),
             (bool)self::getArrayValue($widgetSettings, 'showInstallmentsInCartPage', false),
             self::getArrayValue($widgetSettings, 'widgetConfiguration', ''),
-            $widgetSettings['widgetSettingsForProduct'] ?
+            !empty($widgetSettings['widgetSettingsForProduct']) ?
                 $this->inflateWidgetSettingsForProductModel($widgetSettings['widgetSettingsForProduct']) : null,
-            $widgetSettings['widgetSettingsForCart'] ?
+            !empty($widgetSettings['widgetSettingsForCart']) ?
                 $this->inflateWidgetSettingsForCartModel($widgetSettings['widgetSettingsForCart']) : null,
-            $widgetSettings['widgetSettingsForListing'] ?
+            !empty($widgetSettings['widgetSettingsForListing']) ?
                 $this->inflateWidgetSettingsForProductListingModel($widgetSettings['widgetSettingsForListing']) : null
         );
     }

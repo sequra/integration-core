@@ -19,15 +19,31 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
      * @var string
      */
     protected $currentCountry;
+    /**
+     * @var string
+     */
+    protected $currentCurrency;
+    /**
+     * @var string
+     */
+    protected $currentIpAddress;
 
     /**
      * @param string $shippingCountry
      * @param string $currentCountry
+     * @param string $currentCurrency
+     * @param string $currentIpAddress
      */
-    public function __construct(string $shippingCountry, string $currentCountry)
-    {
+    public function __construct(
+        string $shippingCountry,
+        string $currentCountry,
+        string $currentCurrency = '',
+        string $currentIpAddress = ''
+    ) {
         $this->shippingCountry = $shippingCountry;
         $this->currentCountry = $currentCountry;
+        $this->currentCurrency = $currentCurrency;
+        $this->currentIpAddress = $currentIpAddress;
     }
 
     public function getShippingCountry(): string
@@ -51,6 +67,38 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
     }
 
     /**
+     * @return string
+     */
+    public function getCurrentCurrency(): string
+    {
+        return $this->currentCurrency;
+    }
+
+    /**
+     * @param string $currentCurrency
+     */
+    public function setCurrentCurrency(string $currentCurrency): void
+    {
+        $this->currentCurrency = $currentCurrency;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrentIpAddress(): string
+    {
+        return $this->currentIpAddress;
+    }
+
+    /**
+     * @param string $currentIpAddress
+     */
+    public function setCurrentIpAddress(string $currentIpAddress): void
+    {
+        $this->currentIpAddress = $currentIpAddress;
+    }
+
+    /**
      * @param array<string> $data
      *
      * @return PromotionalWidgetsCheckoutRequest
@@ -59,7 +107,9 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
     {
         return new self(
             self::getDataValue($data, 'shippingCountry'),
-            self::getDataValue($data, 'currentCountry')
+            self::getDataValue($data, 'currentCountry'),
+            self::getDataValue($data, 'currentCurrency'),
+            self::getDataValue($data, 'currentIpAddress')
         );
     }
 
@@ -70,6 +120,8 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
     {
         $data['shippingCountry'] = $this->shippingCountry;
         $data['currentCountry'] = $this->currentCountry;
+        $data['currentCurrency'] = $this->currentCurrency;
+        $data['currentIpAddress'] = $this->currentIpAddress;
 
         return $data;
     }
