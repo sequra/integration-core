@@ -27,43 +27,84 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
      * @var string
      */
     protected $currentIpAddress;
+    /**
+     * @var string
+     */
+    protected $productSku;
+    /**
+     * @var string[]
+     */
+    protected $productCategories;
+    /**
+     * @var bool
+     */
+    protected $isProductVirtual;
 
     /**
      * @param string $shippingCountry
      * @param string $currentCountry
      * @param string $currentCurrency
      * @param string $currentIpAddress
+     * @param string $productSku
+     * @param string[] $productCategories
+     * @param bool $isProductVirtual
      */
     public function __construct(
         string $shippingCountry,
         string $currentCountry,
         string $currentCurrency = '',
-        string $currentIpAddress = ''
+        string $currentIpAddress = '',
+        string $productSku = '',
+        array $productCategories = [],
+        bool $isProductVirtual = false
     ) {
         $this->shippingCountry = $shippingCountry;
         $this->currentCountry = $currentCountry;
         $this->currentCurrency = $currentCurrency;
         $this->currentIpAddress = $currentIpAddress;
+        $this->productSku = $productSku;
+        $this->productCategories = $productCategories;
+        $this->isProductVirtual = $isProductVirtual;
     }
 
+    /**
+     * @return string
+     */
     public function getShippingCountry(): string
     {
         return $this->shippingCountry;
     }
 
-    public function setShippingCountry(string $shippingCountry): void
-    {
-        $this->shippingCountry = $shippingCountry;
-    }
-
+    /**
+     * @return string
+     */
     public function getCurrentCountry(): string
     {
         return $this->currentCountry;
     }
 
-    public function setCurrentCountry(string $currentCountry): void
+    /**
+     * @return string
+     */
+    public function getProductSku(): string
     {
-        $this->currentCountry = $currentCountry;
+        return $this->productSku;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getProductCategories(): array
+    {
+        return $this->productCategories;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isProductVirtual(): bool
+    {
+        return $this->isProductVirtual;
     }
 
     /**
@@ -75,27 +116,11 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
     }
 
     /**
-     * @param string $currentCurrency
-     */
-    public function setCurrentCurrency(string $currentCurrency): void
-    {
-        $this->currentCurrency = $currentCurrency;
-    }
-
-    /**
      * @return string
      */
     public function getCurrentIpAddress(): string
     {
         return $this->currentIpAddress;
-    }
-
-    /**
-     * @param string $currentIpAddress
-     */
-    public function setCurrentIpAddress(string $currentIpAddress): void
-    {
-        $this->currentIpAddress = $currentIpAddress;
     }
 
     /**

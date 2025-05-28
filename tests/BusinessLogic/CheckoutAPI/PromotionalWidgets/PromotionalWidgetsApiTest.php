@@ -400,10 +400,10 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     /**
      * @return void
      */
-    public function testGetAvailableWidgetForCartPagCurrencyAndIpAddressInvalid(): void
+    public function testGetAvailableWidgetForCartPageCurrencyInvalid(): void
     {
         //Arrange
-        $this->mockWidgetValidator->setValid(false);
+        $this->mockWidgetValidator->setCurrencyValid(false);
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
@@ -424,10 +424,36 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     /**
      * @return void
      */
-    public function testGetAvailableMiniWidgetForProductListingPageCurrencyAndIpAddressInvalid(): void
+    public function testGetAvailableWidgetForCartPageIpAddressInvalid(): void
     {
         //Arrange
-        $this->mockWidgetValidator->setValid(false);
+        $this->mockWidgetValidator->setCurrencyValid(true);
+        $this->mockWidgetValidator->setAddressValid(false);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetForCartPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableMiniWidgetForProductListingPageCurrencyInvalid(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(false);
+        $this->mockWidgetValidator->setAddressValid(true);
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
@@ -448,10 +474,113 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     /**
      * @return void
      */
-    public function testGetAvailableWidgetsForProductPageCurrencyAndIpAddressInvalid(): void
+    public function testGetAvailableMiniWidgetForProductListingPageIpAddressInvalid(): void
     {
         //Arrange
-        $this->mockWidgetValidator->setValid(false);
+        $this->mockWidgetValidator->setCurrencyValid(true);
+        $this->mockWidgetValidator->setAddressValid(false);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableMiniWidgetForProductListingPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableMiniWidgetForProductListingPageProductNotSupported(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(true);
+        $this->mockWidgetValidator->setAddressValid(true);
+        $this->mockWidgetValidator->setProductValid(false);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableMiniWidgetForProductListingPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableWidgetsForProductPageCurrencyInvalid(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(false);
+        $this->mockWidgetValidator->setAddressValid(true);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetsForProductPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableWidgetsForProductPageIpAddressInvalid(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(true);
+        $this->mockWidgetValidator->setAddressValid(false);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetsForProductPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableWidgetsForProductPageProductNotSupported(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(true);
+        $this->mockWidgetValidator->setAddressValid(true);
+        $this->mockWidgetValidator->setProductValid(false);
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')

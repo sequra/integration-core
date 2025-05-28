@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services;
 
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 
 /**
@@ -18,6 +19,9 @@ class WidgetValidationService
      */
     protected $generalSettingsService;
 
+    /**
+     * @param GeneralSettingsService $generalSettingsService
+     */
     public function __construct(
         GeneralSettingsService $generalSettingsService
     ) {
@@ -25,20 +29,16 @@ class WidgetValidationService
     }
 
     /**
-     * Validates if current currency and current IP address are supported
+     * Validates if current IP address on checkout, if set in general settings, is supported.
      *
-     * @param string $currentCurrency
      * @param string $currentIpAddress
      *
      * @return bool
      */
-    public function validateCurrentCurrencyAndIpAddress(string $currentCurrency, string $currentIpAddress): bool
+    public function isIpAddressValid(string $currentIpAddress): bool
     {
-        if (!in_array($currentCurrency, self::SUPPORTED_CURRENCIES, true)) {
-            return false;
-        }
-
         $generalSettings = $this->generalSettingsService->getGeneralSettings();
+
         if (!$generalSettings) {
             return true;
         }
@@ -46,5 +46,52 @@ class WidgetValidationService
         $allowedIPAddresses = $generalSettings->getAllowedIPAddresses() ?? [];
 
         return !(!empty($allowedIPAddresses) && !in_array($currentIpAddress, $allowedIPAddresses, true));
+    }
+
+    /**
+     * Returns true if current currency on checkout is supported for widgets.
+     *
+     * @param string $currentCurrency
+     *
+     * @return bool
+     */
+    public function isCurrencySupported(string $currentCurrency): bool
+    {
+        return in_array($currentCurrency, self::SUPPORTED_CURRENCIES, true);
+    }
+
+    /**
+     * Returns true if products sku and category are not excluded in SeQura administration.
+     *
+     * @param string $sku
+     * @param string[] $categories
+     * @param bool $isVirtual
+     *
+     * @return bool
+     */
+    public function isProductSupported(string $sku, array $categories, bool $isVirtual = false): bool
+    {
+        if ($isVirtual) {
+            return false;
+        }
+
+        $generalSettings = $this->generalSettingsService->getGeneralSettings();
+
+        if (!$generalSettings) {
+            return true;
+        }
+
+        $excludedProducts = $generalSettings->getExcludedProducts() ?? [];
+        if ($excludedProducts && in_array($sku, $excludedProducts, true)) {
+            return false;
+        }
+
+        $excludedCategories = $generalSettings->getExcludedCategories() ?? [];
+
+        if ($excludedCategories && !empty(array_intersect($categories, $excludedCategories))) {
+            return false;
+        }
+
+        return true;
     }
 }

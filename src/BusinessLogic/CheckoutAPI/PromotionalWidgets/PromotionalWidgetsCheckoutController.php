@@ -62,10 +62,8 @@ class PromotionalWidgetsCheckoutController
     public function getAvailableWidgetForCartPage(PromotionalWidgetsCheckoutRequest $request): GetWidgetsCheckoutResponse
     {
         if (
-            !$this->widgetValidatorService->validateCurrentCurrencyAndIpAddress(
-                $request->getCurrentCurrency(),
-                $request->getCurrentIpAddress()
-            )
+            !$this->widgetValidatorService->isCurrencySupported($request->getCurrentCurrency()) ||
+            !$this->widgetValidatorService->isIpAddressValid($request->getCurrentIpAddress())
         ) {
             return new GetWidgetsCheckoutResponse([]);
         }
@@ -91,9 +89,12 @@ class PromotionalWidgetsCheckoutController
         PromotionalWidgetsCheckoutRequest $request
     ): GetWidgetsCheckoutResponse {
         if (
-            !$this->widgetValidatorService->validateCurrentCurrencyAndIpAddress(
-                $request->getCurrentCurrency(),
-                $request->getCurrentIpAddress()
+            !$this->widgetValidatorService->isCurrencySupported($request->getCurrentCurrency()) ||
+            !$this->widgetValidatorService->isIpAddressValid($request->getCurrentIpAddress()) ||
+            !$this->widgetValidatorService->isProductSupported(
+                $request->getProductSku(),
+                $request->getProductCategories(),
+                $request->isProductVirtual()
             )
         ) {
             return new GetWidgetsCheckoutResponse([]);
@@ -121,9 +122,12 @@ class PromotionalWidgetsCheckoutController
         PromotionalWidgetsCheckoutRequest $request
     ): GetWidgetsCheckoutResponse {
         if (
-            !$this->widgetValidatorService->validateCurrentCurrencyAndIpAddress(
-                $request->getCurrentCurrency(),
-                $request->getCurrentIpAddress()
+            !$this->widgetValidatorService->isCurrencySupported($request->getCurrentCurrency()) ||
+            !$this->widgetValidatorService->isIpAddressValid($request->getCurrentIpAddress()) ||
+            !$this->widgetValidatorService->isProductSupported(
+                $request->getProductSku(),
+                $request->getProductCategories(),
+                $request->isProductVirtual()
             )
         ) {
             return new GetWidgetsCheckoutResponse([]);
