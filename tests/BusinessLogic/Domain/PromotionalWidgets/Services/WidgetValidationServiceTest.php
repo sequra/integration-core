@@ -262,6 +262,7 @@ class WidgetValidationServiceTest extends BaseTestCase
     public function testIsProductSupportedNoExclusionSet(): void
     {
         //arrange
+        $this->mockProductService->setMockProductSku('sku1');
         $this->mockGeneralSettingsService->saveGeneralSettings(
             new GeneralSettings(
                 true,
@@ -284,6 +285,7 @@ class WidgetValidationServiceTest extends BaseTestCase
     public function testIsProductSupportedTrue(): void
     {
         //arrange
+        $this->mockProductService->setMockProductSku('sku1');
         $this->mockGeneralSettingsService->saveGeneralSettings(
             new GeneralSettings(
                 true,

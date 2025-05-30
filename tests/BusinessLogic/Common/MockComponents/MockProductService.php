@@ -12,9 +12,9 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface
 class MockProductService implements ProductServiceInterface
 {
     /**
-     * @var string
+     * @var ?string
      */
-    private $productSku = '';
+    private $productSku = null;
     /**
      * @var bool
      */
@@ -27,7 +27,7 @@ class MockProductService implements ProductServiceInterface
     /**
      * @inheritDoc
      */
-    public function getProductsSkuByProductId(string $productId): string
+    public function getProductsSkuByProductId(string $productId): ?string
     {
         return $this->productSku;
     }

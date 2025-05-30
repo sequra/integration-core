@@ -11,12 +11,13 @@ interface ProductServiceInterface
 {
     /**
      * Returns products SKU based on product ID.
+     * Returns null if product is not supported on integration level.
      *
      * @param string $productId
      *
      * @return string
      */
-    public function getProductsSkuByProductId(string $productId): string;
+    public function getProductsSkuByProductId(string $productId): ?string;
 
     /**
      * Returns true if product is virtual.
