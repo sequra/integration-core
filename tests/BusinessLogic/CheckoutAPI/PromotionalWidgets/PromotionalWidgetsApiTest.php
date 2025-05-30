@@ -10,6 +10,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
@@ -72,14 +73,14 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             }
         );
 
-
         $this->mockWidgetSettingsService = new MockWidgetSettingsService(
             TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
             TestServiceRegister::getService(PaymentMethodsService::class),
             TestServiceRegister::getService(CountryConfigurationService::class),
             TestServiceRegister::getService(ConnectionService::class),
             TestServiceRegister::getService(WidgetsProxyInterface::class),
-            TestServiceRegister::getService(WidgetConfiguratorInterface::class)
+            TestServiceRegister::getService(WidgetConfiguratorInterface::class),
+            TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
         );
 
         TestServiceRegister::registerService(

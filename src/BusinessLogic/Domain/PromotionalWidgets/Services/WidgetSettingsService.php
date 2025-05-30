@@ -5,11 +5,11 @@ namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\MiniWidgetMessagesProvider;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\ValidateAssetsKeyRequest;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer;
@@ -53,6 +53,10 @@ class WidgetSettingsService
      * @var WidgetConfiguratorInterface
      */
     protected $widgetConfigurator;
+    /**
+     * @var MiniWidgetMessagesProviderInterface
+     */
+    protected $miniWidgetMessagesProvider;
 
     /**
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
@@ -61,6 +65,7 @@ class WidgetSettingsService
      * @param ConnectionService $connectionService
      * @param WidgetsProxyInterface $widgetsProxy
      * @param WidgetConfiguratorInterface $widgetConfigurator
+     * @param MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider
      */
     public function __construct(
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
@@ -68,7 +73,8 @@ class WidgetSettingsService
         CountryConfigurationService $countryConfigService,
         ConnectionService $connectionService,
         WidgetsProxyInterface $widgetsProxy,
-        WidgetConfiguratorInterface $widgetConfigurator
+        WidgetConfiguratorInterface $widgetConfigurator,
+        MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider
     ) {
         $this->widgetSettingsRepository = $widgetSettingsRepository;
         $this->paymentMethodsService = $paymentMethodsService;
@@ -76,6 +82,7 @@ class WidgetSettingsService
         $this->connectionService = $connectionService;
         $this->widgetsProxy = $widgetsProxy;
         $this->widgetConfigurator = $widgetConfigurator;
+        $this->miniWidgetMessagesProvider = $miniWidgetMessagesProvider;
     }
 
     /**
@@ -263,8 +270,8 @@ class WidgetSettingsService
             $filteredMethod->getMaxAmount() ?? 0,
             '',
             '',
-            $this->getMiniWidgetMessage() ?? '',
-            $this->getMiniWidgetBelowLimitMessage() ?? ''
+            $this->miniWidgetMessagesProvider->getMessage() ?? '',
+            $this->miniWidgetMessagesProvider->getBelowLimitMessage() ?? ''
         );
     }
 
@@ -466,37 +473,5 @@ class WidgetSettingsService
         }
 
         return $widgetSupportedProducts;
-    }
-
-    /**
-     * Returns mini widget message according to current country
-     *
-     * @return string|null
-     */
-    public function getMiniWidgetMessage(): ?string
-    {
-        return MiniWidgetMessagesProvider::MINI_WIDGET_MESSAGE[$this->getCountryCode()] ?? null;
-    }
-
-    /**
-     * Returns mini widget below limit message according to current country
-     *
-     * @return string|null
-     */
-    public function getMiniWidgetBelowLimitMessage(): ?string
-    {
-        return MiniWidgetMessagesProvider::MINI_WIDGET_BELOW_LIMIT_MESSAGE[$this->getCountryCode()] ?? null;
-    }
-
-    /**
-     * Returns current country code
-     *
-     * @return string
-     */
-    protected function getCountryCode(): string
-    {
-        $locale = $this->widgetConfigurator->getLocale();
-
-        return substr($locale, strpos($locale, '-') + 1);
     }
 }

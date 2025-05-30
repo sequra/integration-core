@@ -72,6 +72,7 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsPr
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
@@ -432,7 +433,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(CountryConfigurationService::class),
                     ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(WidgetsProxyInterface::class),
-                    ServiceRegister::getService(WidgetConfiguratorInterface::class)
+                    ServiceRegister::getService(WidgetConfiguratorInterface::class),
+                    ServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
                 );
             }
         );

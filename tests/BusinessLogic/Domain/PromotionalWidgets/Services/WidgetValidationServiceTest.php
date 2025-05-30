@@ -104,6 +104,7 @@ class WidgetValidationServiceTest extends BaseTestCase
     public function testWidgetAvailabilityNoGeneralSettings(): void
     {
         //arrange
+        WidgetValidationService::$generalSettingsFetched = true;
 
         // act
         $result = $this->widgetValidationService->isIpAddressValid('test');

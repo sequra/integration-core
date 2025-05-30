@@ -45,6 +45,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsSer
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
@@ -107,6 +108,7 @@ use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MemoryRepositoryWithConditionalDelete;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
 use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
@@ -376,7 +378,8 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(CountryConfigurationService::class),
                     TestServiceRegister::getService(ConnectionService::class),
                     TestServiceRegister::getService(WidgetsProxyInterface::class),
-                    TestServiceRegister::getService(WidgetConfiguratorInterface::class)
+                    TestServiceRegister::getService(WidgetConfiguratorInterface::class),
+                    TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
                 );
             },
             ProductServiceInterface::class => function () {
@@ -398,6 +401,9 @@ class BaseTestCase extends TestCase
             },
             WidgetConfiguratorInterface::class => function () {
                 return new MockWidgetConfigurator();
+            },
+            MiniWidgetMessagesProviderInterface::class => function () {
+                return new MockMiniWidgetMessagesProvider();
             }
         ]);
 
