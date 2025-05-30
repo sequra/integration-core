@@ -46,6 +46,8 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsSer
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
@@ -70,7 +72,6 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsPr
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
@@ -440,7 +441,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             WidgetValidationService::class,
             static function () {
                 return new WidgetValidationService(
-                    ServiceRegister::getService(GeneralSettingsService::class)
+                    ServiceRegister::getService(GeneralSettingsService::class),
+                    ServiceRegister::getService(ProductServiceInterface::class)
                 );
             }
         );
@@ -668,8 +670,8 @@ class BootstrapComponent extends BaseBootstrapComponent
         EventBus::getInstance()->when(TickEvent::class, TickEventListener::class . '::handle');
 
         /**
-        * @var QueueItemStateTransitionEventBus $queueBus
-        */
+         * @var QueueItemStateTransitionEventBus $queueBus
+         */
         $queueBus = ServiceRegister::getService(QueueItemStateTransitionEventBus::CLASS_NAME);
 
         $queueBus->when(

@@ -9,6 +9,8 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\Promotion
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
@@ -17,7 +19,6 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsPr
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
@@ -59,7 +60,10 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             }
         );
 
-        $this->mockWidgetValidator = new MockWidgetValidator(TestServiceRegister::getService(GeneralSettingsService::class));
+        $this->mockWidgetValidator = new MockWidgetValidator(
+            TestServiceRegister::getService(GeneralSettingsService::class),
+            TestServiceRegister::getService(ProductServiceInterface::class)
+        );
 
         TestServiceRegister::registerService(
             WidgetValidationService::class,

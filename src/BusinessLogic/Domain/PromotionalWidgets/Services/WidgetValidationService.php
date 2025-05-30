@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services;
 
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 
 /**
  * Class WidgetValidationService
@@ -18,14 +19,29 @@ class WidgetValidationService
      * @var GeneralSettingsService
      */
     protected $generalSettingsService;
+    /**
+     * @var ProductServiceInterface
+     */
+    protected $productService;
+    /**
+     * @var ?GeneralSettings
+     */
+    public static $generalSettings = null;
+    /**
+     * @var bool
+     */
+    public static $generalSettingsFetched = false;
 
     /**
      * @param GeneralSettingsService $generalSettingsService
+     * @param ProductServiceInterface $productService
      */
     public function __construct(
-        GeneralSettingsService $generalSettingsService
+        GeneralSettingsService $generalSettingsService,
+        ProductServiceInterface $productService
     ) {
         $this->generalSettingsService = $generalSettingsService;
+        $this->productService = $productService;
     }
 
     /**
@@ -37,7 +53,7 @@ class WidgetValidationService
      */
     public function isIpAddressValid(string $currentIpAddress): bool
     {
-        $generalSettings = $this->generalSettingsService->getGeneralSettings();
+        $generalSettings = $this->getGeneralSettings();
 
         if (!$generalSettings) {
             return true;
@@ -63,35 +79,65 @@ class WidgetValidationService
     /**
      * Returns true if products sku and category are not excluded in SeQura administration.
      *
-     * @param string $sku
-     * @param string[] $categories
-     * @param bool $isVirtual
+     * @param string $productId
      *
      * @return bool
      */
-    public function isProductSupported(string $sku, array $categories, bool $isVirtual = false): bool
+    public function isProductSupported(string $productId): bool
     {
-        if ($isVirtual) {
+        if ($this->productService->isProductVirtual($productId)) {
             return false;
         }
 
-        $generalSettings = $this->generalSettingsService->getGeneralSettings();
+        $generalSettings = $this->getGeneralSettings();
 
         if (!$generalSettings) {
             return true;
         }
 
         $excludedProducts = $generalSettings->getExcludedProducts() ?? [];
-        if ($excludedProducts && in_array($sku, $excludedProducts, true)) {
+
+        if (
+            $excludedProducts &&
+            in_array(
+                $this->productService->getProductsSkuByProductId($productId),
+                $excludedProducts,
+                true
+            )
+        ) {
             return false;
         }
 
         $excludedCategories = $generalSettings->getExcludedCategories() ?? [];
 
-        if ($excludedCategories && !empty(array_intersect($categories, $excludedCategories))) {
+        if (
+            $excludedCategories &&
+            !empty(array_intersect(
+                $this->productService->getProductCategoriesByProductId($productId),
+                $excludedCategories
+            ))
+        ) {
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * Since General Settings are required for multiple methods that can
+     * be called in same HTTP request cache General Settings.
+     *
+     * @return ?GeneralSettings
+     */
+    private function getGeneralSettings(): ?GeneralSettings
+    {
+        if (self::$generalSettingsFetched) {
+            return self::$generalSettings;
+        }
+
+        self::$generalSettings = $this->generalSettingsService->getGeneralSettings();
+        self::$generalSettingsFetched = true;
+
+        return self::$generalSettings;
     }
 }

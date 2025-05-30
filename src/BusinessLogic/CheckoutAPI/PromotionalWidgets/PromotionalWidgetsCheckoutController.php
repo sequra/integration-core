@@ -26,7 +26,10 @@ class PromotionalWidgetsCheckoutController
      */
     protected $widgetValidatorService;
 
-
+    /**
+     * @param WidgetSettingsService $promotionalWidgetsService
+     * @param WidgetValidationService $widgetValidatorService
+     */
     public function __construct(
         WidgetSettingsService $promotionalWidgetsService,
         WidgetValidationService $widgetValidatorService
@@ -91,11 +94,7 @@ class PromotionalWidgetsCheckoutController
         if (
             !$this->widgetValidatorService->isCurrencySupported($request->getCurrentCurrency()) ||
             !$this->widgetValidatorService->isIpAddressValid($request->getCurrentIpAddress()) ||
-            !$this->widgetValidatorService->isProductSupported(
-                $request->getProductSku(),
-                $request->getProductCategories(),
-                $request->isProductVirtual()
-            )
+            !$this->widgetValidatorService->isProductSupported($request->getProductId())
         ) {
             return new GetWidgetsCheckoutResponse([]);
         }
@@ -124,11 +123,7 @@ class PromotionalWidgetsCheckoutController
         if (
             !$this->widgetValidatorService->isCurrencySupported($request->getCurrentCurrency()) ||
             !$this->widgetValidatorService->isIpAddressValid($request->getCurrentIpAddress()) ||
-            !$this->widgetValidatorService->isProductSupported(
-                $request->getProductSku(),
-                $request->getProductCategories(),
-                $request->isProductVirtual()
-            )
+            !$this->widgetValidatorService->isProductSupported($request->getProductId())
         ) {
             return new GetWidgetsCheckoutResponse([]);
         }

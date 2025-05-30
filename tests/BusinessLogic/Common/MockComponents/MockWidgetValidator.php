@@ -53,13 +53,11 @@ class MockWidgetValidator extends WidgetValidationService
     /**
      * Returns true if products sku and category are not excluded in SeQura administration.
      *
-     * @param string $sku
-     * @param string[] $categories
-     * @param bool $isVirtual
+     * @param string $productId
      *
      * @return bool
      */
-    public function isProductSupported(string $sku, array $categories, bool $isVirtual = false): bool
+    public function isProductSupported(string $productId): bool
     {
         return $this->productValid;
     }

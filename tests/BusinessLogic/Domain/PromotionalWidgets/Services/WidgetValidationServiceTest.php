@@ -5,10 +5,12 @@ namespace SeQura\Core\Tests\BusinessLogic\Domain\PromotionalWidgets\Services;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockGeneralSettingsService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -29,6 +31,11 @@ class WidgetValidationServiceTest extends BaseTestCase
     private $mockGeneralSettingsService;
 
     /**
+     * @var MockProductService
+     */
+    private $mockProductService;
+
+    /**
      * @return void
      *
      * @throws RepositoryClassException
@@ -41,12 +48,24 @@ class WidgetValidationServiceTest extends BaseTestCase
             TestServiceRegister::getService(GeneralSettingsRepositoryInterface::class)
         );
 
+        $this->mockProductService = new MockProductService();
+
+        TestServiceRegister::registerService(
+            ProductServiceInterface::class,
+            function () {
+                return $this->mockProductService;
+            }
+        );
+
         TestServiceRegister::registerService(
             GeneralSettingsService::class,
             function () {
                 return $this->mockGeneralSettingsService;
             }
         );
+
+        WidgetValidationService::$generalSettingsFetched = false;
+        WidgetValidationService::$generalSettings = null;
 
         $this->widgetValidationService = TestServiceRegister::getService(WidgetValidationService::class);
     }
@@ -165,9 +184,10 @@ class WidgetValidationServiceTest extends BaseTestCase
     public function testIsProductSupportedForVirtualProduct(): void
     {
         //arrange
+        $this->mockProductService->setMockProductVirtual(true);
 
         // act
-        $result = $this->widgetValidationService->isProductSupported('sku1', ['test1'], true);
+        $result = $this->widgetValidationService->isProductSupported('sku1');
 
         // assert
         self::assertFalse($result);
@@ -181,7 +201,7 @@ class WidgetValidationServiceTest extends BaseTestCase
         //arrange
 
         // act
-        $result = $this->widgetValidationService->isProductSupported('sku1', ['test1']);
+        $result = $this->widgetValidationService->isProductSupported('sku1');
 
         // assert
         self::assertTrue($result);
@@ -202,8 +222,10 @@ class WidgetValidationServiceTest extends BaseTestCase
                 null
             )
         );
+        $this->mockProductService->setMockProductSku('sku1');
+
         // act
-        $result = $this->widgetValidationService->isProductSupported('sku1', ['test1']);
+        $result = $this->widgetValidationService->isProductSupported('sku1');
 
         // assert
         self::assertFalse($result);
@@ -224,8 +246,10 @@ class WidgetValidationServiceTest extends BaseTestCase
                 ['test1', 'test2', 'test3', 'test4', 'test5']
             )
         );
+        $this->mockProductService->setMockProductCategories(['test1', 'test8', 'test2']);
+
         // act
-        $result = $this->widgetValidationService->isProductSupported('sku1', ['test1', 'test8', 'test2']);
+        $result = $this->widgetValidationService->isProductSupported('sku1');
 
         // assert
         self::assertFalse($result);
@@ -247,7 +271,7 @@ class WidgetValidationServiceTest extends BaseTestCase
             )
         );
         // act
-        $result = $this->widgetValidationService->isProductSupported('sku1', ['test1', 'test8', 'test2']);
+        $result = $this->widgetValidationService->isProductSupported('sku1');
 
         // assert
         self::assertTrue($result);
@@ -269,7 +293,7 @@ class WidgetValidationServiceTest extends BaseTestCase
             )
         );
         // act
-        $result = $this->widgetValidationService->isProductSupported('sku1123', ['test12', 'test83', 'test55']);
+        $result = $this->widgetValidationService->isProductSupported('sku1123');
 
         // assert
         self::assertTrue($result);

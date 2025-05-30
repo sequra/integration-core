@@ -2,7 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 
 /**
  * Class MockWidgetConfigurator.
