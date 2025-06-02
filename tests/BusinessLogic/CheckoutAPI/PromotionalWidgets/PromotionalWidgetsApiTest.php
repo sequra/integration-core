@@ -8,6 +8,10 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\GetWidget
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\PromotionalWidgetsCheckoutResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
@@ -15,13 +19,13 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\MiniWidgetMessagesProviderInterface;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts\WidgetConfiguratorInterface;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetSettingsService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetValidator;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -37,6 +41,11 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     private $mockWidgetSettingsService;
 
     /**
+     * @var MockWidgetValidator
+     */
+    private $mockWidgetValidator;
+
+    /**
      * @return void
      *
      * @throws RepositoryClassException
@@ -49,6 +58,18 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             SellingCountriesServiceInterface::class,
             static function () {
                 return new MockSellingCountriesService();
+            }
+        );
+
+        $this->mockWidgetValidator = new MockWidgetValidator(
+            TestServiceRegister::getService(GeneralSettingsService::class),
+            TestServiceRegister::getService(ProductServiceInterface::class)
+        );
+
+        TestServiceRegister::registerService(
+            WidgetValidationService::class,
+            function () {
+                return $this->mockWidgetValidator;
             }
         );
 
@@ -138,7 +159,14 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         //Arrange
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
-            ->getAvailableWidgetForCartPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+            ->getAvailableWidgetForCartPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
 
         //Assert
         self::assertTrue($response->isSuccessful());
@@ -168,7 +196,14 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         //Act
         /** @var GetWidgetsCheckoutResponse $response */
         $response = CheckoutAPI::get()->promotionalWidgets('1')
-            ->getAvailableWidgetForCartPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+            ->getAvailableWidgetForCartPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
 
         //Assert
         self::assertEquals(
@@ -200,7 +235,14 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         //Arrange
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
-            ->getAvailableMiniWidgetForProductListingPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+            ->getAvailableMiniWidgetForProductListingPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
 
         //Assert
         self::assertTrue($response->isSuccessful());
@@ -230,7 +272,14 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         //Act
         /** @var GetWidgetsCheckoutResponse $response */
         $response = CheckoutAPI::get()->promotionalWidgets('1')
-            ->getAvailableMiniWidgetForProductListingPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+            ->getAvailableMiniWidgetForProductListingPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
 
         //Assert
         self::assertEquals(
@@ -308,7 +357,14 @@ class PromotionalWidgetsApiTest extends BaseTestCase
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
-            ->getAvailableWidgetsForProductPage(new PromotionalWidgetsCheckoutRequest('ES', 'ES'));
+            ->getAvailableWidgetsForProductPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
 
         //Assert
         self::assertEquals(
@@ -344,5 +400,206 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             ],
             $response->toArray()
         );
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableWidgetForCartPageCurrencyInvalid(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(false);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetForCartPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableWidgetForCartPageIpAddressInvalid(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(true);
+        $this->mockWidgetValidator->setAddressValid(false);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetForCartPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableMiniWidgetForProductListingPageCurrencyInvalid(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(false);
+        $this->mockWidgetValidator->setAddressValid(true);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableMiniWidgetForProductListingPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableMiniWidgetForProductListingPageIpAddressInvalid(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(true);
+        $this->mockWidgetValidator->setAddressValid(false);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableMiniWidgetForProductListingPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableMiniWidgetForProductListingPageProductNotSupported(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(true);
+        $this->mockWidgetValidator->setAddressValid(true);
+        $this->mockWidgetValidator->setProductValid(false);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableMiniWidgetForProductListingPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableWidgetsForProductPageCurrencyInvalid(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(false);
+        $this->mockWidgetValidator->setAddressValid(true);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetsForProductPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableWidgetsForProductPageIpAddressInvalid(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(true);
+        $this->mockWidgetValidator->setAddressValid(false);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetsForProductPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableWidgetsForProductPageProductNotSupported(): void
+    {
+        //Arrange
+        $this->mockWidgetValidator->setCurrencyValid(true);
+        $this->mockWidgetValidator->setAddressValid(true);
+        $this->mockWidgetValidator->setProductValid(false);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetsForProductPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
     }
 }

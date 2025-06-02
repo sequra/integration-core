@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\GetWidget
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\PromotionalWidgetsCheckoutResponse;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -20,12 +21,21 @@ class PromotionalWidgetsCheckoutController
      * @var WidgetSettingsService
      */
     protected $promotionalWidgetsService;
+    /**
+     * @var WidgetValidationService
+     */
+    protected $widgetValidatorService;
 
-
+    /**
+     * @param WidgetSettingsService $promotionalWidgetsService
+     * @param WidgetValidationService $widgetValidatorService
+     */
     public function __construct(
-        WidgetSettingsService $promotionalWidgetsService
+        WidgetSettingsService $promotionalWidgetsService,
+        WidgetValidationService $widgetValidatorService
     ) {
         $this->promotionalWidgetsService = $promotionalWidgetsService;
+        $this->widgetValidatorService = $widgetValidatorService;
     }
 
     /**
@@ -54,16 +64,19 @@ class PromotionalWidgetsCheckoutController
      */
     public function getAvailableWidgetForCartPage(PromotionalWidgetsCheckoutRequest $request): GetWidgetsCheckoutResponse
     {
+        if (
+            !$this->widgetValidatorService->isCurrencySupported($request->getCurrentCurrency()) ||
+            !$this->widgetValidatorService->isIpAddressValid($request->getCurrentIpAddress())
+        ) {
+            return new GetWidgetsCheckoutResponse([]);
+        }
+
         $availableWidgetForCartPage = $this->promotionalWidgetsService->getAvailableWidgetForCartPage(
             $request->getShippingCountry(),
             $request->getCurrentCountry()
         );
 
-        if (!$availableWidgetForCartPage) {
-            return new GetWidgetsCheckoutResponse([]);
-        }
-
-        return new GetWidgetsCheckoutResponse([$availableWidgetForCartPage]);
+        return new GetWidgetsCheckoutResponse($availableWidgetForCartPage ? [$availableWidgetForCartPage] : []);
     }
 
     /**
@@ -78,16 +91,21 @@ class PromotionalWidgetsCheckoutController
     public function getAvailableMiniWidgetForProductListingPage(
         PromotionalWidgetsCheckoutRequest $request
     ): GetWidgetsCheckoutResponse {
+        if (
+            !$this->widgetValidatorService->isCurrencySupported($request->getCurrentCurrency()) ||
+            !$this->widgetValidatorService->isIpAddressValid($request->getCurrentIpAddress()) ||
+            !$this->widgetValidatorService->isProductSupported($request->getProductId())
+        ) {
+            return new GetWidgetsCheckoutResponse([]);
+        }
+
         $availableMiniWidgetForProductListingPage = $this->promotionalWidgetsService->getAvailableMiniWidget(
             $request->getShippingCountry(),
             $request->getCurrentCountry()
         );
 
-        if (!$availableMiniWidgetForProductListingPage) {
-            return new GetWidgetsCheckoutResponse([]);
-        }
-
-        return new GetWidgetsCheckoutResponse([$availableMiniWidgetForProductListingPage]);
+        return new GetWidgetsCheckoutResponse($availableMiniWidgetForProductListingPage ?
+            [$availableMiniWidgetForProductListingPage] : []);
     }
 
     /**
@@ -102,6 +120,14 @@ class PromotionalWidgetsCheckoutController
     public function getAvailableWidgetsForProductPage(
         PromotionalWidgetsCheckoutRequest $request
     ): GetWidgetsCheckoutResponse {
+        if (
+            !$this->widgetValidatorService->isCurrencySupported($request->getCurrentCurrency()) ||
+            !$this->widgetValidatorService->isIpAddressValid($request->getCurrentIpAddress()) ||
+            !$this->widgetValidatorService->isProductSupported($request->getProductId())
+        ) {
+            return new GetWidgetsCheckoutResponse([]);
+        }
+
         return new GetWidgetsCheckoutResponse($this->promotionalWidgetsService->getAvailableWidgetsForProductPage(
             $request->getShippingCountry(),
             $request->getCurrentCountry()

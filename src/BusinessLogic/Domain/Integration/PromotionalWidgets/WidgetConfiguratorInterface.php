@@ -1,6 +1,6 @@
 <?php
 
-namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts;
+namespace SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets;
 
 /**
  * Interface WidgetConfiguratorInterface

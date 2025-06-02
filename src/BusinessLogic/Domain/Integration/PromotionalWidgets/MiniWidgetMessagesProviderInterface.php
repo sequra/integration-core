@@ -1,11 +1,11 @@
 <?php
 
-namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts;
+namespace SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets;
 
 /**
  * Interface MiniWidgetMessagesProviderInterface
  *
- * @package SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\WidgetConfiguratorContracts
+ * @package SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets
  */
 interface MiniWidgetMessagesProviderInterface
 {
