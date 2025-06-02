@@ -6,8 +6,8 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Requests\PromotionalWidgetsCheckoutRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\GetWidgetsCheckoutResponse;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\PromotionalWidgetsCheckoutResponse;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
@@ -16,7 +16,6 @@ use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountri
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
@@ -76,9 +75,8 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         $this->mockWidgetSettingsService = new MockWidgetSettingsService(
             TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
             TestServiceRegister::getService(PaymentMethodsService::class),
-            TestServiceRegister::getService(CountryConfigurationService::class),
+            TestServiceRegister::getService(CredentialsRepositoryInterface::class),
             TestServiceRegister::getService(ConnectionService::class),
-            TestServiceRegister::getService(WidgetsProxyInterface::class),
             TestServiceRegister::getService(WidgetConfiguratorInterface::class),
             TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
         );

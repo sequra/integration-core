@@ -72,7 +72,6 @@ use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSet
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\ShopOrderStatusesService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
@@ -90,7 +89,6 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
-use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\AbortedListener;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\CreateListener;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\FailedListener;
@@ -458,9 +456,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new WidgetSettingsService(
                     ServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
                     ServiceRegister::getService(PaymentMethodsService::class),
-                    ServiceRegister::getService(CountryConfigurationService::class),
+                    ServiceRegister::getService(CredentialsRepositoryInterface::class),
                     ServiceRegister::getService(ConnectionService::class),
-                    ServiceRegister::getService(WidgetsProxyInterface::class),
                     ServiceRegister::getService(WidgetConfiguratorInterface::class),
                     ServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
                 );
@@ -675,15 +672,6 @@ class BootstrapComponent extends BaseBootstrapComponent
             ConnectionProxyInterface::class,
             static function () {
                 return new ConnectionProxy(
-                    ServiceRegister::getService(HttpClient::class)
-                );
-            }
-        );
-
-        ServiceRegister::registerService(
-            WidgetsProxyInterface::class,
-            static function () {
-                return new WidgetsProxy(
                     ServiceRegister::getService(HttpClient::class)
                 );
             }

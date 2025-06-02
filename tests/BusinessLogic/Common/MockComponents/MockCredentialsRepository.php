@@ -13,7 +13,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsR
 class MockCredentialsRepository implements CredentialsRepositoryInterface
 {
     /**
-     * @var array
+     * @var Credentials[]
      */
     private static $credentials = [];
 
@@ -49,6 +49,12 @@ class MockCredentialsRepository implements CredentialsRepositoryInterface
      */
     public function getCredentialsByCountryCode(string $countryCode): ?Credentials
     {
+        foreach (self::$credentials as $credential) {
+            if ($credential->getCountry() === $countryCode) {
+                return $credential;
+            }
+        }
+
         return null;
     }
 }

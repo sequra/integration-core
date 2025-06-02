@@ -3,19 +3,17 @@
 namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\ValidateAssetsKeyRequest;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
@@ -39,17 +37,13 @@ class WidgetSettingsService
      */
     protected $paymentMethodsService;
     /**
-     * @var CountryConfigurationService
+     * @var CredentialsRepositoryInterface
      */
-    protected $countryConfigService;
+    protected $credentialsRepository;
     /**
      * @var ConnectionService
      */
     protected $connectionService;
-    /**
-     * @var WidgetsProxyInterface
-     */
-    protected $widgetsProxy;
     /**
      * @var WidgetConfiguratorInterface
      */
@@ -62,26 +56,23 @@ class WidgetSettingsService
     /**
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
      * @param PaymentMethodsService $paymentMethodsService
-     * @param CountryConfigurationService $countryConfigService
+     * @param CredentialsRepositoryInterface $credentialsRepository
      * @param ConnectionService $connectionService
-     * @param WidgetsProxyInterface $widgetsProxy
      * @param WidgetConfiguratorInterface $widgetConfigurator
      * @param MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider
      */
     public function __construct(
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
         PaymentMethodsService $paymentMethodsService,
-        CountryConfigurationService $countryConfigService,
+        CredentialsRepositoryInterface $credentialsRepository,
         ConnectionService $connectionService,
-        WidgetsProxyInterface $widgetsProxy,
         WidgetConfiguratorInterface $widgetConfigurator,
         MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider
     ) {
         $this->widgetSettingsRepository = $widgetSettingsRepository;
         $this->paymentMethodsService = $paymentMethodsService;
-        $this->countryConfigService = $countryConfigService;
+        $this->credentialsRepository = $credentialsRepository;
         $this->connectionService = $connectionService;
-        $this->widgetsProxy = $widgetsProxy;
         $this->widgetConfigurator = $widgetConfigurator;
         $this->miniWidgetMessagesProvider = $miniWidgetMessagesProvider;
     }
@@ -113,49 +104,6 @@ class WidgetSettingsService
     }
 
     /**
-     * Checks if assets key is valid.
-     *
-     * @param string $assetsKey
-     *
-     * @return bool
-     *
-     * @throws HttpRequestException
-     * @throws PaymentMethodNotFoundException
-     * @throws FailedToRetrieveSellingCountriesException
-     */
-    public function isAssetsKeyValid(string $assetsKey): bool
-    {
-        $countryConfig = $this->countryConfigService->getCountryConfiguration();
-        $connectionSettings = $this->connectionService->getConnectionData();
-
-        if (empty($countryConfig) || !isset($countryConfig[0]) || $connectionSettings === null) {
-            return false;
-        }
-
-        $firstMerchantId = $countryConfig[0]->getMerchantId();
-        $paymentMethods = $this->paymentMethodsService->getMerchantProducts(
-            $firstMerchantId
-        );
-
-        if (empty($paymentMethods)) {
-            return false;
-        }
-
-        try {
-            $this->widgetsProxy->validateAssetsKey(new ValidateAssetsKeyRequest(
-                $firstMerchantId,
-                $paymentMethods,
-                $assetsKey,
-                $connectionSettings->getEnvironment()
-            ));
-
-            return true;
-        } catch (Exception $e) {
-            return false;
-        }
-    }
-
-    /**
      * Returns widget initialize data
      *
      * @param string $shippingCountry
@@ -169,10 +117,11 @@ class WidgetSettingsService
      */
     public function getWidgetInitializeData(string $shippingCountry, string $currentCountry): WidgetInitializer
     {
-        $merchantId = $this->getMerchantId($shippingCountry, $currentCountry);
+        $credentials = $this->getCredentials($shippingCountry, $currentCountry);
+        $merchantId = $credentials ? $credentials->getMerchantId() : '';
 
         return new WidgetInitializer(
-            $this->getAssetsKey(),
+            $credentials ? $credentials->getAssetsKey() : '',
             $merchantId,
             $this->getWidgetSupportedProducts($merchantId),
             $this->getScriptUri(),
@@ -347,10 +296,17 @@ class WidgetSettingsService
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
      */
-    protected function filterPaymentMethodsSupportedOnProductPage(string $shippingCountry, string $currentCountry): array
-    {
+    protected function filterPaymentMethodsSupportedOnProductPage(
+        string $shippingCountry,
+        string $currentCountry
+    ): array {
+        $credentials = $this->getCredentials($shippingCountry, $currentCountry);
+        if (!$credentials) {
+            return [];
+        }
+
         $paymentMethods = $this->paymentMethodsService->getCachedPaymentMethods(
-            $this->getMerchantId($shippingCountry, $currentCountry)
+            $credentials->getMerchantId()
         );
 
         return array_filter($paymentMethods, static function ($method) {
@@ -376,8 +332,13 @@ class WidgetSettingsService
         string $selectedProduct,
         array $categories
     ): ?SeQuraPaymentMethod {
+        $credentials = $this->getCredentials($shippingCountry, $currentCountry);
+        if (!$credentials) {
+            return null;
+        }
+
         $paymentMethods = $this->paymentMethodsService->getCachedPaymentMethods(
-            $this->getMerchantId($shippingCountry, $currentCountry)
+            $credentials->getMerchantId()
         );
 
         foreach ($paymentMethods as $method) {
@@ -409,43 +370,21 @@ class WidgetSettingsService
     }
 
     /**
-     * Returns asset key
-     *
-     * @return string
-     * @throws Exception
-     */
-    protected function getAssetsKey(): string
-    {
-        $settings = $this->getWidgetSettings();
-
-        return $settings ? $settings->getAssetsKey() : '';
-    }
-
-    /**
-     * Returns the merchant id for given country
+     * Returns credentials for given country code
      *
      * @param string $shippingCountry
      * @param string $currentCountry
      *
-     * @return string
+     * @return Credentials|null
      */
-    protected function getMerchantId(string $shippingCountry, string $currentCountry): string
+    protected function getCredentials(string $shippingCountry, string $currentCountry): ?Credentials
     {
-        $countryConfigurations = $this->countryConfigService->getCountryConfiguration();
-
-        foreach ($countryConfigurations as $country) {
-            if ($country->getCountryCode() === $shippingCountry && !empty($country->getMerchantId())) {
-                return $country->getMerchantId();
-            }
+        $credentials = $this->credentialsRepository->getCredentialsByCountryCode($shippingCountry);
+        if (!$credentials) {
+            $credentials = $this->credentialsRepository->getCredentialsByCountryCode($currentCountry);
         }
 
-        foreach ($countryConfigurations as $country) {
-            if ($country->getCountryCode() === $currentCountry && !empty($country->getMerchantId())) {
-                return $country->getMerchantId();
-            }
-        }
-
-        return '';
+        return $credentials;
     }
 
     /**

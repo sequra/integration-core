@@ -6,8 +6,9 @@ use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
-use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
@@ -30,14 +31,13 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\Widg
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
-use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetSettingsRepository;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
@@ -64,14 +64,14 @@ class WidgetSettingsServiceTest extends BaseTestCase
     private $countryConfigService;
 
     /**
+     * @var MockCredentialsRepository
+     */
+    private $credentialsRepository;
+
+    /**
      * @var MockConnectionService
      */
     private $connectionService;
-
-    /**
-     * @var MockWidgetProxy
-     */
-    private $widgetProxy;
 
     /**
      * @var WidgetSettingsService
@@ -114,6 +114,11 @@ class WidgetSettingsServiceTest extends BaseTestCase
             return $this->paymentMethodsService;
         });
 
+        $this->credentialsRepository = new MockCredentialsRepository();
+        TestServiceRegister::registerService(CredentialsRepositoryInterface::class, function () {
+            return $this->credentialsRepository;
+        });
+
         $this->countryConfigService = new MockCountryConfigurationService(
             TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
             TestServiceRegister::getService(SellingCountriesService::class)
@@ -130,12 +135,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
 
         TestServiceRegister::registerService(ConnectionService::class, function () {
             return $this->connectionService;
-        });
-
-        $this->widgetProxy = new MockWidgetProxy();
-
-        TestServiceRegister::registerService(MerchantProxyInterface::class, function () {
-            return $this->widgetProxy;
         });
 
         $this->widgetConfigurator = new MockWidgetConfigurator();
@@ -236,11 +235,11 @@ class WidgetSettingsServiceTest extends BaseTestCase
     public function testGetWidgetInitializeDataMerchantIdFromShippingCountry(): void
     {
         //arrange
-        $this->countryConfigService->saveCountryConfiguration(
+        $this->credentialsRepository->setCredentials(
             [
-                new CountryConfiguration('ES', 'merchantES'),
-                new CountryConfiguration('FR', 'merchantFR'),
-                new CountryConfiguration('IT', 'merchantIT'),
+                new Credentials('merchantES', 'ES', 'EUR', 'asset', []),
+                new Credentials('merchantFR', 'FR', 'EUR', 'asset', []),
+                new Credentials('merchantIT', 'IT', 'EUR', 'asset', []),
             ]
         );
         $this->connectionService->saveConnectionData(
