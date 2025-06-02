@@ -119,6 +119,7 @@ class SolicitationCheckoutApiTest extends BaseTestCase
             'i1',
             'title1',
             'longTitle1',
+            'category1',
             new SeQuraCost(1, 2, 3, 4),
             new \DateTime(),
             new \DateTime(),

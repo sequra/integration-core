@@ -127,6 +127,7 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
 
         foreach ($responseData[self::PAYMENT_OPTIONS_KEY] as $option) {
             foreach ($option[self::METHODS_KEY] as $method) {
+                $method['category'] = $option['category'];
                 $paymentMethods[] = SeQuraPaymentMethod::fromArray($method);
             }
         }

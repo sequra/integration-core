@@ -13,6 +13,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsCont
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
@@ -49,6 +50,8 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsSer
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
@@ -72,6 +75,8 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsServic
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
@@ -333,7 +338,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new PaymentMethodsService(
                     ServiceRegister::getService(MerchantProxyInterface::class),
-                    ServiceRegister::getService(PaymentMethodRepositoryInterface::class)
+                    ServiceRegister::getService(PaymentMethodRepositoryInterface::class),
+                    ServiceRegister::getService(CountryConfigurationService::class)
                 );
             }
         );
@@ -454,7 +460,19 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(PaymentMethodsService::class),
                     ServiceRegister::getService(CountryConfigurationService::class),
                     ServiceRegister::getService(ConnectionService::class),
-                    ServiceRegister::getService(WidgetsProxyInterface::class)
+                    ServiceRegister::getService(WidgetsProxyInterface::class),
+                    ServiceRegister::getService(WidgetConfiguratorInterface::class),
+                    ServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            WidgetValidationService::class,
+            static function () {
+                return new WidgetValidationService(
+                    ServiceRegister::getService(GeneralSettingsService::class),
+                    ServiceRegister::getService(ProductServiceInterface::class)
                 );
             }
         );
@@ -602,6 +620,16 @@ class BootstrapComponent extends BaseBootstrapComponent
             CachedPaymentMethodsController::class,
             static function () {
                 return new CachedPaymentMethodsController(ServiceRegister::getService(PaymentMethodsService::class));
+            }
+        );
+
+        ServiceRegister::registerService(
+            PromotionalWidgetsCheckoutController::class,
+            static function () {
+                return new PromotionalWidgetsCheckoutController(
+                    ServiceRegister::getService(WidgetSettingsService::class),
+                    ServiceRegister::getService(WidgetValidationService::class)
+                );
             }
         );
     }

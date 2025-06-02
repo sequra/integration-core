@@ -4,12 +4,14 @@
       "title": "Paga ahora",
       "description": "Con tarjeta de crédito o débito",
       "icon": null,
+      "category": "pay_now",
       "methods": []
     },
     {
       "title": "Paga Después",
       "description": "Confirma la compra con tus datos personales",
       "icon": null,
+      "category": "pay_later",
       "methods": [
         {
           "product": "i1",
@@ -61,6 +63,7 @@
       "title": "Paga Fraccionado",
       "description": "Hoy solo pagas la primera cuota",
       "icon": null,
+      "category": "part_payment",
       "methods": [
         {
           "product": "pp3",

@@ -117,6 +117,7 @@ class SeQuraPaymentMethodCategory
     {
         $methods = [];
         foreach ($data['methods'] as $method) {
+            $method['category'] = $data['category'];
             $methods[] = SeQuraPaymentMethod::fromArray($method);
         }
 

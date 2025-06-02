@@ -33,6 +33,11 @@ class SeQuraPaymentMethod
     protected $longTitle;
 
     /**
+     * @var string Payment method category.
+     */
+    protected $category;
+
+    /**
      * @var string|null Payment method claim.
      */
     protected $claim;
@@ -81,6 +86,7 @@ class SeQuraPaymentMethod
      * @param string $product
      * @param string $title
      * @param string $longTitle
+     * @param string $category
      * @param SeQuraCost $cost
      * @param DateTime $startsAt
      * @param DateTime $endsAt
@@ -96,6 +102,7 @@ class SeQuraPaymentMethod
         string $product,
         string $title,
         string $longTitle,
+        string $category,
         SeQuraCost $cost,
         DateTime $startsAt,
         DateTime $endsAt,
@@ -110,6 +117,7 @@ class SeQuraPaymentMethod
         $this->product = $product;
         $this->title = $title;
         $this->longTitle = $longTitle;
+        $this->category = $category;
         $this->cost = $cost;
         $this->startsAt = $startsAt;
         $this->endsAt = $endsAt;
@@ -184,6 +192,16 @@ class SeQuraPaymentMethod
     public function setLongTitle(string $longTitle): void
     {
         $this->longTitle = $longTitle;
+    }
+
+    public function getCategory(): string
+    {
+        return $this->category;
+    }
+
+    public function setCategory(string $category): void
+    {
+        $this->category = $category;
     }
 
     /**
@@ -341,6 +359,7 @@ class SeQuraPaymentMethod
             'product' => $this->product,
             'title' => $this->title,
             'long_title' => $this->longTitle,
+            'category' => $this->category,
             'cost' => $this->cost->toArray(),
             'starts_at' => $this->startsAt->format('Y-m-d H:i:s'),
             'ends_at' => $this->endsAt->format('Y-m-d H:i:s'),
@@ -376,6 +395,7 @@ class SeQuraPaymentMethod
             $data['product'],
             $data['title'],
             $data['long_title'],
+            $data['category'] ?? '',
             $cost,
             new DateTime($data['starts_at']),
             new DateTime($data['ends_at']),

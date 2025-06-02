@@ -13,6 +13,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsCont
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
@@ -46,6 +47,9 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
@@ -68,6 +72,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsServic
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
@@ -106,6 +111,9 @@ use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MemoryRepositoryWithConditionalDelete;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
 use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestShopLogger;
@@ -233,7 +241,8 @@ class BaseTestCase extends TestCase
             PaymentMethodsService::class => static function () {
                 return new PaymentMethodsService(
                     TestServiceRegister::getService(MerchantProxyInterface::class),
-                    TestServiceRegister::getService(PaymentMethodRepositoryInterface::class)
+                    TestServiceRegister::getService(PaymentMethodRepositoryInterface::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class)
                 );
             },
             StatisticalDataService::class => static function () {
@@ -356,6 +365,12 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(PaymentMethodsService::class)
                 );
             },
+            PromotionalWidgetsCheckoutController::class => function () {
+                return new PromotionalWidgetsCheckoutController(
+                    TestServiceRegister::getService(WidgetSettingsService::class),
+                    TestServiceRegister::getService(WidgetValidationService::class)
+                );
+            },
             WidgetSettingsRepositoryInterface::class => function () {
                 return new WidgetSettingsRepository(
                     TestRepositoryRegistry::getRepository(WidgetSettings::getClassName()),
@@ -374,7 +389,18 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(PaymentMethodsService::class),
                     TestServiceRegister::getService(CountryConfigurationService::class),
                     TestServiceRegister::getService(ConnectionService::class),
-                    TestServiceRegister::getService(WidgetsProxyInterface::class)
+                    TestServiceRegister::getService(WidgetsProxyInterface::class),
+                    TestServiceRegister::getService(WidgetConfiguratorInterface::class),
+                    TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
+                );
+            },
+            ProductServiceInterface::class => function () {
+                return new MockProductService();
+            },
+            WidgetValidationService::class => function () {
+                return new WidgetValidationService(
+                    TestServiceRegister::getService(GeneralSettingsService::class),
+                    TestServiceRegister::getService(ProductServiceInterface::class)
                 );
             },
             PromotionalWidgetsController::class => function () {
@@ -384,6 +410,12 @@ class BaseTestCase extends TestCase
             },
             AbstractItemFactory::class => function () {
                 return new ItemFactory();
+            },
+            WidgetConfiguratorInterface::class => function () {
+                return new MockWidgetConfigurator();
+            },
+            MiniWidgetMessagesProviderInterface::class => function () {
+                return new MockMiniWidgetMessagesProvider();
             }
         ]);
 

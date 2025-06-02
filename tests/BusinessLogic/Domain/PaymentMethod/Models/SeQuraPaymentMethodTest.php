@@ -24,6 +24,7 @@ class SeQuraPaymentMethodTest extends BaseTestCase
             'test',
             'test',
             'test',
+            'test',
             new SeQuraCost(1, 1, 1, 1),
             new DateTime('2015-09-31'),
             new DateTime('2015-09-31'),
@@ -42,6 +43,7 @@ class SeQuraPaymentMethodTest extends BaseTestCase
         $seQuraPaymentMethod->setProduct('product');
         $seQuraPaymentMethod->setTitle('title');
         $seQuraPaymentMethod->setLongTitle('long title');
+        $seQuraPaymentMethod->setCategory('category');
         $seQuraPaymentMethod->setCost($newCost);
         $seQuraPaymentMethod->setStartsAt($newStartsAt);
         $seQuraPaymentMethod->setEndsAt($newEndsAt);
@@ -56,6 +58,7 @@ class SeQuraPaymentMethodTest extends BaseTestCase
         self::assertEquals('product', $seQuraPaymentMethod->getProduct());
         self::assertEquals('title', $seQuraPaymentMethod->getTitle());
         self::assertEquals('long title', $seQuraPaymentMethod->getLongTitle());
+        self::assertEquals('category', $seQuraPaymentMethod->getCategory());
         self::assertEquals($newCost, $seQuraPaymentMethod->getCost());
         self::assertEquals($newStartsAt, $seQuraPaymentMethod->getStartsAt());
         self::assertEquals($newEndsAt, $seQuraPaymentMethod->getEndsAt());
@@ -79,6 +82,7 @@ class SeQuraPaymentMethodTest extends BaseTestCase
             'product' => 'testProduct',
             'title' => 'testTitle',
             'long_title' => 'testLongTitle',
+            'category' => 'testCategory',
             'cost' => [
                 'setup_fee' => 1,
                 'instalment_fee' => 2,
@@ -101,6 +105,7 @@ class SeQuraPaymentMethodTest extends BaseTestCase
         self::assertEquals('testProduct', $seQuraPaymentMethod->getProduct());
         self::assertEquals('testTitle', $seQuraPaymentMethod->getTitle());
         self::assertEquals('testLongTitle', $seQuraPaymentMethod->getLongTitle());
+        self::assertEquals('testCategory', $seQuraPaymentMethod->getCategory());
         self::assertEquals(1, $seQuraPaymentMethod->getCost()->getSetupFee());
         self::assertEquals(2, $seQuraPaymentMethod->getCost()->getInstalmentFee());
         self::assertEquals(3, $seQuraPaymentMethod->getCost()->getDownPaymentFees());
