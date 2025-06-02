@@ -7,10 +7,13 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentExc
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
@@ -27,6 +30,7 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\Widg
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
+use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationService;
@@ -112,7 +116,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
 
         $this->countryConfigService = new MockCountryConfigurationService(
             TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
-            TestServiceRegister::getService(SellingCountriesServiceInterface::class)
+            TestServiceRegister::getService(SellingCountriesService::class)
         );
 
         TestServiceRegister::registerService(CountryConfigurationService::class, function () {
@@ -120,7 +124,8 @@ class WidgetSettingsServiceTest extends BaseTestCase
         });
 
         $this->connectionService = new MockConnectionService(
-            TestServiceRegister::getService(ConnectionProxyInterface::class)
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class)
         );
 
         TestServiceRegister::registerService(ConnectionService::class, function () {
@@ -682,7 +687,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
             true,
-            'asset',
             false,
             false,
             false,
@@ -726,7 +730,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
             true,
-            'asset',
             false,
             false,
             false,
@@ -818,7 +821,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
             true,
-            'asset',
             false,
             false,
             false,
@@ -982,7 +984,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
             true,
-            'asset',
             false,
             false,
             false,
@@ -1026,7 +1027,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
             true,
-            'asset',
             false,
             false,
             false,
@@ -1190,7 +1190,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
             true,
-            'asset',
             false,
             false,
             false,
@@ -1243,7 +1242,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
             true,
-            'asset',
             false,
             false,
             false,

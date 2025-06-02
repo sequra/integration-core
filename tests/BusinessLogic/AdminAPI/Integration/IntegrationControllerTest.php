@@ -119,7 +119,6 @@ class IntegrationControllerTest extends BaseTestCase
 
         $widgetSettings = new WidgetSettings(
             true,
-            'test123',
             true,
             true,
             true,
