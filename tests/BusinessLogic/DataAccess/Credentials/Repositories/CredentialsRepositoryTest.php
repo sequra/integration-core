@@ -73,10 +73,10 @@ class CredentialsRepositoryTest extends BaseTestCase
     {
         // arrange
         $credentials = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1'),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2'),
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3'),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4')
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', []),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', []),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', []),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [])
         ];
 
         foreach ($credentials as $credential) {
@@ -106,13 +106,13 @@ class CredentialsRepositoryTest extends BaseTestCase
     {
         // arrange
         $credentialsStore1 = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1'),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2')
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', []),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [])
         ];
 
         $credentialsStore2 = [
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3'),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4')
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', []),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [])
         ];
 
         foreach ($credentialsStore1 as $credential) {
@@ -156,10 +156,34 @@ class CredentialsRepositoryTest extends BaseTestCase
     public function testSetCredentials(): void
     {
         // arrange
-        $credentials1 = new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1');
-        $credentials2 = new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2');
-        $credentials3 = new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3');
-        $credentials4 = new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4');
+        $credentials1 = new Credentials(
+            'logeecom1',
+            'PT',
+            'EUR',
+            'assetsKey1',
+            []
+        );
+        $credentials2 = new Credentials(
+            'logeecom2',
+            'FR',
+            'EUR',
+            'assetsKey2',
+            []
+        );
+        $credentials3 = new Credentials(
+            'logeecom3',
+            'IT',
+            'EUR',
+            'assetsKey3',
+            []
+        );
+        $credentials4 = new Credentials(
+            'logeecom4',
+            'ES',
+            'EUR',
+            'assetsKey4',
+            []
+        );
 
         $credentials = [$credentials1, $credentials2, $credentials3, $credentials4];
 
@@ -184,8 +208,20 @@ class CredentialsRepositoryTest extends BaseTestCase
     public function testUpdateCredentials(): void
     {
         // arrange
-        $initialCredentials = new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1');
-        $updatedCredentials = new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey11');
+        $initialCredentials = new Credentials(
+            'logeecom1',
+            'PT',
+            'EUR',
+            'assetsKey1',
+            []
+        );
+        $updatedCredentials = new Credentials(
+            'logeecom1',
+            'PT',
+            'EUR',
+            'assetsKey11',
+            []
+        );
 
         $credentials = [$initialCredentials];
         $credentialsAfterUpdate = [$updatedCredentials];
@@ -216,10 +252,34 @@ class CredentialsRepositoryTest extends BaseTestCase
     {
         // arrange
         $credentials = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1'),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2'),
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3'),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4')
+            new Credentials(
+                'logeecom1',
+                'PT',
+                'EUR',
+                'assetsKey1',
+                []
+            ),
+            new Credentials(
+                'logeecom2',
+                'FR',
+                'EUR',
+                'assetsKey2',
+                []
+            ),
+            new Credentials(
+                'logeecom3',
+                'IT',
+                'EUR',
+                'assetsKey3',
+                []
+            ),
+            new Credentials(
+                'logeecom4',
+                'ES',
+                'EUR',
+                'assetsKey4',
+                []
+            )
         ];
 
         foreach ($credentials as $credential) {
@@ -250,10 +310,34 @@ class CredentialsRepositoryTest extends BaseTestCase
     public function testGetCredentialsByCountryCode(): void
     {
         // arrange
-        $portugueseCredentials = new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1');
-        $frenchCredentials = new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2');
-        $italianCredentials = new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3');
-        $spanishCredentials = new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4');
+        $portugueseCredentials = new Credentials(
+            'logeecom1',
+            'PT',
+            'EUR',
+            'assetsKey1',
+            []
+        );
+        $frenchCredentials = new Credentials(
+            'logeecom2',
+            'FR',
+            'EUR',
+            'assetsKey2',
+            []
+        );
+        $italianCredentials = new Credentials(
+            'logeecom3',
+            'IT',
+            'EUR',
+            'assetsKey3',
+            []
+        );
+        $spanishCredentials = new Credentials(
+            'logeecom4',
+            'ES',
+            'EUR',
+            'assetsKey4',
+            []
+        );
 
         $credentials = [$portugueseCredentials, $frenchCredentials, $italianCredentials, $spanishCredentials];
 

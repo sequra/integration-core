@@ -153,10 +153,82 @@ class ConnectionProxyTest extends BaseTestCase
         );
 
         $expectedResponse = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1'),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2'),
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3'),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4')
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [
+                "ref" => "logeecom1",
+                "name" => null,
+                "country" => "PT",
+                "allowed_countries" => [
+                    "ES"
+                ],
+                "currency" => "EUR",
+                "assets_key" => "assetsKey1",
+                "contract_options" => [],
+                "extra_information" => [
+                    "type" => "regular",
+                    "phone_number" => ""
+                ],
+                "verify_signature" => false,
+                "signature_secret" => "signature",
+                "confirmation_path" => "default",
+                "realm" => "svea"
+            ]),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [
+                "ref" => "logeecom2",
+                "name" => null,
+                "country" => "FR",
+                "allowed_countries" => [
+                    "ES"
+                ],
+                "currency" => "EUR",
+                "assets_key" => "assetsKey2",
+                "contract_options" => [],
+                "extra_information" => [
+                    "type" => "regular",
+                    "phone_number" => ""
+                ],
+                "verify_signature" => false,
+                "signature_secret" => "f88ad25475df9310a9bf7d8a6e4fa7f9",
+                "confirmation_path" => "default",
+                "realm" => "svea"
+            ]),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', [
+                "ref" => "logeecom3",
+                "name" => null,
+                "country" => "IT",
+                "allowed_countries" => [
+                    "ES"
+                ],
+                "currency" => "EUR",
+                "assets_key" => "assetsKey3",
+                "contract_options" => [],
+                "extra_information" => [
+                    "type" => "regular",
+                    "phone_number" => ""
+                ],
+                "verify_signature" => false,
+                "signature_secret" => "d10263781ab8011e0797ea82d34cd3ad",
+                "confirmation_path" => "default",
+                "realm" => "svea"
+            ]),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [
+                "ref" => "logeecom4",
+                "name" => null,
+                "country" => "ES",
+                "allowed_countries" => [
+                    "ES"
+                ],
+                "currency" => "EUR",
+                "assets_key" => "assetsKey4",
+                "contract_options" => [],
+                "extra_information" => [
+                    "type" => "regular",
+                    "phone_number" => ""
+                ],
+                "verify_signature" => false,
+                "signature_secret" => "6f3f3baae89ec0b324f346d73c6c8e70",
+                "confirmation_path" => "default",
+                "realm" => "sequra"
+            ])
         ];
 
         //Act

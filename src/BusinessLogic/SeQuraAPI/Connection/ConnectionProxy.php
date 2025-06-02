@@ -29,7 +29,8 @@ class ConnectionProxy extends BaseProxy implements ConnectionProxyInterface
                     $item['ref'] ?? '',
                     $item['country'] ?? '',
                     $item['currency'] ?? '',
-                    $item['assets_key'] ?? ''
+                    $item['assets_key'] ?? '',
+                    $item
                 );
             },
             $credentialsResponse

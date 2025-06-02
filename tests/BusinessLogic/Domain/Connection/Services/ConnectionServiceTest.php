@@ -233,10 +233,10 @@ class ConnectionServiceTest extends BaseTestCase
         );
 
         $credentials = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1'),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2'),
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3'),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4')
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', []),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', []),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', []),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [])
         ];
         $this->mockConnectionProxy->setMockCredentials($credentials);
 
@@ -271,10 +271,10 @@ class ConnectionServiceTest extends BaseTestCase
         );
 
         $credentials = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1'),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2'),
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3'),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4')
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', []),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', []),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', []),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [])
         ];
         $this->mockConnectionProxy->setMockCredentials($credentials);
 
@@ -303,10 +303,10 @@ class ConnectionServiceTest extends BaseTestCase
         $this->connectionService = TestServiceRegister::getService(ConnectionService::class);
 
         $credentials = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1'),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2'),
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3'),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4')
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', []),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', []),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', []),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [])
         ];
         $this->mockConnectionProxy->setMockCredentials($credentials);
         $this->mockCredentialsRepository->setCredentials([]);
@@ -339,10 +339,10 @@ class ConnectionServiceTest extends BaseTestCase
         $this->connectionService->saveConnectionData($connectionData);
 
         $credentials = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1'),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2'),
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3'),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4')
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', []),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', []),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', []),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [])
         ];
         $this->mockConnectionProxy->setMockCredentials($credentials);
         $this->mockCredentialsRepository->setCredentials([]);

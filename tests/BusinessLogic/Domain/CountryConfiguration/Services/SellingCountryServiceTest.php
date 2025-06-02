@@ -74,10 +74,10 @@ class SellingCountryServiceTest extends BaseTestCase
     {
         // Arrange
         $credentials = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1'),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2'),
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3'),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4')
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', []),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', []),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', []),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [])
         ];
 
         $this->integrationSellingCountriesService->setSellingCountries(['PT', 'FR', 'IT', 'ES']);
@@ -107,10 +107,10 @@ class SellingCountryServiceTest extends BaseTestCase
     {
         // Arrange
         $credentials = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1'),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2'),
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3'),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4')
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', []),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', []),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', []),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [])
         ];
 
         $this->integrationSellingCountriesService->setSellingCountries(['PT', 'FR']);
@@ -138,8 +138,8 @@ class SellingCountryServiceTest extends BaseTestCase
     {
         // Arrange
         $credentials = [
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3'),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4')
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', []),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [])
         ];
 
         $this->integrationSellingCountriesService->setSellingCountries(['PT', 'FR', 'IT', 'ES']);
@@ -167,8 +167,8 @@ class SellingCountryServiceTest extends BaseTestCase
     {
         // Arrange
         $credentials = [
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3'),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4')
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', []),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [])
         ];
 
         $this->integrationSellingCountriesService->setSellingCountries(['PT', 'FR']);
