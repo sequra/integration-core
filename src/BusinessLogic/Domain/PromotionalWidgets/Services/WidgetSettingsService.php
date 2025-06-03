@@ -4,8 +4,8 @@ namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services;
 
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
-use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
@@ -37,9 +37,9 @@ class WidgetSettingsService
      */
     protected $paymentMethodsService;
     /**
-     * @var CredentialsRepositoryInterface
+     * @var CredentialsService
      */
-    protected $credentialsRepository;
+    protected $credentialsService;
     /**
      * @var ConnectionService
      */
@@ -56,7 +56,7 @@ class WidgetSettingsService
     /**
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
      * @param PaymentMethodsService $paymentMethodsService
-     * @param CredentialsRepositoryInterface $credentialsRepository
+     * @param CredentialsService $credentialsService
      * @param ConnectionService $connectionService
      * @param WidgetConfiguratorInterface $widgetConfigurator
      * @param MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider
@@ -64,14 +64,14 @@ class WidgetSettingsService
     public function __construct(
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
         PaymentMethodsService $paymentMethodsService,
-        CredentialsRepositoryInterface $credentialsRepository,
+        CredentialsService $credentialsService,
         ConnectionService $connectionService,
         WidgetConfiguratorInterface $widgetConfigurator,
         MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider
     ) {
         $this->widgetSettingsRepository = $widgetSettingsRepository;
         $this->paymentMethodsService = $paymentMethodsService;
-        $this->credentialsRepository = $credentialsRepository;
+        $this->credentialsService = $credentialsService;
         $this->connectionService = $connectionService;
         $this->widgetConfigurator = $widgetConfigurator;
         $this->miniWidgetMessagesProvider = $miniWidgetMessagesProvider;
@@ -117,7 +117,7 @@ class WidgetSettingsService
      */
     public function getWidgetInitializeData(string $shippingCountry, string $currentCountry): WidgetInitializer
     {
-        $credentials = $this->getCredentials($shippingCountry, $currentCountry);
+        $credentials = $this->getCredentialsByCountry($shippingCountry, $currentCountry);
         $merchantId = $credentials ? $credentials->getMerchantId() : '';
 
         return new WidgetInitializer(
@@ -287,6 +287,24 @@ class WidgetSettingsService
     }
 
     /**
+     * Returns credentials for given country code
+     *
+     * @param string $shippingCountry
+     * @param string $currentCountry
+     *
+     * @return Credentials|null
+     */
+    public function getCredentialsByCountry(string $shippingCountry, string $currentCountry): ?Credentials
+    {
+        $credentials = $this->credentialsService->getCredentialsByCountryCode($shippingCountry);
+        if (!$credentials) {
+            $credentials = $this->credentialsService->getCredentialsByCountryCode($currentCountry);
+        }
+
+        return $credentials;
+    }
+
+    /**
      * Returns payment methods that are supported on product page
      *
      * @param string $shippingCountry
@@ -300,7 +318,7 @@ class WidgetSettingsService
         string $shippingCountry,
         string $currentCountry
     ): array {
-        $credentials = $this->getCredentials($shippingCountry, $currentCountry);
+        $credentials = $this->getCredentialsByCountry($shippingCountry, $currentCountry);
         if (!$credentials) {
             return [];
         }
@@ -332,7 +350,7 @@ class WidgetSettingsService
         string $selectedProduct,
         array $categories
     ): ?SeQuraPaymentMethod {
-        $credentials = $this->getCredentials($shippingCountry, $currentCountry);
+        $credentials = $this->getCredentialsByCountry($shippingCountry, $currentCountry);
         if (!$credentials) {
             return null;
         }
@@ -367,24 +385,6 @@ class WidgetSettingsService
         }
 
         return "https://{$settings->getEnvironment()}.sequracdn.com/assets/sequra-checkout.min.js";
-    }
-
-    /**
-     * Returns credentials for given country code
-     *
-     * @param string $shippingCountry
-     * @param string $currentCountry
-     *
-     * @return Credentials|null
-     */
-    protected function getCredentials(string $shippingCountry, string $currentCountry): ?Credentials
-    {
-        $credentials = $this->credentialsRepository->getCredentialsByCountryCode($shippingCountry);
-        if (!$credentials) {
-            $credentials = $this->credentialsRepository->getCredentialsByCountryCode($currentCountry);
-        }
-
-        return $credentials;
     }
 
     /**

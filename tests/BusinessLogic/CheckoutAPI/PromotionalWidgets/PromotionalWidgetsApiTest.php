@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\GetWidget
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\PromotionalWidgetsCheckoutResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
@@ -75,7 +76,7 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         $this->mockWidgetSettingsService = new MockWidgetSettingsService(
             TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
             TestServiceRegister::getService(PaymentMethodsService::class),
-            TestServiceRegister::getService(CredentialsRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class),
             TestServiceRegister::getService(ConnectionService::class),
             TestServiceRegister::getService(WidgetConfiguratorInterface::class),
             TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)

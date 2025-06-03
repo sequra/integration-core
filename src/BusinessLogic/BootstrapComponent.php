@@ -456,7 +456,7 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new WidgetSettingsService(
                     ServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
                     ServiceRegister::getService(PaymentMethodsService::class),
-                    ServiceRegister::getService(CredentialsRepositoryInterface::class),
+                    ServiceRegister::getService(CredentialsService::class),
                     ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(WidgetConfiguratorInterface::class),
                     ServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)

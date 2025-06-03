@@ -76,4 +76,16 @@ class CredentialsService
     {
         return $this->credentialsRepository->getCredentials();
     }
+
+    /**
+     * Returns credentials by given county code
+     *
+     * @param string $countryCode
+     *
+     * @return Credentials|null
+     */
+    public function getCredentialsByCountryCode(string $countryCode): ?Credentials
+    {
+        return $this->credentialsRepository->getCredentialsByCountryCode($countryCode);
+    }
 }

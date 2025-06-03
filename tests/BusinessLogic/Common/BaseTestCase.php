@@ -385,7 +385,7 @@ class BaseTestCase extends TestCase
                 return new WidgetSettingsService(
                     TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
                     TestServiceRegister::getService(PaymentMethodsService::class),
-                    TestServiceRegister::getService(CredentialsRepositoryInterface::class),
+                    TestServiceRegister::getService(CredentialsService::class),
                     TestServiceRegister::getService(ConnectionService::class),
                     TestServiceRegister::getService(WidgetConfiguratorInterface::class),
                     TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
