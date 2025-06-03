@@ -294,7 +294,7 @@ class WidgetSettingsService
      *
      * @return Credentials|null
      */
-    public function getCredentialsByCountry(string $shippingCountry, string $currentCountry): ?Credentials
+    protected function getCredentialsByCountry(string $shippingCountry, string $currentCountry): ?Credentials
     {
         $credentials = $this->credentialsService->getCredentialsByCountryCode($shippingCountry);
         if (!$credentials) {
