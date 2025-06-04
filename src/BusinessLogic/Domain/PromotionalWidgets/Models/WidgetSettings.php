@@ -81,11 +81,31 @@ class WidgetSettings
     }
 
     /**
+     * @param bool $enabled
+     *
+     * @return void
+     */
+    public function setEnabled(bool $enabled): void
+    {
+        $this->enabled = $enabled;
+    }
+
+    /**
      * @return bool
      */
     public function isDisplayOnProductPage(): bool
     {
         return $this->displayOnProductPage;
+    }
+
+    /**
+     * @param bool $displayOnProductPage
+     *
+     * @return void
+     */
+    public function setDisplayOnProductPage(bool $displayOnProductPage): void
+    {
+        $this->displayOnProductPage = $displayOnProductPage;
     }
 
     /**
@@ -97,6 +117,16 @@ class WidgetSettings
     }
 
     /**
+     * @param bool $showInstallmentsInProductListing
+     *
+     * @return void
+     */
+    public function setShowInstallmentsInProductListing(bool $showInstallmentsInProductListing): void
+    {
+        $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
+    }
+
+    /**
      * @return bool
      */
     public function isShowInstallmentsInCartPage(): bool
@@ -105,11 +135,31 @@ class WidgetSettings
     }
 
     /**
-     * @return ?string
+     * @param bool $showInstallmentsInCartPage
+     *
+     * @return void
+     */
+    public function setShowInstallmentsInCartPage(bool $showInstallmentsInCartPage): void
+    {
+        $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
+    }
+
+    /**
+     * @return string|null
      */
     public function getWidgetConfig(): ?string
     {
         return $this->widgetConfig;
+    }
+
+    /**
+     * @param string|null $widgetConfig
+     *
+     * @return void
+     */
+    public function setWidgetConfig(?string $widgetConfig): void
+    {
+        $this->widgetConfig = $widgetConfig;
     }
 
     /**
@@ -121,6 +171,14 @@ class WidgetSettings
     }
 
     /**
+     * @param WidgetSelectorSettings|null $widgetSettingsForProduct
+     */
+    public function setWidgetSettingsForProduct(?WidgetSelectorSettings $widgetSettingsForProduct): void
+    {
+        $this->widgetSettingsForProduct = $widgetSettingsForProduct;
+    }
+
+    /**
      * @return WidgetSelectorSettings|null
      */
     public function getWidgetSettingsForCart(): ?WidgetSelectorSettings
@@ -129,10 +187,26 @@ class WidgetSettings
     }
 
     /**
+     * @param WidgetSelectorSettings|null $widgetSettingsForCart
+     */
+    public function setWidgetSettingsForCart(?WidgetSelectorSettings $widgetSettingsForCart): void
+    {
+        $this->widgetSettingsForCart = $widgetSettingsForCart;
+    }
+
+    /**
      * @return WidgetSelectorSettings|null
      */
     public function getWidgetSettingsForListing(): ?WidgetSelectorSettings
     {
         return $this->widgetSettingsForListing;
+    }
+
+    /**
+     * @param WidgetSelectorSettings|null $widgetSettingsForListing
+     */
+    public function setWidgetSettingsForListing(?WidgetSelectorSettings $widgetSettingsForListing): void
+    {
+        $this->widgetSettingsForListing = $widgetSettingsForListing;
     }
 }
