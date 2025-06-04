@@ -822,7 +822,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             true,
             false,
             false,
-            false,
+            true,
             'configTest',
             null,
             new WidgetSelectorSettings('location1', 'location2', 'i1'),
@@ -1027,7 +1027,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
             true,
             false,
-            false,
+            true,
             false,
             'configTest',
             null,

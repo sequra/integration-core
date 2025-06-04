@@ -146,7 +146,7 @@ class WidgetSettingsService
     public function getAvailableWidgetForCartPage(string $shippingCountry, string $currentCountry): ?Widget
     {
         $widgetSettings = $this->getWidgetSettings();
-        if (!$widgetSettings || !$widgetSettings->isEnabled()) {
+        if (!$widgetSettings || !$widgetSettings->isEnabled() || !$widgetSettings->isShowInstallmentsInCartPage()) {
             return null;
         }
 
@@ -190,7 +190,11 @@ class WidgetSettingsService
     public function getAvailableMiniWidget(string $shippingCountry, string $currentCountry): ?Widget
     {
         $widgetSettings = $this->getWidgetSettings();
-        if (!$widgetSettings || !$widgetSettings->isEnabled()) {
+        if (
+            !$widgetSettings ||
+            !$widgetSettings->isEnabled() ||
+            !$widgetSettings->isShowInstallmentsInProductListing()
+        ) {
             return null;
         }
 
@@ -241,7 +245,7 @@ class WidgetSettingsService
     public function getAvailableWidgetsForProductPage(string $shippingCountry, string $currentCountry): array
     {
         $widgetSettings = $this->getWidgetSettings();
-        if (!$widgetSettings || !$widgetSettings->isEnabled()) {
+        if (!$widgetSettings || !$widgetSettings->isEnabled() || $widgetSettings->isDisplayOnProductPage()) {
             return [];
         }
 
