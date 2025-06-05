@@ -1241,7 +1241,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
             true,
-            false,
+            true,
             false,
             false,
             '',

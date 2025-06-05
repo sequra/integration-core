@@ -245,7 +245,7 @@ class WidgetSettingsService
     public function getAvailableWidgetsForProductPage(string $shippingCountry, string $currentCountry): array
     {
         $widgetSettings = $this->getWidgetSettings();
-        if (!$widgetSettings || !$widgetSettings->isEnabled() || $widgetSettings->isDisplayOnProductPage()) {
+        if (!$widgetSettings || !$widgetSettings->isEnabled() || !$widgetSettings->isDisplayOnProductPage()) {
             return [];
         }
 
