@@ -108,9 +108,9 @@ class WidgetSettingsRequest extends Request
         string $cartPriceSelector,
         string $cartLocationSelector,
         string $widgetOnCartPage,
-        string $listingPriceSelector,
-        string $listingLocationSelector,
         string $widgetOnListingPage,
+        string $listingPriceSelector = '',
+        string $listingLocationSelector = '',
         string $altProductPriceSelector = '',
         string $altProductPriceTriggerSelector = '',
         array $customLocations = []

@@ -84,9 +84,9 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
             '.price',
             '.location',
             'pp3',
+            'pp3',
             '.price',
             '.location',
-            'pp3',
             'test',
             'test',
             ['selForTarget' => 'target', 'product' => 'i1', 'displayWidget' => 'true', 'widgetStyles' => 'styles']
