@@ -57,6 +57,8 @@ class CountryConfigurationController
      * Gets active country configuration.
      *
      * @return CountryConfigurationResponse
+     *
+     * @throws FailedToRetrieveSellingCountriesException
      */
     public function getCountryConfigurations(): CountryConfigurationResponse
     {

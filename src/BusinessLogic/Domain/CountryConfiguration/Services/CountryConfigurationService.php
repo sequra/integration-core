@@ -2,9 +2,10 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services;
 
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
-use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 
 /**
  * Class CountryConfigurationService
@@ -14,35 +15,37 @@ use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountri
 class CountryConfigurationService
 {
     /**
-     * @var CountryConfigurationRepositoryInterface
+     * @var CountryConfigurationRepositoryInterface $countryConfigurationRepository
      */
     protected $countryConfigurationRepository;
     /**
-     * @var SellingCountriesServiceInterface
+     * @var SellingCountriesService $sellingCountriesService
      */
     protected $sellingCountriesService;
 
     /**
      * @param CountryConfigurationRepositoryInterface $countryConfigurationRepository
-     * @param SellingCountriesServiceInterface $sellingCountriesService
+     * @param SellingCountriesService $sellerCountriesService
      */
     public function __construct(
         CountryConfigurationRepositoryInterface $countryConfigurationRepository,
-        SellingCountriesServiceInterface $sellingCountriesService
+        SellingCountriesService $sellerCountriesService
     ) {
         $this->countryConfigurationRepository = $countryConfigurationRepository;
-        $this->sellingCountriesService = $sellingCountriesService;
+        $this->sellingCountriesService = $sellerCountriesService;
     }
 
     /**
      * Retrieves country configuration from the database via country configuration data repository.
      *
      * @return CountryConfiguration[]|null
+     *
+     * @throws FailedToRetrieveSellingCountriesException
      */
     public function getCountryConfiguration(): ?array
     {
         $configuredCountries = $this->countryConfigurationRepository->getCountryConfiguration();
-        $sellingCountries = $this->sellingCountriesService->getSellingCountries();
+        $sellingCountries = $this->getSellingCountriesCodes();
 
         if (empty($configuredCountries)) {
             return null;
@@ -67,5 +70,19 @@ class CountryConfigurationService
     public function saveCountryConfiguration(array $countryConfiguration): void
     {
         $this->countryConfigurationRepository->setCountryConfiguration($countryConfiguration);
+    }
+
+    /**
+     * @return string[]
+     *
+     * @throws FailedToRetrieveSellingCountriesException
+     */
+    private function getSellingCountriesCodes(): array
+    {
+        $sellingCountries = $this->sellingCountriesService->getSellingCountries();
+
+        return array_map(function (SellingCountry $sellingCountry) {
+            return $sellingCountry->getCode();
+        }, $sellingCountries);
     }
 }

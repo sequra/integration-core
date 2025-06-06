@@ -19,6 +19,8 @@ use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
+use SeQura\Core\BusinessLogic\DataAccess\Credentials\Entities\Credentials;
+use SeQura\Core\BusinessLogic\DataAccess\Credentials\Repositories\CredentialsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
@@ -35,7 +37,9 @@ use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
@@ -68,7 +72,6 @@ use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSet
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\ShopOrderStatusesService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
@@ -86,7 +89,6 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
-use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\AbortedListener;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\CreateListener;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\FailedListener;
@@ -236,6 +238,16 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+
+        ServiceRegister::registerService(
+            CredentialsRepositoryInterface::class,
+            static function () {
+                return new CredentialsRepository(
+                    RepositoryRegistry::getRepository(Credentials::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
     }
 
     /**
@@ -269,7 +281,20 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             ConnectionService::class,
             static function () {
-                return new ConnectionService(ServiceRegister::getService(ConnectionProxyInterface::class));
+                return new ConnectionService(
+                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                    ServiceRegister::getService(CredentialsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            CredentialsService::class,
+            static function () {
+                return new CredentialsService(
+                    ServiceRegister::getService(ConnectionProxyInterface::class),
+                    ServiceRegister::getService(CredentialsRepositoryInterface::class)
+                );
             }
         );
 
@@ -289,7 +314,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new CountryConfigurationService(
                     ServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
-                    ServiceRegister::getService(SellingCountriesServiceInterface::class)
+                    ServiceRegister::getService(SellingCountriesService::class)
                 );
             }
         );
@@ -330,7 +355,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             SellingCountriesService::class,
             static function () {
                 return new SellingCountriesService(
-                    ServiceRegister::getService(SellingCountriesServiceInterface::class)
+                    ServiceRegister::getService(SellingCountriesServiceInterface::class),
+                    ServiceRegister::getService(ConnectionService::class)
                 );
             }
         );
@@ -430,9 +456,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new WidgetSettingsService(
                     ServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
                     ServiceRegister::getService(PaymentMethodsService::class),
-                    ServiceRegister::getService(CountryConfigurationService::class),
+                    ServiceRegister::getService(CredentialsService::class),
                     ServiceRegister::getService(ConnectionService::class),
-                    ServiceRegister::getService(WidgetsProxyInterface::class),
                     ServiceRegister::getService(WidgetConfiguratorInterface::class),
                     ServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
                 );
@@ -647,15 +672,6 @@ class BootstrapComponent extends BaseBootstrapComponent
             ConnectionProxyInterface::class,
             static function () {
                 return new ConnectionProxy(
-                    ServiceRegister::getService(HttpClient::class)
-                );
-            }
-        );
-
-        ServiceRegister::registerService(
-            WidgetsProxyInterface::class,
-            static function () {
-                return new WidgetsProxy(
                     ServiceRegister::getService(HttpClient::class)
                 );
             }

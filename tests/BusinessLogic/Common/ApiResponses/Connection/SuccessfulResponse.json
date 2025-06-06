@@ -1,0 +1,78 @@
+[
+  {
+    "ref": "logeecom1",
+    "name": null,
+    "country": "PT",
+    "allowed_countries": [
+      "ES"
+    ],
+    "currency": "EUR",
+    "assets_key": "assetsKey1",
+    "contract_options": [],
+    "extra_information": {
+      "type": "regular",
+      "phone_number": ""
+    },
+    "verify_signature": false,
+    "signature_secret": "signature",
+    "confirmation_path": "default",
+    "realm": "svea"
+  },
+  {
+    "ref": "logeecom2",
+    "name": null,
+    "country": "FR",
+    "allowed_countries": [
+      "ES"
+    ],
+    "currency": "EUR",
+    "assets_key": "assetsKey2",
+    "contract_options": [],
+    "extra_information": {
+      "type": "regular",
+      "phone_number": ""
+    },
+    "verify_signature": false,
+    "signature_secret": "f88ad25475df9310a9bf7d8a6e4fa7f9",
+    "confirmation_path": "default",
+    "realm": "svea"
+  },
+  {
+    "ref": "logeecom3",
+    "name": null,
+    "country": "IT",
+    "allowed_countries": [
+      "ES"
+    ],
+    "currency": "EUR",
+    "assets_key": "assetsKey3",
+    "contract_options": [],
+    "extra_information": {
+      "type": "regular",
+      "phone_number": ""
+    },
+    "verify_signature": false,
+    "signature_secret": "d10263781ab8011e0797ea82d34cd3ad",
+    "confirmation_path": "default",
+    "realm": "svea"
+  },
+  {
+    "ref": "logeecom4",
+    "name": null,
+    "country": "ES",
+    "allowed_countries": [
+      "ES"
+    ],
+    "currency": "EUR",
+    "assets_key": "assetsKey4",
+    "contract_options": [],
+    "extra_information": {
+      "type": "regular",
+      "phone_number": ""
+    },
+    "verify_signature": false,
+    "signature_secret": "6f3f3baae89ec0b324f346d73c6c8e70",
+    "confirmation_path": "default",
+    "realm": "sequra"
+  }
+]

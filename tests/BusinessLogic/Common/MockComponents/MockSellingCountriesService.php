@@ -12,10 +12,35 @@ use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountri
 class MockSellingCountriesService implements SellingCountriesServiceInterface
 {
     /**
+     * @var string[]
+     */
+    private static $sellingCountries = [];
+
+    /**
      * @inheritDoc
      */
     public function getSellingCountries(): array
     {
-        return [ 'MO', 'CO', 'IT', 'SR', 'FR', 'RE', 'AG', 'VA', 'PE'];
+        return !empty(self::$sellingCountries) ? self::$sellingCountries : [
+            'MO',
+            'CO',
+            'IT',
+            'SR',
+            'FR',
+            'RE',
+            'AG',
+            'VA',
+            'PE'
+        ];
+    }
+
+    /**
+     * @param array $sellingCountries
+     *
+     * @return void
+     */
+    public function setSellingCountries(array $sellingCountries): void
+    {
+        self::$sellingCountries = $sellingCountries;
     }
 }

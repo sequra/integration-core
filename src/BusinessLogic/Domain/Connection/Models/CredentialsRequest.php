@@ -6,11 +6,11 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentExc
 use SeQura\Core\Infrastructure\Data\DataTransferObject;
 
 /**
- * Class ValidateConnectionRequest
+ * Class CredentialsRequest
  *
  * @package SeQura\Core\BusinessLogic\Domain\Connection\Models
  */
-class ValidateConnectionRequest extends DataTransferObject
+class CredentialsRequest extends DataTransferObject
 {
     /**
      * @var ConnectionData
@@ -46,7 +46,7 @@ class ValidateConnectionRequest extends DataTransferObject
      *
      * @param mixed[] $data
      *
-     * @return ValidateConnectionRequest
+     * @return CredentialsRequest
      *
      * @throws InvalidEnvironmentException
      */

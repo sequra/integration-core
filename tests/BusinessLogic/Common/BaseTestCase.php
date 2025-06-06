@@ -18,6 +18,7 @@ use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
+use SeQura\Core\BusinessLogic\DataAccess\Credentials\Entities\Credentials;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
@@ -35,7 +36,9 @@ use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
@@ -66,7 +69,6 @@ use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSet
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\ShopOrderStatusesService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\ProxyContracts\WidgetsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
@@ -82,7 +84,6 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
-use SeQura\Core\BusinessLogic\SeQuraAPI\Widgets\WidgetsProxy;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogService;
 use SeQura\Core\BusinessLogic\Utility\EncryptorInterface;
@@ -107,6 +108,7 @@ use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MemoryRepositoryWithConditionalDelete;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
@@ -224,7 +226,14 @@ class BaseTestCase extends TestCase
             },
             ConnectionService::class => static function () {
                 return new ConnectionService(
-                    TestServiceRegister::getService(ConnectionProxyInterface::class)
+                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                    TestServiceRegister::getService(CredentialsService::class)
+                );
+            },
+            CredentialsService::class => static function () {
+                return new CredentialsService(
+                    TestServiceRegister::getService(ConnectionProxyInterface::class),
+                    TestServiceRegister::getService(CredentialsRepositoryInterface::class)
                 );
             },
             PaymentMethodsService::class => static function () {
@@ -244,7 +253,7 @@ class BaseTestCase extends TestCase
             CountryConfigurationService::class => static function () {
                 return new CountryConfigurationService(
                     TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
-                    TestServiceRegister::getService(SellingCountriesServiceInterface::class)
+                    TestServiceRegister::getService(SellingCountriesService::class)
                 );
             },
             GeneralSettingsService::class => static function () {
@@ -261,7 +270,8 @@ class BaseTestCase extends TestCase
             },
             SellingCountriesService::class => static function () {
                 return new SellingCountriesService(
-                    TestServiceRegister::getService(SellingCountriesServiceInterface::class)
+                    TestServiceRegister::getService(SellingCountriesServiceInterface::class),
+                    TestServiceRegister::getService(ConnectionService::class)
                 );
             },
             ShopOrderStatusesService::class => static function () {
@@ -375,9 +385,8 @@ class BaseTestCase extends TestCase
                 return new WidgetSettingsService(
                     TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
                     TestServiceRegister::getService(PaymentMethodsService::class),
-                    TestServiceRegister::getService(CountryConfigurationService::class),
+                    TestServiceRegister::getService(CredentialsService::class),
                     TestServiceRegister::getService(ConnectionService::class),
-                    TestServiceRegister::getService(WidgetsProxyInterface::class),
                     TestServiceRegister::getService(WidgetConfiguratorInterface::class),
                     TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
                 );
@@ -519,6 +528,13 @@ class BaseTestCase extends TestCase
             }
         );
 
+        TestServiceRegister::registerService(
+            CredentialsRepositoryInterface::class,
+            static function () {
+                return new MockCredentialsRepository();
+            }
+        );
+
         TestRepositoryRegistry::registerRepository(ConfigEntity::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(
             QueueItem::getClassName(),
@@ -543,6 +559,7 @@ class BaseTestCase extends TestCase
             MemoryRepositoryWithConditionalDelete::getClassName()
         );
         TestRepositoryRegistry::registerRepository(PaymentMethod::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(Credentials::getClassName(), MemoryRepository::getClassName());
     }
 
     /**

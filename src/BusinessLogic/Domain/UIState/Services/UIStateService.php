@@ -65,7 +65,6 @@ class UIStateService
     public function isOnboardingState(bool $useWidgets): bool
     {
         $connectionData = $this->connectionDataRepository->getConnectionData();
-        $countryConfiguration = $this->countryConfigurationRepository->getCountryConfiguration();
 
         if ($useWidgets) {
             $widgetSettings = $this->widgetSettingsRepository->getWidgetSettings();
@@ -74,8 +73,7 @@ class UIStateService
             }
         }
 
-        if ($connectionData && $countryConfiguration) {
-            $connectionData->setMerchantId($countryConfiguration[0]->getMerchantId());
+        if ($connectionData) {
             $this->connectionService->isConnectionDataValid($connectionData);
 
             return false;

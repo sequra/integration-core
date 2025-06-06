@@ -47,7 +47,6 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
         // arrange
         $settings = new WidgetSettings(
             true,
-            'qwerty',
             false,
             false,
             false,
@@ -65,7 +64,6 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
                 'displayWidgetOnProductPage' => $settings->isDisplayOnProductPage(),
                 'showInstallmentAmountInProductListing' => $settings->isShowInstallmentsInProductListing(),
                 'showInstallmentAmountInCartPage' => $settings->isShowInstallmentsInCartPage(),
-                'assetsKey' => $settings->getAssetsKey(),
                 'widgetConfiguration' => '{"alignment":"center","amount-font-bold":"true","amount-font-color":"#1c1c1c","amount-font-size":"15","background-color":"white","border-color":"#ce5c00","border-radius":"","class":"","font-color":"#1c1c1c","link-font-color":"#1c1c1c","link-underline":"true","no-costs-claim":"","size":"M","starting-text":"only","type":"banner"}'
             ],
             $result->toArray()
@@ -77,7 +75,6 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
         // arrange
         $settings = new WidgetSettingsRequest(
             false,
-            'qqqwerty',
             false,
             true,
             true,
@@ -87,9 +84,9 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
             '.price',
             '.location',
             'pp3',
+            'pp3',
             '.price',
             '.location',
-            'pp3',
             'test',
             'test',
             ['selForTarget' => 'target', 'product' => 'i1', 'displayWidget' => 'true', 'widgetStyles' => 'styles']

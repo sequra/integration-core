@@ -2,14 +2,13 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\SeQuraAPI\Connection;
 
-use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
-use SeQura\Core\BusinessLogic\Domain\Connection\Models\ValidateConnectionRequest;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\CredentialsRequest;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
-use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiUnauthorizedException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\Http\HttpClient;
@@ -60,33 +59,6 @@ class ConnectionProxyTest extends BaseTestCase
      * @throws InvalidEnvironmentException
      * @throws HttpRequestException
      */
-    public function testConnectionRequestUrlWithMerchantRef(): void
-    {
-        $this->httpClient->setMockResponses([
-            new HttpResponse(204, [], file_get_contents(
-                __DIR__ . '/../../Common/ApiResponses/Connection/SuccessfulResponse.json'
-            ))
-        ]);
-
-        $connectionData = new ConnectionData(
-            BaseProxy::TEST_MODE,
-            'test',
-            new AuthorizationCredentials('test_username', 'test_password')
-        );
-
-        $this->proxy->validateConnection(new ValidateConnectionRequest($connectionData));
-        self::assertCount(1, $this->httpClient->getHistory());
-        $lastRequest = $this->httpClient->getLastRequest();
-        self::assertStringContainsString('merchants/test/credentials', $lastRequest['url']);
-    }
-
-    /**
-     * @return void
-     *
-     * @throws HttpRequestException
-     * @throws InvalidEnvironmentException
-     * @throws HttpRequestException
-     */
     public function testConnectionRequestUrlWithoutMerchantRef(): void
     {
         $this->httpClient->setMockResponses([
@@ -101,7 +73,7 @@ class ConnectionProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $this->proxy->validateConnection(new ValidateConnectionRequest($connectionData));
+        $this->proxy->getCredentials(new CredentialsRequest($connectionData));
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
         self::assertStringContainsString('merchants/credentials', $lastRequest['url']);
@@ -127,7 +99,7 @@ class ConnectionProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $this->proxy->validateConnection(new ValidateConnectionRequest($connectionData));
+        $this->proxy->getCredentials(new CredentialsRequest($connectionData));
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
         self::assertArrayHasKey('Authorization', $lastRequest['headers']);
@@ -153,7 +125,7 @@ class ConnectionProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $this->proxy->validateConnection(new ValidateConnectionRequest($connectionData));
+        $this->proxy->getCredentials(new CredentialsRequest($connectionData));
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
         self::assertEquals(HttpClient::HTTP_METHOD_GET, $lastRequest['method']);
@@ -163,9 +135,11 @@ class ConnectionProxyTest extends BaseTestCase
      * @return void
      *
      * @throws InvalidEnvironmentException
+     * @throws HttpRequestException
      */
     public function testConnectionRequestSuccessfulResponse(): void
     {
+        //Arrange
         $exception = null;
         $rawResponseBody = file_get_contents(
             __DIR__ . '/../../Common/ApiResponses/Connection/SuccessfulResponse.json'
@@ -178,12 +152,91 @@ class ConnectionProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        try {
-            $this->proxy->validateConnection(new ValidateConnectionRequest($connectionData));
-        } catch (Exception $exception) {
-        }
+        $expectedResponse = [
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [
+                "ref" => "logeecom1",
+                "name" => null,
+                "country" => "PT",
+                "allowed_countries" => [
+                    "ES"
+                ],
+                "currency" => "EUR",
+                "assets_key" => "assetsKey1",
+                "contract_options" => [],
+                "extra_information" => [
+                    "type" => "regular",
+                    "phone_number" => ""
+                ],
+                "verify_signature" => false,
+                "signature_secret" => "signature",
+                "confirmation_path" => "default",
+                "realm" => "svea"
+            ]),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [
+                "ref" => "logeecom2",
+                "name" => null,
+                "country" => "FR",
+                "allowed_countries" => [
+                    "ES"
+                ],
+                "currency" => "EUR",
+                "assets_key" => "assetsKey2",
+                "contract_options" => [],
+                "extra_information" => [
+                    "type" => "regular",
+                    "phone_number" => ""
+                ],
+                "verify_signature" => false,
+                "signature_secret" => "f88ad25475df9310a9bf7d8a6e4fa7f9",
+                "confirmation_path" => "default",
+                "realm" => "svea"
+            ]),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', [
+                "ref" => "logeecom3",
+                "name" => null,
+                "country" => "IT",
+                "allowed_countries" => [
+                    "ES"
+                ],
+                "currency" => "EUR",
+                "assets_key" => "assetsKey3",
+                "contract_options" => [],
+                "extra_information" => [
+                    "type" => "regular",
+                    "phone_number" => ""
+                ],
+                "verify_signature" => false,
+                "signature_secret" => "d10263781ab8011e0797ea82d34cd3ad",
+                "confirmation_path" => "default",
+                "realm" => "svea"
+            ]),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [
+                "ref" => "logeecom4",
+                "name" => null,
+                "country" => "ES",
+                "allowed_countries" => [
+                    "ES"
+                ],
+                "currency" => "EUR",
+                "assets_key" => "assetsKey4",
+                "contract_options" => [],
+                "extra_information" => [
+                    "type" => "regular",
+                    "phone_number" => ""
+                ],
+                "verify_signature" => false,
+                "signature_secret" => "6f3f3baae89ec0b324f346d73c6c8e70",
+                "confirmation_path" => "default",
+                "realm" => "sequra"
+            ])
+        ];
 
+        //Act
+        $response = $this->proxy->getCredentials(new CredentialsRequest($connectionData));
+
+        //Assert
         self::assertNull($exception);
+        self::assertEquals($expectedResponse, $response);
     }
 
     /**
@@ -205,7 +258,7 @@ class ConnectionProxyTest extends BaseTestCase
         );
 
         try {
-            $this->proxy->validateConnection(new ValidateConnectionRequest($connectionData));
+            $this->proxy->getCredentials(new CredentialsRequest($connectionData));
         } catch (HttpApiUnauthorizedException $exception) {
         }
 

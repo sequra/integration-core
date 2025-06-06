@@ -17,11 +17,12 @@ class SellingCountryModelTest extends BaseTestCase
      */
     public function testSettersAndGetters(): void
     {
-        $sellingCountry = new SellingCountry('CO', 'Colombia');
+        $sellingCountry = new SellingCountry('CO', 'Colombia', 'logeecom');
         $sellingCountry->setCode('ES');
         $sellingCountry->setName('Spain');
 
         self::assertEquals('ES', $sellingCountry->getCode());
         self::assertEquals('Spain', $sellingCountry->getName());
+        self::assertEquals('logeecom', $sellingCountry->getMerchantId());
     }
 }

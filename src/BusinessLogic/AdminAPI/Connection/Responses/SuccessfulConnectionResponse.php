@@ -16,6 +16,8 @@ class SuccessfulConnectionResponse extends Response
      */
     public function toArray(): array
     {
-        return [];
+        return [
+            'isValid' => true
+        ];
     }
 }

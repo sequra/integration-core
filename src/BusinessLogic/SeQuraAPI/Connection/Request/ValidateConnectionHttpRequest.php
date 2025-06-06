@@ -3,7 +3,7 @@
 namespace SeQura\Core\BusinessLogic\SeQuraAPI\Connection\Request;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
-use SeQura\Core\BusinessLogic\Domain\Connection\Models\ValidateConnectionRequest;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\CredentialsRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Authorization\AuthorizedProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\HttpRequest;
 
@@ -14,11 +14,13 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\HttpRequest;
  */
 class ValidateConnectionHttpRequest extends HttpRequest
 {
-    public function __construct(ValidateConnectionRequest $request)
+    /**
+     * @param CredentialsRequest $request
+     */
+    public function __construct(CredentialsRequest $request)
     {
-        $merchantId = $request->getConnectionData()->getMerchantId();
         parent::__construct(
-            $merchantId ? "/merchants/$merchantId/credentials" : '/merchants/credentials',
+            '/merchants/credentials',
             [],
             [],
             $this->generateAuthHeaderForValidation($request->getConnectionData()->getAuthorizationCredentials())

@@ -20,13 +20,20 @@ class SellingCountry
     protected $name;
 
     /**
+     * @var string
+     */
+    protected $merchantId;
+
+    /**
      * @param string $code
      * @param string $name
+     * @param string $merchantId
      */
-    public function __construct(string $code, string $name)
+    public function __construct(string $code, string $name, string $merchantId)
     {
         $this->code = $code;
         $this->name = $name;
+        $this->merchantId = $merchantId;
     }
 
     /**
@@ -59,5 +66,23 @@ class SellingCountry
     public function setName(string $name): void
     {
         $this->name = $name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMerchantId(): string
+    {
+        return $this->merchantId;
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return void
+     */
+    public function setMerchantId(string $merchantId): void
+    {
+        $this->merchantId = $merchantId;
     }
 }

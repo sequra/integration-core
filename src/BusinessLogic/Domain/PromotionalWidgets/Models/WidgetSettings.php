@@ -14,10 +14,6 @@ class WidgetSettings
      */
     protected $enabled;
     /**
-     * @var string
-     */
-    protected $assetsKey;
-    /**
      * @var bool
      */
     protected $displayOnProductPage;
@@ -48,7 +44,6 @@ class WidgetSettings
 
     /**
      * @param bool $enabled
-     * @param string $assetsKey
      * @param bool $displayOnProductPage
      * @param bool $showInstallmentsInProductListing
      * @param bool $showInstallmentsInCartPage
@@ -59,7 +54,6 @@ class WidgetSettings
      */
     public function __construct(
         bool $enabled,
-        string $assetsKey = '',
         bool $displayOnProductPage = false,
         bool $showInstallmentsInProductListing = false,
         bool $showInstallmentsInCartPage = false,
@@ -69,7 +63,6 @@ class WidgetSettings
         WidgetSelectorSettings $widgetSettingsForListing = null
     ) {
         $this->enabled = $enabled;
-        $this->assetsKey = $assetsKey;
         $this->displayOnProductPage = $displayOnProductPage;
         $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
         $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
@@ -79,61 +72,91 @@ class WidgetSettings
         $this->widgetSettingsForListing = $widgetSettingsForListing;
     }
 
+    /**
+     * @return bool
+     */
     public function isEnabled(): bool
     {
         return $this->enabled;
     }
 
+    /**
+     * @param bool $enabled
+     *
+     * @return void
+     */
     public function setEnabled(bool $enabled): void
     {
         $this->enabled = $enabled;
     }
 
-    public function getAssetsKey(): string
-    {
-        return $this->assetsKey;
-    }
-
-    public function setAssetsKey(string $assetsKey): void
-    {
-        $this->assetsKey = $assetsKey;
-    }
-
+    /**
+     * @return bool
+     */
     public function isDisplayOnProductPage(): bool
     {
         return $this->displayOnProductPage;
     }
 
+    /**
+     * @param bool $displayOnProductPage
+     *
+     * @return void
+     */
     public function setDisplayOnProductPage(bool $displayOnProductPage): void
     {
         $this->displayOnProductPage = $displayOnProductPage;
     }
 
+    /**
+     * @return bool
+     */
     public function isShowInstallmentsInProductListing(): bool
     {
         return $this->showInstallmentsInProductListing;
     }
 
+    /**
+     * @param bool $showInstallmentsInProductListing
+     *
+     * @return void
+     */
     public function setShowInstallmentsInProductListing(bool $showInstallmentsInProductListing): void
     {
         $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
     }
 
+    /**
+     * @return bool
+     */
     public function isShowInstallmentsInCartPage(): bool
     {
         return $this->showInstallmentsInCartPage;
     }
 
+    /**
+     * @param bool $showInstallmentsInCartPage
+     *
+     * @return void
+     */
     public function setShowInstallmentsInCartPage(bool $showInstallmentsInCartPage): void
     {
         $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
     }
 
+    /**
+     * @return string|null
+     */
     public function getWidgetConfig(): ?string
     {
         return $this->widgetConfig;
     }
 
+    /**
+     * @param string|null $widgetConfig
+     *
+     * @return void
+     */
     public function setWidgetConfig(?string $widgetConfig): void
     {
         $this->widgetConfig = $widgetConfig;
