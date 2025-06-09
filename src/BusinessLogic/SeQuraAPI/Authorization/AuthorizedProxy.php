@@ -16,6 +16,8 @@ class AuthorizedProxy extends BaseProxy
     public const AUTHORIZATION_HEADER_KEY = 'Authorization';
     public const AUTHORIZATION_HEADER_VALUE_PREFIX = 'Authorization: Basic ';
 
+    public const MERCHANT_ID_HEADER_KEY = 'Sequra-Merchant-Id';
+
     /**
      * @var ConnectionDataRepositoryInterface
      */
@@ -58,7 +60,10 @@ class AuthorizedProxy extends BaseProxy
 
         return array_merge(
             parent::getHeaders(),
-            [self::AUTHORIZATION_HEADER_KEY => self::AUTHORIZATION_HEADER_VALUE_PREFIX . $token]
+            [
+                self::AUTHORIZATION_HEADER_KEY => self::AUTHORIZATION_HEADER_VALUE_PREFIX . $token,
+                self::MERCHANT_ID_HEADER_KEY => $connectionData->getMerchantId(),
+            ]
         );
     }
 }
