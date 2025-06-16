@@ -154,7 +154,7 @@ class OrderServiceTest extends BaseTestCase
         );
 
         $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody)]);
-        $response = $this->orderService->getAvailablePaymentMethodsInCategories('testId');
+        $response = $this->orderService->getAvailablePaymentMethodsInCategories('testId', 'testMerchantId');
         $responseBody = json_decode($rawResponseBody, true);
         $paymentMethodCategories = [];
 

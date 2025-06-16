@@ -109,21 +109,29 @@ class OrderService
      */
     public function getAvailablePaymentMethods(SeQuraOrder $order): array
     {
-        return $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest($order->getReference()));
+        return $this->proxy->getAvailablePaymentMethods(
+            new GetAvailablePaymentMethodsRequest(
+                $order->getReference(),
+                $order->getMerchant()->getId()
+            )
+        );
     }
 
     /**
      * Gets available payment methods for solicited order in categories.
      *
      * @param string $orderRef
+     * @param string $merchantId
      *
      * @return SeQuraPaymentMethodCategory[]
      *
      * @throws HttpRequestException
      */
-    public function getAvailablePaymentMethodsInCategories(string $orderRef): array
+    public function getAvailablePaymentMethodsInCategories(string $orderRef, string $merchantId): array
     {
-        return $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest($orderRef));
+        return $this->proxy->getAvailablePaymentMethodsInCategories(
+            new GetAvailablePaymentMethodsRequest($orderRef, $merchantId)
+        );
     }
 
     /**
@@ -151,7 +159,15 @@ class OrderService
             );
         }
 
-        return $this->proxy->getForm(new GetFormRequest($existingOrder->getReference(), $product, $campaign, $ajax));
+        return $this->proxy->getForm(
+            new GetFormRequest(
+                $existingOrder->getReference(),
+                $product,
+                $campaign,
+                $ajax,
+                $existingOrder->getMerchant()->getId()
+            )
+        );
     }
 
     /**

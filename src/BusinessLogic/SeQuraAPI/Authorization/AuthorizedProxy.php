@@ -11,7 +11,7 @@ use SeQura\Core\Infrastructure\Http\HttpClient;
  *
  * @package SeQura\Core\BusinessLogic\SeQuraAPI\Authorization
  */
-class AuthorizedProxy extends BaseProxy
+abstract class AuthorizedProxy extends BaseProxy
 {
     public const AUTHORIZATION_HEADER_KEY = 'Authorization';
     public const AUTHORIZATION_HEADER_VALUE_PREFIX = 'Authorization: Basic ';
@@ -22,6 +22,11 @@ class AuthorizedProxy extends BaseProxy
      * @var ConnectionDataRepositoryInterface
      */
     protected $connectionDataRepository;
+
+    /**
+     * @var string $merchantId
+     */
+    private $merchantId = '';
 
     /**
      * AuthorizedProxy constructor.
@@ -62,8 +67,18 @@ class AuthorizedProxy extends BaseProxy
             parent::getHeaders(),
             [
                 self::AUTHORIZATION_HEADER_KEY => self::AUTHORIZATION_HEADER_VALUE_PREFIX . $token,
-                self::MERCHANT_ID_HEADER_KEY => $connectionData->getMerchantId(),
+                self::MERCHANT_ID_HEADER_KEY => $this->merchantId,
             ]
         );
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return void
+     */
+    public function setMerchantId(string $merchantId): void
+    {
+        $this->merchantId = $merchantId;
     }
 }

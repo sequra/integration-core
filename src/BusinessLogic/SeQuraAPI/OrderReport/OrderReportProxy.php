@@ -19,6 +19,8 @@ class OrderReportProxy extends AuthorizedProxy implements OrderReportProxyInterf
      */
     public function sendReport(SendOrderReportRequest $request): bool
     {
+        $this->setMerchantId($request->getMerchant()->getId());
+
         return $this->post(new SendOrderReportHttpRequest($request))->isSuccessful();
     }
 }
