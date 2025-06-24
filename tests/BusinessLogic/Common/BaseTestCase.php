@@ -5,6 +5,7 @@ namespace SeQura\Core\Tests\BusinessLogic\Common;
 use PHPUnit\Framework\TestCase;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
+use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
@@ -19,6 +20,7 @@ use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionD
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Credentials\Entities\Credentials;
+use SeQura\Core\BusinessLogic\DataAccess\Deployments\Entities\Deployment;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
@@ -42,6 +44,8 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
+use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
@@ -81,6 +85,7 @@ use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Deployments\DeploymentsProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
@@ -381,6 +386,11 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(StoreContext::class)
                 );
             },
+            DeploymentsController::class => function () {
+                return new DeploymentsController(
+                    TestServiceRegister::getService(DeploymentsService::class)
+                );
+            },
             WidgetSettingsService::class => function () {
                 return new WidgetSettingsService(
                     TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
@@ -461,6 +471,15 @@ class BaseTestCase extends TestCase
         );
 
         TestServiceRegister::registerService(
+            DeploymentsProxyInterface::class,
+            static function () {
+                return new DeploymentsProxy(
+                    TestServiceRegister::getService(HttpClient::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
             MerchantProxyInterface::class,
             static function () {
                 return new MerchantProxy(
@@ -486,15 +505,6 @@ class BaseTestCase extends TestCase
                 return new OrderReportProxy(
                     TestServiceRegister::getService(HttpClient::class),
                     TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
-                );
-            }
-        );
-
-        TestServiceRegister::registerService(
-            WidgetsProxyInterface::class,
-            static function () {
-                return new WidgetsProxy(
-                    TestServiceRegister::getService(HttpClient::class)
                 );
             }
         );
@@ -560,6 +570,7 @@ class BaseTestCase extends TestCase
         );
         TestRepositoryRegistry::registerRepository(PaymentMethod::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(Credentials::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(Deployment::getClassName(), MemoryRepository::getClassName());
     }
 
     /**

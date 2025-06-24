@@ -6,6 +6,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\Aspects\ErrorHandlingAspect;
 use SeQura\Core\BusinessLogic\AdminAPI\Aspects\StoreContextAspect;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
+use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\DisconnectController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
@@ -14,7 +15,6 @@ use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
-use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspect;
 use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspects;
 
 /**
@@ -186,5 +186,20 @@ class AdminAPI
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
             ->beforeEachMethodOfService(DisconnectController::class);
+    }
+
+    /**
+     * Returns a DeploymentsController instance.
+     *
+     * @param string $storeId
+     *
+     * @return Aspects
+     */
+    public function deployments(string $storeId): Aspects
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(DeploymentsController::class);
     }
 }

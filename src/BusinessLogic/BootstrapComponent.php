@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
+use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\DisconnectController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
@@ -21,6 +22,8 @@ use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryCo
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Credentials\Entities\Credentials;
 use SeQura\Core\BusinessLogic\DataAccess\Credentials\Repositories\CredentialsRepository;
+use SeQura\Core\BusinessLogic\DataAccess\Deployments\Entities\Deployment;
+use SeQura\Core\BusinessLogic\DataAccess\Deployments\Repositories\DeploymentRepository;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
@@ -43,6 +46,9 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
+use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
@@ -86,6 +92,7 @@ use SeQura\Core\BusinessLogic\Domain\Webhook\Services\OrderStatusProvider;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Deployments\DeploymentsProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
@@ -244,6 +251,16 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new CredentialsRepository(
                     RepositoryRegistry::getRepository(Credentials::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            DeploymentsRepositoryInterface::class,
+            static function () {
+                return new DeploymentRepository(
+                    RepositoryRegistry::getRepository(Deployment::getClassName()),
                     ServiceRegister::getService(StoreContext::class)
                 );
             }
@@ -491,6 +508,16 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new ItemFactory();
             }
         );
+
+        ServiceRegister::registerService(
+            DeploymentsService::class,
+            static function () {
+                return new DeploymentsService(
+                    ServiceRegister::getService(DeploymentsProxyInterface::class),
+                    ServiceRegister::getService(DeploymentsRepositoryInterface::class)
+                );
+            }
+        );
     }
 
     /**
@@ -629,6 +656,15 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+
+        ServiceRegister::registerService(
+            DeploymentsController::class,
+            static function () {
+                return new DeploymentsController(
+                    ServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
     }
 
     /**
@@ -672,6 +708,15 @@ class BootstrapComponent extends BaseBootstrapComponent
             ConnectionProxyInterface::class,
             static function () {
                 return new ConnectionProxy(
+                    ServiceRegister::getService(HttpClient::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            DeploymentsProxyInterface::class,
+            static function () {
+                return new DeploymentsProxy(
                     ServiceRegister::getService(HttpClient::class)
                 );
             }
