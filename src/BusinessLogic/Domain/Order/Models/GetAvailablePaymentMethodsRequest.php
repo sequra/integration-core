@@ -17,11 +17,18 @@ class GetAvailablePaymentMethodsRequest extends DataTransferObject
     protected $orderId;
 
     /**
-     * @param string $orderId
+     * @var string
      */
-    public function __construct(string $orderId)
+    protected $merchantId;
+
+    /**
+     * @param string $orderId
+     * @param string $merchantId
+     */
+    public function __construct(string $orderId, string $merchantId)
     {
         $this->orderId = $orderId;
+        $this->merchantId = $merchantId;
     }
 
     /**
@@ -41,6 +48,24 @@ class GetAvailablePaymentMethodsRequest extends DataTransferObject
     }
 
     /**
+     * @return string
+     */
+    public function getMerchantId(): string
+    {
+        return $this->merchantId;
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return void
+     */
+    public function setMerchantId(string $merchantId): void
+    {
+        $this->merchantId = $merchantId;
+    }
+
+    /**
      * Create a GetAvailablePaymentMethodsRequest instance from an array.
      *
      * @param mixed[] $data
@@ -50,7 +75,8 @@ class GetAvailablePaymentMethodsRequest extends DataTransferObject
     public static function fromArray(array $data): self
     {
         return new self(
-            self::getDataValue($data, 'order_id')
+            self::getDataValue($data, 'order_id'),
+            self::getDataValue($data, 'merchant_id')
         );
     }
 
@@ -60,6 +86,7 @@ class GetAvailablePaymentMethodsRequest extends DataTransferObject
     public function toArray(): array
     {
         $data['order_id'] = $this->orderId;
+        $data['merchant_id'] = $this->merchantId;
 
         return $data;
     }

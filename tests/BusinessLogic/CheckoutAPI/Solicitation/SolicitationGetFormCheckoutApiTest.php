@@ -68,7 +68,10 @@ class SolicitationGetFormCheckoutApiTest extends BaseTestCase
         // Assert
         self::assertTrue($response->isSuccessful(), json_encode($response->toArray(), JSON_PRETTY_PRINT));
         self::assertEquals($expectedForm, $response->getIdentificationForm());
-        self::assertEquals(new GetFormRequest('testOrderRef', 'pp5', null, false), $this->orderProxy->getLastGetFormRequest());
+        self::assertEquals(
+            new GetFormRequest('testOrderRef', 'pp5', null, false, 'testMerchantId'),
+            $this->orderProxy->getLastGetFormRequest()
+        );
     }
 
     public function testGetOrderFormForMissingSeQuraOrder()

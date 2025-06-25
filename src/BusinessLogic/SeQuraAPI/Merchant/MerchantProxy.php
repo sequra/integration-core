@@ -23,6 +23,7 @@ class MerchantProxy extends AuthorizedProxy implements MerchantProxyInterface
      */
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array
     {
+        $this->setMerchantId($request->getMerchantId());
         $response = $this->get(new GetAvailablePaymentMethodsHttpRequest($request))->decodeBodyToArray();
 
         return $this->getListOfPaymentMethods($response);

@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\SeQuraAPI\Order;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
@@ -36,6 +37,7 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
      */
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array
     {
+        $this->setMerchantId($request->getMerchantId());
         $response = $this->get(new GetAvailablePaymentMethodsHttpRequest($request))->decodeBodyToArray();
 
         return $this->getListOfPaymentMethods($response);
@@ -48,6 +50,7 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
      */
     public function getAvailablePaymentMethodsInCategories(GetAvailablePaymentMethodsRequest $request): array
     {
+        $this->setMerchantId($request->getMerchantId());
         $response = $this->get(new GetAvailablePaymentMethodsHttpRequest($request))->decodeBodyToArray();
 
         return $this->getListOfPaymentMethodsInCategories($response);
@@ -55,9 +58,12 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws InvalidCartItemsException
      */
     public function createOrder(CreateOrderRequest $request): SeQuraOrder
     {
+        $this->setMerchantId($request->getMerchant()->getId());
         $response = $this->post(new CreateOrderHttpRequest($request));
 
         return $request->toSequraOrderInstance($this->getOrderUUID($response->getHeaders()));
@@ -65,9 +71,12 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws InvalidCartItemsException
      */
     public function acknowledgeOrder(string $id, CreateOrderRequest $request): SeQuraOrder
     {
+        $this->setMerchantId($request->getMerchant()->getId());
         $this->put(new AcknowledgeOrderHttpRequest($id, $request));
 
         return $request->toSequraOrderInstance($id);
@@ -80,6 +89,8 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
      */
     public function updateOrder(UpdateOrderRequest $request): bool
     {
+        $this->setMerchantId($request->getMerchant()->getId());
+
         return $this->put(new UpdateOrderHttpRequest(
             $request->getMerchant()->getId(),
             $request->getMerchantReference()->getOrderRef1(),
@@ -92,6 +103,7 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
      */
     public function getForm(GetFormRequest $request): SeQuraForm
     {
+        $this->setMerchantId($request->getMerchantId());
         $response = $this->get(new GetFormHttpRequest($request));
 
         return new SeQuraForm($response->getBody());
