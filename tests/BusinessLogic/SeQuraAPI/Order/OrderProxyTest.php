@@ -104,7 +104,7 @@ class OrderProxyTest extends BaseTestCase
             ))
         ]);
 
-        $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('testId'));
+        $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('testId', 'testMerchantId'));
 
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
@@ -124,7 +124,7 @@ class OrderProxyTest extends BaseTestCase
             ))
         ]);
 
-        $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('testId'));
+        $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('testId', 'testMerchantId'));
 
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
@@ -144,7 +144,7 @@ class OrderProxyTest extends BaseTestCase
             ))
         ]);
 
-        $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('testId'));
+        $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('testId', 'testMerchantId'));
 
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
@@ -163,7 +163,10 @@ class OrderProxyTest extends BaseTestCase
         );
 
         $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody)]);
-        $response = $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('testId'));
+        $response = $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest(
+            'testId',
+            'testMerchantId'
+        ));
         $responseBody = json_decode($rawResponseBody, true);
         $paymentMethods = [];
 
@@ -187,9 +190,18 @@ class OrderProxyTest extends BaseTestCase
             self::assertEquals($paymentMethods[$i]['max_amount'] ?? null, $response[$i]->getMaxAmount());
             self::assertEquals($paymentMethods[$i]['cost_description'], $response[$i]->getCostDescription());
             self::assertEquals($paymentMethods[$i]['cost']['setup_fee'], $response[$i]->getCost()->getSetupFee());
-            self::assertEquals($paymentMethods[$i]['cost']['instalment_fee'], $response[$i]->getCost()->getInstalmentFee());
-            self::assertEquals($paymentMethods[$i]['cost']['down_payment_fees'], $response[$i]->getCost()->getDownPaymentFees());
-            self::assertEquals($paymentMethods[$i]['cost']['instalment_total'], $response[$i]->getCost()->getInstalmentTotal());
+            self::assertEquals(
+                $paymentMethods[$i]['cost']['instalment_fee'],
+                $response[$i]->getCost()->getInstalmentFee()
+            );
+            self::assertEquals(
+                $paymentMethods[$i]['cost']['down_payment_fees'],
+                $response[$i]->getCost()->getDownPaymentFees()
+            );
+            self::assertEquals(
+                $paymentMethods[$i]['cost']['instalment_total'],
+                $response[$i]->getCost()->getInstalmentTotal()
+            );
         }
     }
 
@@ -208,7 +220,7 @@ class OrderProxyTest extends BaseTestCase
         $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody)]);
 
         try {
-            $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('test'));
+            $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('test', 'testMerchantId'));
         } catch (HttpApiInvalidUrlParameterException $exception) {
         }
 
@@ -231,7 +243,7 @@ class OrderProxyTest extends BaseTestCase
         $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody)]);
 
         try {
-            $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('test'));
+            $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('test', 'testMerchantId'));
         } catch (HttpApiUnauthorizedException $exception) {
         }
 
@@ -255,7 +267,10 @@ class OrderProxyTest extends BaseTestCase
             ))
         ]);
 
-        $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('testId'));
+        $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest(
+            'testId',
+            'testMerchantId'
+        ));
 
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
@@ -275,7 +290,10 @@ class OrderProxyTest extends BaseTestCase
             ))
         ]);
 
-        $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('testId'));
+        $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest(
+            'testId',
+            'testMerchantId'
+        ));
 
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
@@ -295,7 +313,10 @@ class OrderProxyTest extends BaseTestCase
             ))
         ]);
 
-        $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('testId'));
+        $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest(
+            'testId',
+            'testMerchantId'
+        ));
 
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
@@ -314,7 +335,10 @@ class OrderProxyTest extends BaseTestCase
         );
 
         $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody)]);
-        $response = $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('testId'));
+        $response = $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest(
+            'testId',
+            'testMerchantId'
+        ));
         $responseBody = json_decode($rawResponseBody, true);
         $paymentMethodCategories = [];
 
@@ -328,22 +352,70 @@ class OrderProxyTest extends BaseTestCase
             self::assertEquals($paymentMethodCategories[$i]['icon'], $response[$i]->getIcon());
 
             for ($j = 0, $jMax = count($paymentMethodCategories[$i]['methods']); $j < $jMax; $j++) {
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['product'], $response[$i]->getMethods()[$j]->getProduct());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['campaign'], $response[$i]->getMethods()[$j]->getCampaign());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['title'], $response[$i]->getMethods()[$j]->getTitle());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['long_title'], $response[$i]->getMethods()[$j]->getLongTitle());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['claim'], $response[$i]->getMethods()[$j]->getClaim());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['description'], $response[$i]->getMethods()[$j]->getDescription());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['icon'], $response[$i]->getMethods()[$j]->getIcon());
-                self::assertEquals(new DateTime($paymentMethodCategories[$i]['methods'][$j]['starts_at']), $response[$i]->getMethods()[$j]->getStartsAt());
-                self::assertEquals(new DateTime($paymentMethodCategories[$i]['methods'][$j]['ends_at']), $response[$i]->getMethods()[$j]->getEndsAt());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['min_amount'] ?? null, $response[$i]->getMethods()[$j]->getMinAmount());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['max_amount'] ?? null, $response[$i]->getMethods()[$j]->getMaxAmount());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost_description'], $response[$i]->getMethods()[$j]->getCostDescription());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['setup_fee'], $response[$i]->getMethods()[$j]->getCost()->getSetupFee());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['instalment_fee'], $response[$i]->getMethods()[$j]->getCost()->getInstalmentFee());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['down_payment_fees'], $response[$i]->getMethods()[$j]->getCost()->getDownPaymentFees());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['instalment_total'], $response[$i]->getMethods()[$j]->getCost()->getInstalmentTotal());
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['product'],
+                    $response[$i]->getMethods()[$j]->getProduct()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['campaign'],
+                    $response[$i]->getMethods()[$j]->getCampaign()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['title'],
+                    $response[$i]->getMethods()[$j]->getTitle()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['long_title'],
+                    $response[$i]->getMethods()[$j]->getLongTitle()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['claim'],
+                    $response[$i]->getMethods()[$j]->getClaim()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['description'],
+                    $response[$i]->getMethods()[$j]->getDescription()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['icon'],
+                    $response[$i]->getMethods()[$j]->getIcon()
+                );
+                self::assertEquals(
+                    new DateTime($paymentMethodCategories[$i]['methods'][$j]['starts_at']),
+                    $response[$i]->getMethods()[$j]->getStartsAt()
+                );
+                self::assertEquals(
+                    new DateTime($paymentMethodCategories[$i]['methods'][$j]['ends_at']),
+                    $response[$i]->getMethods()[$j]->getEndsAt()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['min_amount'] ?? null,
+                    $response[$i]->getMethods()[$j]->getMinAmount()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['max_amount'] ?? null,
+                    $response[$i]->getMethods()[$j]->getMaxAmount()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['cost_description'],
+                    $response[$i]->getMethods()[$j]->getCostDescription()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['cost']['setup_fee'],
+                    $response[$i]->getMethods()[$j]->getCost()->getSetupFee()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['cost']['instalment_fee'],
+                    $response[$i]->getMethods()[$j]->getCost()->getInstalmentFee()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['cost']['down_payment_fees'],
+                    $response[$i]->getMethods()[$j]->getCost()->getDownPaymentFees()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['cost']['instalment_total'],
+                    $response[$i]->getMethods()[$j]->getCost()->getInstalmentTotal()
+                );
             }
         }
     }
@@ -363,7 +435,10 @@ class OrderProxyTest extends BaseTestCase
         $this->httpClient->setMockResponses([new HttpResponse(403, [], $rawResponseBody)]);
 
         try {
-            $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('test'));
+            $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest(
+                'test',
+                'testMerchantId'
+            ));
         } catch (HttpApiInvalidUrlParameterException $exception) {
         }
 
@@ -386,7 +461,10 @@ class OrderProxyTest extends BaseTestCase
         $this->httpClient->setMockResponses([new HttpResponse(401, [], $rawResponseBody)]);
 
         try {
-            $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest('test'));
+            $this->proxy->getAvailablePaymentMethodsInCategories(new GetAvailablePaymentMethodsRequest(
+                'test',
+                'testMerchantId'
+            ));
         } catch (HttpApiUnauthorizedException $exception) {
         }
 
@@ -639,7 +717,9 @@ class OrderProxyTest extends BaseTestCase
      */
     public function testMinimalCreateOrderSuccessfulResponse(): void
     {
-        $this->httpClient->setMockResponses([new HttpResponse(204, ['location' => 'https://sandbox.sequrapi.com/orders/testUUID'], '')]);
+        $this->httpClient->setMockResponses([
+            new HttpResponse(204, ['location' => 'https://sandbox.sequrapi.com/orders/testUUID'], '')
+        ]);
 
         $createOrderRequest = $this->generateMinimalCreateOrderRequest();
         $response = $this->proxy->createOrder($createOrderRequest);
@@ -655,7 +735,9 @@ class OrderProxyTest extends BaseTestCase
      */
     public function testFullCreateOrderSuccessfulResponse(): void
     {
-        $this->httpClient->setMockResponses([new HttpResponse(204, ['location' => 'https://sandbox.sequrapi.com/orders/testUUID'], '')]);
+        $this->httpClient->setMockResponses([
+            new HttpResponse(204, ['location' => 'https://sandbox.sequrapi.com/orders/testUUID'], '')
+        ]);
 
         $createOrderRequest = $this->generateFullCreateOrderRequest();
         $response = $this->proxy->createOrder($createOrderRequest);
@@ -733,7 +815,10 @@ class OrderProxyTest extends BaseTestCase
 
         self::assertCount(1, $this->httpClient->getHistory());
         $lastRequest = $this->httpClient->getLastRequest();
-        self::assertStringContainsString('https://sandbox.sequrapi.com/merchants/testMerchantId/orders/testOrderRef1', $lastRequest['url']);
+        self::assertStringContainsString(
+            'https://sandbox.sequrapi.com/merchants/testMerchantId/orders/testOrderRef1',
+            $lastRequest['url']
+        );
     }
 
     /**
@@ -813,7 +898,13 @@ class OrderProxyTest extends BaseTestCase
      */
     public function testMinimalUpdateOrderSuccessfulResponse(): void
     {
-        $this->httpClient->setMockResponses([new HttpResponse(204, ['location' => 'https://sandbox.sequrapi.com/merchants/test/orders/testOrderRef1'], '')]);
+        $this->httpClient->setMockResponses([
+            new HttpResponse(
+                204,
+                ['location' => 'https://sandbox.sequrapi.com/merchants/test/orders/testOrderRef1'],
+                ''
+            )
+        ]);
 
         $updateOrderRequest = $this->generateMinimalUpdateOrderRequest();
         $response = $this->proxy->updateOrder($updateOrderRequest);
@@ -828,7 +919,13 @@ class OrderProxyTest extends BaseTestCase
      */
     public function testFullUpdateOrderSuccessfulResponse(): void
     {
-        $this->httpClient->setMockResponses([new HttpResponse(204, ['location' => 'https://sandbox.sequrapi.com/merchants/test/orders/testOrderRef1'], '')]);
+        $this->httpClient->setMockResponses([
+            new HttpResponse(
+                204,
+                ['location' => 'https://sandbox.sequrapi.com/merchants/test/orders/testOrderRef1'],
+                ''
+            )
+        ]);
 
         $updateOrderRequest = $this->generateFullUpdateOrderRequest();
         $response = $this->proxy->updateOrder($updateOrderRequest);
