@@ -38,7 +38,7 @@ class HttpApiRequestException extends HttpRequestException
         $errors = self::getErrorMessages($response);
 
         $instance = new static(
-            !empty($errors) ? implode('. ', $errors) : $customMessage,
+            !empty($errors) ? implode('. ', $errors) : ($customMessage ?? 'An unknown error occurred.'),
             $response->getStatus()
         );
 
