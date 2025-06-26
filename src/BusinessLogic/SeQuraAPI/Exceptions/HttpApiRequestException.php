@@ -58,6 +58,9 @@ class HttpApiRequestException extends HttpRequestException
     {
         $errors = [];
         $responseBody = json_decode($response->getBody(), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return $errors; // Return empty array if JSON decoding fails
+        }
         if (!is_array($responseBody) || !isset($responseBody['errors'])) {
             return $errors;
         }
