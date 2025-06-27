@@ -186,7 +186,7 @@ class MerchantProxyTest extends BaseTestCase
 
         $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);
-        self::assertEquals('Access forbidden.', $exception->getMessage());
+        self::assertEquals('Bad merchant id \'test\' for logeecom', $exception->getMessage());
         self::assertEquals(403, $exception->getCode());
         self::assertEquals($responseBody['errors'] ?? [], $exception->getErrors());
     }
