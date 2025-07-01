@@ -17,6 +17,6 @@ class GetAvailablePaymentMethodsHttpRequest extends HttpRequest
      */
     public function __construct(GetAvailablePaymentMethodsRequest $request)
     {
-        parent::__construct('/merchants/' . $request->getMerchantId() . '/payment_methods');
+        parent::__construct('merchants/' . $request->getMerchantId() . '/payment_methods');
     }
 }

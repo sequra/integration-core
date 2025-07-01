@@ -24,6 +24,11 @@ class ConnectionData extends DataTransferObject
     protected $merchantId;
 
     /**
+     * @var string
+     */
+    protected $deployment;
+
+    /**
      * @var AuthorizationCredentials
      */
     protected $authorizationCredentials;
@@ -31,6 +36,7 @@ class ConnectionData extends DataTransferObject
     /**
      * @param string $environment
      * @param string|null $merchantId
+     * @param string $deployment
      * @param AuthorizationCredentials $authorizationCredentials
      *
      * @throws InvalidEnvironmentException
@@ -38,14 +44,16 @@ class ConnectionData extends DataTransferObject
     public function __construct(
         string $environment,
         ?string $merchantId,
+        string $deployment,
         AuthorizationCredentials $authorizationCredentials
     ) {
-        if (!in_array($environment, [BaseProxy::LIVE_MODE,BaseProxy::TEST_MODE], true)) {
+        if (!in_array($environment, [BaseProxy::LIVE_MODE, BaseProxy::TEST_MODE], true)) {
             throw new InvalidEnvironmentException();
         }
 
         $this->environment = $environment;
         $this->merchantId = $merchantId;
+        $this->deployment = $deployment;
         $this->authorizationCredentials = $authorizationCredentials;
     }
 
@@ -98,6 +106,24 @@ class ConnectionData extends DataTransferObject
     }
 
     /**
+     * @return string
+     */
+    public function getDeployment(): string
+    {
+        return $this->deployment;
+    }
+
+    /**
+     * @param string $deployment
+     *
+     * @return void
+     */
+    public function setDeployment(string $deployment): void
+    {
+        $this->deployment = $deployment;
+    }
+
+    /**
      * @inheritDoc
      */
     public function toArray(): array
@@ -105,6 +131,7 @@ class ConnectionData extends DataTransferObject
         $data['connectionData'] = [
             'environment' => $this->environment,
             'merchantId' => $this->merchantId,
+            'deployment' => $this->deployment,
             'authorizationCredentials' => $this->authorizationCredentials->toArray()
         ];
 

@@ -16,7 +16,7 @@ class MockBaseProxy extends BaseProxy
     /**
      * Base URL that will be used for initializing all HTTP requests
      */
-    protected const BASE_API_URL = 'test-sequra-proxy-url.domain.com/test-path';
+    protected const BASE_API_URL = 'https://test-sequra-proxy-url.domain.com/test-path';
 
     public function get(HttpRequest $request): HttpResponse
     {

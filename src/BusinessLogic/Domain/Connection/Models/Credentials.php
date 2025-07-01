@@ -37,24 +37,32 @@ class Credentials extends DataTransferObject
     private $payload;
 
     /**
+     * @var string
+     */
+    private $deployment;
+
+    /**
      * @param string $merchantId
      * @param string $country
      * @param string $currency
      * @param string $assetsKey
      * @param array<string> $payload
+     * @param string $deployment
      */
     public function __construct(
         string $merchantId,
         string $country,
         string $currency,
         string $assetsKey,
-        array $payload
+        array $payload,
+        string $deployment
     ) {
         $this->merchantId = $merchantId;
         $this->country = $country;
         $this->currency = $currency;
         $this->assetsKey = $assetsKey;
         $this->payload = $payload;
+        $this->deployment = $deployment;
     }
 
     /**
@@ -98,6 +106,14 @@ class Credentials extends DataTransferObject
     }
 
     /**
+     * @return string
+     */
+    public function getDeployment(): string
+    {
+        return $this->deployment;
+    }
+
+    /**
      * @return array<string,string>
      */
     public function toArray(): array
@@ -107,7 +123,8 @@ class Credentials extends DataTransferObject
             'country' => $this->country,
             'currency' => $this->currency,
             'assetsKey' => $this->assetsKey,
-            'payload' => []
+            'payload' => [],
+            'deployment' => $this->deployment
         ];
 
         foreach ($this->payload as $key => $value) {
@@ -129,7 +146,8 @@ class Credentials extends DataTransferObject
             $data['country'] ?? '',
             $data['currency'] ?? '',
             $data['assetsKey'] ?? '',
-            $data['payload'] ?? []
+            $data['payload'] ?? [],
+            $data['deployment'] ?? ''
         );
     }
 }

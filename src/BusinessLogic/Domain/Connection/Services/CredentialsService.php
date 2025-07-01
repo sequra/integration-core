@@ -88,4 +88,16 @@ class CredentialsService
     {
         return $this->credentialsRepository->getCredentialsByCountryCode($countryCode);
     }
+
+    /**
+     * Returns credentials by given merchant ID
+     *
+     * @param string $merchantId
+     *
+     * @return Credentials|null
+     */
+    public function getCredentialsByMerchantId(string $merchantId): ?Credentials
+    {
+        return $this->credentialsRepository->getCredentialsByMerchantId($merchantId);
+    }
 }

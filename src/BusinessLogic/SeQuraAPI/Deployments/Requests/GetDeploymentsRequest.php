@@ -16,6 +16,6 @@ class GetDeploymentsRequest extends HttpRequest
      */
     public function __construct()
     {
-        parent::__construct('/deployments');
+        parent::__construct('deployments');
     }
 }

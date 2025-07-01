@@ -14,14 +14,19 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\Deployments
 class DeploymentsService
 {
     /**
- * @var DeploymentsProxyInterface $deploymentProxy
-*/
+     * @var DeploymentsProxyInterface $deploymentProxy
+     */
     private $deploymentProxy;
 
     /**
- * @var DeploymentsRepositoryInterface $deploymentRepository
-*/
+     * @var DeploymentsRepositoryInterface $deploymentRepository
+     */
     private $deploymentRepository;
+
+    /**
+     * @var array<string, Deployment>
+     */
+    private static $deployments = [];
 
     /**
      * @param DeploymentsProxyInterface $deploymentProxy
@@ -46,5 +51,35 @@ class DeploymentsService
         !empty($deployments) && $this->deploymentRepository->setDeployments($deployments);
 
         return $deployments;
+    }
+
+    /**
+     * @param string $deploymentId
+     *
+     * @return ?Deployment
+     */
+    public function getDeploymentById(string $deploymentId): ?Deployment
+    {
+        if (!empty(self::$deployments[$deploymentId])) {
+            return self::$deployments[$deploymentId];
+        }
+
+        $deployment = $this->deploymentRepository->getDeploymentById($deploymentId);
+
+        if (!$deployment) {
+            $allDeployments = $this->getDeployments();
+
+            foreach ($allDeployments as $deployment) {
+                if ($deployment->getId() === $deploymentId) {
+                    self::$deployments[$deploymentId] = $deployment;
+
+                    return $deployment;
+                }
+            }
+        }
+
+        self::$deployments[$deploymentId] = $deployment;
+
+        return self::$deployments[$deploymentId];
     }
 }

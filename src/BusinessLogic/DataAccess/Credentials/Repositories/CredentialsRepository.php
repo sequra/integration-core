@@ -55,6 +55,7 @@ class CredentialsRepository implements CredentialsRepositoryInterface
 
                 $credentialsEntity->setStoreId($this->storeContext->getStoreId());
                 $credentialsEntity->setCountry($credential->getCountry());
+                $credentialsEntity->setMerchantId($credential->getMerchantId());
                 $credentialsEntity->setCredentials($credential);
                 $this->repository->save($credentialsEntity);
 
@@ -112,6 +113,27 @@ class CredentialsRepository implements CredentialsRepositoryInterface
     public function getCredentialsByCountryCode(string $countryCode): ?Credentials
     {
         $entity = $this->getCredentialsEntityByCountryCode($countryCode);
+
+        return $entity ? $entity->getCredentials() : null;
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return ?Credentials
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function getCredentialsByMerchantId(string $merchantId): ?Credentials
+    {
+        $filter = new QueryFilter();
+        $filter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
+            ->where('merchantId', Operators::EQUALS, $merchantId);
+
+        /**
+         * @var ?CredentialsEntity $entity
+         */
+        $entity = $this->repository->selectOne($filter);
 
         return $entity ? $entity->getCredentials() : null;
     }

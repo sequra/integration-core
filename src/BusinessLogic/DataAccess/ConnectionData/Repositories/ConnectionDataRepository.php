@@ -43,9 +43,9 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function getConnectionData(): ?ConnectionData
+    public function getConnectionDataByDeploymentId(string $deployment): ?ConnectionData
     {
-        $entity = $this->getConnectionDataEntity();
+        $entity = $this->getConnectionDataEntityByDeployment($deployment);
 
         return $entity ? $entity->getConnectionData() : null;
     }
@@ -57,10 +57,11 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
      */
     public function setConnectionData(ConnectionData $connectionData): void
     {
-        $existingConnectionData = $this->getConnectionDataEntity();
+        $existingConnectionData = $this->getConnectionDataEntityByDeployment($connectionData->getDeployment());
 
         if ($existingConnectionData) {
             $existingConnectionData->setConnectionData($connectionData);
+            $existingConnectionData->setDeployment($connectionData->getDeployment());
             $existingConnectionData->setStoreId($this->storeContext->getStoreId());
             $this->repository->update($existingConnectionData);
 
@@ -69,6 +70,7 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
 
         $entity = new ConnectionDataEntity();
         $entity->setStoreId($this->storeContext->getStoreId());
+        $entity->setDeployment($connectionData->getDeployment());
         $entity->setConnectionData($connectionData);
         $this->repository->save($entity);
     }
@@ -79,8 +81,8 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
     public function getOldestConnectionSettingsStoreId(): ?string
     {
         /**
-        * @var ConnectionDataEntity $connectionData
-        */
+         * @var ConnectionDataEntity $connectionData
+         */
         $connectionData = $this->repository->selectOne(new QueryFilter());
 
         return $connectionData ? $connectionData->getStoreId() : null;
@@ -92,8 +94,8 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
     public function getAllConnectionSettingsStores(): array
     {
         /**
-        * @var ConnectionDataEntity[] $entities
-        */
+         * @var ConnectionDataEntity[] $entities
+         */
         $entities = $this->repository->select();
 
         return $entities ? array_map(function ($entity) {
@@ -102,16 +104,41 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
     }
 
     /**
+     * @return ConnectionData[]
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function getAllConnectionSettings(): array
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
+        /**
+         * @var ConnectionDataEntity[] $connectionEntities
+         */
+        $connectionEntities = $this->repository->select($queryFilter);
+
+        return array_map(
+            function (ConnectionDataEntity $connectionEntity) {
+                return $connectionEntity->getConnectionData();
+            },
+            $connectionEntities
+        );
+    }
+
+    /**
      * Gets the connection data entity from the database.
+     *
+     * @param string $deployment
      *
      * @return ConnectionDataEntity|null
      *
      * @throws QueryFilterInvalidParamException
      */
-    protected function getConnectionDataEntity(): ?ConnectionDataEntity
+    protected function getConnectionDataEntityByDeployment(string $deployment): ?ConnectionDataEntity
     {
         $queryFilter = new QueryFilter();
-        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
+            ->where('deployment', Operators::EQUALS, $deployment);
 
         /**
          * @var ConnectionDataEntity $connectionData

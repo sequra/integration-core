@@ -161,6 +161,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'sandbox',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -190,6 +191,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -215,6 +217,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
         //arrange
         $this->countryConfigService->saveCountryConfiguration([new CountryConfiguration('ES', 'ES')]);
 
+
         // act
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('ES', 'ES');
 
@@ -237,15 +240,16 @@ class WidgetSettingsServiceTest extends BaseTestCase
         //arrange
         $this->credentialsRepository->setCredentials(
             [
-                new Credentials('merchantES', 'ES', 'EUR', 'asset', []),
-                new Credentials('merchantFR', 'FR', 'EUR', 'asset', []),
-                new Credentials('merchantIT', 'IT', 'EUR', 'asset', []),
+                new Credentials('merchantES', 'ES', 'EUR', 'asset', [], 'sequra'),
+                new Credentials('merchantFR', 'FR', 'EUR', 'asset', [], 'sequra'),
+                new Credentials('merchantIT', 'IT', 'EUR', 'asset', [], 'svea'),
             ]
         );
         $this->connectionService->saveConnectionData(
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -281,6 +285,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -316,6 +321,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -351,6 +357,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -383,6 +390,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -480,6 +488,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -580,6 +589,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -613,6 +623,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -647,6 +658,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -681,6 +693,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -724,6 +737,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -815,6 +829,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -911,6 +926,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -944,6 +960,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -978,6 +995,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -1021,6 +1039,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -1117,6 +1136,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -1150,6 +1170,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -1184,6 +1205,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -1236,6 +1258,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );

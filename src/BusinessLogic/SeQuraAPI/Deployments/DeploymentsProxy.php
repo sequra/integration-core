@@ -17,16 +17,16 @@ use SeQura\Core\Infrastructure\Http\HttpClient;
 class DeploymentsProxy extends BaseProxy implements DeploymentsProxyInterface
 {
     /**
- * @var string
-*/
-    protected const BASE_API_URL = 'sequrapi.com';
+     * @var string
+     */
+    protected const BASE_API_URL = 'https://live.sequrapi.com/';
 
     /**
      * @param HttpClient $httpClient
      */
     public function __construct(HttpClient $httpClient)
     {
-        parent::__construct($httpClient, self::LIVE_MODE);
+        parent::__construct($httpClient, 'https://live.sequrapi.com/');
     }
 
     /**

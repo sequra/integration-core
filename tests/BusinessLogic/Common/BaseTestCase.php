@@ -45,6 +45,7 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\Co
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
 use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
@@ -86,6 +87,8 @@ use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProv
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Deployments\DeploymentsProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AuthorizedProxyFactory;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\ConnectionProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
@@ -113,7 +116,11 @@ use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MemoryRepositoryWithConditionalDelete;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsProxy;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
@@ -462,10 +469,44 @@ class BaseTestCase extends TestCase
         );
 
         TestServiceRegister::registerService(
+            DeploymentsService::class,
+            static function () {
+                return new MockDeploymentsService(
+                    TestServiceRegister::getService(DeploymentsProxyInterface::class),
+                    TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            DeploymentsProxyInterface::class,
+            static function () {
+                return new MockDeploymentsProxy();
+            }
+        );
+
+        TestServiceRegister::registerService(
+            DeploymentsRepositoryInterface::class,
+            static function () {
+                return new MockDeploymentsRepository();
+            }
+        );
+
+        TestServiceRegister::registerService(
+            ConnectionService::class,
+            static function () {
+                return new MockConnectionService(
+                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                    TestServiceRegister::getService(CredentialsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
             ConnectionProxyInterface::class,
             static function () {
                 return new ConnectionProxy(
-                    TestServiceRegister::getService(HttpClient::class)
+                    TestServiceRegister::getService(ConnectionProxyFactory::class)
                 );
             }
         );
@@ -480,11 +521,31 @@ class BaseTestCase extends TestCase
         );
 
         TestServiceRegister::registerService(
+            AuthorizedProxyFactory::class,
+            static function () {
+                return new AuthorizedProxyFactory(
+                    TestServiceRegister::getService(HttpClient::class),
+                    TestServiceRegister::getService(ConnectionService::class),
+                    TestServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            ConnectionProxyFactory::class,
+            static function () {
+                return new ConnectionProxyFactory(
+                    TestServiceRegister::getService(HttpClient::class),
+                    TestServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
             MerchantProxyInterface::class,
             static function () {
                 return new MerchantProxy(
-                    TestServiceRegister::getService(HttpClient::class),
-                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                    TestServiceRegister::getService(AuthorizedProxyFactory::class)
                 );
             }
         );
@@ -493,8 +554,7 @@ class BaseTestCase extends TestCase
             OrderProxyInterface::class,
             static function () {
                 return new OrderProxy(
-                    TestServiceRegister::getService(HttpClient::class),
-                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                    TestServiceRegister::getService(AuthorizedProxyFactory::class)
                 );
             }
         );
@@ -503,8 +563,7 @@ class BaseTestCase extends TestCase
             OrderReportProxyInterface::class,
             static function () {
                 return new OrderReportProxy(
-                    TestServiceRegister::getService(HttpClient::class),
-                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                    TestServiceRegister::getService(AuthorizedProxyFactory::class)
                 );
             }
         );

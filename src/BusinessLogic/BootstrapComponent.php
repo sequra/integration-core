@@ -93,6 +93,8 @@ use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProv
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Deployments\DeploymentsProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AuthorizedProxyFactory;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\ConnectionProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
@@ -675,11 +677,21 @@ class BootstrapComponent extends BaseBootstrapComponent
     protected static function initProxies(): void
     {
         ServiceRegister::registerService(
+            AuthorizedProxyFactory::class,
+            static function () {
+                return new AuthorizedProxyFactory(
+                    ServiceRegister::getService(HttpClient::class),
+                    ServiceRegister::getService(ConnectionService::class),
+                    ServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             OrderProxyInterface::class,
             static function () {
                 return new OrderProxy(
-                    ServiceRegister::getService(HttpClient::class),
-                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                    ServiceRegister::getService(AuthorizedProxyFactory::class)
                 );
             }
         );
@@ -688,8 +700,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             OrderReportProxyInterface::class,
             static function () {
                 return new OrderReportProxy(
-                    ServiceRegister::getService(HttpClient::class),
-                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                    ServiceRegister::getService(AuthorizedProxyFactory::class)
                 );
             }
         );
@@ -698,8 +709,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             MerchantProxyInterface::class,
             static function () {
                 return new MerchantProxy(
-                    ServiceRegister::getService(HttpClient::class),
-                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                    ServiceRegister::getService(AuthorizedProxyFactory::class)
                 );
             }
         );
@@ -708,7 +718,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             ConnectionProxyInterface::class,
             static function () {
                 return new ConnectionProxy(
-                    ServiceRegister::getService(HttpClient::class)
+                    ServiceRegister::getService(ConnectionProxyFactory::class)
                 );
             }
         );

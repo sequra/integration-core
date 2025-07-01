@@ -23,12 +23,14 @@ class ConnectionDataTest extends BaseTestCase
         $environment = BaseProxy::TEST_MODE;
         $merchantId = 'test_merchant';
         $authorizationCredentials = new AuthorizationCredentials('test_username', 'test_password');
+        $deployment = 'sequra';
 
-        $connectionData = new ConnectionData($environment, $merchantId, $authorizationCredentials);
+        $connectionData = new ConnectionData($environment, $merchantId, $deployment, $authorizationCredentials);
 
         $this->assertSame($environment, $connectionData->getEnvironment());
         $this->assertSame($merchantId, $connectionData->getMerchantId());
         $this->assertSame($authorizationCredentials, $connectionData->getAuthorizationCredentials());
+        $this->assertSame($deployment, $connectionData->getDeployment());
     }
 
     /**
@@ -39,20 +41,24 @@ class ConnectionDataTest extends BaseTestCase
         $environment = BaseProxy::TEST_MODE;
         $merchantId = 'test_merchant';
         $authorizationCredentials = new AuthorizationCredentials('test_username', 'test_password');
+        $deployment = 'sequra';
 
-        $connectionData = new ConnectionData($environment, $merchantId, $authorizationCredentials);
+        $connectionData = new ConnectionData($environment, $merchantId, $deployment, $authorizationCredentials);
 
         $newEnvironment = BaseProxy::LIVE_MODE;
         $newMerchantId = 'new_test_merchant';
         $newAuthorizationCredentials = new AuthorizationCredentials('test_username', 'test_password');
+        $newDeployment = 'svea';
 
         $connectionData->setEnvironment($newEnvironment);
         $connectionData->setMerchantId($newMerchantId);
         $connectionData->setAuthorizationCredentials($newAuthorizationCredentials);
+        $connectionData->setDeployment($newDeployment);
 
         $this->assertSame($newEnvironment, $connectionData->getEnvironment());
         $this->assertSame($newMerchantId, $connectionData->getMerchantId());
         $this->assertSame($newAuthorizationCredentials, $connectionData->getAuthorizationCredentials());
+        $this->assertSame($newDeployment, $connectionData->getDeployment());
     }
 
     public function testInvalidEnvironmentException(): void
@@ -62,8 +68,9 @@ class ConnectionDataTest extends BaseTestCase
 
         $environment = 'invalid_env';
         $merchantId = 'test_merchant';
+        $deployment = 'sequra';
         $authorizationCredentials = new AuthorizationCredentials('test_username', 'test_password');
 
-        new ConnectionData($environment, $merchantId, $authorizationCredentials);
+        new ConnectionData($environment, $merchantId, $deployment, $authorizationCredentials);
     }
 }

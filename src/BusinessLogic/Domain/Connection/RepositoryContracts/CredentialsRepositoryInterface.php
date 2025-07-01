@@ -40,4 +40,13 @@ interface CredentialsRepositoryInterface
      * @return ?Credentials
      */
     public function getCredentialsByCountryCode(string $countryCode): ?Credentials;
+
+    /**
+     * Retrieves credentials for specific merchant ID.
+     *
+     * @param string $merchantId
+     *
+     * @return ?Credentials
+     */
+    public function getCredentialsByMerchantId(string $merchantId): ?Credentials;
 }

@@ -60,6 +60,7 @@ class MerchantProxyTest extends BaseTestCase
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'test',
+            'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
 

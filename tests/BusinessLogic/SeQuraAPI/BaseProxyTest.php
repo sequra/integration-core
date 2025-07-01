@@ -51,14 +51,14 @@ class BaseProxyTest extends BaseTestCase
     {
         $this->prepareSuccessfulResponse();
 
-        $response = $this->proxy->get(new HttpRequest('/hello'));
+        $response = $this->proxy->get(new HttpRequest('hello'));
         self::assertNotNull($response);
         self::assertNotEmpty($this->httpClient->getHistory());
 
         $request = $this->httpClient->getLastRequest();
         self::assertEquals(HttpClient::HTTP_METHOD_GET, $request['method']);
         self::assertEquals('[]', (string)$request['body']);
-        self::assertEquals('https://sandbox.test-sequra-proxy-url.domain.com/test-path/hello', $request['url']);
+        self::assertEquals('https://live.sequrapi.com/hello', $request['url']);
     }
 
     /**
@@ -70,14 +70,14 @@ class BaseProxyTest extends BaseTestCase
     {
         $this->prepareSuccessfulResponse();
 
-        $response = $this->proxy->delete(new HttpRequest('/hello'));
+        $response = $this->proxy->delete(new HttpRequest('hello'));
         self::assertNotNull($response);
         self::assertNotEmpty($this->httpClient->getHistory());
 
         $request = $this->httpClient->getLastRequest();
         self::assertEquals(HttpClient::HTTP_METHOD_DELETE, $request['method']);
         self::assertEquals('[]', $request['body']);
-        self::assertEquals('https://sandbox.test-sequra-proxy-url.domain.com/test-path/hello', $request['url']);
+        self::assertEquals('https://live.sequrapi.com/hello', $request['url']);
     }
 
     /**
@@ -88,7 +88,7 @@ class BaseProxyTest extends BaseTestCase
     public function testPostMethod(): void
     {
         $this->prepareSuccessfulResponse();
-        $request = new HttpRequest('/hello');
+        $request = new HttpRequest('hello');
         $body = ['test' => 123];
         $request->setBody($body);
 
@@ -99,7 +99,7 @@ class BaseProxyTest extends BaseTestCase
         $request = $this->httpClient->getLastRequest();
         self::assertEquals(HttpClient::HTTP_METHOD_POST, $request['method']);
         self::assertEquals(json_encode($body), $request['body']);
-        self::assertEquals('https://sandbox.test-sequra-proxy-url.domain.com/test-path/hello', $request['url']);
+        self::assertEquals('https://live.sequrapi.com/hello', $request['url']);
     }
 
     /**
@@ -111,7 +111,7 @@ class BaseProxyTest extends BaseTestCase
     {
         $this->prepareSuccessfulResponse();
         $body = array('test' => 123);
-        $request = new HttpRequest('/hello');
+        $request = new HttpRequest('hello');
         $request->setBody($body);
 
         $response = $this->proxy->put($request);
@@ -121,7 +121,7 @@ class BaseProxyTest extends BaseTestCase
         $request = $this->httpClient->getLastRequest();
         self::assertEquals(HttpClient::HTTP_METHOD_PUT, $request['method']);
         self::assertEquals(json_encode($body), $request['body']);
-        self::assertEquals('https://sandbox.test-sequra-proxy-url.domain.com/test-path/hello', $request['url']);
+        self::assertEquals('https://live.sequrapi.com/hello', $request['url']);
     }
 
     /**
@@ -133,7 +133,7 @@ class BaseProxyTest extends BaseTestCase
     {
         $this->prepareSuccessfulResponse();
         $body = array('test' => 123);
-        $request = new HttpRequest('/hello');
+        $request = new HttpRequest('hello');
         $request->setBody($body);
 
         $response = $this->proxy->patch($request);
@@ -143,7 +143,7 @@ class BaseProxyTest extends BaseTestCase
         $request = $this->httpClient->getLastRequest();
         self::assertEquals(HttpClient::HTTP_METHOD_PATCH, $request['method']);
         self::assertEquals(json_encode($body), $request['body']);
-        self::assertEquals('https://sandbox.test-sequra-proxy-url.domain.com/test-path/hello', $request['url']);
+        self::assertEquals('https://live.sequrapi.com/hello', $request['url']);
     }
 
     /**
@@ -155,14 +155,14 @@ class BaseProxyTest extends BaseTestCase
     {
         $this->prepareSuccessfulResponse();
 
-        $response = $this->proxy->post(new HttpRequest('/hello'));
+        $response = $this->proxy->post(new HttpRequest('hello'));
         self::assertNotNull($response);
         self::assertNotEmpty($this->httpClient->getHistory());
 
         $request = $this->httpClient->getLastRequest();
         self::assertEquals(HttpClient::HTTP_METHOD_POST, $request['method']);
         self::assertEquals('[]', $request['body']);
-        self::assertEquals('https://sandbox.test-sequra-proxy-url.domain.com/test-path/hello', $request['url']);
+        self::assertEquals('https://live.sequrapi.com/hello', $request['url']);
     }
 
     /**
@@ -196,7 +196,7 @@ class BaseProxyTest extends BaseTestCase
     {
         $this->prepareSuccessfulResponse();
         $headers = array('test' => 123);
-        $request = new HttpRequest('/hello');
+        $request = new HttpRequest('hello');
         $request->setHeaders($headers);
 
         $response = $this->proxy->get($request);
@@ -206,7 +206,7 @@ class BaseProxyTest extends BaseTestCase
         $request = $this->httpClient->getLastRequest();
         self::assertEquals(HttpClient::HTTP_METHOD_GET, $request['method']);
         self::assertEquals('[]', $request['body']);
-        self::assertEquals('https://sandbox.test-sequra-proxy-url.domain.com/test-path/hello', $request['url']);
+        self::assertEquals('https://live.sequrapi.com/hello', $request['url']);
         $headers = $request['headers'];
         self::assertNotEmpty($headers);
         self::assertArrayHasKey('test', $headers);
@@ -221,7 +221,7 @@ class BaseProxyTest extends BaseTestCase
     public function testAdditionalQueryParams(): void
     {
         $this->prepareSuccessfulResponse();
-        $request = new HttpRequest('/hello');
+        $request = new HttpRequest('hello');
         $request->setQueries(['propertyName' => 'property Value']);
 
         $response = $this->proxy->get($request);
@@ -247,7 +247,7 @@ class BaseProxyTest extends BaseTestCase
     {
         $this->prepareSuccessfulResponse();
 
-        $request = new HttpRequest('/hello');
+        $request = new HttpRequest('hello');
         $proxy = new MockBaseProxy($this->httpClient, $baseUrl);
 
         $response = $proxy->get($request);
@@ -257,7 +257,7 @@ class BaseProxyTest extends BaseTestCase
         $request = $this->httpClient->getLastRequest();
         self::assertEquals(HttpClient::HTTP_METHOD_GET, $request['method']);
         self::assertEquals('[]', (string)$request['body']);
-        self::assertEquals('https://sandbox.test-sequra-proxy-url.domain.com/test-path/hello', $request['url']);
+        self::assertEquals('https://test-sequra-proxy-url.domain.com/test-path/hello', $request['url']);
     }
 
     /**
@@ -266,9 +266,9 @@ class BaseProxyTest extends BaseTestCase
     public function baseUrlProvider(): array
     {
         return [
-            ['test-sequra-proxy-url.domain.com/test-path/'],
-            ['http://test-sequra-proxy-url.domain.com/test-path/'],
-            ['https://test-sequra-proxy-url.domain.com/test-path'],
+            ['https://test-sequra-proxy-url.domain.com/test-path/'],
+            ['https://test-sequra-proxy-url.domain.com/test-path/'],
+            ['https://test-sequra-proxy-url.domain.com/test-path/'],
         ];
     }
 

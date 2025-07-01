@@ -124,7 +124,7 @@ class WidgetSettingsService
             $credentials ? $credentials->getAssetsKey() : '',
             $merchantId,
             $this->getWidgetSupportedProducts($merchantId),
-            $this->getScriptUri(),
+            $this->getScriptUri($credentials ? $credentials->getDeployment() : ''),
             $this->widgetConfigurator->getLocale() ?? 'es-ES',
             $this->widgetConfigurator->getCurrency() ?? 'EUR',
             $this->widgetConfigurator->getDecimalSeparator() ?? ',',
@@ -378,12 +378,13 @@ class WidgetSettingsService
     /**
      * Returns script uri
      *
+     * @param string $deployment
+     *
      * @return string
-     * @throws Exception
      */
-    protected function getScriptUri(): string
+    protected function getScriptUri(string $deployment): string
     {
-        $settings = $this->connectionService->getConnectionData();
+        $settings = $this->connectionService->getConnectionDataByDeployment($deployment);
         if (!$settings || !$settings->getEnvironment()) {
             return '';
         }

@@ -3,6 +3,8 @@
 namespace SeQura\Core\BusinessLogic\Domain\Connection\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
@@ -39,7 +41,7 @@ class ConnectionService
     }
 
     /**
-     * @param ConnectionData $connectionData
+     * @param ConnectionData[] $connections
      *
      * @return void
      *
@@ -47,10 +49,12 @@ class ConnectionService
      * @throws HttpRequestException
      * @throws WrongCredentialsException
      */
-    public function connect(ConnectionData $connectionData): void
+    public function connect(array $connections): void
     {
-        $this->credentialsService->validateAndUpdateCredentials($connectionData);
-        $this->saveConnectionData($connectionData);
+        foreach ($connections as $connectionData) {
+            $this->credentialsService->validateAndUpdateCredentials($connectionData);
+            $this->saveConnectionData($connectionData);
+        }
     }
 
     /**
@@ -74,23 +78,23 @@ class ConnectionService
     /**
      * Retrieves connection data from the database via connection data repository.
      *
-     * @return ConnectionData|null
+     * @return ConnectionData[]
      */
-    public function getConnectionData(): ?ConnectionData
+    public function getAllConnectionData(): array
     {
-        return $this->connectionDataRepository->getConnectionData();
+        return $this->connectionDataRepository->getAllConnectionSettings();
     }
 
     /**
-     * Calls the repository to save the connection data to the database.
+     * Retrieves connection data from the database via connection data repository.
      *
-     * @param ConnectionData $connectionData
+     * @param string $deployment
      *
-     * @return void
+     * @return ConnectionData|null
      */
-    public function saveConnectionData(ConnectionData $connectionData): void
+    public function getConnectionDataByDeployment(string $deployment): ?ConnectionData
     {
-        $this->connectionDataRepository->setConnectionData($connectionData);
+        return $this->connectionDataRepository->getConnectionDataByDeploymentId($deployment);
     }
 
     /**
@@ -108,8 +112,52 @@ class ConnectionService
             return $credentials;
         }
 
-        $connectionData = $this->getConnectionData();
+        $connections = $this->getAllConnectionData();
+        $credentials = [];
+        foreach ($connections as $connectionData) {
+            $credentials = $this->credentialsService->validateAndUpdateCredentials($connectionData);
+        }
 
-        return $connectionData ? $this->credentialsService->validateAndUpdateCredentials($connectionData) : [];
+        return $credentials;
+    }
+
+    /**
+     * Calls the repository to save the connection data to the database.
+     *
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     */
+    public function saveConnectionData(ConnectionData $connectionData): void
+    {
+        $this->connectionDataRepository->setConnectionData($connectionData);
+    }
+
+    /**
+     * Fetches connection data based on merchant ID. Firstly, credentials are fetched, and then based on deployment,
+     * Connection data are fetched.
+     *
+     * @param string $merchantId
+     *
+     * @return ConnectionData
+     *
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     */
+    public function getConnectionDataByMerchantId(string $merchantId): ConnectionData
+    {
+        $credentials = $this->credentialsService->getCredentialsByMerchantId($merchantId);
+
+        if (!$credentials) {
+            throw new CredentialsNotFoundException();
+        }
+
+        $connectionData = $this->connectionDataRepository->getConnectionDataByDeploymentId($credentials->getDeployment());
+
+        if (!$connectionData) {
+            throw new ConnectionDataNotFoundException();
+        }
+
+        return $connectionData;
     }
 }

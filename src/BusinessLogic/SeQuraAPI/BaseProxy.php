@@ -17,12 +17,12 @@ use SeQura\Core\Infrastructure\Http\HttpResponse;
  *
  * @package SeQura\Core\BusinessLogic\SeQuraAPI
  */
-abstract class BaseProxy
+class BaseProxy
 {
     /**
      * Base SeQura API URL.
      */
-    protected const BASE_API_URL = 'sequrapi.com';
+    protected const BASE_API_URL = 'https://live.sequrapi.com/';
 
     /**
      * Test mode string.
@@ -42,20 +42,22 @@ abstract class BaseProxy
     protected $httpClient;
 
     /**
-     * @var string
+     * @var string $baseUrl
      */
-    protected $mode;
+    protected $baseUrl;
 
     /**
      * Proxy constructor.
      *
      * @param HttpClient $httpClient
-     * @param string $mode
+     * @param string $baseUrl
      */
-    public function __construct(HttpClient $httpClient, string $mode = self::TEST_MODE)
-    {
+    public function __construct(
+        HttpClient $httpClient,
+        string $baseUrl = self::BASE_API_URL
+    ) {
         $this->httpClient = $httpClient;
-        $this->mode = $mode === self::LIVE_MODE ? self::LIVE_MODE : self::TEST_MODE;
+        $this->baseUrl = $baseUrl;
     }
 
     /**
@@ -67,7 +69,7 @@ abstract class BaseProxy
      *
      * @throws HttpRequestException
      */
-    protected function get(HttpRequest $request): HttpResponse
+    public function get(HttpRequest $request): HttpResponse
     {
         return $this->call(HttpClient::HTTP_METHOD_GET, $request);
     }
@@ -81,7 +83,7 @@ abstract class BaseProxy
      *
      * @throws HttpRequestException
      */
-    protected function delete(HttpRequest $request): HttpResponse
+    public function delete(HttpRequest $request): HttpResponse
     {
         return $this->call(HttpClient::HTTP_METHOD_DELETE, $request);
     }
@@ -95,7 +97,7 @@ abstract class BaseProxy
      *
      * @throws HttpRequestException
      */
-    protected function post(HttpRequest $request): HttpResponse
+    public function post(HttpRequest $request): HttpResponse
     {
         return $this->call(HttpClient::HTTP_METHOD_POST, $request);
     }
@@ -109,7 +111,7 @@ abstract class BaseProxy
      *
      * @throws HttpRequestException
      */
-    protected function put(HttpRequest $request): HttpResponse
+    public function put(HttpRequest $request): HttpResponse
     {
         return $this->call(HttpClient::HTTP_METHOD_PUT, $request);
     }
@@ -123,7 +125,7 @@ abstract class BaseProxy
      *
      * @throws HttpRequestException
      */
-    protected function patch(HttpRequest $request): HttpResponse
+    public function patch(HttpRequest $request): HttpResponse
     {
         return $this->call(HttpClient::HTTP_METHOD_PATCH, $request);
     }
@@ -191,11 +193,10 @@ abstract class BaseProxy
      */
     protected function getRequestUrl(HttpRequest $request): string
     {
-        $baseUrl = sprintf('https://%s.%s', $this->mode, trim(static::BASE_API_URL, '/'));
         $sanitizedEndpoint = ltrim($request->getEndpoint(), '/');
         $queryString = $this->getQueryString($request);
 
-        return sprintf('%s/%s%s', $baseUrl, $sanitizedEndpoint, !empty($queryString) ? "?$queryString" : '');
+        return sprintf('%s%s%s', $this->baseUrl, $sanitizedEndpoint, !empty($queryString) ? "?$queryString" : '');
     }
 
     /**

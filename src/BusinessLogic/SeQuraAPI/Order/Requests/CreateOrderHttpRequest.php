@@ -17,7 +17,7 @@ class CreateOrderHttpRequest extends HttpRequest
      */
     public function __construct(BaseOrderRequest $request)
     {
-        parent::__construct('/orders', $this->transformBody($request));
+        parent::__construct('orders', $this->transformBody($request));
     }
 
     /**

@@ -2,7 +2,8 @@
 
 namespace SeQura\Core\BusinessLogic\SeQuraAPI\Authorization;
 
-use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 
@@ -11,7 +12,7 @@ use SeQura\Core\Infrastructure\Http\HttpClient;
  *
  * @package SeQura\Core\BusinessLogic\SeQuraAPI\Authorization
  */
-abstract class AuthorizedProxy extends BaseProxy
+class AuthorizedProxy extends BaseProxy
 {
     public const AUTHORIZATION_HEADER_KEY = 'Authorization';
     public const AUTHORIZATION_HEADER_VALUE_PREFIX = 'Authorization: Basic ';
@@ -19,29 +20,44 @@ abstract class AuthorizedProxy extends BaseProxy
     public const MERCHANT_ID_HEADER_KEY = 'Sequra-Merchant-Id';
 
     /**
-     * @var ConnectionDataRepositoryInterface
+     * @var ConnectionData $connectionData
      */
-    protected $connectionDataRepository;
+    protected $connectionData;
+
+    /**
+     * @var Deployment $deployment
+     */
+    protected $deployment;
 
     /**
      * @var string $merchantId
      */
-    private $merchantId = '';
+    protected $merchantId;
 
     /**
      * AuthorizedProxy constructor.
      *
      * @param HttpClient $client
-     * @param ConnectionDataRepositoryInterface $connectionDataRepository
+     * @param ConnectionData $connectionData
+     * @param Deployment $deployment
+     * @param string $merchantId
      */
     public function __construct(
         HttpClient $client,
-        ConnectionDataRepositoryInterface $connectionDataRepository
+        ConnectionData $connectionData,
+        Deployment $deployment,
+        string $merchantId
     ) {
-        $connectionData = $connectionDataRepository->getConnectionData();
-        parent::__construct($client, $connectionData ? $connectionData->getEnvironment() : self::TEST_MODE);
+        $this->httpClient = $client;
+        $this->connectionData = $connectionData;
+        $this->deployment = $deployment;
+        $this->merchantId = $merchantId;
 
-        $this->connectionDataRepository = $connectionDataRepository;
+        parent::__construct(
+            $client,
+            $connectionData->getEnvironment() === self::LIVE_MODE ?
+                $deployment->getLiveDeploymentURL()->getApiBaseUrl() : $deployment->getSandboxDeploymentURL()->getApiBaseUrl()
+        );
     }
 
     /**
@@ -51,16 +67,10 @@ abstract class AuthorizedProxy extends BaseProxy
      */
     protected function getHeaders(): array
     {
-        $connectionData = $this->connectionDataRepository->getConnectionData();
-
-        if (!$connectionData) {
-            return parent::getHeaders();
-        }
-
         $token = base64_encode(sprintf(
             '%s:%s',
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getAuthorizationCredentials()->getPassword()
+            $this->connectionData->getAuthorizationCredentials()->getUsername(),
+            $this->connectionData->getAuthorizationCredentials()->getPassword()
         ));
 
         return array_merge(
@@ -70,15 +80,5 @@ abstract class AuthorizedProxy extends BaseProxy
                 self::MERCHANT_ID_HEADER_KEY => $this->merchantId,
             ]
         );
-    }
-
-    /**
-     * @param string $merchantId
-     *
-     * @return void
-     */
-    public function setMerchantId(string $merchantId): void
-    {
-        $this->merchantId = $merchantId;
     }
 }

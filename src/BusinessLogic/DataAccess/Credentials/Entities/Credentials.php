@@ -29,6 +29,10 @@ class Credentials extends Entity
      */
     protected $country;
     /**
+     * @var string $merchantId
+     */
+    protected $merchantId;
+    /**
      * @var CredentialsDomainModel $credentials
      */
     protected $credentials;
@@ -42,6 +46,7 @@ class Credentials extends Entity
 
         $indexMap->addStringIndex('storeId');
         $indexMap->addStringIndex('country');
+        $indexMap->addStringIndex('merchantId');
 
         return new EntityConfiguration($indexMap, 'Credentials');
     }
@@ -57,6 +62,7 @@ class Credentials extends Entity
 
         $this->storeId = $data['storeId'];
         $this->country = $data['country'];
+        $this->merchantId = $data['merchantId'];
         $this->credentials = CredentialsDomainModel::fromArray($data['credentials']);
     }
 
@@ -69,6 +75,7 @@ class Credentials extends Entity
 
         $data['storeId'] = $this->storeId;
         $data['country'] = $this->country;
+        $data['merchantId'] = $this->merchantId;
         $data['credentials'] = $this->credentials->toArray();
 
         return $data;
@@ -116,6 +123,24 @@ class Credentials extends Entity
     public function getCredentials(): CredentialsDomainModel
     {
         return $this->credentials;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMerchantId(): string
+    {
+        return $this->merchantId;
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return void
+     */
+    public function setMerchantId(string $merchantId): void
+    {
+        $this->merchantId = $merchantId;
     }
 
     /**

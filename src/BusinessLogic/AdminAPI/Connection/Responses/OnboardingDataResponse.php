@@ -14,7 +14,7 @@ use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 class OnboardingDataResponse extends Response
 {
     /**
-     * @var ConnectionData
+     * @var ConnectionData[]
      */
     protected $connectionData;
 
@@ -24,10 +24,10 @@ class OnboardingDataResponse extends Response
     protected $statisticalData;
 
     /**
-     * @param ConnectionData|null $connectionData
+     * @param ConnectionData[] $connectionData
      * @param StatisticalData|null $statisticalData
      */
-    public function __construct(?ConnectionData $connectionData, ?StatisticalData $statisticalData)
+    public function __construct(array $connectionData, ?StatisticalData $statisticalData)
     {
         $this->connectionData = $connectionData;
         $this->statisticalData = $statisticalData;
@@ -42,12 +42,18 @@ class OnboardingDataResponse extends Response
             return [];
         }
 
-        return [
-            'environment' => $this->connectionData->getEnvironment(),
-            'username' => $this->connectionData->getAuthorizationCredentials()->getUsername(),
-            'password' => $this->connectionData->getAuthorizationCredentials()->getPassword(),
-            'merchantId' => $this->connectionData->getMerchantId(),
-            'sendStatisticalData' => $this->statisticalData && $this->statisticalData->isSendStatisticalData()
-        ];
+        $response['sendStatisticalData'] = $this->statisticalData && $this->statisticalData->isSendStatisticalData();
+
+        foreach ($this->connectionData as $connectionData) {
+            $response['environment'] = $connectionData->getEnvironment();
+            $response['connectionData'][] = [
+                'username' => $connectionData->getAuthorizationCredentials()->getUsername(),
+                'password' => $connectionData->getAuthorizationCredentials()->getPassword(),
+                'merchantId' => $connectionData->getMerchantId(),
+                'deployment' => $connectionData->getDeployment()
+            ];
+        }
+
+        return $response;
     }
 }

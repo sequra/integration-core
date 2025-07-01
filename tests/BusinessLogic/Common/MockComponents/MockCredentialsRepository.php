@@ -57,4 +57,20 @@ class MockCredentialsRepository implements CredentialsRepositoryInterface
 
         return null;
     }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return Credentials|null
+     */
+    public function getCredentialsByMerchantId(string $merchantId): ?Credentials
+    {
+        foreach (self::$credentials as $credential) {
+            if ($credential->getMerchantId() === $merchantId) {
+                return $credential;
+            }
+        }
+
+        return null;
+    }
 }

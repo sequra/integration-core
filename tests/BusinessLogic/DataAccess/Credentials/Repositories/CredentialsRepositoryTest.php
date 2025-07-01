@@ -73,16 +73,17 @@ class CredentialsRepositoryTest extends BaseTestCase
     {
         // arrange
         $credentials = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', []),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', []),
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', []),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [])
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [], 'sequra'),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [], 'sequra'),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', [], 'svea'),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [], 'svea'),
         ];
 
         foreach ($credentials as $credential) {
             $entity = new CredentialsEntity();
             $entity->setCredentials($credential);
             $entity->setStoreId('1');
+            $entity->setMerchantId($credential->getMerchantId());
             $entity->setCountry($credential->getCountry());
 
             $this->repository->save($entity);
@@ -106,19 +107,20 @@ class CredentialsRepositoryTest extends BaseTestCase
     {
         // arrange
         $credentialsStore1 = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', []),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [])
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [], 'sequra'),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [], 'sequra'),
         ];
 
         $credentialsStore2 = [
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', []),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [])
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', [], 'svea'),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [], 'svea'),
         ];
 
         foreach ($credentialsStore1 as $credential) {
             $entity = new CredentialsEntity();
             $entity->setCredentials($credential);
             $entity->setStoreId('1');
+            $entity->setMerchantId($credential->getMerchantId());
             $entity->setCountry($credential->getCountry());
 
             $this->repository->save($entity);
@@ -128,6 +130,7 @@ class CredentialsRepositoryTest extends BaseTestCase
             $entity = new CredentialsEntity();
             $entity->setCredentials($credential);
             $entity->setStoreId('2');
+            $entity->setMerchantId($credential->getMerchantId());
             $entity->setCountry($credential->getCountry());
 
             $this->repository->save($entity);
@@ -161,28 +164,32 @@ class CredentialsRepositoryTest extends BaseTestCase
             'PT',
             'EUR',
             'assetsKey1',
-            []
+            [],
+            'sequra'
         );
         $credentials2 = new Credentials(
             'logeecom2',
             'FR',
             'EUR',
             'assetsKey2',
-            []
+            [],
+            'sequra'
         );
         $credentials3 = new Credentials(
             'logeecom3',
             'IT',
             'EUR',
             'assetsKey3',
-            []
+            [],
+            'svea'
         );
         $credentials4 = new Credentials(
             'logeecom4',
             'ES',
             'EUR',
             'assetsKey4',
-            []
+            [],
+            'svea'
         );
 
         $credentials = [$credentials1, $credentials2, $credentials3, $credentials4];
@@ -213,14 +220,16 @@ class CredentialsRepositoryTest extends BaseTestCase
             'PT',
             'EUR',
             'assetsKey1',
-            []
+            [],
+            'sequra'
         );
         $updatedCredentials = new Credentials(
             'logeecom1',
             'PT',
             'EUR',
             'assetsKey11',
-            []
+            [],
+            'svea'
         );
 
         $credentials = [$initialCredentials];
@@ -257,28 +266,32 @@ class CredentialsRepositoryTest extends BaseTestCase
                 'PT',
                 'EUR',
                 'assetsKey1',
-                []
+                [],
+                'sequra'
             ),
             new Credentials(
                 'logeecom2',
                 'FR',
                 'EUR',
                 'assetsKey2',
-                []
+                [],
+                'sequra'
             ),
             new Credentials(
                 'logeecom3',
                 'IT',
                 'EUR',
                 'assetsKey3',
-                []
+                [],
+                'svea'
             ),
             new Credentials(
                 'logeecom4',
                 'ES',
                 'EUR',
                 'assetsKey4',
-                []
+                [],
+                'svea'
             )
         ];
 
@@ -286,6 +299,7 @@ class CredentialsRepositoryTest extends BaseTestCase
             $entity = new CredentialsEntity();
             $entity->setCredentials($credential);
             $entity->setStoreId('1');
+            $entity->setMerchantId($credential->getMerchantId());
             $entity->setCountry($credential->getCountry());
 
             $this->repository->save($entity);
@@ -315,28 +329,32 @@ class CredentialsRepositoryTest extends BaseTestCase
             'PT',
             'EUR',
             'assetsKey1',
-            []
+            [],
+            'svea'
         );
         $frenchCredentials = new Credentials(
             'logeecom2',
             'FR',
             'EUR',
             'assetsKey2',
-            []
+            [],
+            'svea'
         );
         $italianCredentials = new Credentials(
             'logeecom3',
             'IT',
             'EUR',
             'assetsKey3',
-            []
+            [],
+            'svea'
         );
         $spanishCredentials = new Credentials(
             'logeecom4',
             'ES',
             'EUR',
             'assetsKey4',
-            []
+            [],
+            'sequra'
         );
 
         $credentials = [$portugueseCredentials, $frenchCredentials, $italianCredentials, $spanishCredentials];
@@ -345,6 +363,7 @@ class CredentialsRepositoryTest extends BaseTestCase
             $entity = new CredentialsEntity();
             $entity->setCredentials($credential);
             $entity->setStoreId('1');
+            $entity->setMerchantId($credential->getMerchantId());
             $entity->setCountry($credential->getCountry());
 
             $this->repository->save($entity);
@@ -375,6 +394,114 @@ class CredentialsRepositoryTest extends BaseTestCase
             '1',
             [$this->credentialsRepository, 'getCredentialsByCountryCode'],
             ['RS']
+        );
+
+        // assert
+        self::assertEquals($resultFR, $frenchCredentials);
+        self::assertEquals($resultES, $spanishCredentials);
+        self::assertEquals($resultIT, $italianCredentials);
+        self::assertEquals($resultPT, $portugueseCredentials);
+        self::assertNull($resultRS);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testGetCredentialsByMerchantIdNoCredentials(): void
+    {
+        // arrange
+
+        // act
+        $result = StoreContext::doWithStore(
+            '1',
+            [$this->credentialsRepository, 'getCredentialsByMerchantId'],
+            ['logeecom']
+        );
+
+        // assert
+        self::assertNull($result);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testGetCredentialsByMerchantId(): void
+    {
+        // arrange
+        $portugueseCredentials = new Credentials(
+            'logeecom1',
+            'PT',
+            'EUR',
+            'assetsKey1',
+            [],
+            'svea'
+        );
+        $frenchCredentials = new Credentials(
+            'logeecom2',
+            'FR',
+            'EUR',
+            'assetsKey2',
+            [],
+            'svea'
+        );
+        $italianCredentials = new Credentials(
+            'logeecom3',
+            'IT',
+            'EUR',
+            'assetsKey3',
+            [],
+            'svea'
+        );
+        $spanishCredentials = new Credentials(
+            'logeecom4',
+            'ES',
+            'EUR',
+            'assetsKey4',
+            [],
+            'sequra'
+        );
+
+        $credentials = [$portugueseCredentials, $frenchCredentials, $italianCredentials, $spanishCredentials];
+
+        foreach ($credentials as $credential) {
+            $entity = new CredentialsEntity();
+            $entity->setCredentials($credential);
+            $entity->setStoreId('1');
+            $entity->setMerchantId($credential->getMerchantId());
+            $entity->setCountry($credential->getCountry());
+
+            $this->repository->save($entity);
+        }
+
+        // act
+        $resultFR = StoreContext::doWithStore(
+            '1',
+            [$this->credentialsRepository, 'getCredentialsByMerchantId'],
+            ['logeecom2']
+        );
+        $resultPT = StoreContext::doWithStore(
+            '1',
+            [$this->credentialsRepository, 'getCredentialsByMerchantId'],
+            ['logeecom1']
+        );
+        $resultIT = StoreContext::doWithStore(
+            '1',
+            [$this->credentialsRepository, 'getCredentialsByMerchantId'],
+            ['logeecom3']
+        );
+        $resultES = StoreContext::doWithStore(
+            '1',
+            [$this->credentialsRepository, 'getCredentialsByMerchantId'],
+            ['logeecom4']
+        );
+        $resultRS = StoreContext::doWithStore(
+            '1',
+            [$this->credentialsRepository, 'getCredentialsByMerchantId'],
+            ['logeecom5']
         );
 
         // assert

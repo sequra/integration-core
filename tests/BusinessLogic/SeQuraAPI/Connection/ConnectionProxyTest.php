@@ -70,6 +70,7 @@ class ConnectionProxyTest extends BaseTestCase
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             null,
+            'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
@@ -96,6 +97,7 @@ class ConnectionProxyTest extends BaseTestCase
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'test',
+            'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
@@ -122,6 +124,7 @@ class ConnectionProxyTest extends BaseTestCase
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'test',
+            'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
@@ -149,11 +152,17 @@ class ConnectionProxyTest extends BaseTestCase
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'test',
+            'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
         $expectedResponse = [
-            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [
+            new Credentials(
+                'logeecom1',
+                'PT',
+                'EUR',
+                'assetsKey1',
+                [
                 "ref" => "logeecom1",
                 "name" => null,
                 "country" => "PT",
@@ -171,8 +180,15 @@ class ConnectionProxyTest extends BaseTestCase
                 "signature_secret" => "signature",
                 "confirmation_path" => "default",
                 "realm" => "svea"
-            ]),
-            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [
+                ],
+                'sequra'
+            ),
+            new Credentials(
+                'logeecom2',
+                'FR',
+                'EUR',
+                'assetsKey2',
+                [
                 "ref" => "logeecom2",
                 "name" => null,
                 "country" => "FR",
@@ -190,8 +206,15 @@ class ConnectionProxyTest extends BaseTestCase
                 "signature_secret" => "f88ad25475df9310a9bf7d8a6e4fa7f9",
                 "confirmation_path" => "default",
                 "realm" => "svea"
-            ]),
-            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', [
+                ],
+                'sequra'
+            ),
+            new Credentials(
+                'logeecom3',
+                'IT',
+                'EUR',
+                'assetsKey3',
+                [
                 "ref" => "logeecom3",
                 "name" => null,
                 "country" => "IT",
@@ -209,8 +232,15 @@ class ConnectionProxyTest extends BaseTestCase
                 "signature_secret" => "d10263781ab8011e0797ea82d34cd3ad",
                 "confirmation_path" => "default",
                 "realm" => "svea"
-            ]),
-            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [
+                ],
+                'sequra'
+            ),
+            new Credentials(
+                'logeecom4',
+                'ES',
+                'EUR',
+                'assetsKey4',
+                [
                 "ref" => "logeecom4",
                 "name" => null,
                 "country" => "ES",
@@ -228,7 +258,9 @@ class ConnectionProxyTest extends BaseTestCase
                 "signature_secret" => "6f3f3baae89ec0b324f346d73c6c8e70",
                 "confirmation_path" => "default",
                 "realm" => "sequra"
-            ])
+                ],
+                'sequra'
+            )
         ];
 
         //Act
@@ -254,6 +286,7 @@ class ConnectionProxyTest extends BaseTestCase
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'test',
+            'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
