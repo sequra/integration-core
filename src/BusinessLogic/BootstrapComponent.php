@@ -688,6 +688,16 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            ConnectionProxyFactory::class,
+            static function () {
+                return new ConnectionProxyFactory(
+                    ServiceRegister::getService(HttpClient::class),
+                    ServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             OrderProxyInterface::class,
             static function () {
                 return new OrderProxy(
