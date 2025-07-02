@@ -26,12 +26,22 @@ class DeploymentsController
     }
 
     /**
-     * Disconnects integration and removes necessary data of the merchant.
+     * Gets all deployments from API.
      *
      * @return DeploymentsResponse
      */
     public function getAllDeployments(): DeploymentsResponse
     {
         return new DeploymentsResponse($this->deploymentsService->getDeployments());
+    }
+
+    /**
+     * Gets only not connected deployments for current store context.
+     *
+     * @return DeploymentsResponse
+     */
+    public function getNotConnectedDeployments(): DeploymentsResponse
+    {
+        return new DeploymentsResponse($this->deploymentsService->getNotConnectedDeployments());
     }
 }

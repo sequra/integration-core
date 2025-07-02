@@ -27,6 +27,11 @@ class MockDeploymentsService extends DeploymentsService
         return $this->deployments;
     }
 
+    /**
+     * @param string $deploymentId
+     *
+     * @return Deployment|null
+     */
     public function getDeploymentById(string $deploymentId): ?Deployment
     {
         if ($this->deployment) {
@@ -47,5 +52,13 @@ class MockDeploymentsService extends DeploymentsService
     public function setMockDeployments(array $deployments): void
     {
         $this->deployments = $deployments;
+    }
+
+    /**
+     * @return Deployment[]
+     */
+    public function getNotConnectedDeployments(): array
+    {
+        return $this->deployments;
     }
 }

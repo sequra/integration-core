@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Deployments\Services;
 
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
 use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
@@ -24,6 +25,11 @@ class DeploymentsService
     private $deploymentRepository;
 
     /**
+     * @var ConnectionDataRepositoryInterface $connectionDataRepository
+     */
+    private $connectionDataRepository;
+
+    /**
      * @var array<string, Deployment>
      */
     private static $deployments = [];
@@ -31,13 +37,16 @@ class DeploymentsService
     /**
      * @param DeploymentsProxyInterface $deploymentProxy
      * @param DeploymentsRepositoryInterface $deploymentRepository
+     * @param ConnectionDataRepositoryInterface $connectionDataRepository
      */
     public function __construct(
         DeploymentsProxyInterface $deploymentProxy,
-        DeploymentsRepositoryInterface $deploymentRepository
+        DeploymentsRepositoryInterface $deploymentRepository,
+        ConnectionDataRepositoryInterface $connectionDataRepository
     ) {
         $this->deploymentProxy = $deploymentProxy;
         $this->deploymentRepository = $deploymentRepository;
+        $this->connectionDataRepository = $connectionDataRepository;
     }
 
     /**
@@ -81,5 +90,25 @@ class DeploymentsService
         self::$deployments[$deploymentId] = $deployment;
 
         return self::$deployments[$deploymentId];
+    }
+
+    /**
+     * @return Deployment[]
+     */
+    public function getNotConnectedDeployments(): array
+    {
+        $deployments = $this->getDeployments();
+        $connections = $this->connectionDataRepository->getAllConnectionSettings();
+
+        $connectedDeploymentIds = array_map(
+            function ($connection) {
+                return $connection->getDeployment();
+            },
+            $connections
+        );
+
+        return array_values(array_filter($deployments, function ($deployment) use ($connectedDeploymentIds) {
+            return !in_array($deployment->getId(), $connectedDeploymentIds);
+        }));
     }
 }

@@ -12,15 +12,21 @@ use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDa
  */
 class MockConnectionDataRepository implements ConnectionDataRepositoryInterface
 {
-    /** @var ?ConnectionData $connectionData */
-    private $connectionData = null;
+    /** @var ConnectionData[] $connectionData */
+    private $connectionData = [];
 
     /**
      * @inheritDoc
      */
     public function getConnectionDataByDeploymentId(string $deployment): ?ConnectionData
     {
-        return $this->connectionData;
+        foreach ($this->connectionData as $connectionData) {
+            if ($connectionData->getDeployment() === $deployment) {
+                return $connectionData;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -28,7 +34,7 @@ class MockConnectionDataRepository implements ConnectionDataRepositoryInterface
      */
     public function setConnectionData(ConnectionData $connectionData): void
     {
-        $this->connectionData = $connectionData;
+        $this->connectionData[] = $connectionData;
     }
 
     /**
@@ -52,6 +58,6 @@ class MockConnectionDataRepository implements ConnectionDataRepositoryInterface
      */
     public function getAllConnectionSettings(): array
     {
-        return [];
+        return $this->connectionData;
     }
 }

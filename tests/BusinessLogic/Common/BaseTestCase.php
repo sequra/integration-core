@@ -473,7 +473,8 @@ class BaseTestCase extends TestCase
             static function () {
                 return new MockDeploymentsService(
                     TestServiceRegister::getService(DeploymentsProxyInterface::class),
-                    TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+                    TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
                 );
             }
         );

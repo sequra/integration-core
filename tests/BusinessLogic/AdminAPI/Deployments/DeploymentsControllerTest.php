@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\Models\DeploymentURL;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsService;
@@ -37,7 +38,8 @@ class DeploymentsControllerTest extends BaseTestCase
 
         $this->deploymentsService = new MockDeploymentsService(
             new MockDeploymentsProxy(),
-            new MockDeploymentsRepository()
+            new MockDeploymentsRepository(),
+            new MockConnectionDataRepository()
         );
 
         TestServiceRegister::registerService(DeploymentsService::class, function () {
@@ -102,8 +104,59 @@ class DeploymentsControllerTest extends BaseTestCase
         // Assert
         self::assertEquals(
             [
-            ['id' => 'sequra', 'name' => 'seQura'],
-            ['id' => 'svea', 'name' => 'SVEA'],
+                ['id' => 'sequra', 'name' => 'seQura'],
+                ['id' => 'svea', 'name' => 'SVEA'],
+            ],
+            $response->toArray()
+        );
+    }
+
+    /**
+     * @return void
+     */
+    public function testIsGetNotConnectedDeploymentsResponseSuccessful(): void
+    {
+        // Act
+        /** @var DeploymentsResponse $response */
+        $response = AdminAPI::get()->deployments('1')->getNotConnectedDeployments();
+
+        // Assert
+        self::assertTrue($response->isSuccessful());
+    }
+
+    /**
+     * @return void
+     */
+    public function testIsGetNotConnectedDeploymentsToArray(): void
+    {
+        // Act
+        $deployments = [
+            new Deployment(
+                'sequra',
+                'seQura',
+                new DeploymentURL('https://live.sequrapi.com/', 'https://live.sequracdn.com/assets/'),
+                new DeploymentURL('https://sandbox.sequrapi.com/', 'https://sandbox.sequracdn.com/assets/')
+            ),
+            new Deployment(
+                'svea',
+                'SVEA',
+                new DeploymentURL('https://live.sequra.svea.com/', 'https://live.cdn.sequra.svea.com/assets/'),
+                new DeploymentURL(
+                    'https://next-sandbox.sequra.svea.com/',
+                    'https://next-sandbox.cdn.sequra.svea.com/assets/'
+                )
+            )
+        ];
+        $this->deploymentsService->setMockDeployments($deployments);
+
+        /** @var DeploymentsResponse $response */
+        $response = AdminAPI::get()->deployments('1')->getNotConnectedDeployments();
+
+        // Assert
+        self::assertEquals(
+            [
+                ['id' => 'sequra', 'name' => 'seQura'],
+                ['id' => 'svea', 'name' => 'SVEA'],
             ],
             $response->toArray()
         );

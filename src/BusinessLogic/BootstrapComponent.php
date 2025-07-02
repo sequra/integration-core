@@ -516,7 +516,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new DeploymentsService(
                     ServiceRegister::getService(DeploymentsProxyInterface::class),
-                    ServiceRegister::getService(DeploymentsRepositoryInterface::class)
+                    ServiceRegister::getService(DeploymentsRepositoryInterface::class),
+                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
                 );
             }
         );
