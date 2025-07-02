@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\SeQuraAPI\Factories;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
 use SeQura\Core\Infrastructure\Http\HttpClient;
@@ -40,6 +41,8 @@ class ConnectionProxyFactory
      * @param ConnectionData $connectionData
      *
      * @return BaseProxy
+     *
+     * @throws DeploymentNotFoundException
      */
     public function build(ConnectionData $connectionData): BaseProxy
     {

@@ -478,7 +478,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(CredentialsService::class),
                     ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(WidgetConfiguratorInterface::class),
-                    ServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
+                    ServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
+                    ServiceRegister::getService(DeploymentsService::class)
                 );
             }
         );

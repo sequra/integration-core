@@ -30,9 +30,9 @@ class MockDeploymentsService extends DeploymentsService
     /**
      * @param string $deploymentId
      *
-     * @return Deployment|null
+     * @return Deployment
      */
-    public function getDeploymentById(string $deploymentId): ?Deployment
+    public function getDeploymentById(string $deploymentId): Deployment
     {
         if ($this->deployment) {
             return $this->deployment;

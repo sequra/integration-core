@@ -6,6 +6,8 @@ use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
@@ -52,6 +54,10 @@ class WidgetSettingsService
      * @var MiniWidgetMessagesProviderInterface
      */
     protected $miniWidgetMessagesProvider;
+    /**
+     * @var DeploymentsService
+     */
+    protected $deploymentsService;
 
     /**
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
@@ -60,6 +66,7 @@ class WidgetSettingsService
      * @param ConnectionService $connectionService
      * @param WidgetConfiguratorInterface $widgetConfigurator
      * @param MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider
+     * @param DeploymentsService $deploymentsService
      */
     public function __construct(
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
@@ -67,7 +74,8 @@ class WidgetSettingsService
         CredentialsService $credentialsService,
         ConnectionService $connectionService,
         WidgetConfiguratorInterface $widgetConfigurator,
-        MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider
+        MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider,
+        DeploymentsService $deploymentsService
     ) {
         $this->widgetSettingsRepository = $widgetSettingsRepository;
         $this->paymentMethodsService = $paymentMethodsService;
@@ -75,6 +83,7 @@ class WidgetSettingsService
         $this->connectionService = $connectionService;
         $this->widgetConfigurator = $widgetConfigurator;
         $this->miniWidgetMessagesProvider = $miniWidgetMessagesProvider;
+        $this->deploymentsService = $deploymentsService;
     }
 
     /**
@@ -381,6 +390,8 @@ class WidgetSettingsService
      * @param string $deployment
      *
      * @return string
+     *
+     * @throws DeploymentNotFoundException
      */
     protected function getScriptUri(string $deployment): string
     {
@@ -389,7 +400,11 @@ class WidgetSettingsService
             return '';
         }
 
-        return "https://{$settings->getEnvironment()}.sequracdn.com/assets/sequra-checkout.min.js";
+        $deployment = $this->deploymentsService->getDeploymentById($deployment);
+
+        return $settings->getEnvironment() === 'live' ?
+            $deployment->getLiveDeploymentURL()->getAssetsBaseUrl() . 'sequra-checkout.min.js' :
+            $deployment->getSandboxDeploymentURL()->getAssetsBaseUrl() . 'sequra-checkout.min.js';
     }
 
     /**

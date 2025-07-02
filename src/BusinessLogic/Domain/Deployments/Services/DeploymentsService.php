@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\Deployments\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
 use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
@@ -65,9 +66,10 @@ class DeploymentsService
     /**
      * @param string $deploymentId
      *
-     * @return ?Deployment
+     * @return Deployment
+     * @throws DeploymentNotFoundException
      */
-    public function getDeploymentById(string $deploymentId): ?Deployment
+    public function getDeploymentById(string $deploymentId): Deployment
     {
         if (!empty(self::$deployments[$deploymentId])) {
             return self::$deployments[$deploymentId];
@@ -85,6 +87,10 @@ class DeploymentsService
                     return $deployment;
                 }
             }
+        }
+
+        if (!$deployment) {
+            throw new DeploymentNotFoundException();
         }
 
         self::$deployments[$deploymentId] = $deployment;

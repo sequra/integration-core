@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\SeQuraAPI\Factories;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Authorization\AuthorizedProxy;
 use SeQura\Core\Infrastructure\Http\HttpClient;
@@ -53,6 +54,7 @@ class AuthorizedProxyFactory
      *
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
+     * @throws DeploymentNotFoundException
      */
     public function build(string $merchantId): AuthorizedProxy
     {

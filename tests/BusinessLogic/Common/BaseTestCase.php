@@ -405,7 +405,8 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(CredentialsService::class),
                     TestServiceRegister::getService(ConnectionService::class),
                     TestServiceRegister::getService(WidgetConfiguratorInterface::class),
-                    TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
+                    TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
+                    TestServiceRegister::getService(DeploymentsService::class)
                 );
             },
             ProductServiceInterface::class => function () {

@@ -5,6 +5,7 @@ namespace SeQura\Core\Tests\BusinessLogic\Domain\Deployments\Service;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Models\DeploymentURL;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
@@ -145,12 +146,11 @@ class DeploymentsServiceTest extends BaseTestCase
     public function testGetDeploymentByIdNoDeployment(): void
     {
         // Arrange
-
+        $this->expectException(DeploymentNotFoundException::class);
         // Act
-        $deployment = StoreContext::doWithStore('1', [$this->deploymentService, 'getDeploymentById'], ['sequra']);
+        StoreContext::doWithStore('1', [$this->deploymentService, 'getDeploymentById'], ['sequra']);
 
         // Assert
-        self::assertNull($deployment);
     }
 
     /**

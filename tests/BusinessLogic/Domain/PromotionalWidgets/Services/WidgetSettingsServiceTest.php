@@ -15,6 +15,8 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfigur
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
+use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
@@ -35,6 +37,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
@@ -82,6 +85,11 @@ class WidgetSettingsServiceTest extends BaseTestCase
      * @var MockWidgetConfigurator
      */
     private $widgetConfigurator;
+
+    /**
+     * @var MockDeploymentsService
+     */
+    private $deploymentService;
 
     /**
      * @return void
@@ -142,6 +150,12 @@ class WidgetSettingsServiceTest extends BaseTestCase
         TestServiceRegister::registerService(WidgetConfiguratorInterface::class, function () {
             return $this->widgetConfigurator;
         });
+
+        $this->deploymentService = new MockDeploymentsService(
+            TestServiceRegister::getService(DeploymentsProxyInterface::class),
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+        );
 
         $this->widgetSettingsService = TestServiceRegister::getService(WidgetSettingsService::class);
     }
@@ -216,7 +230,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
     {
         //arrange
         $this->countryConfigService->saveCountryConfiguration([new CountryConfiguration('ES', 'ES')]);
-
 
         // act
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('ES', 'ES');
@@ -1223,9 +1236,9 @@ class WidgetSettingsServiceTest extends BaseTestCase
                 '',
                 '',
                 [
-                        new CustomWidgetsSettings('customLocationSelector', 'i1', true, 'style'),
-                        new CustomWidgetsSettings('customLocationSelector', 'i2', true, 'style')
-                    ]
+                    new CustomWidgetsSettings('customLocationSelector', 'i1', true, 'style'),
+                    new CustomWidgetsSettings('customLocationSelector', 'i2', true, 'style')
+                ]
             )
         ));
 
@@ -1275,10 +1288,10 @@ class WidgetSettingsServiceTest extends BaseTestCase
                 'altPriceSelector',
                 'altPriceTriggerSelector',
                 [
-                        new CustomWidgetsSettings('customLocationSelector', 'i1', true, 'style'),
-                        new CustomWidgetsSettings('customLocationSelector', 'pp3', false, 'style'),
-                        new CustomWidgetsSettings('customLocationSelector', 'pp4', true, 'style'),
-                    ]
+                    new CustomWidgetsSettings('customLocationSelector', 'i1', true, 'style'),
+                    new CustomWidgetsSettings('customLocationSelector', 'pp3', false, 'style'),
+                    new CustomWidgetsSettings('customLocationSelector', 'pp4', true, 'style'),
+                ]
             )
         ));
         $this->paymentMethodsService->setMockPaymentMethods(
