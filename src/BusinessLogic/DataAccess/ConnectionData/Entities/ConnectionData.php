@@ -58,7 +58,7 @@ class ConnectionData extends Entity
         $this->connectionData = new DomainConnectionData(
             self::getArrayValue($connectionData, 'environment'),
             self::getArrayValue($connectionData, 'merchantId'),
-            self::getArrayValue($connectionData, 'deployment'),
+            self::getArrayValue($connectionData, 'deployment') ?? '',
             new AuthorizationCredentials(
                 self::getArrayValue($connectionData['authorizationCredentials'], 'username'),
                 $this->getEncryptorUtility()->decrypt(
@@ -80,7 +80,7 @@ class ConnectionData extends Entity
         $data['connectionData'] = [
             'environment' => $this->connectionData->getEnvironment(),
             'merchantId' => $this->connectionData->getMerchantId(),
-            'deployment' => $this->connectionData->getDeployment(),
+            'deployment' => $this->connectionData->getDeployment() ?? '',
             'authorizationCredentials' => [
                 'username' => $this->connectionData->getAuthorizationCredentials()->getUsername(),
                 'password' => $this->getEncryptorUtility()->encrypt(
@@ -138,9 +138,9 @@ class ConnectionData extends Entity
     }
 
     /**
-     * @return string
+     * @return ?string
      */
-    public function getDeployment(): string
+    public function getDeployment(): ?string
     {
         return $this->deployment;
     }

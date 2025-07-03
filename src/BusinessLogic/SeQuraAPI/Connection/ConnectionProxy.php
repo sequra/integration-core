@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\SeQuraAPI\Connection;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\CredentialsRequest;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\Request\ValidateConnectionHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\ConnectionProxyFactory;
 
@@ -30,6 +31,8 @@ class ConnectionProxy implements ConnectionProxyInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws DeploymentNotFoundException
      */
     public function getCredentials(CredentialsRequest $request): array
     {
