@@ -2,14 +2,17 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Migration\Tasks;
 
+use Exception;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData as ConnectionDataEntity;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
+use SeQura\Core\BusinessLogic\DataAccess\Credentials\Repositories\CredentialsRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Models\DeploymentURL;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
@@ -74,6 +77,11 @@ class DeploymentMigrateTaskTest extends BaseSerializationTestCase
     private $connectionRepository;
 
     /**
+     * @var CredentialsRepositoryInterface $credentialsRepo
+     */
+    private $credentialsRepo;
+
+    /**
      * @return void
      *
      * @throws RepositoryClassException
@@ -90,6 +98,15 @@ class DeploymentMigrateTaskTest extends BaseSerializationTestCase
             StoreContext::getInstance()
         );
         $this->credentialsRepository = TestRepositoryRegistry::getRepository(CredentialsEntity::getClassName());
+        $this->credentialsRepo = new CredentialsRepository(
+            $this->credentialsRepository,
+            StoreContext::getInstance()
+        );
+
+        TestServiceRegister::registerService(CredentialsRepositoryInterface::class, function () {
+            return $this->credentialsRepo;
+        });
+
         $this->integrationStoreService = new MockStoreService();
 
         $this->storeService = new MockDomainStoreService(
@@ -123,7 +140,7 @@ class DeploymentMigrateTaskTest extends BaseSerializationTestCase
      *
      * @throws AbortTaskExecutionException
      * @throws InvalidEnvironmentException
-     * @throws \Exception
+     * @throws Exception
      */
     public function testDeploymentMigrateTaskNoConnectionDataForStoreContext(): void
     {
@@ -141,20 +158,26 @@ class DeploymentMigrateTaskTest extends BaseSerializationTestCase
 
         $connectionDataEntity = new ConnectionDataEntity();
         $connectionDataEntity->setConnectionData($connectionData);
-        $connectionDataEntity->setDeployment('');
         $connectionDataEntity->setStoreId('1');
         $this->connectionDataRepository->save($connectionDataEntity);
         $task = new DeploymentMigrateTask();
 
         // Act
         $task->execute();
-        $result = StoreContext::doWithStore(
+
+        // Assert
+        $connections = StoreContext::doWithStore(
             '2',
             [$this->connectionRepository, 'getAllConnectionSettings']
         );
 
-        // Assert
-        self::assertEmpty($result);
+        $credentials = StoreContext::doWithStore(
+            '2',
+            [$this->credentialsRepo, 'getCredentials']
+        );
+
+        self::assertEmpty($connections);
+        self::assertEmpty($credentials);
     }
 
     /**
@@ -162,7 +185,102 @@ class DeploymentMigrateTaskTest extends BaseSerializationTestCase
      *
      * @throws AbortTaskExecutionException
      * @throws InvalidEnvironmentException
-     * @throws \Exception
+     * @throws Exception
+     */
+    public function testDeploymentMigrateTaskNoCredentials(): void
+    {
+        // Arrange
+        $this->storeService->setMockConnectedStores(['1', '2', '3']);
+        $this->deploymentsService->setMockDeployments($this->getDeployments());
+
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant',
+            '',
+            new AuthorizationCredentials('username', 'password')
+        );
+
+        $connectionDataEntity = new ConnectionDataEntity();
+        $connectionDataEntity->setConnectionData($connectionData);
+        $connectionDataEntity->setStoreId('1');
+        $this->connectionDataRepository->save($connectionDataEntity);
+
+        $task = new DeploymentMigrateTask();
+
+        // Act
+        $task->execute();
+
+        // Assert
+        $credentials = StoreContext::doWithStore(
+            '1',
+            [$this->credentialsRepo, 'getCredentials']
+        );
+
+        self::assertEmpty($credentials);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws AbortTaskExecutionException
+     * @throws InvalidEnvironmentException
+     * @throws Exception
+     */
+    public function testDeploymentMigrateTaskOnlyOneDeployment(): void
+    {
+        // Arrange
+        $this->storeService->setMockConnectedStores(['1', '2', '3']);
+        $this->deploymentsService->setMockDeployments([$this->getDeployments()[0]]);
+        $this->connectionProxy->setMockCredentials($this->getSequraCredentials());
+
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant',
+            '',
+            new AuthorizationCredentials('username', 'password')
+        );
+
+        $connectionDataEntity = new ConnectionDataEntity();
+        $connectionDataEntity->setConnectionData($connectionData);
+        $connectionDataEntity->setStoreId('1');
+        $this->connectionDataRepository->save($connectionDataEntity);
+
+        $task = new DeploymentMigrateTask();
+
+        // Act
+        $task->execute();
+
+        // Assert
+        $connections = StoreContext::doWithStore(
+            '1',
+            [$this->connectionRepository, 'getAllConnectionSettings']
+        );
+
+        $credentials = StoreContext::doWithStore(
+            '1',
+            [$this->credentialsRepo, 'getCredentials']
+        );
+        $expectedConnectionData = new ConnectionData(
+            'sandbox',
+            'merchant',
+            'sequra',
+            new AuthorizationCredentials('username', 'password')
+        );
+
+        self::assertNotEmpty($connections);
+        self::assertCount(1, $connections);
+        self::assertEquals($expectedConnectionData, $connections[0]);
+        self::assertNotEmpty($credentials);
+        self::assertCount(4, $credentials);
+        self::assertEquals($this->getSequraCredentials(), $credentials);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws AbortTaskExecutionException
+     * @throws InvalidEnvironmentException
+     * @throws Exception
      */
     public function testDeploymentMigrateTask(): void
     {
@@ -180,24 +298,45 @@ class DeploymentMigrateTaskTest extends BaseSerializationTestCase
 
         $connectionDataEntity = new ConnectionDataEntity();
         $connectionDataEntity->setConnectionData($connectionData);
-        $connectionDataEntity->setDeployment('');
         $connectionDataEntity->setStoreId('1');
         $this->connectionDataRepository->save($connectionDataEntity);
-
 
         $task = new DeploymentMigrateTask();
 
         // Act
         $task->execute();
-        $result = StoreContext::doWithStore(
+
+        // Assert
+        $connections = StoreContext::doWithStore(
             '1',
             [$this->connectionRepository, 'getAllConnectionSettings']
         );
 
-        // Assert
-        self::assertNull(null);
-    }
+        $credentials = StoreContext::doWithStore(
+            '1',
+            [$this->credentialsRepo, 'getCredentials']
+        );
+        $expectedConnectionData1 = new ConnectionData(
+            'sandbox',
+            'merchant',
+            'sequra',
+            new AuthorizationCredentials('username', 'password')
+        );
+        $expectedConnectionData2 = new ConnectionData(
+            'sandbox',
+            'merchant',
+            'svea',
+            new AuthorizationCredentials('username', 'password')
+        );
 
+        self::assertNotEmpty($connections);
+        self::assertCount(2, $connections);
+        self::assertEquals($expectedConnectionData1, $connections[0]);
+        self::assertEquals($expectedConnectionData2, $connections[1]);
+        self::assertNotEmpty($credentials);
+        self::assertCount(4, $credentials);
+        self::assertEquals($this->getSequraCredentials(), $credentials);
+    }
 
     /**
      * @return Deployment[]
@@ -332,93 +471,6 @@ class DeploymentMigrateTaskTest extends BaseSerializationTestCase
                     "realm" => "sequra"
                 ],
                 'sequra'
-            )
-        ];
-    }
-
-    /**
-     * @return Deployment[]
-     */
-    private function getSveaCredentials(): array
-    {
-        return [
-            new Credentials(
-                'logeecom1',
-                'PT',
-                'EUR',
-                'assetsKey1',
-                [
-                    "ref" => "logeecom1",
-                    "name" => null,
-                    "country" => "PT",
-                    "allowed_countries" => [
-                        "ES"
-                    ],
-                    "currency" => "EUR",
-                    "assets_key" => "assetsKey1",
-                    "contract_options" => [],
-                    "extra_information" => [
-                        "type" => "regular",
-                        "phone_number" => ""
-                    ],
-                    "verify_signature" => false,
-                    "signature_secret" => "signature",
-                    "confirmation_path" => "default",
-                    "realm" => "svea"
-                ],
-                'svea'
-            ),
-            new Credentials(
-                'logeecom2',
-                'FR',
-                'EUR',
-                'assetsKey2',
-                [
-                    "ref" => "logeecom2",
-                    "name" => null,
-                    "country" => "FR",
-                    "allowed_countries" => [
-                        "ES"
-                    ],
-                    "currency" => "EUR",
-                    "assets_key" => "assetsKey2",
-                    "contract_options" => [],
-                    "extra_information" => [
-                        "type" => "regular",
-                        "phone_number" => ""
-                    ],
-                    "verify_signature" => false,
-                    "signature_secret" => "123",
-                    "confirmation_path" => "default",
-                    "realm" => "svea"
-                ],
-                'svea'
-            ),
-            new Credentials(
-                'logeecom3',
-                'IT',
-                'EUR',
-                'assetsKey3',
-                [
-                    "ref" => "logeecom3",
-                    "name" => null,
-                    "country" => "IT",
-                    "allowed_countries" => [
-                        "ES"
-                    ],
-                    "currency" => "EUR",
-                    "assets_key" => "assetsKey3",
-                    "contract_options" => [],
-                    "extra_information" => [
-                        "type" => "regular",
-                        "phone_number" => ""
-                    ],
-                    "verify_signature" => false,
-                    "signature_secret" => "123",
-                    "confirmation_path" => "default",
-                    "realm" => "svea"
-                ],
-                'svea'
             )
         ];
     }

@@ -30,8 +30,9 @@ class DeploymentMigrateTask extends Task
     /**
      * @inheritDoc
      */
-    public function __serialize()
+    public function __serialize(): array
     {
+        return [];
     }
 
     /**
@@ -43,7 +44,7 @@ class DeploymentMigrateTask extends Task
 
     /**
      * @inheritDoc
-     * @throws Exception
+     * @throws     Exception
      */
     public function execute(): void
     {
@@ -59,10 +60,11 @@ class DeploymentMigrateTask extends Task
                  */
                 $connectionEntity = $this->getConnectionRepository()->selectOne($queryFilter);
 
-                if(!$connectionEntity) {
+                if (!$connectionEntity) {
                     return;
                 }
                 $existingConnectionData = $connectionEntity->getConnectionData();
+                $this->getConnectionRepository()->delete($connectionEntity);
 
                 foreach ($deployments as $deployment) {
                     $connectionData = new ConnectionData(
@@ -74,7 +76,7 @@ class DeploymentMigrateTask extends Task
 
                     $credentials = $this->getConnectionProxy()->getCredentials(new CredentialsRequest($connectionData));
 
-                    if(empty($credentials)) {
+                    if (empty($credentials)) {
                         continue;
                     }
 
