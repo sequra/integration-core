@@ -29,4 +29,11 @@ interface DeploymentsRepositoryInterface
      * @return void
      */
     public function setDeployments(array $deployments): void;
+
+    /**
+     * Deletes all deployments for current store context.
+     *
+     * @return void
+     */
+    public function deleteDeployments(): void;
 }

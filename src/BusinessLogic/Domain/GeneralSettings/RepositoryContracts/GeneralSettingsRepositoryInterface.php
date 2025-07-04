@@ -26,4 +26,11 @@ interface GeneralSettingsRepositoryInterface
      * @return void
      */
     public function setGeneralSettings(GeneralSettings $generalSettings): void;
+
+    /**
+     * Deletes General Settings for current store context.
+     *
+     * @return void
+     */
+    public function deleteGeneralSettings(): void;
 }

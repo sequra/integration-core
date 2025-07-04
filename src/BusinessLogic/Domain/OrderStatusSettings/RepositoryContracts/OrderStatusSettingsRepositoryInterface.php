@@ -26,4 +26,11 @@ interface OrderStatusSettingsRepositoryInterface
      * @return void
      */
     public function setOrderStatusMapping(array $orderStatusMapping): void;
+
+    /**
+     * Deletes order status mapping for current context
+     *
+     * @return void
+     */
+    public function deleteOrderStatusMapping(): void;
 }

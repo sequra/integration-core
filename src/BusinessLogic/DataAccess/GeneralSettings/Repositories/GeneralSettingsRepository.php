@@ -74,6 +74,18 @@ class GeneralSettingsRepository implements GeneralSettingsRepositoryInterface
     }
 
     /**
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteGeneralSettings(): void
+    {
+        $entity = $this->getGeneralSettingsEntity();
+
+        $entity && $this->repository->delete($entity);
+    }
+
+    /**
      * Gets the general settings entity from the database.
      *
      * @return GeneralSettingsEntity|null
@@ -86,8 +98,8 @@ class GeneralSettingsRepository implements GeneralSettingsRepositoryInterface
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
         /**
-        * @var GeneralSettingsEntity $generalSettings
-        */
+         * @var GeneralSettingsEntity $generalSettings
+         */
         $generalSettings = $this->repository->selectOne($queryFilter);
 
         return $generalSettings;

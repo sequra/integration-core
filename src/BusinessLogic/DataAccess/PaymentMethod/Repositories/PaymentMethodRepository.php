@@ -107,6 +107,25 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
     }
 
     /**
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteAllPaymentMethods(): void
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
+        /**
+         * @var PaymentMethod[] $paymentMethods
+         */
+        $paymentMethods = $this->repository->select($queryFilter);
+
+        foreach ($paymentMethods as $paymentMethod) {
+            $this->repository->delete($paymentMethod);
+        }
+    }
+
+    /**
      * Returns the payment method entity.
      *
      * @param SeQuraPaymentMethod $paymentMethod
@@ -140,6 +159,6 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
          * @var PaymentMethod $paymentMethodEntity
          */
         $paymentMethodEntity = $this->getPaymentMethodEntity($paymentMethod, $merchantId);
-        $this->repository->delete($paymentMethodEntity);
+        $paymentMethodEntity && $this->repository->delete($paymentMethodEntity);
     }
 }

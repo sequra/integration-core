@@ -126,6 +126,20 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
     }
 
     /**
+     * @param string $deploymentId
+     *
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteConnectionDataByDeploymentId(string $deploymentId): void
+    {
+        $connectionDataEntity = $this->getConnectionDataEntityByDeployment($deploymentId);
+
+        $connectionDataEntity && $this->repository->delete($connectionDataEntity);
+    }
+
+    /**
      * Gets the connection data entity from the database.
      *
      * @param string $deployment

@@ -422,7 +422,18 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new DisconnectService(
                     ServiceRegister::getService(DisconnectServiceInterface::class),
-                    ServiceRegister::getService(SendReportRepositoryInterface::class)
+                    ServiceRegister::getService(SendReportRepositoryInterface::class),
+                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                    ServiceRegister::getService(CredentialsRepositoryInterface::class),
+                    ServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
+                    ServiceRegister::getService(DeploymentsRepositoryInterface::class),
+                    ServiceRegister::getService(GeneralSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
+                    ServiceRegister::getService(OrderStatusSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(PaymentMethodRepositoryInterface::class),
+                    ServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
+                    ServiceRegister::getService(TransactionLogRepositoryInterface::class)
                 );
             }
         );

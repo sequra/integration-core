@@ -46,4 +46,12 @@ class MockDeploymentsRepository implements DeploymentsRepositoryInterface
     {
         $this->deployments = $deployments;
     }
+
+    /**
+     * @return void
+     */
+    public function deleteDeployments(): void
+    {
+        $this->deployments = [];
+    }
 }

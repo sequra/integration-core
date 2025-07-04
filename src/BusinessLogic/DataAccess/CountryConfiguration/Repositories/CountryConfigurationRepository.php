@@ -73,6 +73,18 @@ class CountryConfigurationRepository implements CountryConfigurationRepositoryIn
     }
 
     /**
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteCountryConfigurations(): void
+    {
+        $entity = $this->getCountryConfigurationEntity();
+
+        $entity && $this->repository->delete($entity);
+    }
+
+    /**
      * Gets the connection data entity from the database.
      *
      * @return CountryConfigurationEntity|null
@@ -85,8 +97,8 @@ class CountryConfigurationRepository implements CountryConfigurationRepositoryIn
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
         /**
-        * @var CountryConfigurationEntity $countryConfiguration
-        */
+         * @var ?CountryConfigurationEntity $countryConfiguration
+         */
         $countryConfiguration = $this->repository->selectOne($queryFilter);
 
         return $countryConfiguration;

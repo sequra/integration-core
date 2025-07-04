@@ -70,6 +70,18 @@ class WidgetSettingsRepository implements WidgetSettingsRepositoryInterface
     }
 
     /**
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteWidgetSettings(): void
+    {
+        $entity = $this->getWidgetSettingsEntity();
+
+        $entity && $this->repository->delete($entity);
+    }
+
+    /**
      * Gets the widget settings entity from the database.
      *
      * @return WidgetSettingsEntity|null
@@ -82,8 +94,8 @@ class WidgetSettingsRepository implements WidgetSettingsRepositoryInterface
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
         /**
-        * @var WidgetSettingsEntity $widgetSettings
-        */
+         * @var WidgetSettingsEntity $widgetSettings
+         */
         $widgetSettings = $this->repository->selectOne($queryFilter);
 
         return $widgetSettings;

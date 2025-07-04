@@ -49,4 +49,11 @@ interface ConnectionDataRepositoryInterface
      * @return ConnectionData[]
      */
     public function getAllConnectionSettings(): array;
+
+    /**
+     * @param string $deploymentId
+     *
+     * @return void
+     */
+    public function deleteConnectionDataByDeploymentId(string $deploymentId): void;
 }

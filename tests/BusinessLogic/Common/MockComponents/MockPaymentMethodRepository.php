@@ -48,4 +48,12 @@ class MockPaymentMethodRepository implements PaymentMethodRepositoryInterface
     {
         $this->paymentMethods = $paymentMethods;
     }
+
+    /**
+     * @return void
+     */
+    public function deleteAllPaymentMethods(): void
+    {
+        $this->paymentMethods = [];
+    }
 }

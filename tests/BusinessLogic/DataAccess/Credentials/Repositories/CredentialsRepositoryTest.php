@@ -308,12 +308,13 @@ class CredentialsRepositoryTest extends BaseTestCase
         // act
         StoreContext::doWithStore(
             '1',
-            [$this->credentialsRepository, 'deleteCredentials']
+            [$this->credentialsRepository, 'deleteCredentialsByDeploymentId'],
+            ['sequra']
         );
 
         // assert
         $entities = $this->repository->select();
-        self::assertCount(0, $entities);
+        self::assertCount(2, $entities);
     }
 
     /**

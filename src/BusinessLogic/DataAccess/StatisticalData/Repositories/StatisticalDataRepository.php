@@ -74,6 +74,18 @@ class StatisticalDataRepository implements StatisticalDataRepositoryInterface
     }
 
     /**
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteStatisticalData(): void
+    {
+        $entity = $this->getStatisticalDataEntity();
+
+        $entity && $this->repository->delete($entity);
+    }
+
+    /**
      * Gets the statistical data entity from the database.
      *
      * @return StatisticalDataEntity|null
@@ -86,8 +98,8 @@ class StatisticalDataRepository implements StatisticalDataRepositoryInterface
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
         /**
-        * @var StatisticalDataEntity $statisticalData
-        */
+         * @var StatisticalDataEntity $statisticalData
+         */
         $statisticalData = $this->repository->selectOne($queryFilter);
 
         return $statisticalData;

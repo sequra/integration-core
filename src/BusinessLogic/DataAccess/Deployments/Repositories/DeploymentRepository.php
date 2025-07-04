@@ -47,18 +47,11 @@ class DeploymentRepository implements DeploymentsRepositoryInterface
      */
     public function getDeployments(): array
     {
-        $queryFilter = new QueryFilter();
-        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
-
-        /**
-         * @var DeploymentEntity[] $credentialsEntities
-         */
-        $credentialsEntities = $this->repository->select($queryFilter);
         return array_map(
             function (DeploymentEntity $deployment) {
                 return $deployment->getDeployment();
             },
-            $credentialsEntities
+            $this->getDeploymentsEntities()
         );
     }
 
@@ -87,6 +80,18 @@ class DeploymentRepository implements DeploymentsRepositoryInterface
     {
         foreach ($deployments as $deployment) {
             $this->setDeployment($deployment);
+        }
+    }
+
+    /**
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteDeployments(): void
+    {
+        foreach ($this->getDeploymentsEntities() as $deployment) {
+            $this->repository->delete($deployment);
         }
     }
 
@@ -139,5 +144,23 @@ class DeploymentRepository implements DeploymentsRepositoryInterface
         $deploymentEntity = $this->repository->selectOne($queryFilter);
 
         return $deploymentEntity;
+    }
+
+    /**
+     * @return DeploymentEntity[]
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    private function getDeploymentsEntities(): array
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
+
+        /**
+         * @var DeploymentEntity[] $credentialsEntities
+         */
+        $credentialsEntities = $this->repository->select($queryFilter);
+
+        return $credentialsEntities;
     }
 }

@@ -108,4 +108,9 @@ interface TransactionLogRepositoryInterface
      * @throws QueryFilterInvalidParamException
      */
     public function deleteTransactionLogById(int $id): void;
+
+    /**
+     * @return void
+     */
+    public function deleteAllTransactionLogs(): void;
 }

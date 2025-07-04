@@ -60,4 +60,20 @@ class MockConnectionDataRepository implements ConnectionDataRepositoryInterface
     {
         return $this->connectionData;
     }
+
+    /**
+     * @param string $deploymentId
+     *
+     * @return void
+     */
+    public function deleteConnectionDataByDeploymentId(string $deploymentId): void
+    {
+        foreach ($this->connectionData as $index => $connectionData) {
+            if ($connectionData->getDeployment() === $deploymentId) {
+                unset($this->connectionData[$index]);
+                $this->connectionData = array_values($this->connectionData);
+                break;
+            }
+        }
+    }
 }

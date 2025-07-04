@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
 use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
+use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\DisconnectController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
@@ -47,6 +48,7 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountr
 use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
+use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
@@ -322,6 +324,11 @@ class BaseTestCase extends TestCase
                 return new ConnectionController(
                     TestServiceRegister::getService(ConnectionService::class),
                     TestServiceRegister::getService(StatisticalDataService::class)
+                );
+            },
+            DisconnectController::class => function () {
+                return new DisconnectController(
+                    TestServiceRegister::getService(DisconnectService::class)
                 );
             },
             CountryConfigurationController::class => function () {

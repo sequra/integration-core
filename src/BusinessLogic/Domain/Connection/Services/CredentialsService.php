@@ -63,7 +63,7 @@ class CredentialsService
             throw new BadMerchantIdException();
         }
 
-        $this->credentialsRepository->deleteCredentials();
+        $this->credentialsRepository->deleteCredentialsByDeploymentId($connectionData->getDeployment());
         $this->credentialsRepository->setCredentials($credentials);
 
         return $credentials;

@@ -19,6 +19,11 @@ class MockTransactionLogRepository implements TransactionLogRepositoryInterface
     private $transactionLog;
 
     /**
+     * @var TransactionLog[]
+     */
+    private $logs = [];
+
+    /**
      * @inheritDoc
      */
     public function getTransactionLog(string $merchantReference): ?TransactionLog
@@ -32,6 +37,7 @@ class MockTransactionLogRepository implements TransactionLogRepositoryInterface
     public function setTransactionLog(TransactionLog $transactionLog): void
     {
         $this->transactionLog = $transactionLog;
+        $this->logs[] = $transactionLog;
     }
 
     /**
@@ -72,5 +78,14 @@ class MockTransactionLogRepository implements TransactionLogRepositoryInterface
 
     public function deleteTransactionLogById(int $id): void
     {
+    }
+
+    /**
+     * @return void
+     */
+    public function deleteAllTransactionLogs(): void
+    {
+        $this->transactionLog = null;
+        $this->logs = [];
     }
 }

@@ -286,4 +286,48 @@ class DeploymentRepositoryTest extends BaseTestCase
         self::assertEquals($result[0]->getDeployment(), $sequraDeployment);
         self::assertEquals($result[1]->getDeployment(), $sveaDeployment);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function testDeleteDeployments(): void
+    {
+        // arrange
+        $deployments = [
+            new Deployment(
+                'sequra',
+                'seQura',
+                new DeploymentURL('https://live.sequrapi.com/', 'https://live.sequracdn.com/assets/'),
+                new DeploymentURL('https://sandbox.sequrapi.com/', 'https://sandbox.sequracdn.com/assets/')
+            ),
+            new Deployment(
+                'svea',
+                'SVEA',
+                new DeploymentURL('https://live.sequra.svea.com/', 'https://live.cdn.sequra.svea.com/assets/'),
+                new DeploymentURL(
+                    'https://next-sandbox.sequra.svea.com/',
+                    'https://next-sandbox.cdn.sequra.svea.com/assets/'
+                )
+            )
+        ];
+
+        foreach ($deployments as $deployment) {
+            $entity = new DeploymentEntity();
+            $entity->setDeployment($deployment);
+            $entity->setStoreId('1');
+            $entity->setDeploymentId($deployment->getId());
+
+            $this->repository->save($entity);
+        }
+
+        // act
+        StoreContext::doWithStore(
+            '1',
+            [$this->deploymentRepository, 'deleteDeployments']
+        );
+
+        // assert
+        $result = $this->repository->select();
+        self::assertCount(0, $result);
+    }
 }
