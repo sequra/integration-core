@@ -33,9 +33,11 @@ interface MerchantDataProviderInterface
     public function getNotifyUrl(): ?string;
 
     /**
+     * @param string $cartId
+     *
      * @return ?string
      */
-    public function getReturnUrl(): ?string;
+    public function getReturnUrlForCartId(string $cartId): ?string;
 
     /**
      * @return ?string

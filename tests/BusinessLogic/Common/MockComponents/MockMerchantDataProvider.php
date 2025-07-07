@@ -140,7 +140,7 @@ class MockMerchantDataProvider implements MerchantDataProviderInterface
     /**
      * @inheritDoc
      */
-    public function getReturnUrl(): ?string
+    public function getReturnUrlForCartId(string $cartId): ?string
     {
         return $this->returnUrl;
     }

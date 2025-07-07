@@ -81,7 +81,7 @@ class MerchantOrderRequestBuilder
                 $this->merchantDataProvider->getNotificationParametersForCartId($cartId),
                 $defaultParameters
             ),
-            $this->merchantDataProvider->getReturnUrl(),
+            $this->merchantDataProvider->getReturnUrlForCartId($cartId),
             $this->merchantDataProvider->getApprovedCallback(),
             $this->merchantDataProvider->getEditUrl(),
             $this->merchantDataProvider->getAbortUrl(),
