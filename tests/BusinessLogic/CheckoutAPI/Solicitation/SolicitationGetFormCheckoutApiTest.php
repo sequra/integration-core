@@ -5,6 +5,9 @@ namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation;
 use phpDocumentor\Reflection\Types\Self_;
 use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
@@ -12,6 +15,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockCreateOrderRequestBuilder;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockOrderProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantOrderBuilder;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -30,19 +34,30 @@ class SolicitationGetFormCheckoutApiTest extends BaseTestCase
      */
     private $orderRepository;
 
+    /**
+     * @var MockMerchantOrderBuilder $merchantOrderBuilder
+     */
+    private $merchantOrderBuilder;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->orderProxy = new MockOrderProxy();
         $this->orderRepository = TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class);
+        $this->merchantOrderBuilder = new MockMerchantOrderBuilder(
+            TestServiceRegister::getService(ConnectionService::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            TestServiceRegister::getService(MerchantDataProviderInterface::class)
+        );
 
         TestServiceRegister::registerService(
             SolicitationController::class,
             function () {
                 return new SolicitationController(new OrderService(
                     $this->orderProxy,
-                    $this->orderRepository
+                    $this->orderRepository,
+                    $this->merchantOrderBuilder
                 ));
             }
         );

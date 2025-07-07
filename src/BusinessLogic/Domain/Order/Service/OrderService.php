@@ -4,7 +4,11 @@ namespace SeQura\Core\BusinessLogic\Domain\Order\Service;
 
 use Exception;
 use InvalidArgumentException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
@@ -39,11 +43,24 @@ class OrderService
      * @var SeQuraOrderRepositoryInterface
      */
     protected $orderRepository;
+    /**
+     * @var MerchantOrderRequestBuilder
+     */
+    protected $merchantOrderRequestBuilder;
 
-    public function __construct(OrderProxyInterface $proxy, SeQuraOrderRepositoryInterface $orderRepository)
-    {
+    /**
+     * @param OrderProxyInterface $proxy
+     * @param SeQuraOrderRepositoryInterface $orderRepository
+     * @param MerchantOrderRequestBuilder $merchantOrderRequestBuilder
+     */
+    public function __construct(
+        OrderProxyInterface $proxy,
+        SeQuraOrderRepositoryInterface $orderRepository,
+        MerchantOrderRequestBuilder $merchantOrderRequestBuilder
+    ) {
         $this->proxy = $proxy;
         $this->orderRepository = $orderRepository;
+        $this->merchantOrderRequestBuilder = $merchantOrderRequestBuilder;
     }
 
     /**
@@ -81,12 +98,26 @@ class OrderService
      * Starts solicitation with a provided builder request data, if order is already solicited it will be updated with
      * provided builder data
      *
+     * @param CreateOrderRequestBuilder $builder
+     *
      * @return SeQuraOrder Solicited order
+     *
      * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws InvalidUrlException
      */
     public function solicitFor(CreateOrderRequestBuilder $builder): SeQuraOrder
     {
         $createOrderRequest = $builder->build();
+
+        if (!$createOrderRequest->getMerchant()) {
+            $createOrderRequest->setMerchant($this->merchantOrderRequestBuilder->build(
+                $createOrderRequest->getDeliveryAddress()->getCountryCode(),
+                $createOrderRequest->getCart()->getCartRef()
+            ));
+        }
+
         $existingOrder = $this->getExistingOrderFor($createOrderRequest);
         if ($existingOrder) {
             $this->orderRepository->deleteOrder($existingOrder);

@@ -52,9 +52,9 @@ abstract class BaseOrderRequest extends OrderRequestDTO
     protected $platform;
 
     /**
-     * @return Merchant
+     * @return ?Merchant
      */
-    public function getMerchant(): Merchant
+    public function getMerchant(): ?Merchant
     {
         return $this->merchant;
     }

@@ -106,7 +106,6 @@ class WebhookHandler
 
         $request = new CreateOrderRequest(
             OrderRequestStatusMapping::mapOrderRequestStatus($state),
-            $shopOrder->getMerchant(),
             $shopOrder->getCart(),
             $shopOrder->getDeliveryMethod(),
             $order->getCustomer(),
@@ -114,6 +113,7 @@ class WebhookHandler
             $shopOrder->getDeliveryAddress(),
             $shopOrder->getInvoiceAddress(),
             $shopOrder->getGui(),
+            $shopOrder->getMerchant(),
             $order->getMerchantReference()
         );
 

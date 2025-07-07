@@ -1023,7 +1023,6 @@ class OrderProxyTest extends BaseTestCase
 
         return new CreateOrderRequest(
             'testState',
-            $merchant,
             $cart,
             $deliveryMethod,
             $customer,
@@ -1031,6 +1030,7 @@ class OrderProxyTest extends BaseTestCase
             $deliveryAddress,
             $invoiceAddress,
             $gui,
+            $merchant,
             $merchantReference
         );
     }
@@ -1234,7 +1234,6 @@ class OrderProxyTest extends BaseTestCase
 
         return new CreateOrderRequest(
             'testState',
-            $merchant,
             $cart,
             $deliveryMethod,
             $customer,
@@ -1242,6 +1241,7 @@ class OrderProxyTest extends BaseTestCase
             $deliveryAddress,
             $invoiceAddress,
             $gui,
+            $merchant,
             $merchantReference,
             $trackings
         );

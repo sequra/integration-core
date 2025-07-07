@@ -4,23 +4,38 @@ namespace SeQura\Core\Tests\BusinessLogic\Domain\Order\Services;
 
 use DateTime;
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Customer;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\DeliveryMethod;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Gui;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\DiscountItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\HandlingItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\InvoiceFeeItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\OtherPaymentItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ProductItem;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Merchant;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Platform;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
+use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\Http\HttpResponse;
+use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockCreateOrderRequestBuilder;
+use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockOrderProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantOrderBuilder;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
@@ -41,6 +56,16 @@ class OrderServiceTest extends BaseTestCase
      */
     public $httpClient;
 
+    /**
+     * @var MockMerchantOrderBuilder $merchantOrderBuilder
+     */
+    private $merchantOrderBuilder;
+
+    /**
+     * @var MockOrderProxy $orderProxy
+     */
+    private $orderProxy;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -51,8 +76,83 @@ class OrderServiceTest extends BaseTestCase
             return $httpClient;
         });
 
-        $this->orderService = TestServiceRegister::getService(OrderService::class);
+        $this->merchantOrderBuilder = new MockMerchantOrderBuilder(
+            TestServiceRegister::getService(ConnectionService::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            TestServiceRegister::getService(MerchantDataProviderInterface::class)
+        );
+
+        $this->orderService = new OrderService(
+            TestServiceRegister::getService(OrderProxyInterface::class),
+            TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
+            $this->merchantOrderBuilder
+        );
         $this->orderRepository = TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testSolicitationWithoutMerchant(): void
+    {
+        // Arrange
+        $this->orderProxy = new MockOrderProxy();
+        $this->orderService = new OrderService(
+            $this->orderProxy,
+            TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
+            $this->merchantOrderBuilder
+        );
+
+        $expectedSeQuraOrder = (new MockCreateOrderRequestBuilder())->build()->toSequraOrderInstance('testOrderRef');
+        $this->orderProxy->setMockResult(
+            $expectedSeQuraOrder
+        );
+
+        $this->merchantOrderBuilder->setMockMerchant(new Merchant('testMerchantId'));
+        $builder = new MockCreateOrderRequestBuilder();
+        $merchantReference = new MerchantReference('test123');
+        $cart = new Cart('testCurrency', false, [
+            new ProductItem('testItemReference', 'testName', 5, 2, 10, false)
+        ], 'test123');
+        $deliveryMethod = new DeliveryMethod('testDeliveryMethodName');
+        $deliveryAddress = new Address(
+            'testDeliveryAddressCompany',
+            'testDeliveryAddressLine1',
+            'testDeliveryAddressLine2',
+            'testDeliveryAddressPostalCode',
+            'testDeliveryAddressCity',
+            'ES'
+        );
+        $invoiceAddress = new Address(
+            'testInvoiceAddressCompany',
+            'testInvoiceAddressLine1',
+            'testInvoiceAddressLine2',
+            'testInvoiceAddressPostalCode',
+            'testInvoiceAddressCity',
+            'ES'
+        );
+        $customer = new Customer('test@test.test', 'testCode', 'testIpNum', 'testAgent');
+        $platform = new Platform('testName', 'testVersion', 'testUName', 'testDbName', 'testDbVersion');
+        $gui = new Gui(Gui::ALLOWED_VALUES['desktop']);
+        $request = new CreateOrderRequest(
+            'testState',
+            $cart,
+            $deliveryMethod,
+            $customer,
+            $platform,
+            $deliveryAddress,
+            $invoiceAddress,
+            $gui,
+            null,
+            $merchantReference
+        );
+        $builder->setMockOrderRequest($request);
+
+        // Act
+        $response = $this->orderService->solicitFor($builder);
+
+        // Assert
+        self::assertEquals($expectedSeQuraOrder->toArray(), $response->toArray());
     }
 
     /**
@@ -115,10 +215,12 @@ class OrderServiceTest extends BaseTestCase
     public function testIsUpdateResponseSuccessful(): void
     {
         // Arrange
-        $this->httpClient->setMockResponses([new HttpResponse(204, ['UUID' => 'testUUID'], ''),
+        $this->httpClient->setMockResponses([
             new HttpResponse(204, ['UUID' => 'testUUID'], ''),
             new HttpResponse(204, ['UUID' => 'testUUID'], ''),
-            new HttpResponse(204, ['UUID' => 'testUUID'], '')]);
+            new HttpResponse(204, ['UUID' => 'testUUID'], ''),
+            new HttpResponse(204, ['UUID' => 'testUUID'], '')
+        ]);
 
         $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
         $array = json_decode($order, true);
@@ -168,22 +270,70 @@ class OrderServiceTest extends BaseTestCase
             self::assertEquals($paymentMethodCategories[$i]['icon'], $response[$i]->getIcon());
 
             for ($j = 0, $jMax = count($paymentMethodCategories[$i]['methods']); $j < $jMax; $j++) {
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['product'], $response[$i]->getMethods()[$j]->getProduct());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['campaign'], $response[$i]->getMethods()[$j]->getCampaign());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['title'], $response[$i]->getMethods()[$j]->getTitle());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['long_title'], $response[$i]->getMethods()[$j]->getLongTitle());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['claim'], $response[$i]->getMethods()[$j]->getClaim());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['description'], $response[$i]->getMethods()[$j]->getDescription());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['icon'], $response[$i]->getMethods()[$j]->getIcon());
-                self::assertEquals(new DateTime($paymentMethodCategories[$i]['methods'][$j]['starts_at']), $response[$i]->getMethods()[$j]->getStartsAt());
-                self::assertEquals(new DateTime($paymentMethodCategories[$i]['methods'][$j]['ends_at']), $response[$i]->getMethods()[$j]->getEndsAt());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['min_amount'] ?? null, $response[$i]->getMethods()[$j]->getMinAmount());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['max_amount'] ?? null, $response[$i]->getMethods()[$j]->getMaxAmount());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost_description'], $response[$i]->getMethods()[$j]->getCostDescription());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['setup_fee'], $response[$i]->getMethods()[$j]->getCost()->getSetupFee());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['instalment_fee'], $response[$i]->getMethods()[$j]->getCost()->getInstalmentFee());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['down_payment_fees'], $response[$i]->getMethods()[$j]->getCost()->getDownPaymentFees());
-                self::assertEquals($paymentMethodCategories[$i]['methods'][$j]['cost']['instalment_total'], $response[$i]->getMethods()[$j]->getCost()->getInstalmentTotal());
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['product'],
+                    $response[$i]->getMethods()[$j]->getProduct()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['campaign'],
+                    $response[$i]->getMethods()[$j]->getCampaign()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['title'],
+                    $response[$i]->getMethods()[$j]->getTitle()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['long_title'],
+                    $response[$i]->getMethods()[$j]->getLongTitle()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['claim'],
+                    $response[$i]->getMethods()[$j]->getClaim()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['description'],
+                    $response[$i]->getMethods()[$j]->getDescription()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['icon'],
+                    $response[$i]->getMethods()[$j]->getIcon()
+                );
+                self::assertEquals(
+                    new DateTime($paymentMethodCategories[$i]['methods'][$j]['starts_at']),
+                    $response[$i]->getMethods()[$j]->getStartsAt()
+                );
+                self::assertEquals(
+                    new DateTime($paymentMethodCategories[$i]['methods'][$j]['ends_at']),
+                    $response[$i]->getMethods()[$j]->getEndsAt()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['min_amount'] ?? null,
+                    $response[$i]->getMethods()[$j]->getMinAmount()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['max_amount'] ?? null,
+                    $response[$i]->getMethods()[$j]->getMaxAmount()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['cost_description'],
+                    $response[$i]->getMethods()[$j]->getCostDescription()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['cost']['setup_fee'],
+                    $response[$i]->getMethods()[$j]->getCost()->getSetupFee()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['cost']['instalment_fee'],
+                    $response[$i]->getMethods()[$j]->getCost()->getInstalmentFee()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['cost']['down_payment_fees'],
+                    $response[$i]->getMethods()[$j]->getCost()->getDownPaymentFees()
+                );
+                self::assertEquals(
+                    $paymentMethodCategories[$i]['methods'][$j]['cost']['instalment_total'],
+                    $response[$i]->getMethods()[$j]->getCost()->getInstalmentTotal()
+                );
             }
         }
     }

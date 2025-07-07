@@ -53,6 +53,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\General
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
@@ -63,6 +64,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\AbstractItemFactory;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ItemFactory;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -123,6 +125,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsReposit
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
@@ -222,7 +225,8 @@ class BaseTestCase extends TestCase
             OrderService::class => static function () {
                 return new OrderService(
                     TestServiceRegister::getService(OrderProxyInterface::class),
-                    TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class)
+                    TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
+                    TestServiceRegister::getService(MerchantOrderRequestBuilder::class)
                 );
             },
             OrderReportService::class => static function () {
@@ -610,6 +614,24 @@ class BaseTestCase extends TestCase
             CredentialsRepositoryInterface::class,
             static function () {
                 return new MockCredentialsRepository();
+            }
+        );
+
+        TestServiceRegister::registerService(
+            MerchantOrderRequestBuilder::class,
+            static function () {
+                return new MerchantOrderRequestBuilder(
+                    TestServiceRegister::getService(ConnectionService::class),
+                    TestServiceRegister::getService(CredentialsService::class),
+                    TestServiceRegister::getService(MerchantDataProviderInterface::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            MerchantDataProviderInterface::class,
+            static function () {
+                return new MockMerchantDataProvider();
             }
         );
 

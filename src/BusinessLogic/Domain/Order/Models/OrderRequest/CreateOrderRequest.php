@@ -37,7 +37,6 @@ class CreateOrderRequest extends BaseOrderRequest
 
     /**
      * @param string $state
-     * @param Merchant $merchant
      * @param Cart $cart
      * @param DeliveryMethod $deliveryMethod
      * @param Customer $customer
@@ -45,12 +44,12 @@ class CreateOrderRequest extends BaseOrderRequest
      * @param Address $deliveryAddress
      * @param Address $invoiceAddress
      * @param Gui $gui
+     * @param Merchant|null $merchant
      * @param MerchantReference|null $merchantReference
      * @param mixed[]|null $trackings
      */
     public function __construct(
         string $state,
-        Merchant $merchant,
         Cart $cart,
         DeliveryMethod $deliveryMethod,
         Customer $customer,
@@ -58,6 +57,7 @@ class CreateOrderRequest extends BaseOrderRequest
         Address $deliveryAddress,
         Address $invoiceAddress,
         Gui $gui,
+        ?Merchant $merchant = null,
         MerchantReference $merchantReference = null,
         array $trackings = null
     ) {
@@ -92,7 +92,8 @@ class CreateOrderRequest extends BaseOrderRequest
     public static function fromArray(array $data): self
     {
         $state = self::getDataValue($data, 'state');
-        $merchant = Merchant::fromArray(self::getDataValue($data, 'merchant', []));
+        $merchant = self::getDataValue($data, 'merchant', null) ?
+            Merchant::fromArray(self::getDataValue($data, 'merchant', [])) : null;
         $cart = Cart::fromArray(self::getDataValue($data, 'cart', []));
         $deliveryMethod = DeliveryMethod::fromArray(self::getDataValue($data, 'delivery_method', []));
         $customer = Customer::fromArray(self::getDataValue($data, 'customer', []));
@@ -115,7 +116,6 @@ class CreateOrderRequest extends BaseOrderRequest
 
         return new self(
             $state,
-            $merchant,
             $cart,
             $deliveryMethod,
             $customer,
@@ -123,6 +123,7 @@ class CreateOrderRequest extends BaseOrderRequest
             $deliveryAddress,
             $invoiceAddress,
             $gui,
+            $merchant,
             $merchantReference,
             $trackings
         );
@@ -151,6 +152,16 @@ class CreateOrderRequest extends BaseOrderRequest
     public function getGui(): Gui
     {
         return $this->gui;
+    }
+
+    /**
+     * @param Merchant $merchant
+     *
+     * @return void
+     */
+    public function setMerchant(Merchant $merchant): void
+    {
+        $this->merchant = $merchant;
     }
 
     /**

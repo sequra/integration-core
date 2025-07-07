@@ -3,6 +3,8 @@
 namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents;
 
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidGuiLayoutValueException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
@@ -30,21 +32,52 @@ class MockCreateOrderRequestBuilder implements CreateOrderRequestBuilder
      */
     private $cartId;
 
+    /**
+     * @var CreateOrderRequest $orderRequest
+     */
+    private $orderRequest;
+
     public function __construct(\Exception $exception = null, $cartId = 'testCart123')
     {
         $this->throwException = $exception;
         $this->cartId = $cartId;
     }
 
+    /**
+     * @return CreateOrderRequest
+     *
+     * @throws InvalidCartItemsException
+     * @throws InvalidGuiLayoutValueException
+     */
     public function build(): CreateOrderRequest
     {
         if ($this->throwException) {
             throw $this->throwException;
         }
 
+        if ($this->orderRequest) {
+            return $this->orderRequest;
+        }
+
         return $this->generateMinimalCreateOrderRequest();
     }
 
+    /**
+     * @param CreateOrderRequest $mockCreateOrderRequest
+     *
+     * @return void
+     */
+    public function setMockOrderRequest(CreateOrderRequest $mockCreateOrderRequest): void
+    {
+        $this->orderRequest = $mockCreateOrderRequest;
+    }
+
+    /**
+     * @return CreateOrderRequest
+     *
+     * @throws InvalidCartItemsException
+     * @throws InvalidGuiLayoutValueException
+     */
     private function generateMinimalCreateOrderRequest(): CreateOrderRequest
     {
         $merchant = new Merchant('testMerchantId');
@@ -78,7 +111,6 @@ class MockCreateOrderRequestBuilder implements CreateOrderRequestBuilder
 
         return new CreateOrderRequest(
             'testState',
-            $merchant,
             $cart,
             $deliveryMethod,
             $customer,
@@ -86,6 +118,7 @@ class MockCreateOrderRequestBuilder implements CreateOrderRequestBuilder
             $deliveryAddress,
             $invoiceAddress,
             $gui,
+            $merchant,
             $merchantReference
         );
     }

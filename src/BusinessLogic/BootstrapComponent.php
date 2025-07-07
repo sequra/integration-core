@@ -55,6 +55,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
@@ -64,6 +65,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as 
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\AbstractItemFactory;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ItemFactory;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -464,7 +466,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new OrderService(
                     ServiceRegister::getService(OrderProxyInterface::class),
-                    ServiceRegister::getService(SeQuraOrderRepositoryInterface::class)
+                    ServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
+                    ServiceRegister::getService(MerchantOrderRequestBuilder::class)
                 );
             }
         );
@@ -530,6 +533,17 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(DeploymentsProxyInterface::class),
                     ServiceRegister::getService(DeploymentsRepositoryInterface::class),
                     ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            MerchantOrderRequestBuilder::class,
+            static function () {
+                return new MerchantOrderRequestBuilder(
+                    ServiceRegister::getService(ConnectionService::class),
+                    ServiceRegister::getService(CredentialsService::class),
+                    ServiceRegister::getService(MerchantDataProviderInterface::class)
                 );
             }
         );
