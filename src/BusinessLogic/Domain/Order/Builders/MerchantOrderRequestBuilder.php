@@ -71,14 +71,14 @@ class MerchantOrderRequestBuilder
         $defaultParameters = $this->getDefaultParameters($merchantId, $cartId);
         $eventsWebhook = new EventsWebhook(
             $this->merchantDataProvider->getEventsWebhookUrl(),
-            array_merge($defaultParameters, $this->merchantDataProvider->getEventsWebhookParameters())
+            array_merge($defaultParameters, $this->merchantDataProvider->getEventsWebhookParametersForCartId($cartId))
         );
 
         return new Merchant(
             $merchantId,
             $this->merchantDataProvider->getNotifyUrl(),
             array_merge(
-                $this->merchantDataProvider->getNotificationParameters(),
+                $this->merchantDataProvider->getNotificationParametersForCartId($cartId),
                 $defaultParameters
             ),
             $this->merchantDataProvider->getReturnUrl(),

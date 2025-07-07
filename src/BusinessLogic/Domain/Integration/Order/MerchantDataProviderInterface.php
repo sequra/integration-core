@@ -65,10 +65,10 @@ interface MerchantDataProviderInterface
     /**
      * @return array<mixed, mixed>
      */
-    public function getNotificationParameters(): array;
+    public function getNotificationParametersForCartId(string $cartId): array;
 
     /**
      * @return array<mixed, mixed>
      */
-    public function getEventsWebhookParameters(): array;
+    public function getEventsWebhookParametersForCartId(string $cartId): array;
 }

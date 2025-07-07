@@ -248,7 +248,7 @@ class MockMerchantDataProvider implements MerchantDataProviderInterface
     /**
      * @inheritDoc
      */
-    public function getNotificationParameters(): array
+    public function getNotificationParametersForCartId(string $cartId): array
     {
         return $this->notificationParameters;
     }
@@ -266,7 +266,7 @@ class MockMerchantDataProvider implements MerchantDataProviderInterface
     /**
      * @inheritDoc
      */
-    public function getEventsWebhookParameters(): array
+    public function getEventsWebhookParametersForCartId(string $cartId): array
     {
         return $this->eventsWebhookParams;
     }
