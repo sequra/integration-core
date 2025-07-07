@@ -3,7 +3,14 @@
 namespace SeQura\Core\BusinessLogic\Webhook\Handler;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidOrderStateException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\OrderRequestStatusMapping;
@@ -29,6 +36,29 @@ use SeQura\Core\Infrastructure\ServiceRegister;
  */
 class WebhookHandler
 {
+    /**
+     * @var ShopOrderService $shopOrderService
+     */
+    private $shopOrderService;
+
+    /**
+     * @var MerchantOrderRequestBuilder $merchantOrderRequestBuilder
+     */
+    private $merchantOrderRequestBuilder;
+
+    /**
+     * @param ShopOrderService $shopOrderService
+     * @param MerchantOrderRequestBuilder $merchantOrderRequestBuilder
+     */
+    public function __construct(
+        ShopOrderService $shopOrderService,
+        MerchantOrderRequestBuilder $merchantOrderRequestBuilder
+    ) {
+        $this->shopOrderService = $shopOrderService;
+        $this->merchantOrderRequestBuilder = $merchantOrderRequestBuilder;
+    }
+
+
     /**
      * Handles an incoming webhook request.
      *
@@ -94,6 +124,10 @@ class WebhookHandler
      * @throws InvalidOrderStateException
      * @throws QueryFilterInvalidParamException
      * @throws RepositoryNotRegisteredException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws DeploymentNotFoundException
+     * @throws InvalidCartItemsException
      */
     protected function acknowledgeOrder(string $orderReference, string $state): void
     {
@@ -151,14 +185,22 @@ class WebhookHandler
      * @param string $orderReference
      *
      * @return CreateOrderRequest
+     *
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws InvalidUrlException
      */
     protected function getCreateOrderRequest(string $orderReference): CreateOrderRequest
     {
-        /**
-         * @var ShopOrderService $service
-         */
-        $service = ServiceRegister::getService(ShopOrderService::class);
+        $request = $this->shopOrderService->getCreateOrderRequest($orderReference);
 
-        return $service->getCreateOrderRequest($orderReference);
+        if (!$request->getMerchant()) {
+            $request->setMerchant($this->merchantOrderRequestBuilder->build(
+                $request->getDeliveryAddress()->getCountryCode(),
+                $request->getCart()->getCartRef()
+            ));
+        }
+
+        return $request;
     }
 }

@@ -476,7 +476,10 @@ class BaseTestCase extends TestCase
         TestServiceRegister::registerService(
             WebhookHandler::class,
             static function () {
-                return new WebhookHandler();
+                return new WebhookHandler(
+                    TestServiceRegister::getService(ShopOrderService::class),
+                    TestServiceRegister::getService(MerchantOrderRequestBuilder::class)
+                );
             }
         );
 

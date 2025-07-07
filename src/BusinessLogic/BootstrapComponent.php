@@ -443,7 +443,10 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             WebhookHandler::class,
             static function () {
-                return new WebhookHandler();
+                return new WebhookHandler(
+                    ServiceRegister::getService(ShopOrderService::class),
+                    ServiceRegister::getService(MerchantOrderRequestBuilder::class)
+                );
             }
         );
 
