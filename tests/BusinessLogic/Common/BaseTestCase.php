@@ -54,6 +54,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
@@ -126,6 +127,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvider;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
@@ -226,7 +228,8 @@ class BaseTestCase extends TestCase
                 return new OrderService(
                     TestServiceRegister::getService(OrderProxyInterface::class),
                     TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
-                    TestServiceRegister::getService(MerchantOrderRequestBuilder::class)
+                    TestServiceRegister::getService(MerchantOrderRequestBuilder::class),
+                    TestServiceRegister::getService(OrderCreationInterface::class)
                 );
             },
             OrderReportService::class => static function () {
@@ -635,6 +638,13 @@ class BaseTestCase extends TestCase
             MerchantDataProviderInterface::class,
             static function () {
                 return new MockMerchantDataProvider();
+            }
+        );
+
+        TestServiceRegister::registerService(
+            OrderCreationInterface::class,
+            static function () {
+                return new MockOrderCreation();
             }
         );
 

@@ -56,6 +56,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsSer
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
@@ -470,7 +471,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new OrderService(
                     ServiceRegister::getService(OrderProxyInterface::class),
                     ServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
-                    ServiceRegister::getService(MerchantOrderRequestBuilder::class)
+                    ServiceRegister::getService(MerchantOrderRequestBuilder::class),
+                    ServiceRegister::getService(OrderCreationInterface::class)
                 );
             }
         );

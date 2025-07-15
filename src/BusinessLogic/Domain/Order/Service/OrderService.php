@@ -6,27 +6,30 @@ use Exception;
 use InvalidArgumentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidOrderStateException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ItemType;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\PaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
+use SeQura\Core\BusinessLogic\Domain\Order\OrderRequestStatusMapping;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethodCategory;
+use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
-use SeQura\Core\Infrastructure\TaskExecution\Exceptions\AbortTaskExecutionException;
 
 /**
  * Class OrderService
@@ -36,9 +39,17 @@ use SeQura\Core\Infrastructure\TaskExecution\Exceptions\AbortTaskExecutionExcept
 class OrderService
 {
     /**
+     * Product codes for installment payments category.
+     */
+    private const INSTALLMENT_METHOD_CODES = ['pp3', 'pp6', 'pp9'];
+    /**
      * @var OrderProxyInterface
      */
     protected $proxy;
+    /**
+     * @var OrderCreationInterface
+     */
+    protected $shopOrderCreator;
     /**
      * @var SeQuraOrderRepositoryInterface
      */
@@ -52,15 +63,18 @@ class OrderService
      * @param OrderProxyInterface $proxy
      * @param SeQuraOrderRepositoryInterface $orderRepository
      * @param MerchantOrderRequestBuilder $merchantOrderRequestBuilder
+     * @param OrderCreationInterface $shopOrderCreator
      */
     public function __construct(
         OrderProxyInterface $proxy,
         SeQuraOrderRepositoryInterface $orderRepository,
-        MerchantOrderRequestBuilder $merchantOrderRequestBuilder
+        MerchantOrderRequestBuilder $merchantOrderRequestBuilder,
+        OrderCreationInterface $shopOrderCreator
     ) {
         $this->proxy = $proxy;
         $this->orderRepository = $orderRepository;
         $this->merchantOrderRequestBuilder = $merchantOrderRequestBuilder;
+        $this->shopOrderCreator = $shopOrderCreator;
     }
 
     /**
@@ -249,6 +263,87 @@ class OrderService
     }
 
     /**
+     * Creates and saves a new SeQuraOrder.
+     *
+     * @param Webhook $webhook
+     *
+     * @return string
+     *
+     * @throws Exception
+     */
+    public function createOrder(Webhook $webhook): string
+    {
+        $seQuraOrder = $this->getSeQuraOrder($webhook->getOrderRef());
+
+        $shopOrderReference = $this->shopOrderCreator->getShopOrderReference($seQuraOrder->getCartId());
+
+        $updatedSeQuraOrder = (new CreateOrderRequest(
+            OrderRequestStatusMapping::mapOrderRequestStatus($webhook->getSqState()),
+            $seQuraOrder->getUnshippedCart(),
+            $seQuraOrder->getDeliveryMethod(),
+            $seQuraOrder->getCustomer(),
+            $seQuraOrder->getPlatform(),
+            $seQuraOrder->getDeliveryAddress(),
+            $seQuraOrder->getInvoiceAddress(),
+            $seQuraOrder->getGui(),
+            $seQuraOrder->getMerchant(),
+            MerchantReference::fromArray([
+                'order_ref_1' => $shopOrderReference,
+                'order_ref_2' => $webhook->getOrderRef()
+            ])
+        ))->toSequraOrderInstance($webhook->getOrderRef());
+
+        $updatedSeQuraOrder->setPaymentMethod(
+            $this->getOrderPaymentMethodInfo(
+                $updatedSeQuraOrder->getReference(),
+                $webhook->getProductCode(),
+                (string)$updatedSeQuraOrder->getMerchant()->getId()
+            )
+        );
+
+        // Update order with merchant order references so that core can update order state with all required data
+        $this->orderRepository->setSeQuraOrder($updatedSeQuraOrder);
+
+        return $shopOrderReference;
+    }
+
+    /**
+     * Updates the SeQuraOrder status.
+     *
+     * @param Webhook $webhook
+     *
+     * @return void
+     *
+     * @throws InvalidOrderStateException|OrderNotFoundException
+     */
+    public function updateSeQuraOrderStatus(Webhook $webhook): void
+    {
+        $seQuraOrder = $this->getSeQuraOrder($webhook->getOrderRef());
+        $seQuraOrder->setState(OrderRequestStatusMapping::mapOrderRequestStatus($webhook->getSqState()));
+        $this->orderRepository->setSeQuraOrder($seQuraOrder);
+    }
+
+    /**
+     * Returns webhook order reference.
+     *
+     * @param Webhook $webhook
+     *
+     * @return string
+     *
+     * @throws OrderNotFoundException
+     */
+    public function getOrderReference1(Webhook $webhook): string
+    {
+        $orderRef1 = $webhook->getOrderRef1();
+        if (empty($orderRef1)) {
+            $seQuraOrder = $this->getSeQuraOrder($webhook->getOrderRef());
+            $orderRef1 = $seQuraOrder->getMerchantReference()->getOrderRef1();
+        }
+
+        return $orderRef1;
+    }
+
+    /**
      * @param SeQuraOrder $order
      *
      * @return void
@@ -257,7 +352,7 @@ class OrderService
      * @throws HttpRequestException
      * @throws Exception
      */
-    protected function tryOrderUpdate(SeQuraOrder $order)
+    protected function tryOrderUpdate(SeQuraOrder $order): void
     {
         try {
             $this->proxy->updateOrder($this->getUpdateOrderRequest($order));
@@ -333,5 +428,60 @@ class OrderService
         }
 
         return json_encode($object1) === json_encode($object2);
+    }
+
+    /**
+     * Gets the SeQura order.
+     *
+     * @param string $orderReference
+     *
+     * @return SeQuraOrder
+     *
+     * @throws OrderNotFoundException
+     */
+    private function getSeQuraOrder(string $orderReference): SeQuraOrder
+    {
+        $seQuraOrder = $this->orderRepository->getByOrderReference($orderReference);
+        if (!$seQuraOrder) {
+            throw new OrderNotFoundException("SeQura order with reference $orderReference is not found.", 404);
+        }
+
+        return $seQuraOrder;
+    }
+
+    /**
+     * Returns PaymentMethod information for SeQura order.
+     *
+     * @param string $orderReference
+     * @param string $paymentMethodId
+     * @param string $merchantId
+     *
+     * @return PaymentMethod|null
+     *
+     * @throws HttpRequestException
+     */
+    private function getOrderPaymentMethodInfo(
+        string $orderReference,
+        string $paymentMethodId,
+        string $merchantId
+    ): ?PaymentMethod {
+        $methodCategories = $this->getAvailablePaymentMethodsInCategories(
+            $orderReference,
+            $merchantId
+        );
+
+        foreach ($methodCategories as $category) {
+            foreach ($category->getMethods() as $method) {
+                if ($method->getProduct() === $paymentMethodId) {
+                    $name = in_array($paymentMethodId, self::INSTALLMENT_METHOD_CODES) ?
+                        $category->getTitle() :
+                        $method->getTitle();
+                    $icon = $method->getIcon() ?? '';
+                    return new PaymentMethod($paymentMethodId, $name, $icon);
+                }
+            }
+        }
+
+        return null;
     }
 }

@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationCo
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
@@ -39,6 +40,11 @@ class SolicitationGetFormCheckoutApiTest extends BaseTestCase
      */
     private $merchantOrderBuilder;
 
+    /**
+     * @var OrderCreationInterface
+     */
+    private $shopOrderCreation;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -50,6 +56,7 @@ class SolicitationGetFormCheckoutApiTest extends BaseTestCase
             TestServiceRegister::getService(CredentialsService::class),
             TestServiceRegister::getService(MerchantDataProviderInterface::class)
         );
+        $this->shopOrderCreation = TestServiceRegister::getService(OrderCreationInterface::class);
 
         TestServiceRegister::registerService(
             SolicitationController::class,
@@ -57,7 +64,8 @@ class SolicitationGetFormCheckoutApiTest extends BaseTestCase
                 return new SolicitationController(new OrderService(
                     $this->orderProxy,
                     $this->orderRepository,
-                    $this->merchantOrderBuilder
+                    $this->merchantOrderBuilder,
+                    $this->shopOrderCreation
                 ));
             }
         );

@@ -7,6 +7,7 @@ use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
@@ -85,7 +86,8 @@ class OrderServiceTest extends BaseTestCase
         $this->orderService = new OrderService(
             TestServiceRegister::getService(OrderProxyInterface::class),
             TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
-            $this->merchantOrderBuilder
+            $this->merchantOrderBuilder,
+            TestServiceRegister::getService(OrderCreationInterface::class)
         );
         $this->orderRepository = TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class);
     }
@@ -100,7 +102,8 @@ class OrderServiceTest extends BaseTestCase
         $this->orderService = new OrderService(
             $this->orderProxy,
             TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
-            $this->merchantOrderBuilder
+            $this->merchantOrderBuilder,
+            TestServiceRegister::getService(OrderCreationInterface::class)
         );
 
         $expectedSeQuraOrder = (new MockCreateOrderRequestBuilder())->build()->toSequraOrderInstance('testOrderRef');
