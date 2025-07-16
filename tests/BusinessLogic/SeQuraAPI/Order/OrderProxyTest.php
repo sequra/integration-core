@@ -227,7 +227,7 @@ class OrderProxyTest extends BaseTestCase
 
         $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);
-        self::assertEquals('Access forbidden.', $exception->getMessage());
+        self::assertEquals('Bad order id \'test\' for logeecom', $exception->getMessage());
         self::assertEquals(403, $exception->getCode());
         self::assertEquals($responseBody['errors'] ?? [], $exception->getErrors());
     }
@@ -445,7 +445,7 @@ class OrderProxyTest extends BaseTestCase
 
         $responseBody = json_decode($rawResponseBody, true);
         self::assertNotNull($exception);
-        self::assertEquals('Access forbidden.', $exception->getMessage());
+        self::assertEquals('Bad order id \'test\' for logeecom', $exception->getMessage());
         self::assertEquals(403, $exception->getCode());
         self::assertEquals($responseBody['errors'] ?? [], $exception->getErrors());
     }
@@ -775,7 +775,7 @@ class OrderProxyTest extends BaseTestCase
         $responseBody = json_decode($rawResponseBody, true);
 
         self::assertNotNull($exception);
-        self::assertEquals('Access forbidden.', $exception->getMessage());
+        self::assertEquals('Bad merchant id \'test\' for logeecom', $exception->getMessage());
         self::assertEquals(403, $exception->getCode());
         self::assertEquals($responseBody['errors'] ?? [], $exception->getErrors());
     }
@@ -956,7 +956,7 @@ class OrderProxyTest extends BaseTestCase
         $responseBody = json_decode($rawResponseBody, true);
 
         self::assertNotNull($exception);
-        self::assertEquals('Access forbidden.', $exception->getMessage());
+        self::assertEquals('You do not have access to this URL', $exception->getMessage());
         self::assertEquals(403, $exception->getCode());
         self::assertEquals($responseBody['errors'] ?? [], $exception->getErrors());
     }

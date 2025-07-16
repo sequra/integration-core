@@ -35,18 +35,44 @@ class HttpApiRequestException extends HttpRequestException
      */
     public static function fromErrorResponse(HttpResponse $response, string $customMessage = null): HttpApiRequestException
     {
-        $responseBody = json_decode($response->getBody(), true);
+        $errors = self::getErrorMessages($response);
 
         $instance = new static(
-            $customMessage ?? $response->getBody(),
+            !empty($errors) ? implode('. ', $errors) : ($customMessage ?? 'An unknown error occurred.'),
             $response->getStatus()
         );
 
-        if ($responseBody && array_key_exists('errors', $responseBody)) {
-            $instance->errors = $responseBody['errors'];
-        }
+        $instance->errors = $errors;
 
         return $instance;
+    }
+
+    /**
+     * Extracts errors from the HTTP response body.
+     *
+     * @param HttpResponse $response
+     *
+     * @return string[]
+     */
+    private static function getErrorMessages(HttpResponse $response): array
+    {
+        $errors = [];
+        $responseBody = json_decode($response->getBody(), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return $errors; // Return empty array if JSON decoding fails
+        }
+        if (!is_array($responseBody) || !isset($responseBody['errors'])) {
+            return $errors;
+        }
+        foreach ($responseBody['errors'] as $error) {
+            if (is_string($error)) {
+                $errors[] = $error;
+            } elseif (is_array($error) && isset($error['title'])) {
+                $errors[] = $error['title'];
+            }
+        }
+
+        return $errors;
     }
 
     /**
