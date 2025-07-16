@@ -275,7 +275,7 @@ class OrderService
     {
         $seQuraOrder = $this->getSeQuraOrder($webhook->getOrderRef());
 
-        $shopOrderReference = $this->shopOrderCreator->getShopOrderReference($seQuraOrder->getCartId());
+        $shopOrderReference = $this->shopOrderCreator->createOrder($seQuraOrder->getCartId());
 
         $updatedSeQuraOrder = (new CreateOrderRequest(
             OrderRequestStatusMapping::mapOrderRequestStatus($webhook->getSqState()),

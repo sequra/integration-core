@@ -10,11 +10,11 @@ namespace SeQura\Core\BusinessLogic\Domain\Integration\Order;
 interface OrderCreationInterface
 {
     /**
-     * Returns shop order reference.
+     * Creates shop order and returns shop order reference.
      *
-     * @param string $idReference
+     * @param string $cartId
      *
      * @return string
      */
-    public function getShopOrderReference(string $idReference): string;
+    public function createOrder(string $cartId): string;
 }
