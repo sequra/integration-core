@@ -297,7 +297,8 @@ class OrderServiceTest extends BaseTestCase
         self::assertEquals('shop-order-ref-1234', $updatedSeQuraOrder->getOrderRef1());
         self::assertEquals('shop-order-ref-1234', $updatedSeQuraOrder->getMerchantReference()->getOrderRef1());
         self::assertEquals(
-            'd168f9bc-de62-4635-be52-0f0c0a5903aa', $updatedSeQuraOrder->getMerchantReference()->getOrderRef2()
+            'd168f9bc-de62-4635-be52-0f0c0a5903aa',
+            $updatedSeQuraOrder->getMerchantReference()->getOrderRef2()
         );
     }
 
