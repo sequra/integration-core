@@ -51,9 +51,19 @@ class ConnectionService
      */
     public function connect(array $connections): void
     {
+        $errors = [];
+
         foreach ($connections as $connectionData) {
-            $this->credentialsService->validateAndUpdateCredentials($connectionData);
-            $this->saveConnectionData($connectionData);
+            try {
+                $this->credentialsService->validateAndUpdateCredentials($connectionData);
+                $this->saveConnectionData($connectionData);
+            } catch (WrongCredentialsException $exception) {
+                $errors[] = $connectionData->getDeployment();
+            }
+        }
+
+        if (!empty($errors)) {
+            throw new WrongCredentialsException(null, $errors);
         }
     }
 
