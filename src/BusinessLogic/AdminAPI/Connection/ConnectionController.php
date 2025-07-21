@@ -138,7 +138,7 @@ class ConnectionController
         } catch (BadMerchantIdException $e) {
             return new ConnectionValidationResponse(false, 'merchantId');
         } catch (WrongCredentialsException $e) {
-            return new ConnectionValidationResponse(false, 'username/password');
+            return new ConnectionValidationResponse(false, $e->getMessage());
         }
 
         return new SuccessfulConnectionResponse();
