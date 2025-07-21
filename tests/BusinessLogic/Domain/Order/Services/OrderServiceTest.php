@@ -9,7 +9,6 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
-use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
@@ -31,12 +30,15 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\Http\HttpResponse;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockCreateOrderRequestBuilder;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockOrderProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantOrderBuilder;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSeQuraOrderRepository;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
@@ -61,6 +63,11 @@ class OrderServiceTest extends BaseTestCase
      * @var MockMerchantOrderBuilder $merchantOrderBuilder
      */
     private $merchantOrderBuilder;
+
+    /**
+     * @var MockOrderCreation $merchantOrderBuilder
+     */
+    private $shopOrderCreator;
 
     /**
      * @var MockOrderProxy $orderProxy
@@ -245,6 +252,128 @@ class OrderServiceTest extends BaseTestCase
         self::assertEquals($this->expectedUnshippedToArrayResponse(), $response->getUnshippedCart()->toArray());
         self::assertEquals($this->expectedDeliveryAddressToArrayResponse(), $response->getDeliveryAddress()->toArray());
         self::assertEquals($this->expectedInvoiceAddressToArrayResponse(), $response->getInvoiceAddress()->toArray());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testOrderCreation(): void
+    {
+        $this->orderProxy = new MockOrderProxy();
+        $this->orderRepository = new MockSeQuraOrderRepository();
+        $this->shopOrderCreator = new MockOrderCreation();
+        $this->orderService = new OrderService(
+            $this->orderProxy,
+            $this->orderRepository,
+            $this->merchantOrderBuilder,
+            $this->shopOrderCreator
+        );
+
+        $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
+        $array = json_decode($order, true);
+        $seQuraOrder = SeQuraOrder::fromArray($array['order']);
+        $seQuraOrder->setReference('d168f9bc-de62-4635-be52-0f0c0a5903aa');
+        $seQuraOrder->setCartId('5678');
+        $seQuraOrder->setOrderRef1('ZXCV1234');
+        $seQuraOrder->setState('approved');
+
+        StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$seQuraOrder]);
+        $this->shopOrderCreator->setShopOrderReference('shop-order-ref-1234');
+
+        $webhook = Webhook::fromArray([
+            'signature' => 'K6hDNSwfcJjF+suAJqXAjA==',
+            'order_ref' => 'd168f9bc-de62-4635-be52-0f0c0a5903aa',
+            'approved_since' => '3',
+            'product_code' => 'i1',
+            'sq_state' => 'approved',
+            'order_ref_1' => 'ZXCV1234',
+        ]);
+
+        $shopOrderReference = $this->orderService->createOrder($webhook);
+        self::assertEquals('shop-order-ref-1234', $shopOrderReference);
+
+        $updatedSeQuraOrder = $this->orderRepository->getByOrderReference('d168f9bc-de62-4635-be52-0f0c0a5903aa');
+        self::assertNotNull($updatedSeQuraOrder);
+        self::assertEquals('shop-order-ref-1234', $updatedSeQuraOrder->getOrderRef1());
+        self::assertEquals('shop-order-ref-1234', $updatedSeQuraOrder->getMerchantReference()->getOrderRef1());
+        self::assertEquals(
+            'd168f9bc-de62-4635-be52-0f0c0a5903aa', $updatedSeQuraOrder->getMerchantReference()->getOrderRef2()
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateSeQuraOrderStatus(): void
+    {
+        $this->orderRepository = new MockSeQuraOrderRepository();
+        $this->shopOrderCreator = new MockOrderCreation();
+        $this->orderService = new OrderService(
+            TestServiceRegister::getService(OrderProxyInterface::class),
+            $this->orderRepository,
+            $this->merchantOrderBuilder,
+            $this->shopOrderCreator
+        );
+
+        $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
+        $array = json_decode($order, true);
+        $seQuraOrder = SeQuraOrder::fromArray($array['order']);
+        $seQuraOrder->setReference('d168f9bc-de62-4635-be52-0f0c0a5903aa');
+        $seQuraOrder->setCartId('5678');
+        $seQuraOrder->setOrderRef1('ZXCV1234');
+        $seQuraOrder->setState('approved');
+
+        StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$seQuraOrder]);
+
+        $webhook = Webhook::fromArray([
+            'signature' => 'K6hDNSwfcJjF+suAJqXAjA==',
+            'order_ref' => 'd168f9bc-de62-4635-be52-0f0c0a5903aa',
+            'approved_since' => '3',
+            'product_code' => 'i1',
+            'sq_state' => 'needs_review',
+            'order_ref_1' => 'ZXCV1234',
+        ]);
+
+        $this->orderService->updateSeQuraOrderStatus($webhook);
+        $updatedSeQuraOrder = $this->orderRepository->getByOrderReference('d168f9bc-de62-4635-be52-0f0c0a5903aa');
+        self::assertNotNull($updatedSeQuraOrder);
+        self::assertEquals('on_hold', $updatedSeQuraOrder->getState());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetOrderReference1(): void
+    {
+        $this->orderRepository = new MockSeQuraOrderRepository();
+        $this->shopOrderCreator = new MockOrderCreation();
+        $this->orderService = new OrderService(
+            TestServiceRegister::getService(OrderProxyInterface::class),
+            $this->orderRepository,
+            $this->merchantOrderBuilder,
+            $this->shopOrderCreator
+        );
+
+        $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
+        $array = json_decode($order, true);
+        $seQuraOrder = SeQuraOrder::fromArray($array['order']);
+        $seQuraOrder->setReference('d168f9bc-de62-4635-be52-0f0c0a5903aa');
+        $seQuraOrder->setCartId('5678');
+        $seQuraOrder->setOrderRef1('ZXCV1234');
+        $seQuraOrder->setState('approved');
+
+        StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$seQuraOrder]);
+        $webhook = Webhook::fromArray([
+            'signature' => 'K6hDNSwfcJjF+suAJqXAjA==',
+            'order_ref' => 'd168f9bc-de62-4635-be52-0f0c0a5903aa',
+            'approved_since' => '3',
+            'product_code' => 'i1',
+            'sq_state' => 'approved',
+            'order_ref_1' => '',
+        ]);
+
+        $orderReference1 = $this->orderService->getOrderReference1($webhook);
+        self::assertEquals('ZXCV1234', $orderReference1);
     }
 
     /**

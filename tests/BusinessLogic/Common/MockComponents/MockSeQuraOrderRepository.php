@@ -46,6 +46,12 @@ class MockSeQuraOrderRepository implements SeQuraOrderRepositoryInterface
      */
     public function getByOrderReference(string $sequraOrderReference): ?SeQuraOrder
     {
+        foreach ($this->orders as $order) {
+            if ($order->getReference() === $sequraOrderReference) {
+                return $order;
+            }
+        }
+
         return null;
     }
 
@@ -54,6 +60,14 @@ class MockSeQuraOrderRepository implements SeQuraOrderRepositoryInterface
      */
     public function setSeQuraOrder(SeQuraOrder $order): void
     {
+        foreach ($this->orders as $key => $value) {
+            if ($value->getReference() === $order->getReference()) {
+                $this->orders[$key] = $order;
+
+                return;
+            }
+        }
+
         $this->orders[] = $order;
     }
 

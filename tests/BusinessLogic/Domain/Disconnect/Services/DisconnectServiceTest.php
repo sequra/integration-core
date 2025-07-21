@@ -222,7 +222,9 @@ class DisconnectServiceTest extends BaseTestCase
         $this->generalSettingsRepository->setGeneralSettings($generalSettings);
 
         $sequraOrder1 = new SequraOrder();
+        $sequraOrder1->setReference('reference1');
         $sequraOrder2 = new SequraOrder();
+        $sequraOrder2->setReference('reference2');
         $this->seQuraOrderRepository->setSequraOrder($sequraOrder1);
         $this->seQuraOrderRepository->setSequraOrder($sequraOrder2);
 
@@ -347,7 +349,9 @@ class DisconnectServiceTest extends BaseTestCase
         $this->generalSettingsRepository->setGeneralSettings($generalSettings);
 
         $sequraOrder1 = new SequraOrder();
+        $sequraOrder1->setReference('reference1');
         $sequraOrder2 = new SequraOrder();
+        $sequraOrder2->setReference('reference2');
         $this->seQuraOrderRepository->setSequraOrder($sequraOrder1);
         $this->seQuraOrderRepository->setSequraOrder($sequraOrder2);
 
