@@ -54,7 +54,7 @@ class ConnectionService
         $errors = [];
 
         foreach ($connections as $connectionData) {
-            try{
+            try {
                 $this->credentialsService->validateAndUpdateCredentials($connectionData);
                 $this->saveConnectionData($connectionData);
             } catch (WrongCredentialsException $exception) {
