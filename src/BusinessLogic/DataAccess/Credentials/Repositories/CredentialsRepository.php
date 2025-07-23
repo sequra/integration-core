@@ -62,6 +62,7 @@ class CredentialsRepository implements CredentialsRepositoryInterface
                 continue;
             }
 
+            $credentialsEntity->setMerchantId($credential->getMerchantId());
             $credentialsEntity->setCredentials($credential);
             $this->repository->update($credentialsEntity);
         }
