@@ -93,12 +93,13 @@ class CredentialsRepository implements CredentialsRepositoryInterface
     /**
      * @param string $deploymentId
      *
-     * @return void
+     * @return array<string>
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function deleteCredentialsByDeploymentId(string $deploymentId): void
+    public function deleteCredentialsByDeploymentId(string $deploymentId): array
     {
+        $merchantIds = [];
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
         /**
@@ -109,8 +110,11 @@ class CredentialsRepository implements CredentialsRepositoryInterface
         foreach ($credentialsEntities as $entity) {
             if ($entity->getCredentials()->getDeployment() === $deploymentId) {
                 $this->repository->delete($entity);
+                $merchantIds[] = $entity->getMerchantId();
             }
         }
+
+        return $merchantIds;
     }
 
     /**

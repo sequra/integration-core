@@ -290,7 +290,7 @@ class DisconnectServiceTest extends BaseTestCase
         self::assertEquals($generalSettings, $this->generalSettingsRepository->getGeneralSettings());
         self::assertCount(2, $this->seQuraOrderRepository->getOrderBatchByShopReferences([]));
         self::assertCount(2, $this->orderStatusSettingsRepository->getOrderStatusMapping());
-        self::assertCount(2, $this->paymentMethodRepository->getPaymentMethods(''));
+        self::assertCount(0, $this->paymentMethodRepository->getPaymentMethods(''));
         self::assertEquals($widget, $this->widgetSettingsRepository->getWidgetSettings());
         self::assertEquals($statisticalData, $this->statisticalDataRepository->getStatisticalData());
         self::assertEquals($log, $this->transactionLogRepository->getTransactionLog(''));

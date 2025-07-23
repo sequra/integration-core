@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInt
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
@@ -141,16 +142,18 @@ class DisconnectService
      * @param bool $isFullDisconnect
      *
      * @return void
+     * @throws PaymentMethodNotFoundException
      */
     public function disconnect(string $deploymentId, bool $isFullDisconnect): void
     {
         $this->connectionDataRepository->deleteConnectionDataByDeploymentId($deploymentId);
-        $this->credentialsRepository->deleteCredentialsByDeploymentId($deploymentId);
-
         if (!$isFullDisconnect) {
+            $this->removeAllDeploymentData($deploymentId);
+
             return;
         }
 
+        $this->credentialsRepository->deleteCredentialsByDeploymentId($deploymentId);
         $this->countryConfigurationRepository->deleteCountryConfigurations();
         $this->deploymentsRepository->deleteDeployments();
         $this->generalSettingsRepository->deleteGeneralSettings();
@@ -164,5 +167,35 @@ class DisconnectService
         $this->transactionLogRepository->deleteAllTransactionLogs();
 
         $this->integrationDisconnectService->disconnect();
+    }
+
+    /**
+     * Removes all data connected to given deployment
+     *
+     * @param string $deploymentId
+     *
+     * @return void
+     * @throws PaymentMethodNotFoundException
+     */
+    private function removeAllDeploymentData(string $deploymentId): void
+    {
+        // Removes all credentials for given deployment and gets merchant ids connected to that deployment
+        $merchantIds = $this->credentialsRepository->deleteCredentialsByDeploymentId($deploymentId);
+
+        // Removes country configurations connected to the deployment
+        $countryConfigurations = $this->countryConfigurationRepository->getCountryConfiguration();
+        $newCountyConfigurations = [];
+        foreach ($countryConfigurations as $countryConfiguration) {
+            if (!in_array($countryConfiguration->getMerchantId(), $merchantIds, true)) {
+                $newCountyConfigurations[] = $countryConfiguration;
+            }
+        }
+
+        $this->countryConfigurationRepository->setCountryConfiguration($newCountyConfigurations);
+
+        // Removes all payment methods connected to the deployment
+        foreach ($merchantIds as $merchantId) {
+            $this->paymentMethodRepository->deletePaymentMethods($merchantId);
+        }
     }
 }

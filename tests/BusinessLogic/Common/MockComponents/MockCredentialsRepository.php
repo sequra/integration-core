@@ -38,15 +38,19 @@ class MockCredentialsRepository implements CredentialsRepositoryInterface
     /**
      * @param string $deploymentId
      *
-     * @return void
+     * @return array
      */
-    public function deleteCredentialsByDeploymentId(string $deploymentId): void
+    public function deleteCredentialsByDeploymentId(string $deploymentId): array
     {
+        $merchantIds = [];
         foreach (self::$credentials as $index => $credentials) {
             if ($credentials->getDeployment() === $deploymentId) {
                 unset(self::$credentials[$index]);
+                $merchantIds[] = $credentials->getMerchantId();
             }
         }
+
+        return $merchantIds;
     }
 
     /**
