@@ -22,9 +22,11 @@ use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvider;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
 
 /**
  * Class MerchantOrderRequestBuilderTest.
@@ -64,7 +66,9 @@ class MerchantOrderRequestBuilderTest extends BaseTestCase
 
         $this->credentialsService = new MockCredentialsService(
             new MockConnectionProxy(),
-            new MockCredentialsRepository()
+            new MockCredentialsRepository(),
+            new MockCountryConfigurationRepository(),
+            new MockPaymentMethodRepository()
         );
         $this->connectionService = new MockConnectionService(
             new MockConnectionDataRepository(),

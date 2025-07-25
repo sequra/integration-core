@@ -15,6 +15,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdExceptio
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
@@ -126,7 +127,7 @@ class ConnectionController
      * @return Response
      *
      * @throws HttpRequestException
-     * @throws InvalidEnvironmentException
+     * @throws InvalidEnvironmentException|PaymentMethodNotFoundException
      */
     public function connect(OnboardingRequest $onboardingRequest): Response
     {

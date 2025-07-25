@@ -315,7 +315,9 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new CredentialsService(
                     ServiceRegister::getService(ConnectionProxyInterface::class),
-                    ServiceRegister::getService(CredentialsRepositoryInterface::class)
+                    ServiceRegister::getService(CredentialsRepositoryInterface::class),
+                    ServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
+                    ServiceRegister::getService(PaymentMethodRepositoryInterface::class)
                 );
             }
         );

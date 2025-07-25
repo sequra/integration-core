@@ -254,7 +254,9 @@ class BaseTestCase extends TestCase
             CredentialsService::class => static function () {
                 return new CredentialsService(
                     TestServiceRegister::getService(ConnectionProxyInterface::class),
-                    TestServiceRegister::getService(CredentialsRepositoryInterface::class)
+                    TestServiceRegister::getService(CredentialsRepositoryInterface::class),
+                    TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
+                    TestServiceRegister::getService(PaymentMethodRepositoryInterface::class)
                 );
             },
             PaymentMethodsService::class => static function () {

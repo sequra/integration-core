@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsExcep
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -48,6 +49,7 @@ class ConnectionService
      * @throws BadMerchantIdException
      * @throws HttpRequestException
      * @throws WrongCredentialsException
+     * @throws PaymentMethodNotFoundException
      */
     public function connect(array $connections): void
     {
@@ -55,7 +57,8 @@ class ConnectionService
 
         foreach ($connections as $connectionData) {
             try {
-                $this->credentialsService->validateAndUpdateCredentials($connectionData);
+                $credentials = $this->credentialsService->validateAndUpdateCredentials($connectionData);
+                $this->credentialsService->updateCountryConfigurationWithNewMerchantIdsAndRemoveOldPaymentMethods($credentials);
                 $this->saveConnectionData($connectionData);
             } catch (WrongCredentialsException $exception) {
                 $errors[] = $connectionData->getDeployment();
