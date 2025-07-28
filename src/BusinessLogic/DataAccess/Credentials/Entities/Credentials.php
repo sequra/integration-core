@@ -62,7 +62,7 @@ class Credentials extends Entity
 
         $this->storeId = $data['storeId'];
         $this->country = $data['country'];
-        $this->merchantId = $data['merchantId'];
+        $this->merchantId = $data['merchantId'] ?? '';
         $this->credentials = CredentialsDomainModel::fromArray($data['credentials']);
     }
 
