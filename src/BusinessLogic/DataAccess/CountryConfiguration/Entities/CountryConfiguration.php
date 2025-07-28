@@ -41,6 +41,7 @@ class CountryConfiguration extends Entity
     {
         parent::inflate($data);
 
+        $this->countryConfigurations = [];
         $countryConfigurations = $data['countryConfigurations'] ?? [];
 
         $this->storeId = $data['storeId'] ?? '';
