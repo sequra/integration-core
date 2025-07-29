@@ -18,7 +18,7 @@ class GetFormHttpRequest extends HttpRequest
     public function __construct(GetFormRequest $request)
     {
         parent::__construct(
-            '/orders/' . $request->getOrderId() . '/form_v2',
+            'orders/' . $request->getOrderId() . '/form_v2',
             [],
             $this->transformQueryParameters($request),
             ['Accept' => 'Accept: text/html']

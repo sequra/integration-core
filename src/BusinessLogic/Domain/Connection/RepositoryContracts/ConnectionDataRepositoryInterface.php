@@ -14,9 +14,11 @@ interface ConnectionDataRepositoryInterface
     /**
      * Returns ConnectionData instance for current store context.
      *
+     * @param string $deployment
+     *
      * @return ConnectionData|null
      */
-    public function getConnectionData(): ?ConnectionData;
+    public function getConnectionDataByDeploymentId(string $deployment): ?ConnectionData;
 
     /**
      * Insert/update ConnectionData for current store context.
@@ -40,4 +42,18 @@ interface ConnectionDataRepositoryInterface
      * @return string[]
      */
     public function getAllConnectionSettingsStores(): array;
+
+    /**
+     * Retrieves all connection data for current store context.
+     *
+     * @return ConnectionData[]
+     */
+    public function getAllConnectionSettings(): array;
+
+    /**
+     * @param string $deploymentId
+     *
+     * @return void
+     */
+    public function deleteConnectionDataByDeploymentId(string $deploymentId): void;
 }

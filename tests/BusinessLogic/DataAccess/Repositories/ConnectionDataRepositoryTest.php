@@ -36,16 +36,19 @@ class ConnectionDataRepositoryTest extends BaseTestCase
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'test',
+            'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
         $this->repository->setConnectionData($connectionData);
     }
 
-
+    /**
+     * @return void
+     */
     public function testGetConnectionData(): void
     {
-        $connectionData = $this->repository->getConnectionData();
+        $connectionData = $this->repository->getConnectionDataByDeploymentId('sequra');
 
         $this->assertInstanceOf(ConnectionData::class, $connectionData);
         $this->assertEquals(BaseProxy::TEST_MODE, $connectionData->getEnvironment());
@@ -62,15 +65,17 @@ class ConnectionDataRepositoryTest extends BaseTestCase
         $connectionData = new ConnectionData(
             BaseProxy::LIVE_MODE,
             'live',
+            'sequra',
             new AuthorizationCredentials('live_username', 'live_password')
         );
 
         $this->repository->setConnectionData($connectionData);
-        $connectionData = $this->repository->getConnectionData();
+        $connectionData = $this->repository->getConnectionDataByDeploymentId('sequra');
 
         $this->assertEquals(BaseProxy::LIVE_MODE, $connectionData->getEnvironment());
         $this->assertEquals('live', $connectionData->getMerchantId());
         $this->assertEquals('live_username', $connectionData->getAuthorizationCredentials()->getUsername());
         $this->assertEquals('live_password', $connectionData->getAuthorizationCredentials()->getPassword());
+        $this->assertEquals('sequra', $connectionData->getDeployment());
     }
 }

@@ -15,6 +15,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdExceptio
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
@@ -54,28 +55,9 @@ class ConnectionController
     public function getOnboardingData(): OnboardingDataResponse
     {
         return new OnboardingDataResponse(
-            $this->connectionService->getConnectionData(),
+            $this->connectionService->getAllConnectionData(),
             $this->statisticalDataService->getStatisticalData()
         );
-    }
-
-    /**
-     * Saves the onboarding data to the database.
-     *
-     * @param OnboardingRequest $onboardingRequest
-     *
-     * @return Response
-     *
-     * @throws InvalidEnvironmentException
-     */
-    public function saveOnboardingData(OnboardingRequest $onboardingRequest): Response
-    {
-        $this->connectionService->saveConnectionData($onboardingRequest->transformToDomainModel()->getConnectionData());
-        $this->statisticalDataService->saveStatisticalData(
-            new StatisticalData($onboardingRequest->transformToDomainModel()->isSendStatisticalData())
-        );
-
-        return new SuccessfulOnboardingResponse();
     }
 
     /**
@@ -138,16 +120,6 @@ class ConnectionController
     }
 
     /**
-     * Gets the connection data from the database.
-     *
-     * @return ConnectionSettingsResponse
-     */
-    public function getConnectionSettings(): ConnectionSettingsResponse
-    {
-        return new ConnectionSettingsResponse($this->connectionService->getConnectionData());
-    }
-
-    /**
      * Validates connection data.
      *
      * @param OnboardingRequest $onboardingRequest
@@ -155,19 +127,19 @@ class ConnectionController
      * @return Response
      *
      * @throws HttpRequestException
-     * @throws InvalidEnvironmentException
+     * @throws InvalidEnvironmentException|PaymentMethodNotFoundException
      */
     public function connect(OnboardingRequest $onboardingRequest): Response
     {
         try {
-            $this->connectionService->connect($onboardingRequest->transformToDomainModel()->getConnectionData());
+            $this->connectionService->connect($onboardingRequest->transformToDomainModel()->getConnections());
             $this->statisticalDataService->saveStatisticalData(
                 new StatisticalData($onboardingRequest->transformToDomainModel()->isSendStatisticalData())
             );
         } catch (BadMerchantIdException $e) {
             return new ConnectionValidationResponse(false, 'merchantId');
         } catch (WrongCredentialsException $e) {
-            return new ConnectionValidationResponse(false, 'username/password');
+            return new ConnectionValidationResponse(false, $e->getMessage());
         }
 
         return new SuccessfulConnectionResponse();

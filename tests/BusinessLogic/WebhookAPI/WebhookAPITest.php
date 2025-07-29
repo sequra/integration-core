@@ -26,9 +26,9 @@ class WebhookAPITest extends BaseTestCase
      */
     public $httpClient;
 
-
     /**
      * @return void
+     *
      * @throws RepositoryClassException
      * @throws RepositoryNotRegisteredException
      */

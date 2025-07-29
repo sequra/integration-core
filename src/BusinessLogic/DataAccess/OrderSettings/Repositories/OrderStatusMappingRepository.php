@@ -75,6 +75,18 @@ class OrderStatusMappingRepository implements OrderStatusSettingsRepositoryInter
     }
 
     /**
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteOrderStatusMapping(): void
+    {
+        $entity = $this->getOrderStatusMappingsEntity();
+
+        $entity && $this->repository->delete($entity);
+    }
+
+    /**
      * @return OrderStatusSettings|null
      *
      * @throws QueryFilterInvalidParamException

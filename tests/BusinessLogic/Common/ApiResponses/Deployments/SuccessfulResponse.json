@@ -1,0 +1,26 @@
+[
+  {
+    "id": "sequra",
+    "name": "seQura",
+    "live": {
+      "api_base_url": "https://live.sequrapi.com/",
+      "assets_base_url": "https://live.sequracdn.com/assets/"
+    },
+    "sandbox": {
+      "api_base_url": "https://sandbox.sequrapi.com/",
+      "assets_base_url": "https://sandbox.sequracdn.com/assets/"
+    }
+  },
+  {
+    "id": "svea",
+    "name": "SVEA",
+    "live": {
+      "api_base_url": "https://live.sequra.svea.com/",
+      "assets_base_url": "https://live.cdn.sequra.svea.com/assets/"
+    },
+    "sandbox": {
+      "api_base_url": "https://next-sandbox.sequra.svea.com/",
+      "assets_base_url": "https://next-sandbox.cdn.sequra.svea.com/assets/"
+    }
+  }
+]

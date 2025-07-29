@@ -5,6 +5,8 @@ namespace SeQura\Core\Tests\BusinessLogic\Common;
 use PHPUnit\Framework\TestCase;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
+use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
+use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\DisconnectController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
@@ -19,6 +21,7 @@ use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionD
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Credentials\Entities\Credentials;
+use SeQura\Core\BusinessLogic\DataAccess\Deployments\Entities\Deployment;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
@@ -42,10 +45,16 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
+use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
+use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
@@ -56,6 +65,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\AbstractItemFactory;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ItemFactory;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -81,6 +91,9 @@ use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Deployments\DeploymentsProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AuthorizedProxyFactory;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\ConnectionProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
@@ -108,7 +121,13 @@ use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MemoryRepositoryWithConditionalDelete;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsProxy;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvider;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
@@ -208,7 +227,9 @@ class BaseTestCase extends TestCase
             OrderService::class => static function () {
                 return new OrderService(
                     TestServiceRegister::getService(OrderProxyInterface::class),
-                    TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class)
+                    TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
+                    TestServiceRegister::getService(MerchantOrderRequestBuilder::class),
+                    TestServiceRegister::getService(OrderCreationInterface::class)
                 );
             },
             OrderReportService::class => static function () {
@@ -233,7 +254,9 @@ class BaseTestCase extends TestCase
             CredentialsService::class => static function () {
                 return new CredentialsService(
                     TestServiceRegister::getService(ConnectionProxyInterface::class),
-                    TestServiceRegister::getService(CredentialsRepositoryInterface::class)
+                    TestServiceRegister::getService(CredentialsRepositoryInterface::class),
+                    TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
+                    TestServiceRegister::getService(PaymentMethodRepositoryInterface::class)
                 );
             },
             PaymentMethodsService::class => static function () {
@@ -312,6 +335,11 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(StatisticalDataService::class)
                 );
             },
+            DisconnectController::class => function () {
+                return new DisconnectController(
+                    TestServiceRegister::getService(DisconnectService::class)
+                );
+            },
             CountryConfigurationController::class => function () {
                 return new CountryConfigurationController(
                     TestServiceRegister::getService(CountryConfigurationService::class),
@@ -381,6 +409,11 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(StoreContext::class)
                 );
             },
+            DeploymentsController::class => function () {
+                return new DeploymentsController(
+                    TestServiceRegister::getService(DeploymentsService::class)
+                );
+            },
             WidgetSettingsService::class => function () {
                 return new WidgetSettingsService(
                     TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
@@ -388,7 +421,8 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(CredentialsService::class),
                     TestServiceRegister::getService(ConnectionService::class),
                     TestServiceRegister::getService(WidgetConfiguratorInterface::class),
-                    TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
+                    TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
+                    TestServiceRegister::getService(DeploymentsService::class)
                 );
             },
             ProductServiceInterface::class => function () {
@@ -447,7 +481,45 @@ class BaseTestCase extends TestCase
         TestServiceRegister::registerService(
             WebhookHandler::class,
             static function () {
-                return new WebhookHandler();
+                return new WebhookHandler(
+                    TestServiceRegister::getService(ShopOrderService::class),
+                    TestServiceRegister::getService(MerchantOrderRequestBuilder::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            DeploymentsService::class,
+            static function () {
+                return new MockDeploymentsService(
+                    TestServiceRegister::getService(DeploymentsProxyInterface::class),
+                    TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            DeploymentsProxyInterface::class,
+            static function () {
+                return new MockDeploymentsProxy();
+            }
+        );
+
+        TestServiceRegister::registerService(
+            DeploymentsRepositoryInterface::class,
+            static function () {
+                return new MockDeploymentsRepository();
+            }
+        );
+
+        TestServiceRegister::registerService(
+            ConnectionService::class,
+            static function () {
+                return new MockConnectionService(
+                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                    TestServiceRegister::getService(CredentialsService::class)
+                );
             }
         );
 
@@ -455,7 +527,37 @@ class BaseTestCase extends TestCase
             ConnectionProxyInterface::class,
             static function () {
                 return new ConnectionProxy(
+                    TestServiceRegister::getService(ConnectionProxyFactory::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            DeploymentsProxyInterface::class,
+            static function () {
+                return new DeploymentsProxy(
                     TestServiceRegister::getService(HttpClient::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            AuthorizedProxyFactory::class,
+            static function () {
+                return new AuthorizedProxyFactory(
+                    TestServiceRegister::getService(HttpClient::class),
+                    TestServiceRegister::getService(ConnectionService::class),
+                    TestServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            ConnectionProxyFactory::class,
+            static function () {
+                return new ConnectionProxyFactory(
+                    TestServiceRegister::getService(HttpClient::class),
+                    TestServiceRegister::getService(DeploymentsService::class)
                 );
             }
         );
@@ -464,8 +566,7 @@ class BaseTestCase extends TestCase
             MerchantProxyInterface::class,
             static function () {
                 return new MerchantProxy(
-                    TestServiceRegister::getService(HttpClient::class),
-                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                    TestServiceRegister::getService(AuthorizedProxyFactory::class)
                 );
             }
         );
@@ -474,8 +575,7 @@ class BaseTestCase extends TestCase
             OrderProxyInterface::class,
             static function () {
                 return new OrderProxy(
-                    TestServiceRegister::getService(HttpClient::class),
-                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                    TestServiceRegister::getService(AuthorizedProxyFactory::class)
                 );
             }
         );
@@ -484,17 +584,7 @@ class BaseTestCase extends TestCase
             OrderReportProxyInterface::class,
             static function () {
                 return new OrderReportProxy(
-                    TestServiceRegister::getService(HttpClient::class),
-                    TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
-                );
-            }
-        );
-
-        TestServiceRegister::registerService(
-            WidgetsProxyInterface::class,
-            static function () {
-                return new WidgetsProxy(
-                    TestServiceRegister::getService(HttpClient::class)
+                    TestServiceRegister::getService(AuthorizedProxyFactory::class)
                 );
             }
         );
@@ -535,6 +625,31 @@ class BaseTestCase extends TestCase
             }
         );
 
+        TestServiceRegister::registerService(
+            MerchantOrderRequestBuilder::class,
+            static function () {
+                return new MerchantOrderRequestBuilder(
+                    TestServiceRegister::getService(ConnectionService::class),
+                    TestServiceRegister::getService(CredentialsService::class),
+                    TestServiceRegister::getService(MerchantDataProviderInterface::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            MerchantDataProviderInterface::class,
+            static function () {
+                return new MockMerchantDataProvider();
+            }
+        );
+
+        TestServiceRegister::registerService(
+            OrderCreationInterface::class,
+            static function () {
+                return new MockOrderCreation();
+            }
+        );
+
         TestRepositoryRegistry::registerRepository(ConfigEntity::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(
             QueueItem::getClassName(),
@@ -560,6 +675,7 @@ class BaseTestCase extends TestCase
         );
         TestRepositoryRegistry::registerRepository(PaymentMethod::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(Credentials::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(Deployment::getClassName(), MemoryRepository::getClassName());
     }
 
     /**

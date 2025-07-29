@@ -41,4 +41,11 @@ interface PaymentMethodRepositoryInterface
      * @throws PaymentMethodNotFoundException
      */
     public function deletePaymentMethods(string $merchantId): void;
+
+    /**
+     * Deletes a stored payment methods.
+     *
+     * @return void
+     */
+    public function deleteAllPaymentMethods(): void;
 }

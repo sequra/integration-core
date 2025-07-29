@@ -114,8 +114,8 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
             ->orderBy('id', QueryFilter::ORDER_DESC);
 
         /**
-        * @var TransactionLog|null $transactionLog
-        */
+         * @var TransactionLog|null $transactionLog
+         */
         $transactionLog = $this->repository->selectOne($queryFilter);
 
         return $transactionLog;
@@ -151,8 +151,8 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
         $queryFilter->where('merchantReference', Operators::EQUALS, $merchantReference);
 
         /**
-        * @var TransactionLog|null $transactionLog
-        */
+         * @var TransactionLog|null $transactionLog
+         */
         $transactionLog = $this->repository->selectOne($queryFilter);
 
         return $transactionLog;
@@ -204,6 +204,26 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
     }
 
     /**
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteAllTransactionLogs(): void
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
+
+        /**
+         * @var TransactionLog[] $transactionLogs
+         */
+        $transactionLogs = $this->repository->select($queryFilter);
+
+        foreach ($transactionLogs as $transactionLog) {
+            $this->repository->delete($transactionLog);
+        }
+    }
+
+    /**
      * @param string $merchantReference
      *
      * @return TransactionLog|null
@@ -217,8 +237,8 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
             ->where('merchantReference', Operators::EQUALS, $merchantReference);
 
         /**
-        * @var TransactionLog|null $transactionLog
-        */
+         * @var TransactionLog|null $transactionLog
+         */
         $transactionLog = $this->repository->selectOne($queryFilter);
 
         return $transactionLog;

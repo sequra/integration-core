@@ -64,7 +64,7 @@ class UIStateService
      */
     public function isOnboardingState(bool $useWidgets): bool
     {
-        $connectionData = $this->connectionDataRepository->getConnectionData();
+        $allConnectionSettings = $this->connectionDataRepository->getAllConnectionSettings();
 
         if ($useWidgets) {
             $widgetSettings = $this->widgetSettingsRepository->getWidgetSettings();
@@ -73,12 +73,14 @@ class UIStateService
             }
         }
 
-        if ($connectionData) {
-            $this->connectionService->isConnectionDataValid($connectionData);
-
-            return false;
+        if (empty($allConnectionSettings)) {
+            return true;
         }
 
-        return true;
+        foreach ($allConnectionSettings as $connectionSetting) {
+            $this->connectionService->isConnectionDataValid($connectionSetting);
+        }
+
+        return false;
     }
 }

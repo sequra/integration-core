@@ -4,7 +4,6 @@ namespace SeQura\Core\BusinessLogic\Webhook\Validator;
 
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
-use SeQura\Core\BusinessLogic\Webhook\Exceptions\InvalidCartException;
 use SeQura\Core\BusinessLogic\Webhook\Exceptions\InvalidSignatureException;
 use SeQura\Core\BusinessLogic\Webhook\Exceptions\InvalidStateException;
 use SeQura\Core\BusinessLogic\Webhook\Exceptions\OrderNotFoundException;
@@ -33,7 +32,6 @@ class WebhookValidator
      * @throws OrderNotFoundException
      * @throws QueryFilterInvalidParamException
      * @throws RepositoryNotRegisteredException
-     * @throws InvalidCartException
      */
     public function validate(Webhook $webhook): void
     {

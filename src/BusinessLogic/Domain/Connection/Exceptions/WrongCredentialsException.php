@@ -18,10 +18,22 @@ class WrongCredentialsException extends BaseTranslatableException
      */
     protected $code = 401;
 
-    public function __construct(Throwable $previous = null)
+    /**
+     * @param Throwable|null $previous
+     * @param string[] $deployment
+     */
+    public function __construct(Throwable $previous = null, array $deployment = [])
     {
+        $message = 'Invalid username or password';
+
+
+        if (!empty($deployment)) {
+            $deploymentList = implode(',', $deployment);
+            $message = 'deployment/' . $deploymentList;
+        }
+
         parent::__construct(new TranslatableLabel(
-            'Invalid username or password.',
+            $message,
             'general.errors.connection.invalidUsernameOrPassword'
         ), $previous);
     }

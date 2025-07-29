@@ -56,6 +56,7 @@ class CredentialsRequest extends DataTransferObject
             new ConnectionData(
                 self::getDataValue($data, 'environment'),
                 self::getDataValue($data, 'merchant_id'),
+                self::getDataValue($data, 'deployment'),
                 new AuthorizationCredentials(
                     self::getDataValue($data, 'username'),
                     self::getDataValue($data, 'password')

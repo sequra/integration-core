@@ -15,6 +15,8 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfigur
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
+use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
@@ -35,6 +37,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
@@ -82,6 +85,11 @@ class WidgetSettingsServiceTest extends BaseTestCase
      * @var MockWidgetConfigurator
      */
     private $widgetConfigurator;
+
+    /**
+     * @var MockDeploymentsService
+     */
+    private $deploymentService;
 
     /**
      * @return void
@@ -143,6 +151,12 @@ class WidgetSettingsServiceTest extends BaseTestCase
             return $this->widgetConfigurator;
         });
 
+        $this->deploymentService = new MockDeploymentsService(
+            TestServiceRegister::getService(DeploymentsProxyInterface::class),
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+        );
+
         $this->widgetSettingsService = TestServiceRegister::getService(WidgetSettingsService::class);
     }
 
@@ -161,6 +175,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'sandbox',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -190,6 +205,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -237,15 +253,16 @@ class WidgetSettingsServiceTest extends BaseTestCase
         //arrange
         $this->credentialsRepository->setCredentials(
             [
-                new Credentials('merchantES', 'ES', 'EUR', 'asset', []),
-                new Credentials('merchantFR', 'FR', 'EUR', 'asset', []),
-                new Credentials('merchantIT', 'IT', 'EUR', 'asset', []),
+                new Credentials('merchantES', 'ES', 'EUR', 'asset', [], 'sequra'),
+                new Credentials('merchantFR', 'FR', 'EUR', 'asset', [], 'sequra'),
+                new Credentials('merchantIT', 'IT', 'EUR', 'asset', [], 'svea'),
             ]
         );
         $this->connectionService->saveConnectionData(
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -281,6 +298,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -316,6 +334,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -351,6 +370,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -383,6 +403,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -480,6 +501,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -580,6 +602,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -613,6 +636,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -647,6 +671,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -681,6 +706,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -724,6 +750,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -815,6 +842,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -911,6 +939,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -944,6 +973,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -978,6 +1008,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -1021,6 +1052,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -1117,6 +1149,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -1150,6 +1183,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -1184,6 +1218,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -1201,9 +1236,9 @@ class WidgetSettingsServiceTest extends BaseTestCase
                 '',
                 '',
                 [
-                        new CustomWidgetsSettings('customLocationSelector', 'i1', true, 'style'),
-                        new CustomWidgetsSettings('customLocationSelector', 'i2', true, 'style')
-                    ]
+                    new CustomWidgetsSettings('customLocationSelector', 'i1', true, 'style'),
+                    new CustomWidgetsSettings('customLocationSelector', 'i2', true, 'style')
+                ]
             )
         ));
 
@@ -1236,6 +1271,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
             new ConnectionData(
                 'live',
                 'test',
+                'sequra',
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
@@ -1252,10 +1288,10 @@ class WidgetSettingsServiceTest extends BaseTestCase
                 'altPriceSelector',
                 'altPriceTriggerSelector',
                 [
-                        new CustomWidgetsSettings('customLocationSelector', 'i1', true, 'style'),
-                        new CustomWidgetsSettings('customLocationSelector', 'pp3', false, 'style'),
-                        new CustomWidgetsSettings('customLocationSelector', 'pp4', true, 'style'),
-                    ]
+                    new CustomWidgetsSettings('customLocationSelector', 'i1', true, 'style'),
+                    new CustomWidgetsSettings('customLocationSelector', 'pp3', false, 'style'),
+                    new CustomWidgetsSettings('customLocationSelector', 'pp4', true, 'style'),
+                ]
             )
         ));
         $this->paymentMethodsService->setMockPaymentMethods(

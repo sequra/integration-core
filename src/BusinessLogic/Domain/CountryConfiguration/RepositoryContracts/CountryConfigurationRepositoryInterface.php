@@ -26,4 +26,11 @@ interface CountryConfigurationRepositoryInterface
      * @return void
      */
     public function setCountryConfiguration(array $countryConfigurations): void;
+
+    /**
+     * Deletes CountryConfigurations for current store context.
+     *
+     * @return void
+     */
+    public function deleteCountryConfigurations(): void;
 }

@@ -34,9 +34,9 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         $filter->where('orderRef1', Operators::EQUALS, $shopOrderReference);
 
         /**
-        * @var SeQuraOrder|null $result
-        */
-        $result =  $this->repository->selectOne($filter);
+         * @var SeQuraOrder|null $result
+         */
+        $result = $this->repository->selectOne($filter);
 
         return $result;
     }
@@ -47,9 +47,9 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         $filter->where('orderRef1', Operators::IN, $shopOrderReferences);
 
         /**
-        * @var SeQuraOrder[] $result
-        */
-        $result =  $this->repository->select($filter);
+         * @var SeQuraOrder[] $result
+         */
+        $result = $this->repository->select($filter);
 
         return $result;
     }
@@ -60,9 +60,9 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         $filter->where('cartId', Operators::EQUALS, $cartId);
 
         /**
-        * @var SeQuraOrder|null $result
-        */
-        $result =  $this->repository->selectOne($filter);
+         * @var SeQuraOrder|null $result
+         */
+        $result = $this->repository->selectOne($filter);
 
         return $result;
     }
@@ -73,9 +73,9 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         $filter->where('reference', Operators::EQUALS, $sequraOrderReference);
 
         /**
-        * @var SeQuraOrder|null $result
-        */
-        $result =  $this->repository->selectOne($filter);
+         * @var SeQuraOrder|null $result
+         */
+        $result = $this->repository->selectOne($filter);
 
         return $result;
     }
@@ -96,5 +96,20 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
     public function deleteOrder(SeQuraOrder $existingOrder): void
     {
         $this->repository->delete($existingOrder);
+    }
+
+    /**
+     * @return void
+     */
+    public function deleteAllOrders(): void
+    {
+        /**
+ * @var SeQuraOrder[] $allEntities
+*/
+        $allEntities = $this->repository->select();
+
+        foreach ($allEntities as $entity) {
+            $this->repository->delete($entity);
+        }
     }
 }

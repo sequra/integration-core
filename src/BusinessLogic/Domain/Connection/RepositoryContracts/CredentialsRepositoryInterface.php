@@ -26,11 +26,13 @@ interface CredentialsRepositoryInterface
     public function getCredentials(): array;
 
     /**
-     * Deletes all credentials from database.
+     * Deletes all credentials for deploymentId from database and returns merchant ids connected that deployment.
      *
-     * @return void
+     * @param string $deploymentId
+     *
+     * @return array<string>
      */
-    public function deleteCredentials(): void;
+    public function deleteCredentialsByDeploymentId(string $deploymentId): array;
 
     /**
      * Retrieves credentials for specific country code.
@@ -40,4 +42,13 @@ interface CredentialsRepositoryInterface
      * @return ?Credentials
      */
     public function getCredentialsByCountryCode(string $countryCode): ?Credentials;
+
+    /**
+     * Retrieves credentials for specific merchant ID.
+     *
+     * @param string $merchantId
+     *
+     * @return ?Credentials
+     */
+    public function getCredentialsByMerchantId(string $merchantId): ?Credentials;
 }

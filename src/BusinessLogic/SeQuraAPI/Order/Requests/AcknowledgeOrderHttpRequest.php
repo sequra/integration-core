@@ -18,7 +18,7 @@ class AcknowledgeOrderHttpRequest extends HttpRequest
      */
     public function __construct(string $id, BaseOrderRequest $request)
     {
-        parent::__construct('/orders/' . $id, $this->transformBody($request));
+        parent::__construct('orders/' . $id, $this->transformBody($request));
     }
 
     /**

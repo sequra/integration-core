@@ -17,7 +17,7 @@ class SendOrderReportHttpRequest extends HttpRequest
      */
     public function __construct(SendOrderReportRequest $request)
     {
-        parent::__construct('/orders/delivery_reports', $this->transformBody($request));
+        parent::__construct('orders/delivery_reports', $this->transformBody($request));
     }
 
     /**

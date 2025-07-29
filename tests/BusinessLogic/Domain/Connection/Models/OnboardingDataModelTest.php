@@ -21,20 +21,24 @@ class OnboardingDataModelTest extends BaseTestCase
     public function testSettersAndGetters(): void
     {
         $onboardingData = new OnboardingData(
-            new ConnectionData(
+            [new ConnectionData(
                 'live',
                 'logeecom',
+                'sequra',
                 new AuthorizationCredentials('username', 'password')
-            ),
+            )
+            ],
             true
         );
 
-        $connData = new ConnectionData('live', 'logeecom2', new AuthorizationCredentials('test', 'test'));
+        $connData = [
+            new ConnectionData('live', 'logeecom2', 'sequra', new AuthorizationCredentials('test', 'test'))
+        ];
 
-        $onboardingData->setConnectionData($connData);
+        $onboardingData->setConnections($connData);
         $onboardingData->setSendStatisticalData(false);
 
-        self::assertEquals($connData, $onboardingData->getConnectionData());
+        self::assertEquals($connData, $onboardingData->getConnections());
         self::assertFalse($onboardingData->isSendStatisticalData());
     }
 }

@@ -55,12 +55,14 @@ class CredentialsRepository implements CredentialsRepositoryInterface
 
                 $credentialsEntity->setStoreId($this->storeContext->getStoreId());
                 $credentialsEntity->setCountry($credential->getCountry());
+                $credentialsEntity->setMerchantId($credential->getMerchantId());
                 $credentialsEntity->setCredentials($credential);
                 $this->repository->save($credentialsEntity);
 
                 continue;
             }
 
+            $credentialsEntity->setMerchantId($credential->getMerchantId());
             $credentialsEntity->setCredentials($credential);
             $this->repository->update($credentialsEntity);
         }
@@ -89,17 +91,30 @@ class CredentialsRepository implements CredentialsRepositoryInterface
     }
 
     /**
-     * @return void
+     * @param string $deploymentId
+     *
+     * @return array<string>
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function deleteCredentials(): void
+    public function deleteCredentialsByDeploymentId(string $deploymentId): array
     {
-        $credentials = $this->getCredentials();
+        $merchantIds = [];
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
+        /**
+         * @var CredentialsEntity[] $credentialsEntities
+         */
+        $credentialsEntities = $this->repository->select($queryFilter);
 
-        foreach ($credentials as $credential) {
-            $this->deleteSingleCredentials($credential);
+        foreach ($credentialsEntities as $entity) {
+            if ($entity->getCredentials()->getDeployment() === $deploymentId) {
+                $this->repository->delete($entity);
+                $merchantIds[] = $entity->getMerchantId();
+            }
         }
+
+        return $merchantIds;
     }
 
     /**
@@ -112,6 +127,27 @@ class CredentialsRepository implements CredentialsRepositoryInterface
     public function getCredentialsByCountryCode(string $countryCode): ?Credentials
     {
         $entity = $this->getCredentialsEntityByCountryCode($countryCode);
+
+        return $entity ? $entity->getCredentials() : null;
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return ?Credentials
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function getCredentialsByMerchantId(string $merchantId): ?Credentials
+    {
+        $filter = new QueryFilter();
+        $filter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
+            ->where('merchantId', Operators::EQUALS, $merchantId);
+
+        /**
+         * @var ?CredentialsEntity $entity
+         */
+        $entity = $this->repository->selectOne($filter);
 
         return $entity ? $entity->getCredentials() : null;
     }
@@ -137,21 +173,5 @@ class CredentialsRepository implements CredentialsRepositoryInterface
         $entity = $this->repository->selectOne($filter);
 
         return $entity;
-    }
-
-    /**
-     * @param Credentials $credentials
-     *
-     * @return void
-     *
-     * @throws QueryFilterInvalidParamException
-     */
-    private function deleteSingleCredentials(Credentials $credentials): void
-    {
-        /**
-         * @var CredentialsEntity $credentialsEntity
-         */
-        $credentialsEntity = $this->getCredentialsEntityByCountryCode($credentials->getCountry());
-        $this->repository->delete($credentialsEntity);
     }
 }

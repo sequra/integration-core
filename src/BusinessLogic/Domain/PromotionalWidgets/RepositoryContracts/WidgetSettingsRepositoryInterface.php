@@ -31,4 +31,11 @@ interface WidgetSettingsRepositoryInterface
      * @throws Exception
      */
     public function getWidgetSettings(): ?WidgetSettings;
+
+    /**
+     * Deletes widget settings.
+     *
+     * @return void
+     */
+    public function deleteWidgetSettings(): void;
 }

@@ -10,7 +10,7 @@ namespace SeQura\Core\BusinessLogic\Domain\Connection\Models;
 class OnboardingData
 {
     /**
-     * @var ConnectionData
+     * @var ConnectionData[]
      */
     protected $connectionData;
 
@@ -20,29 +20,31 @@ class OnboardingData
     protected $sendStatisticalData;
 
     /**
-     * @param ConnectionData $connectionData
+     * @param ConnectionData[] $connections
      * @param bool $sendStatisticalData
      */
-    public function __construct(ConnectionData $connectionData, bool $sendStatisticalData)
+    public function __construct(array $connections, bool $sendStatisticalData)
     {
-        $this->connectionData = $connectionData;
+        $this->connectionData = $connections;
         $this->sendStatisticalData = $sendStatisticalData;
     }
 
     /**
-     * @return ConnectionData
+     * @return ConnectionData[]
      */
-    public function getConnectionData(): ConnectionData
+    public function getConnections(): array
     {
         return $this->connectionData;
     }
 
     /**
-     * @param ConnectionData $connectionData
+     * @param ConnectionData[] $connections
+     *
+     * @return void
      */
-    public function setConnectionData(ConnectionData $connectionData): void
+    public function setConnections(array $connections): void
     {
-        $this->connectionData = $connectionData;
+        $this->connectionData = $connections;
     }
 
     /**

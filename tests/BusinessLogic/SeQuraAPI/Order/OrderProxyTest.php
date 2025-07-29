@@ -85,6 +85,7 @@ class OrderProxyTest extends BaseTestCase
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'test',
+            'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
@@ -1022,7 +1023,6 @@ class OrderProxyTest extends BaseTestCase
 
         return new CreateOrderRequest(
             'testState',
-            $merchant,
             $cart,
             $deliveryMethod,
             $customer,
@@ -1030,6 +1030,7 @@ class OrderProxyTest extends BaseTestCase
             $deliveryAddress,
             $invoiceAddress,
             $gui,
+            $merchant,
             $merchantReference
         );
     }
@@ -1233,7 +1234,6 @@ class OrderProxyTest extends BaseTestCase
 
         return new CreateOrderRequest(
             'testState',
-            $merchant,
             $cart,
             $deliveryMethod,
             $customer,
@@ -1241,6 +1241,7 @@ class OrderProxyTest extends BaseTestCase
             $deliveryAddress,
             $invoiceAddress,
             $gui,
+            $merchant,
             $merchantReference,
             $trackings
         );

@@ -108,6 +108,7 @@ class IntegrationControllerTest extends BaseTestCase
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'logeecom',
+            'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
@@ -166,6 +167,7 @@ class IntegrationControllerTest extends BaseTestCase
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'logeecom',
+            'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
 

@@ -38,6 +38,11 @@ class ConnectionData extends Entity
     protected $encryptor;
 
     /**
+     * @var string
+     */
+    protected $deployment;
+
+    /**
      * @inheritDoc
      *
      * @throws InvalidEnvironmentException
@@ -49,9 +54,11 @@ class ConnectionData extends Entity
         $connectionData = $data['connectionData'] ?? [];
 
         $this->storeId = $data['storeId'] ?? '';
+        $this->deployment = $data['deployment'] ?? '';
         $this->connectionData = new DomainConnectionData(
             self::getArrayValue($connectionData, 'environment'),
             self::getArrayValue($connectionData, 'merchantId'),
+            self::getArrayValue($connectionData, 'deployment') ?? '',
             new AuthorizationCredentials(
                 self::getArrayValue($connectionData['authorizationCredentials'], 'username'),
                 $this->getEncryptorUtility()->decrypt(
@@ -69,9 +76,11 @@ class ConnectionData extends Entity
         $data = parent::toArray();
 
         $data['storeId'] = $this->storeId;
+        $data['deployment'] = $this->deployment;
         $data['connectionData'] = [
             'environment' => $this->connectionData->getEnvironment(),
             'merchantId' => $this->connectionData->getMerchantId(),
+            'deployment' => $this->connectionData->getDeployment() ?? '',
             'authorizationCredentials' => [
                 'username' => $this->connectionData->getAuthorizationCredentials()->getUsername(),
                 'password' => $this->getEncryptorUtility()->encrypt(
@@ -91,6 +100,7 @@ class ConnectionData extends Entity
         $indexMap = new IndexMap();
 
         $indexMap->addStringIndex('storeId');
+        $indexMap->addStringIndex('deployment');
 
         return new EntityConfiguration($indexMap, 'ConnectionData');
     }
@@ -125,6 +135,24 @@ class ConnectionData extends Entity
     public function setConnectionData(DomainConnectionData $connectionData): void
     {
         $this->connectionData = $connectionData;
+    }
+
+    /**
+     * @return ?string
+     */
+    public function getDeployment(): ?string
+    {
+        return $this->deployment;
+    }
+
+    /**
+     * @param string $deployment
+     *
+     * @return void
+     */
+    public function setDeployment(string $deployment): void
+    {
+        $this->deployment = $deployment;
     }
 
     /**

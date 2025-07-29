@@ -99,7 +99,6 @@ class MockShopOrderService implements ShopOrderService
 
         return new CreateOrderRequest(
             'testState',
-            $merchant,
             $cart,
             $deliveryMethod,
             $customer,
@@ -107,6 +106,7 @@ class MockShopOrderService implements ShopOrderService
             $deliveryAddress,
             $invoiceAddress,
             $gui,
+            $merchant,
             $merchantReference
         );
     }

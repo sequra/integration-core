@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
+use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\DisconnectController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
@@ -21,6 +22,8 @@ use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryCo
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Credentials\Entities\Credentials;
 use SeQura\Core\BusinessLogic\DataAccess\Credentials\Repositories\CredentialsRepository;
+use SeQura\Core\BusinessLogic\DataAccess\Deployments\Entities\Deployment;
+use SeQura\Core\BusinessLogic\DataAccess\Deployments\Repositories\DeploymentRepository;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
@@ -43,12 +46,17 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
+use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
@@ -58,6 +66,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as 
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\AbstractItemFactory;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ItemFactory;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -86,6 +95,9 @@ use SeQura\Core\BusinessLogic\Domain\Webhook\Services\OrderStatusProvider;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Deployments\DeploymentsProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AuthorizedProxyFactory;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\ConnectionProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
@@ -248,6 +260,16 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+
+        ServiceRegister::registerService(
+            DeploymentsRepositoryInterface::class,
+            static function () {
+                return new DeploymentRepository(
+                    RepositoryRegistry::getRepository(Deployment::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
     }
 
     /**
@@ -293,7 +315,9 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new CredentialsService(
                     ServiceRegister::getService(ConnectionProxyInterface::class),
-                    ServiceRegister::getService(CredentialsRepositoryInterface::class)
+                    ServiceRegister::getService(CredentialsRepositoryInterface::class),
+                    ServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
+                    ServiceRegister::getService(PaymentMethodRepositoryInterface::class)
                 );
             }
         );
@@ -403,7 +427,18 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new DisconnectService(
                     ServiceRegister::getService(DisconnectServiceInterface::class),
-                    ServiceRegister::getService(SendReportRepositoryInterface::class)
+                    ServiceRegister::getService(SendReportRepositoryInterface::class),
+                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                    ServiceRegister::getService(CredentialsRepositoryInterface::class),
+                    ServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
+                    ServiceRegister::getService(DeploymentsRepositoryInterface::class),
+                    ServiceRegister::getService(GeneralSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
+                    ServiceRegister::getService(OrderStatusSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(PaymentMethodRepositoryInterface::class),
+                    ServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
+                    ServiceRegister::getService(TransactionLogRepositoryInterface::class)
                 );
             }
         );
@@ -411,7 +446,10 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             WebhookHandler::class,
             static function () {
-                return new WebhookHandler();
+                return new WebhookHandler(
+                    ServiceRegister::getService(ShopOrderService::class),
+                    ServiceRegister::getService(MerchantOrderRequestBuilder::class)
+                );
             }
         );
 
@@ -434,7 +472,9 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new OrderService(
                     ServiceRegister::getService(OrderProxyInterface::class),
-                    ServiceRegister::getService(SeQuraOrderRepositoryInterface::class)
+                    ServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
+                    ServiceRegister::getService(MerchantOrderRequestBuilder::class),
+                    ServiceRegister::getService(OrderCreationInterface::class)
                 );
             }
         );
@@ -459,7 +499,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(CredentialsService::class),
                     ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(WidgetConfiguratorInterface::class),
-                    ServiceRegister::getService(MiniWidgetMessagesProviderInterface::class)
+                    ServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
+                    ServiceRegister::getService(DeploymentsService::class)
                 );
             }
         );
@@ -489,6 +530,28 @@ class BootstrapComponent extends BaseBootstrapComponent
             AbstractItemFactory::class,
             static function () {
                 return new ItemFactory();
+            }
+        );
+
+        ServiceRegister::registerService(
+            DeploymentsService::class,
+            static function () {
+                return new DeploymentsService(
+                    ServiceRegister::getService(DeploymentsProxyInterface::class),
+                    ServiceRegister::getService(DeploymentsRepositoryInterface::class),
+                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            MerchantOrderRequestBuilder::class,
+            static function () {
+                return new MerchantOrderRequestBuilder(
+                    ServiceRegister::getService(ConnectionService::class),
+                    ServiceRegister::getService(CredentialsService::class),
+                    ServiceRegister::getService(MerchantDataProviderInterface::class)
+                );
             }
         );
     }
@@ -629,6 +692,15 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+
+        ServiceRegister::registerService(
+            DeploymentsController::class,
+            static function () {
+                return new DeploymentsController(
+                    ServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
     }
 
     /**
@@ -639,11 +711,31 @@ class BootstrapComponent extends BaseBootstrapComponent
     protected static function initProxies(): void
     {
         ServiceRegister::registerService(
+            AuthorizedProxyFactory::class,
+            static function () {
+                return new AuthorizedProxyFactory(
+                    ServiceRegister::getService(HttpClient::class),
+                    ServiceRegister::getService(ConnectionService::class),
+                    ServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            ConnectionProxyFactory::class,
+            static function () {
+                return new ConnectionProxyFactory(
+                    ServiceRegister::getService(HttpClient::class),
+                    ServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             OrderProxyInterface::class,
             static function () {
                 return new OrderProxy(
-                    ServiceRegister::getService(HttpClient::class),
-                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                    ServiceRegister::getService(AuthorizedProxyFactory::class)
                 );
             }
         );
@@ -652,8 +744,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             OrderReportProxyInterface::class,
             static function () {
                 return new OrderReportProxy(
-                    ServiceRegister::getService(HttpClient::class),
-                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                    ServiceRegister::getService(AuthorizedProxyFactory::class)
                 );
             }
         );
@@ -662,8 +753,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             MerchantProxyInterface::class,
             static function () {
                 return new MerchantProxy(
-                    ServiceRegister::getService(HttpClient::class),
-                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                    ServiceRegister::getService(AuthorizedProxyFactory::class)
                 );
             }
         );
@@ -672,6 +762,15 @@ class BootstrapComponent extends BaseBootstrapComponent
             ConnectionProxyInterface::class,
             static function () {
                 return new ConnectionProxy(
+                    ServiceRegister::getService(ConnectionProxyFactory::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            DeploymentsProxyInterface::class,
+            static function () {
+                return new DeploymentsProxy(
                     ServiceRegister::getService(HttpClient::class)
                 );
             }

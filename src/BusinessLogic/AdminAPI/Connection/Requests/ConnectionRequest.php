@@ -35,17 +35,29 @@ class ConnectionRequest extends Request
     protected $password;
 
     /**
+     * @var string
+     */
+    protected $deployment;
+
+    /**
      * @param string $environment
      * @param string $merchantId
      * @param string $username
      * @param string $password
+     * @param string $deployment
      */
-    public function __construct(string $environment, string $merchantId, string $username, string $password)
-    {
+    public function __construct(
+        string $environment,
+        string $merchantId,
+        string $username,
+        string $password,
+        string $deployment
+    ) {
         $this->environment = $environment;
         $this->merchantId = $merchantId;
         $this->username = $username;
         $this->password = $password;
+        $this->deployment = $deployment;
     }
 
     /**
@@ -60,6 +72,7 @@ class ConnectionRequest extends Request
         return new ConnectionData(
             $this->environment,
             $this->merchantId,
+            $this->deployment,
             new AuthorizationCredentials(
                 $this->username,
                 $this->password

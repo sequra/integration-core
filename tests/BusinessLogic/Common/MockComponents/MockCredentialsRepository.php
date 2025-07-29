@@ -36,10 +36,21 @@ class MockCredentialsRepository implements CredentialsRepositoryInterface
     }
 
     /**
-     * @return void
+     * @param string $deploymentId
+     *
+     * @return array
      */
-    public function deleteCredentials(): void
+    public function deleteCredentialsByDeploymentId(string $deploymentId): array
     {
+        $merchantIds = [];
+        foreach (self::$credentials as $index => $credentials) {
+            if ($credentials->getDeployment() === $deploymentId) {
+                unset(self::$credentials[$index]);
+                $merchantIds[] = $credentials->getMerchantId();
+            }
+        }
+
+        return $merchantIds;
     }
 
     /**
@@ -51,6 +62,22 @@ class MockCredentialsRepository implements CredentialsRepositoryInterface
     {
         foreach (self::$credentials as $credential) {
             if ($credential->getCountry() === $countryCode) {
+                return $credential;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return Credentials|null
+     */
+    public function getCredentialsByMerchantId(string $merchantId): ?Credentials
+    {
+        foreach (self::$credentials as $credential) {
+            if ($credential->getMerchantId() === $merchantId) {
                 return $credential;
             }
         }

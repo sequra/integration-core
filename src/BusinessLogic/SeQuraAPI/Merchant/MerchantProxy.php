@@ -6,7 +6,7 @@ use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
-use SeQura\Core\BusinessLogic\SeQuraAPI\Authorization\AuthorizedProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AuthorizedProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\Requests\GetAvailablePaymentMethodsHttpRequest;
 
 /**
@@ -14,8 +14,21 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\Requests\GetAvailablePaymentMet
  *
  * @package SeQura\Core\BusinessLogic\SeQuraAPI\Merchant
  */
-class MerchantProxy extends AuthorizedProxy implements MerchantProxyInterface
+class MerchantProxy implements MerchantProxyInterface
 {
+    /**
+     * @var AuthorizedProxyFactory $authorizedProxyFactory
+     */
+    private $authorizedProxyFactory;
+
+    /**
+     * @param AuthorizedProxyFactory $authorizedProxyFactory
+     */
+    public function __construct(AuthorizedProxyFactory $authorizedProxyFactory)
+    {
+        $this->authorizedProxyFactory = $authorizedProxyFactory;
+    }
+
     /**
      * @inheritDoc
      *
@@ -23,8 +36,8 @@ class MerchantProxy extends AuthorizedProxy implements MerchantProxyInterface
      */
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array
     {
-        $this->setMerchantId($request->getMerchantId());
-        $response = $this->get(new GetAvailablePaymentMethodsHttpRequest($request))->decodeBodyToArray();
+        $response = $this->authorizedProxyFactory->build($request->getMerchantId())
+            ->get(new GetAvailablePaymentMethodsHttpRequest($request))->decodeBodyToArray();
 
         return $this->getListOfPaymentMethods($response);
     }

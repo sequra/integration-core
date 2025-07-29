@@ -26,4 +26,11 @@ interface StatisticalDataRepositoryInterface
      * @return void
      */
     public function setStatisticalData(StatisticalData $statisticalData): void;
+
+    /**
+     * Deletes statistical data for current context.
+     *
+     * @return void
+     */
+    public function deleteStatisticalData(): void;
 }

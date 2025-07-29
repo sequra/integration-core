@@ -3,6 +3,9 @@
 namespace SeQura\Core\BusinessLogic\SeQuraAPI\Order;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
@@ -14,21 +17,36 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethodCategory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Authorization\AuthorizedProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AuthorizedProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\CreateOrderHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\GetAvailablePaymentMethodsHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\GetFormHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\AcknowledgeOrderHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\UpdateOrderHttpRequest;
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
  * Class OrderProxy
  *
  * @package SeQura\Core\BusinessLogic\SeQuraAPI\Order
  */
-class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
+class OrderProxy implements OrderProxyInterface
 {
     protected const PAYMENT_OPTIONS_KEY = 'payment_options';
     protected const METHODS_KEY = 'methods';
+
+    /**
+     * @var AuthorizedProxyFactory $authorizedProxyFactory
+     */
+    private $authorizedProxyFactory;
+
+    /**
+     * @param AuthorizedProxyFactory $authorizedProxyFactory
+     */
+    public function __construct(AuthorizedProxyFactory $authorizedProxyFactory)
+    {
+        $this->authorizedProxyFactory = $authorizedProxyFactory;
+    }
 
     /**
      * @inheritDoc
@@ -37,8 +55,8 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
      */
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array
     {
-        $this->setMerchantId($request->getMerchantId());
-        $response = $this->get(new GetAvailablePaymentMethodsHttpRequest($request))->decodeBodyToArray();
+        $response = $this->authorizedProxyFactory->build($request->getMerchantId())
+            ->get(new GetAvailablePaymentMethodsHttpRequest($request))->decodeBodyToArray();
 
         return $this->getListOfPaymentMethods($response);
     }
@@ -50,61 +68,82 @@ class OrderProxy extends AuthorizedProxy implements OrderProxyInterface
      */
     public function getAvailablePaymentMethodsInCategories(GetAvailablePaymentMethodsRequest $request): array
     {
-        $this->setMerchantId($request->getMerchantId());
-        $response = $this->get(new GetAvailablePaymentMethodsHttpRequest($request))->decodeBodyToArray();
+        $response = $this->authorizedProxyFactory->build($request->getMerchantId())
+            ->get(new GetAvailablePaymentMethodsHttpRequest($request))->decodeBodyToArray();
 
         return $this->getListOfPaymentMethodsInCategories($response);
     }
 
     /**
-     * @inheritDoc
+     * @param CreateOrderRequest $request
+     *
+     * @return SeQuraOrder
      *
      * @throws InvalidCartItemsException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws HttpRequestException
+     * @throws DeploymentNotFoundException
      */
     public function createOrder(CreateOrderRequest $request): SeQuraOrder
     {
-        $this->setMerchantId($request->getMerchant()->getId());
-        $response = $this->post(new CreateOrderHttpRequest($request));
+        $response = $this->authorizedProxyFactory->build($request->getMerchant()->getId())
+            ->post(new CreateOrderHttpRequest($request));
 
         return $request->toSequraOrderInstance($this->getOrderUUID($response->getHeaders()));
     }
 
     /**
-     * @inheritDoc
+     * @param string $id
+     * @param CreateOrderRequest $request
      *
+     * @return SeQuraOrder
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws HttpRequestException
      * @throws InvalidCartItemsException
+     * @throws DeploymentNotFoundException
      */
     public function acknowledgeOrder(string $id, CreateOrderRequest $request): SeQuraOrder
     {
-        $this->setMerchantId($request->getMerchant()->getId());
-        $this->put(new AcknowledgeOrderHttpRequest($id, $request));
+        $this->authorizedProxyFactory->build($request->getMerchant()->getId())
+            ->put(new AcknowledgeOrderHttpRequest($id, $request));
 
         return $request->toSequraOrderInstance($id);
     }
 
     /**
-     * @inheritDoc
+     * @param UpdateOrderRequest $request
      *
-     * @noinspection NullPointerExceptionInspection
+     * @return bool
+     *
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws HttpRequestException
      */
     public function updateOrder(UpdateOrderRequest $request): bool
     {
-        $this->setMerchantId($request->getMerchant()->getId());
-
-        return $this->put(new UpdateOrderHttpRequest(
-            $request->getMerchant()->getId(),
-            $request->getMerchantReference()->getOrderRef1(),
-            $request
-        ))->isSuccessful();
+        return $this->authorizedProxyFactory->build($request->getMerchant()->getId())
+            ->put(new UpdateOrderHttpRequest(
+                $request->getMerchant()->getId(),
+                $request->getMerchantReference()->getOrderRef1(),
+                $request
+            ))->isSuccessful();
     }
 
     /**
-     * @inheritDoc
+     * @param GetFormRequest $request
+     *
+     * @return SeQuraForm
+     *
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws HttpRequestException
      */
     public function getForm(GetFormRequest $request): SeQuraForm
     {
-        $this->setMerchantId($request->getMerchantId());
-        $response = $this->get(new GetFormHttpRequest($request));
+        $response = $this->authorizedProxyFactory->build($request->getMerchantId())
+            ->get(new GetFormHttpRequest($request));
 
         return new SeQuraForm($response->getBody());
     }

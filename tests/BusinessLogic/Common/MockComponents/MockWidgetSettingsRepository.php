@@ -32,4 +32,12 @@ class MockWidgetSettingsRepository implements WidgetSettingsRepositoryInterface
     {
         return $this->widgetSettings;
     }
+
+    /**
+     * @return void
+     */
+    public function deleteWidgetSettings(): void
+    {
+        $this->widgetSettings = null;
+    }
 }
