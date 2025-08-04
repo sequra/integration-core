@@ -12,3 +12,7 @@ vendor
 
 # PHPUnit result cache
 .phpunit.result.cache
+
+# VSCODE
+.vscode/
+*.code-workspace
