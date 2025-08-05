@@ -70,8 +70,8 @@ class Cart extends OrderRequestDTO
         bool $gift = false,
         array $items = [],
         $cartRef = null,
-        string $createdAt = null,
-        string $updatedAt = null
+        ?string $createdAt = null,
+        ?string $updatedAt = null
     ) {
         $orderTotalWithTax = 0;
 

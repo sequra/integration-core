@@ -47,8 +47,8 @@ class SolicitationController
      */
     public function getIdentificationForm(
         string $cartId,
-        string $product = null,
-        string $campaign = null,
+        ?string $product = null,
+        ?string $campaign = null,
         bool $ajax = true
     ): IdentificationFormResponse {
         return new IdentificationFormResponse(

@@ -193,8 +193,8 @@ class OrderService
      */
     public function getIdentificationForm(
         string $cartId,
-        string $product = null,
-        string $campaign = null,
+        ?string $product = null,
+        ?string $campaign = null,
         bool $ajax = true
     ): SeQuraForm {
         $existingOrder = $this->orderRepository->getByCartId($cartId);

@@ -58,9 +58,9 @@ class WidgetSettings
         bool $showInstallmentsInProductListing = false,
         bool $showInstallmentsInCartPage = false,
         ?string $widgetConfig = null,
-        WidgetSelectorSettings $widgetSettingsForProduct = null,
-        WidgetSelectorSettings $widgetSettingsForCart = null,
-        WidgetSelectorSettings $widgetSettingsForListing = null
+        ?WidgetSelectorSettings $widgetSettingsForProduct = null,
+        ?WidgetSelectorSettings $widgetSettingsForCart = null,
+        ?WidgetSelectorSettings $widgetSettingsForListing = null
     ) {
         $this->enabled = $enabled;
         $this->displayOnProductPage = $displayOnProductPage;

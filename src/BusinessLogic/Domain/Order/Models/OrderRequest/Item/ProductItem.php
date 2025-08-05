@@ -110,16 +110,16 @@ class ProductItem extends Item
         int $quantity,
         int $totalWithTax,
         bool $downloadable,
-        bool $perishable = null,
-        bool $personalized = null,
-        bool $restockable = null,
-        string $category = null,
-        string $description = null,
-        string $manufacturer = null,
-        string $supplier = null,
+        ?bool $perishable = null,
+        ?bool $personalized = null,
+        ?bool $restockable = null,
+        ?string $category = null,
+        ?string $description = null,
+        ?string $manufacturer = null,
+        ?string $supplier = null,
         $productId = null,
-        string $url = null,
-        string $trackingReference = null
+        ?string $url = null,
+        ?string $trackingReference = null
     ) {
         parent::__construct($totalWithTax, ItemType::TYPE_PRODUCT);
 

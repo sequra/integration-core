@@ -22,7 +22,7 @@ class WrongCredentialsException extends BaseTranslatableException
      * @param Throwable|null $previous
      * @param string[] $deployment
      */
-    public function __construct(Throwable $previous = null, array $deployment = [])
+    public function __construct(?Throwable $previous = null, array $deployment = [])
     {
         $message = 'Invalid username or password';
 

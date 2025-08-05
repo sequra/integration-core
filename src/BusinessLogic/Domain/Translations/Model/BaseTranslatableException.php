@@ -21,7 +21,7 @@ class BaseTranslatableException extends Exception
      * @param TranslatableLabel $translatableLabel
      * @param Throwable|null $previous
      */
-    public function __construct(TranslatableLabel $translatableLabel, Throwable $previous = null)
+    public function __construct(TranslatableLabel $translatableLabel, ?Throwable $previous = null)
     {
         parent::__construct($translatableLabel->getMessage(), $this->code, $previous);
 

@@ -14,12 +14,10 @@ use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 trait MockConditionalDeleteTrait
 {
     /**
-     * @inheritDoc
-     *
      * @throws EntityClassException
      * @throws QueryFilterInvalidParamException
      */
-    public function deleteWhere(QueryFilter $queryFilter = null): void
+    public function deleteWhere(?QueryFilter $queryFilter = null): void
     {
         $entities = $this->select($queryFilter);
         foreach ($entities as $entity) {

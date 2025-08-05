@@ -104,12 +104,12 @@ class TimeProvider
     /**
      * Converts serialized string time to DateTime object.
      *
-     * @param string $dateTime DateTime in string format.
-     * @param string $format DateTime string format.
+     * @param string|null $dateTime DateTime in string format.
+     * @param string|null $format DateTime string format.
      *
      * @return DateTime | null Date or null.
      */
-    public function deserializeDateString($dateTime, $format = null)
+    public function deserializeDateString(?string $dateTime, ?string $format = null): ?DateTime
     {
         if ($dateTime === null) {
             return null;
@@ -122,11 +122,11 @@ class TimeProvider
      * Serializes date time object to its string format.
      *
      * @param DateTime|null $dateTime Date time object to be serialized.
-     * @param string $format DateTime string format.
+     * @param string|null $format DateTime string format.
      *
      * @return string|null String serialized date.
      */
-    public function serializeDate(DateTime $dateTime = null, $format = null)
+    public function serializeDate(?DateTime $dateTime = null, ?string $format = null): ?string
     {
         if ($dateTime === null) {
             return null;

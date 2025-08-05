@@ -47,8 +47,8 @@ abstract class Tracking extends OrderRequestDTO
     protected function __construct(
         string $type,
         string $reference,
-        string $trackingNumber = null,
-        string $deliveredAt = null
+        ?string $trackingNumber = null,
+        ?string $deliveredAt = null
     ) {
         if ($deliveredAt && !StringValidator::isISO8601Timestamp($deliveredAt)) {
             throw new InvalidTimestampException('Delivered at must be ISO 8601 formatted timestamp.');

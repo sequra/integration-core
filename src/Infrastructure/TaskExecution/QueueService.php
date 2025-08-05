@@ -99,7 +99,7 @@ class QueueService
         Task $task,
         string $context = '',
         int $priority = Priority::NORMAL,
-        int $parent = null
+        ?int $parent = null
     ): QueueItem {
         $queueItem = $this->instantiate($task, $queueName, $context, $priority, $parent);
         $this->save($queueItem);
@@ -696,8 +696,13 @@ class QueueService
      *
      * @return QueueItem
      */
-    protected function instantiate(Task $task, string $queueName, string $context, int $priority, int $parent = null): QueueItem
-    {
+    protected function instantiate(
+        Task $task,
+        string $queueName,
+        string $context,
+        int $priority,
+        ?int $parent = null
+    ): QueueItem {
         $queueItem = new QueueItem($task);
         $queueItem->setQueueName($queueName);
         $queueItem->setContext($context);

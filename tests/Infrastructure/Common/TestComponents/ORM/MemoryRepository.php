@@ -31,13 +31,13 @@ class MemoryRepository implements RepositoryInterface, MassInsert
     /**
      * Executes select query
      *
-     * @param QueryFilter $filter
+     * @param QueryFilter|null $filter
      *
      * @return Entity[]
      * @throws \SeQura\Core\Infrastructure\ORM\Exceptions\EntityClassException
      * @throws \SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
      */
-    public function select(QueryFilter $filter = null)
+    public function select(?QueryFilter $filter = null)
     {
         /** @var Entity $entity */
         $entity = new $this->entityClass();
@@ -80,13 +80,13 @@ class MemoryRepository implements RepositoryInterface, MassInsert
     /**
      * Executes select query and returns first result
      *
-     * @param QueryFilter $filter
+     * @param QueryFilter|null $filter
      *
      * @return Entity | null
      * @throws \SeQura\Core\Infrastructure\ORM\Exceptions\EntityClassException
      * @throws \SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
      */
-    public function selectOne(QueryFilter $filter = null)
+    public function selectOne(?QueryFilter $filter = null)
     {
         if ($filter === null) {
             $filter = new QueryFilter();
@@ -423,14 +423,14 @@ class MemoryRepository implements RepositoryInterface, MassInsert
     /**
      * Counts records that match filter criteria.
      *
-     * @param QueryFilter $filter Filter for query.
+     * @param QueryFilter|null $filter Filter for query.
      *
      * @return int Number of records that match filter criteria.
      *
      * @throws \SeQura\Core\Infrastructure\ORM\Exceptions\EntityClassException
      * @throws \SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
      */
-    public function count(QueryFilter $filter = null)
+    public function count(?QueryFilter $filter = null)
     {
         return count($this->select($filter));
     }

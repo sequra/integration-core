@@ -141,11 +141,11 @@ abstract class Orchestrator extends Task
     public function updateSubJobProgress(int $executionId, $progress): void
     {
         if ($progress > 100 || $progress < 0) {
-            throw new InvalidArgumentException("Invalid progress ${progress} provided. ");
+            throw new InvalidArgumentException("Invalid progress {$progress} provided.");
         }
 
         if (!($subJob = $this->getSubJob($executionId))) {
-            throw new InvalidArgumentException("Provided execution with id ${executionId} not found in task list");
+            throw new InvalidArgumentException("Provided execution with id {$executionId} not found in task list");
         }
 
         $subJob->setProgress($progress);

@@ -45,9 +45,9 @@ class GetFormRequest extends DataTransferObject
      */
     public function __construct(
         string $orderId,
-        string $product = null,
-        string $campaign = null,
-        bool $ajax = null,
+        ?string $product = null,
+        ?string $campaign = null,
+        ?bool $ajax = null,
         string $merchantId = ''
     ) {
         $this->orderId = $orderId;

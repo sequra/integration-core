@@ -21,7 +21,7 @@ class ConnectionDataNotFoundException extends BaseTranslatableException
     /**
      * @param ?Throwable $previous
      */
-    public function __construct(Throwable $previous = null)
+    public function __construct(?Throwable $previous = null)
     {
         parent::__construct(new TranslatableLabel(
             'Connection data not found.',

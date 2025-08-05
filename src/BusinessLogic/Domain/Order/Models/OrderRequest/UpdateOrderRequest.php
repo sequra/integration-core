@@ -48,11 +48,11 @@ class UpdateOrderRequest extends BaseOrderRequest
         Platform $platform,
         Cart $unshippedCart,
         Cart $shippedCart,
-        DeliveryMethod $deliveryMethod = null,
-        Customer $customer = null,
-        Address $deliveryAddress = null,
-        Address $invoiceAddress = null,
-        array $trackings = null
+        ?DeliveryMethod $deliveryMethod = null,
+        ?Customer $customer = null,
+        ?Address $deliveryAddress = null,
+        ?Address $invoiceAddress = null,
+        ?array $trackings = null
     ) {
         $merchantId = $merchant->getId();
 
