@@ -18,7 +18,7 @@ class InvalidEnvironmentException extends BaseTranslatableException
      */
     protected $code = 401;
 
-    public function __construct(Throwable $previous = null)
+    public function __construct(?Throwable $previous = null)
     {
         parent::__construct(new TranslatableLabel(
             'Invalid environment type.',

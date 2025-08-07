@@ -93,17 +93,17 @@ class Merchant extends OrderRequestDTO
      */
     public function __construct(
         $id,
-        string $notifyUrl = null,
-        array $notificationParameters = null,
-        string $returnUrl = null,
-        string $approvedCallback = null,
-        string $editUrl = null,
-        string $abortUrl = null,
-        string $rejectedCallback = null,
-        string $partpaymentDetailsGetter = null,
-        string $approvedUrl = null,
-        Options $options = null,
-        EventsWebhook $eventsWebhook = null
+        ?string $notifyUrl = null,
+        ?array $notificationParameters = null,
+        ?string $returnUrl = null,
+        ?string $approvedCallback = null,
+        ?string $editUrl = null,
+        ?string $abortUrl = null,
+        ?string $rejectedCallback = null,
+        ?string $partpaymentDetailsGetter = null,
+        ?string $approvedUrl = null,
+        ?Options $options = null,
+        ?EventsWebhook $eventsWebhook = null
     ) {
         if ($notifyUrl && !StringValidator::isValidUrl($notifyUrl)) {
             throw new InvalidUrlException('NotifyUrl must be a valid url.');

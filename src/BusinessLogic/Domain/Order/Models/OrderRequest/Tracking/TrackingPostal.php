@@ -36,9 +36,9 @@ class TrackingPostal extends Tracking
     public function __construct(
         string $reference,
         string $carrier,
-        string $trackingNumber = null,
-        string $deliveredAt = null,
-        string $trackingUrl = null
+        ?string $trackingNumber = null,
+        ?string $deliveredAt = null,
+        ?string $trackingUrl = null
     ) {
         if ($trackingUrl && !StringValidator::isValidUrl($trackingUrl)) {
             throw new InvalidUrlException('Tracking url must be a valid url.');

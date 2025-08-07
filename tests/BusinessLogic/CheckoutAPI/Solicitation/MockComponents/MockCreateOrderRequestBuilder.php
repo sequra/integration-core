@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidGuiLayoutValueException;
@@ -37,7 +38,7 @@ class MockCreateOrderRequestBuilder implements CreateOrderRequestBuilder
      */
     private $orderRequest;
 
-    public function __construct(\Exception $exception = null, $cartId = 'testCart123')
+    public function __construct(?Exception $exception = null, $cartId = 'testCart123')
     {
         $this->throwException = $exception;
         $this->cartId = $cartId;

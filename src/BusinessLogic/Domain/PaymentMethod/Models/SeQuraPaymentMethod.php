@@ -106,13 +106,13 @@ class SeQuraPaymentMethod
         SeQuraCost $cost,
         DateTime $startsAt,
         DateTime $endsAt,
-        string $campaign = null,
-        string $claim = null,
-        string $description = null,
-        string $icon = null,
-        string $costDescription = null,
-        int $minAmount = null,
-        int $maxAmount = null
+        ?string $campaign = null,
+        ?string $claim = null,
+        ?string $description = null,
+        ?string $icon = null,
+        ?string $costDescription = null,
+        ?int $minAmount = null,
+        ?int $maxAmount = null
     ) {
         $this->product = $product;
         $this->title = $title;

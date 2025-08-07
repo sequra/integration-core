@@ -28,7 +28,7 @@ abstract class Item extends OrderRequestDTO
      * @param int $totalWithTax
      * @param string|null $type
      */
-    public function __construct(int $totalWithTax, string $type = null)
+    public function __construct(int $totalWithTax, ?string $type = null)
     {
         $this->totalWithTax = $totalWithTax;
         $this->type = $type;

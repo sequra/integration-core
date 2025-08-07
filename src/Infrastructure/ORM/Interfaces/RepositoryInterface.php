@@ -34,20 +34,20 @@ interface RepositoryInterface
     /**
      * Executes select query.
      *
-     * @param QueryFilter $filter Filter for query.
+     * @param QueryFilter|null $filter Filter for query.
      *
      * @return Entity[] A list of found entities ot empty array.
      */
-    public function select(QueryFilter $filter = null);
+    public function select(?QueryFilter $filter = null);
 
     /**
      * Executes select query and returns first result.
      *
-     * @param QueryFilter $filter Filter for query.
+     * @param QueryFilter|null $filter Filter for query.
      *
      * @return Entity|null First found entity or NULL.
      */
-    public function selectOne(QueryFilter $filter = null);
+    public function selectOne(?QueryFilter $filter = null);
 
     /**
      * Executes insert query and returns ID of created entity. Entity will be updated with new ID.
@@ -79,9 +79,9 @@ interface RepositoryInterface
     /**
      * Counts records that match filter criteria.
      *
-     * @param QueryFilter $filter Filter for query.
+     * @param QueryFilter|null $filter Filter for query.
      *
      * @return int Number of records that match filter criteria.
      */
-    public function count(QueryFilter $filter = null);
+    public function count(?QueryFilter $filter = null);
 }

@@ -43,10 +43,10 @@ class Vehicle extends OrderRequestDTO
      */
     public function __construct(
         string $plaque,
-        string $brand = null,
-        string $model = null,
-        string $frame = null,
-        string $firstRegistrationDate = null
+        ?string $brand = null,
+        ?string $model = null,
+        ?string $frame = null,
+        ?string $firstRegistrationDate = null
     ) {
         $this->plaque = $plaque;
         $this->brand = $brand;

@@ -96,13 +96,13 @@ class Address extends OrderRequestDTO
         string $postalCode,
         string $city,
         string $countryCode,
-        string $givenNames = null,
-        string $surnames = null,
-        string $phone = null,
-        string $mobilePhone = null,
-        string $state = null,
-        string $extra = null,
-        string $vatNumber = null
+        ?string $givenNames = null,
+        ?string $surnames = null,
+        ?string $phone = null,
+        ?string $mobilePhone = null,
+        ?string $state = null,
+        ?string $extra = null,
+        ?string $vatNumber = null
     ) {
         $this->givenNames = $givenNames;
         $this->surnames = $surnames;

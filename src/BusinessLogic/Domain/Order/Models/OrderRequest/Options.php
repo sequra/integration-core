@@ -37,10 +37,10 @@ class Options extends OrderRequestDTO
      * @param bool|null $immutableCustomerData
      */
     public function __construct(
-        bool $hasJquery = null,
-        bool $usesShippedCart = null,
-        bool $addressesMayBeMissing = null,
-        bool $immutableCustomerData = null
+        ?bool $hasJquery = null,
+        ?bool $usesShippedCart = null,
+        ?bool $addressesMayBeMissing = null,
+        ?bool $immutableCustomerData = null
     ) {
         $this->hasJquery = $hasJquery;
         $this->usesShippedCart = $usesShippedCart;

@@ -20,7 +20,7 @@ class HttpApiRequestException extends HttpRequestException
      */
     protected $errors = [];
 
-    public function __construct(string $message = '', int $code = 0, HttpRequestException $previous = null)
+    public function __construct(string $message = '', int $code = 0, ?HttpRequestException $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }
@@ -33,7 +33,7 @@ class HttpApiRequestException extends HttpRequestException
      *
      * @return HttpApiRequestException
      */
-    public static function fromErrorResponse(HttpResponse $response, string $customMessage = null): HttpApiRequestException
+    public static function fromErrorResponse(HttpResponse $response, ?string $customMessage = null): HttpApiRequestException
     {
         $errors = self::getErrorMessages($response);
 

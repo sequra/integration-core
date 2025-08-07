@@ -35,8 +35,12 @@ class DeliveryMethod extends OrderRequestDTO
      * @param string|null $provider
      * @param bool|null $homeDelivery
      */
-    public function __construct(string $name, string $days = null, string $provider = null, bool $homeDelivery = null)
-    {
+    public function __construct(
+        string $name,
+        ?string $days = null,
+        ?string $provider = null,
+        ?bool $homeDelivery = null
+    ) {
         $this->name = $name;
         $this->days = $days;
         $this->provider = $provider;

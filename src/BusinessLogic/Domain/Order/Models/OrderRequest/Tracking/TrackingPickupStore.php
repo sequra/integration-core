@@ -77,17 +77,17 @@ class TrackingPickupStore extends Tracking
      */
     public function __construct(
         string $reference,
-        string $trackingNumber = null,
-        string $deliveredAt = null,
-        string $operatorRef = null,
-        string $storeRef = null,
-        string $availableAt = null,
-        string $addressLine1 = null,
-        string $addressLine2 = null,
-        string $postalCode = null,
-        string $city = null,
-        string $state = null,
-        string $countryCode = null
+        ?string $trackingNumber = null,
+        ?string $deliveredAt = null,
+        ?string $operatorRef = null,
+        ?string $storeRef = null,
+        ?string $availableAt = null,
+        ?string $addressLine1 = null,
+        ?string $addressLine2 = null,
+        ?string $postalCode = null,
+        ?string $city = null,
+        ?string $state = null,
+        ?string $countryCode = null
     ) {
         if ($countryCode && !StringValidator::isStringLengthBetween($countryCode, 2, 3)) {
             throw new InvalidCodeException('Country code must be ISO 3166 formatted code.');

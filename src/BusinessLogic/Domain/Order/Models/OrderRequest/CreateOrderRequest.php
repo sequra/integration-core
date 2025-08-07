@@ -58,8 +58,8 @@ class CreateOrderRequest extends BaseOrderRequest
         Address $invoiceAddress,
         Gui $gui,
         ?Merchant $merchant = null,
-        MerchantReference $merchantReference = null,
-        array $trackings = null
+        ?MerchantReference $merchantReference = null,
+        ?array $trackings = null
     ) {
         $this->state = $state;
         $this->merchant = $merchant;

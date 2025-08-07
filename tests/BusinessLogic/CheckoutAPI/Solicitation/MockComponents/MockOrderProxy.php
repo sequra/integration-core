@@ -41,8 +41,11 @@ class MockOrderProxy implements OrderProxyInterface
      * @param SeQuraForm|null $form
      * @return void
      */
-    public function setMockResult(?SeQuraOrder $order, array $availablePaymentMethods = [], SeQuraForm $form = null): void
-    {
+    public function setMockResult(
+        ?SeQuraOrder $order,
+        array $availablePaymentMethods = [],
+        ?SeQuraForm $form = null
+    ): void {
         $this->order = $order;
         $this->availablePaymentMethods = $availablePaymentMethods;
         $this->form = $form ?? new SeQuraForm('');

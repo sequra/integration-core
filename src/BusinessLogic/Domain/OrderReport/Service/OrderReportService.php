@@ -109,7 +109,7 @@ class OrderReportService
     protected function createSendOrderReportRequest(
         string $merchantId,
         array $orderReports,
-        array $orderStatistics = null
+        ?array $orderStatistics = null
     ): SendOrderReportRequest {
         return new SendOrderReportRequest(
             new Merchant($merchantId),

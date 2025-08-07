@@ -11,5 +11,5 @@ use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
  */
 interface ConditionallyDeletes
 {
-    public function deleteWhere(QueryFilter $queryFilter = null): void;
+    public function deleteWhere(?QueryFilter $queryFilter = null): void;
 }
