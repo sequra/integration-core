@@ -37,25 +37,60 @@
 
 ### What is the SeQura Integration Core?
 
-The `sequra/integration-core` library is a platform-agnostic PHP library that provides the foundational business logic and API communication layer for integrating SeQura payment methods into any e-commerce platform. It follows clean architecture principles and provides a consistent interface for payment processing regardless of the underlying platform.
+The `sequra/integration-core` library is a platform-agnostic PHP library that provides the foundational business logic and API communication layer for integrating SeQura payment methods into any e-commerce platform. It is built following clean architecture principles, ensuring that the payment processing logic remains centralised and consistent across implementations.
 
-The library is designed to be:
+One of the main goals of the library is to provide this shared, centralised logic, while still allowing for customisation and extension to adapt behaviour and structure to different systems. At the same time, it avoids dependencies on system-specific or third-party components, relying only on pure PHP and vanilla JavaScript to keep the core flexible, lightweight, and portable.
+
+The library is designed with the following non-functional requirements, which are to be consistently upheld across all SeQura integrations:
 - **Platform-agnostic**: Works with any PHP-based e-commerce platform
 - **Modular**: Components can be used independently or together
 - **Extensible**: Allows custom implementations of interfaces
 - **Testable**: Clear separation of concerns with dependency injection
 
-### Problems Solved by Integration Core
+These attributes are not just desirable qualities, but mandatory design goals that ensure long-term maintainability and alignment with SeQura’s architectural principles. They represent core priorities, though not the entirety of the non-functional requirements defined for the CORE. For a complete overview, refer to the architectural documentation, which describes in detail how these and other quality attributes shape both the design and implementation of the system.
 
-The integration-core library solves several key challenges:
+## Problems Solved by Integration Core
 
-1. **Payment Method Management**: Centralized logic for handling various SeQura payment options
-2. **Order Lifecycle Management**: Standardized order processing across platforms
-3. **API Abstraction**: Simplified interface for SeQura API communication
-4. **Data Persistence**: Flexible data access layer with repository pattern
-5. **Configuration Management**: Centralized settings and credentials handling
-6. **Webhook Processing**: Standardized webhook handling and validation
-7. **Error Handling**: Consistent error management and logging
+### Architectural Overview
+
+To ensure maintainability and alignment with clean architecture principles, the **integration-core** library separates responsibilities into distinct layers, following the Onion Architecture model.  
+This structure avoids mixing concerns, keeps the core logic centralised, and ensures consistency across all SeQura integrations.
+
+---
+
+#### CORE – Infrastructure
+Provides the **technical foundation** to support business logic, ensuring consistency and portability across platforms:
+
+- **Logging** – unified logger for consistent monitoring and troubleshooting
+- **HTTP Infrastructure** – standardized communication with external services
+- **ORM Abstraction** – repository pattern for persistence without platform lock-in
+- **Task Runner** – scheduling and background task execution
+
+---
+
+#### CORE – Business Logic
+Encapsulates **SeQura’s domain logic**, centralized and reusable across all platforms:
+
+- **API Facades** – simplified access to SeQura API endpoints
+- **Checkout Services** – consistent handling of payment initiation and processing
+- **Order Management Services** – standardized order lifecycle handling
+- **Plugin Administration Services** – centralized configuration and credential management
+- **API Proxy & JS Library** – abstraction for frontend–backend communication
+
+---
+
+#### Integration Interfaces
+Defines **extension points** that allow business logic to interact with diverse e-commerce systems without leaking system-specific dependencies.
+
+---
+
+#### Concrete Integrations
+Implements **shop-specific adapters and extensions**, bridging CORE with the host platform:
+
+- **Platform-specific Implementations** – e.g., order state transitions, checkout extensions
+- **UI/UX Extensions** – extensions to checkout or order screens
+- **Bootstrap Components** – initialization of the integration in the host platform
+- **Event Listeners** – handling shop-specific events (orders, payments, refunds, etc.)
 
 ## 🛠 Installation
 
@@ -73,7 +108,11 @@ composer require sequra/integration-core
 
 ## 🚀 Quick Start Guide
 
-The library uses a bootstrap pattern for initialization. This step must be performed after installing the library. Its purpose is implement the dependency inversion principle. That is, defining what are the implementations for each interface or abstract class used and construct each required class passing the required dependencies.
+The library uses a **bootstrap pattern** for initialization. This step must be performed after installing the library.
+
+Its main goal is to ensure **independence from the dependency injection (DI) mechanisms** of different systems, and to provide a way for services to be **overridden or extended** in concrete platform integrations.
+
+The **dependency inversion principle** is applied here as a best practice to achieve this flexibility, but it is not the primary objective of the bootstrap process.
 
 This library provides a `BootstrapComponent` class that should be extended by the platform integration. The `BootstrapComponent` is responsible for registering all required services, repositories and dependencies.
 
@@ -371,7 +410,7 @@ You can take a look at existing implementations of the integration-core library 
 
 ### Architecture Overview
 
-The integration-core library follows a layered architecture pattern that separates concerns and provides clear interfaces for platform integration:
+The Core will be implemented by following the onion architecture comprised of multiple concentric layers interfacing with each other towards the core that represents the business logic, as displayed in the diagram below. Onion Architecture is based on the inversion of control principle where inner layers' dependencies are abstracted as required interfaces:
 
 ```mermaid
 graph TB
