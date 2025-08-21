@@ -334,7 +334,7 @@ class WidgetSettingsService
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
      */
-    protected function filterPaymentMethodsSupportedOnProductPage(
+    public function filterPaymentMethodsSupportedOnProductPage(
         string $shippingCountry,
         string $currentCountry
     ): array {
