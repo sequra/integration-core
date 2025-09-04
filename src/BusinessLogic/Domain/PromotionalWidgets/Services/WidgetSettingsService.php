@@ -109,14 +109,19 @@ class WidgetSettingsService
      * @param string $shippingCountry
      * @param string $currentCountry
      *
-     * @return WidgetInitializer
+     * @return WidgetInitializer|null
      *
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
      * @throws Exception
      */
-    public function getWidgetInitializeData(string $shippingCountry, string $currentCountry): WidgetInitializer
+    public function getWidgetInitializeData(string $shippingCountry, string $currentCountry): ?WidgetInitializer
     {
+        $widgetSettings = $this->getWidgetSettings();
+        if (!$widgetSettings || !$widgetSettings->isEnabled()) {
+            return null;
+        }
+
         $credentials = $this->getCredentialsByCountry($shippingCountry, $currentCountry);
         $merchantId = $credentials ? $credentials->getMerchantId() : '';
 
