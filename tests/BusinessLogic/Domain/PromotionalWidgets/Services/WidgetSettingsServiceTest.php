@@ -166,6 +166,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
      * @throws HttpRequestException
+     * @throws Exception
      */
     public function testGetScriptUriForSandbox(): void
     {
@@ -179,6 +180,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
+        $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(true));
 
         // act
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('ES', 'ES');
@@ -196,6 +198,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
      * @throws HttpRequestException
+     * @throws Exception
      */
     public function testGetScriptUriForLive(): void
     {
@@ -209,6 +212,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
+        $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(true));
 
         // act
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('ES', 'ES');
@@ -225,11 +229,13 @@ class WidgetSettingsServiceTest extends BaseTestCase
      *
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
+     * @throws Exception
      */
     public function testGetScriptUriNoConnectionData(): void
     {
         //arrange
         $this->countryConfigService->saveCountryConfiguration([new CountryConfiguration('ES', 'ES')]);
+        $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(true));
 
         // act
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('ES', 'ES');
@@ -247,6 +253,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
      * @throws HttpRequestException
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
+     * @throws Exception
      */
     public function testGetWidgetInitializeDataMerchantIdFromShippingCountry(): void
     {
@@ -266,6 +273,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
+        $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(true));
 
         // act
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('ES', 'FR');
@@ -283,6 +291,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
      * @throws HttpRequestException
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
+     * @throws Exception
      */
     public function testGetWidgetInitializeDataMerchantIdFromCurrentCountry(): void
     {
@@ -302,6 +311,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
+        $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(true));
 
         // act
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('PT', 'FR');
@@ -319,6 +329,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
      * @throws HttpRequestException
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
+     * @throws Exception
      */
     public function testGetWidgetInitializeDataNoId(): void
     {
@@ -338,6 +349,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
+        $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(true));
 
         // act
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('PT', 'CO');
@@ -355,6 +367,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
      * @throws HttpRequestException
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
+     * @throws Exception
      */
     public function testGetWidgetInitializeDataNoProducts(): void
     {
@@ -374,6 +387,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
                 new AuthorizationCredentials('test_username', 'test_password')
             )
         );
+        $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(true));
 
         // act
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('PT', 'CO');
@@ -388,6 +402,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
      * @throws HttpRequestException
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
+     * @throws Exception
      */
     public function testGetWidgetInitializeDataDefaultValues(): void
     {
@@ -468,6 +483,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
                 )
             ]
         );
+        $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(true));
 
         // act
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('FR', 'FR');
@@ -486,6 +502,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
      * @throws HttpRequestException
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
+     * @throws Exception
      */
     public function testGetWidgetInitializeData(): void
     {
@@ -569,6 +586,7 @@ class WidgetSettingsServiceTest extends BaseTestCase
                 )
             ]
         );
+        $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(true));
 
         // act
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('FR', 'FR');
@@ -579,6 +597,59 @@ class WidgetSettingsServiceTest extends BaseTestCase
         self::assertEquals('USD', $widgetInitialize->getCurrency());
         self::assertEquals('!', $widgetInitialize->getDecimalSeparator());
         self::assertEquals('?', $widgetInitialize->getThousandSeparator());
+    }
+    /**
+     * @return void
+     *
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws Exception
+     */
+    public function testWidgetInitializeDataWhenThereIsNoWidgetSetting(): void
+    {
+        //arrange
+        $this->countryConfigService->saveCountryConfiguration(
+            [
+                new CountryConfiguration('ES', 'merchantES'),
+                new CountryConfiguration('FR', 'merchantFR'),
+                new CountryConfiguration('IT', 'merchantIT'),
+            ]
+        );
+        $this->connectionService->saveConnectionData(
+            new ConnectionData(
+                'live',
+                'test',
+                'sequra',
+                new AuthorizationCredentials('test_username', 'test_password')
+            )
+        );
+        $this->paymentMethodsService->setMockProducts(['i1', 'pp5', 'pp3', 'payment7', 'payment5']);
+        $this->widgetConfigurator->setMockLocale('en-US');
+        $this->widgetConfigurator->setMockCurrency('USD');
+        $this->widgetConfigurator->setMockDecimalSeparator('!');
+        $this->widgetConfigurator->setMockThousandSeparator('?');
+        $this->paymentMethodsService->setMockPaymentMethods(
+            [
+                new SeQuraPaymentMethod(
+                    'i1',
+                    'Payment1',
+                    'Description1',
+                    'pay_later',
+                    new SeQuraCost(0, 0, 0, 0),
+                    new \DateTime('0022-02-22T22:36:44Z'),
+                    new \DateTime('0022-02-22T22:36:44Z'),
+                    null,
+                    ''
+                )
+            ]
+        );
+
+        // act
+        $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('FR', 'FR');
+
+        // assert
+        self::assertNull($widgetInitialize);
     }
 
     /**

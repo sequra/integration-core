@@ -13,13 +13,13 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer
 class PromotionalWidgetsCheckoutResponse extends Response
 {
     /**
-     * @var WidgetInitializer
+     * @var WidgetInitializer|null
      */
     protected $widgetInitializer;
 
 
     public function __construct(
-        WidgetInitializer $widgetInitializer
+        ?WidgetInitializer $widgetInitializer
     ) {
         $this->widgetInitializer = $widgetInitializer;
     }
@@ -29,6 +29,10 @@ class PromotionalWidgetsCheckoutResponse extends Response
      */
     public function toArray(): array
     {
+        if (!$this->widgetInitializer) {
+            return [];
+        }
+
         return [
             'assetKey' => $this->widgetInitializer->getAssetKey(),
             'merchantId' => $this->widgetInitializer->getMerchantId(),
