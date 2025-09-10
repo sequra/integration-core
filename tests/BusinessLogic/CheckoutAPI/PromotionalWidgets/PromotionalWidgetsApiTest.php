@@ -141,13 +141,16 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         //Assert
         self::assertEquals([
             'assetKey' => 'assets1',
-            'merchantId' => 'merchant1',
+            'merchant' => 'merchant1',
             'products' => ['product1', 'product2'],
             'scriptUri' => 'testScriptUri.com',
             'locale' => 'es',
             'currency' => 'EUR',
             'decimalSeparator' => ',',
             'thousandSeparator' => '.',
+            'isProductListingEnabled' => false,
+            'isProductEnabled' => false,
+            'widgetConfig' => ''
         ], $response->toArray());
     }
 

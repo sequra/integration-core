@@ -35,13 +35,16 @@ class PromotionalWidgetsCheckoutResponse extends Response
 
         return [
             'assetKey' => $this->widgetInitializer->getAssetKey(),
-            'merchantId' => $this->widgetInitializer->getMerchantId(),
+            'merchant' => $this->widgetInitializer->getMerchantId(),
             'products' => $this->widgetInitializer->getProducts(),
             'scriptUri' => $this->widgetInitializer->getScriptUri(),
             'locale' => $this->widgetInitializer->getLocale(),
             'currency' => $this->widgetInitializer->getCurrency(),
             'decimalSeparator' => $this->widgetInitializer->getDecimalSeparator(),
             'thousandSeparator' => $this->widgetInitializer->getThousandSeparator(),
+            'isProductListingEnabled' => $this->widgetInitializer->isProductListingEnabled(),
+            'isProductEnabled' => $this->widgetInitializer->isProductPageEnabled(),
+            'widgetConfig' => $this->widgetInitializer->getWidgetConfig() ?? ''
         ];
     }
 }
