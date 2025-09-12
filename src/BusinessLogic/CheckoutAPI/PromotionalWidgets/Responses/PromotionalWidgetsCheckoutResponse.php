@@ -35,7 +35,7 @@ class PromotionalWidgetsCheckoutResponse extends Response
 
         return [
             'assetKey' => $this->widgetInitializer->getAssetKey(),
-            'merchant' => $this->widgetInitializer->getMerchantId(),
+            'merchantId' => $this->widgetInitializer->getMerchantId(),
             'products' => $this->widgetInitializer->getProducts(),
             'scriptUri' => $this->widgetInitializer->getScriptUri(),
             'locale' => $this->widgetInitializer->getLocale(),
