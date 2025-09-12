@@ -142,7 +142,10 @@ class WidgetSettingsService
             $this->widgetConfigurator->getLocale() ?? 'es-ES',
             $this->widgetConfigurator->getCurrency() ?? 'EUR',
             $this->widgetConfigurator->getDecimalSeparator() ?? ',',
-            $this->widgetConfigurator->getThousandsSeparator() ?? '.'
+            $this->widgetConfigurator->getThousandsSeparator() ?? '.',
+            $widgetSettings->isShowInstallmentsInProductListing(),
+            $widgetSettings->isDisplayOnProductPage(),
+            $widgetSettings->getWidgetConfig()
         );
     }
 

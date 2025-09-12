@@ -42,6 +42,9 @@ class PromotionalWidgetsCheckoutResponse extends Response
             'currency' => $this->widgetInitializer->getCurrency(),
             'decimalSeparator' => $this->widgetInitializer->getDecimalSeparator(),
             'thousandSeparator' => $this->widgetInitializer->getThousandSeparator(),
+            'isProductListingEnabled' => $this->widgetInitializer->isProductListingEnabled(),
+            'isProductEnabled' => $this->widgetInitializer->isProductPageEnabled(),
+            'widgetConfig' => $this->widgetInitializer->getWidgetConfig() ?? ''
         ];
     }
 }
