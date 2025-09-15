@@ -85,7 +85,7 @@ class WidgetValidationService
      */
     public function isProductSupported(string $productId): bool
     {
-        if(empty($productId)) {
+        if (empty($productId)) {
             // Product ID was not provided, skip product validation.
             return true;
         }
