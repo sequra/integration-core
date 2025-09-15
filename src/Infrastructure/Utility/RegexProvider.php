@@ -65,4 +65,19 @@ class RegexProvider
     {
         return $includeSlashes ? $regex : substr($regex, 1, -1);
     }
+
+    /**
+     * Returns all regexes as an associative array so they can be easily converted to JSON.
+     *
+     * @return array<string, string>
+     */
+    public function toArray(): array
+    {
+        return [
+            'ip' => $this->getIpRegex(false),
+            'dateOrDuration' => $this->getDateOrDurationRegex(false),
+            'email' => $this->getEmailRegex(false),
+            'url' => $this->getUrlRegex(false),
+        ];
+    }
 }
