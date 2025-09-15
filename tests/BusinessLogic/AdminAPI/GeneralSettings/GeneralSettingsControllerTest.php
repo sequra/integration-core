@@ -322,7 +322,11 @@ class GeneralSettingsControllerTest extends BaseTestCase
             'showSeQuraCheckoutAsHostedPage' => true,
             'allowedIPAddresses' => ['address 1', 'address 2'],
             'excludedProducts' => ['sku 1', 'sku 2'],
-            'excludedCategories' => ['1', '2']
+            'excludedCategories' => ['1', '2'],
+            'enabledForServices' => false,
+            'allowFirstServicePaymentDelay' => false,
+            'allowServiceRegistrationItems' => false,
+            'defaultServicesEndDate' => 'P1Y'
         ];
     }
 
