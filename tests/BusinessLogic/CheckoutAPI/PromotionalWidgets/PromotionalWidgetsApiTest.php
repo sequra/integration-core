@@ -148,6 +148,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             'currency' => 'EUR',
             'decimalSeparator' => ',',
             'thousandSeparator' => '.',
+            'isProductListingEnabled' => false,
+            'isProductEnabled' => false,
+            'widgetConfig' => ''
         ], $response->toArray());
     }
 

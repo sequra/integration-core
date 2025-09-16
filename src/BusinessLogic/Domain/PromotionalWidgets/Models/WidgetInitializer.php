@@ -41,6 +41,18 @@ class WidgetInitializer
      * @var string
      */
     protected $thousandSeparator;
+    /**
+     * @var bool
+     */
+    protected $isProductListingEnabled;
+    /**
+     * @var bool
+     */
+    protected $isProductPageEnabled;
+    /**
+     * @var string|null
+     */
+    protected $widgetConfig;
 
     /**
      * @param string $assetKey
@@ -51,6 +63,9 @@ class WidgetInitializer
      * @param string $currency
      * @param string $decimalSeparator
      * @param string $thousandSeparator
+     * @param bool $isProductListingEnabled
+     * @param bool $isProductPageEnabled
+     * @param string|null $widgetConfig
      */
     public function __construct(
         string $assetKey,
@@ -60,7 +75,10 @@ class WidgetInitializer
         string $locale = 'es-ES',
         string $currency = 'EUR',
         string $decimalSeparator = ',',
-        string $thousandSeparator = '.'
+        string $thousandSeparator = '.',
+        bool $isProductListingEnabled = false,
+        bool $isProductPageEnabled = false,
+        ?string $widgetConfig = null
     ) {
         $this->assetKey = $assetKey;
         $this->merchantId = $merchantId;
@@ -70,6 +88,9 @@ class WidgetInitializer
         $this->currency = $currency;
         $this->decimalSeparator = $decimalSeparator;
         $this->thousandSeparator = $thousandSeparator;
+        $this->isProductListingEnabled = $isProductListingEnabled;
+        $this->isProductPageEnabled = $isProductPageEnabled;
+        $this->widgetConfig = $widgetConfig;
     }
 
     /**
@@ -134,5 +155,29 @@ class WidgetInitializer
     public function getThousandSeparator(): string
     {
         return $this->thousandSeparator;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isProductListingEnabled(): bool
+    {
+        return $this->isProductListingEnabled;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isProductPageEnabled(): bool
+    {
+        return $this->isProductPageEnabled;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getWidgetConfig(): ?string
+    {
+        return $this->widgetConfig;
     }
 }
