@@ -35,7 +35,7 @@ class RegistrationItem extends Item
     /**
      * @param mixed[] $data
      *
-     * @return OtherPaymentItem
+     * @return RegistrationItem
      */
     public static function fromArray(array $data): Item
     {
