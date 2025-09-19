@@ -19,7 +19,11 @@ class GeneralSettingsModelTest extends BaseTestCase
             true,
             ['address 1', 'address 2', 'address 3'],
             ['sku 1', 'sku 2', 'sku 3'],
-            ['1', '2']
+            ['1', '2'],
+            false,
+            true,
+            true,
+            'P1Y1M'
         );
 
         $generalSettings->setShowSeQuraCheckoutAsHostedPage(false);
@@ -27,11 +31,19 @@ class GeneralSettingsModelTest extends BaseTestCase
         $generalSettings->setAllowedIPAddresses(['address 4', 'address 5']);
         $generalSettings->setExcludedProducts(['sku 4', 'sku 5']);
         $generalSettings->setExcludedCategories(['3', '4']);
+        $generalSettings->setEnabledForServices(false);
+        $generalSettings->setAllowFirstServicePaymentDelay(true);
+        $generalSettings->setAllowServiceRegistrationItems(true);
+        $generalSettings->setDefaultServicesEndDate('P1Y1M');
 
         self::assertFalse($generalSettings->isShowSeQuraCheckoutAsHostedPage());
         self::assertFalse($generalSettings->isSendOrderReportsPeriodicallyToSeQura());
         self::assertEquals(['address 4', 'address 5'], $generalSettings->getAllowedIPAddresses());
         self::assertEquals(['sku 4', 'sku 5'], $generalSettings->getExcludedProducts());
         self::assertEquals(['3', '4'], $generalSettings->getExcludedCategories());
+        self::assertFalse($generalSettings->isEnabledForServices());
+        self::assertTrue($generalSettings->isAllowFirstServicePaymentDelay());
+        self::assertTrue($generalSettings->isAllowServiceRegistrationItems());
+        self::assertEquals('P1Y1M', $generalSettings->getDefaultServicesEndDate());
     }
 }

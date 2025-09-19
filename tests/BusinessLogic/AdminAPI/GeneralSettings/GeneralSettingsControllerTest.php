@@ -139,7 +139,11 @@ class GeneralSettingsControllerTest extends BaseTestCase
             true,
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
-            ['1', '2']
+            ['1', '2'],
+            true,
+            true,
+            true,
+            'P1Y1M'
         );
 
         StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
@@ -323,10 +327,10 @@ class GeneralSettingsControllerTest extends BaseTestCase
             'allowedIPAddresses' => ['address 1', 'address 2'],
             'excludedProducts' => ['sku 1', 'sku 2'],
             'excludedCategories' => ['1', '2'],
-            'enabledForServices' => false,
-            'allowFirstServicePaymentDelay' => false,
-            'allowServiceRegistrationItems' => false,
-            'defaultServicesEndDate' => 'P1Y'
+            'enabledForServices' => true,
+            'allowFirstServicePaymentDelay' => true,
+            'allowServiceRegistrationItems' => true,
+            'defaultServicesEndDate' => 'P1Y1M'
         ];
     }
 
