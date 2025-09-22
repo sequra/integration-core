@@ -48,7 +48,7 @@ class GeneralSettings extends Entity
             (bool) self::getArrayValue($generalSettings, 'enabledForServices', false),
             (bool) self::getArrayValue($generalSettings, 'allowFirstServicePaymentDelay', false),
             (bool) self::getArrayValue($generalSettings, 'allowServiceRegistrationItems', false),
-            (string) self::getArrayValue($generalSettings, 'defaultServiceEndDate', null)
+            (string) self::getArrayValue($generalSettings, 'defaultServicesEndDate', null)
         );
     }
 
