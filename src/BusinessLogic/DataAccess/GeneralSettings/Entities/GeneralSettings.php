@@ -68,7 +68,7 @@ class GeneralSettings extends Entity
             'enabledForServices' => $this->generalSettings->isEnabledForServices(),
             'allowFirstServicePaymentDelay' => $this->generalSettings->isAllowFirstServicePaymentDelay(),
             'allowServiceRegistrationItems' => $this->generalSettings->isAllowServiceRegistrationItems(),
-            'defaultServiceEndDate' => $this->generalSettings->getDefaultServicesEndDate(),
+            'defaultServicesEndDate' => $this->generalSettings->getDefaultServicesEndDate(),
         ];
 
         return $data;
