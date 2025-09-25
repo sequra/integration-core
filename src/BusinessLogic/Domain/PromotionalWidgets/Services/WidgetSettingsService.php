@@ -127,7 +127,7 @@ class WidgetSettingsService
     public function getWidgetInitializeData(string $shippingCountry, string $currentCountry): ?WidgetInitializer
     {
         $widgetSettings = $this->getWidgetSettings();
-        if (!$widgetSettings || !$widgetSettings->isEnabled()) {
+        if (!$widgetSettings) {
             return null;
         }
 
@@ -163,7 +163,7 @@ class WidgetSettingsService
     public function getAvailableWidgetForCartPage(string $shippingCountry, string $currentCountry): ?Widget
     {
         $widgetSettings = $this->getWidgetSettings();
-        if (!$widgetSettings || !$widgetSettings->isEnabled() || !$widgetSettings->isShowInstallmentsInCartPage()) {
+        if (!$widgetSettings || !$widgetSettings->isShowInstallmentsInCartPage()) {
             return null;
         }
 
@@ -209,7 +209,6 @@ class WidgetSettingsService
         $widgetSettings = $this->getWidgetSettings();
         if (
             !$widgetSettings ||
-            !$widgetSettings->isEnabled() ||
             !$widgetSettings->isShowInstallmentsInProductListing()
         ) {
             return null;
@@ -262,7 +261,7 @@ class WidgetSettingsService
     public function getAvailableWidgetsForProductPage(string $shippingCountry, string $currentCountry): array
     {
         $widgetSettings = $this->getWidgetSettings();
-        if (!$widgetSettings || !$widgetSettings->isEnabled() || !$widgetSettings->isDisplayOnProductPage()) {
+        if (!$widgetSettings || !$widgetSettings->isDisplayOnProductPage()) {
             return [];
         }
 

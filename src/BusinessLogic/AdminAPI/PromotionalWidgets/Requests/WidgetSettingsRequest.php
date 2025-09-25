@@ -14,11 +14,7 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
  */
 class WidgetSettingsRequest extends Request
 {
-    /**
-     * @var bool
-     */
-    protected $enabled;
-    /**
+     /**
      * @var bool
      */
     protected $displayOnProductPage;
@@ -75,12 +71,11 @@ class WidgetSettingsRequest extends Request
      */
     protected $widgetOnListingPage;
     /**
-     * @var array<string,string>
+     * @var array<string,string|bool>
      */
     protected $customLocations;
 
     /**
-     * @param bool $enabled
      * @param bool $displayOnProductPage
      * @param bool $showInstallmentsInProductListing
      * @param bool $showInstallmentsInCartPage
@@ -98,7 +93,6 @@ class WidgetSettingsRequest extends Request
      * @param array<string,string> $customLocations
      */
     public function __construct(
-        bool $enabled,
         bool $displayOnProductPage,
         bool $showInstallmentsInProductListing,
         bool $showInstallmentsInCartPage,
@@ -115,7 +109,6 @@ class WidgetSettingsRequest extends Request
         string $altProductPriceTriggerSelector = '',
         array $customLocations = []
     ) {
-        $this->enabled = $enabled;
         $this->displayOnProductPage = $displayOnProductPage;
         $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
         $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
@@ -161,7 +154,6 @@ class WidgetSettingsRequest extends Request
         $productWidgetSettings->setCustomWidgetsSettings($customLocationModels);
 
         return new WidgetSettings(
-            $this->enabled,
             $this->displayOnProductPage,
             $this->showInstallmentsInProductListing,
             $this->showInstallmentsInCartPage,

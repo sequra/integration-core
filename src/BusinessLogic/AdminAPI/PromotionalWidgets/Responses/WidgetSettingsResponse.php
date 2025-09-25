@@ -35,7 +35,6 @@ class WidgetSettingsResponse extends Response
         }
 
         $widgetSettingsArray = [
-            'useWidgets' => $this->widgetSettings->isEnabled(),
             'displayWidgetOnProductPage' => $this->widgetSettings->isDisplayOnProductPage(),
             'showInstallmentAmountInProductListing' => $this->widgetSettings->isShowInstallmentsInProductListing(),
             'showInstallmentAmountInCartPage' => $this->widgetSettings->isShowInstallmentsInCartPage(),
