@@ -51,15 +51,13 @@ class IntegrationController
     /**
      * Gets the UI state for the integration.
      *
-     * @param bool $useWidgets
-     *
      * @return IntegrationUIStateResponse
      *
      * @throws Exception
      */
-    public function getUIState(bool $useWidgets = true): IntegrationUIStateResponse
+    public function getUIState(): IntegrationUIStateResponse
     {
-        return $this->stateService->isOnboardingState($useWidgets) ?
+        return $this->stateService->isOnboardingState() ?
             IntegrationUIStateResponse::onboarding() :
             IntegrationUIStateResponse::dashboard();
     }
