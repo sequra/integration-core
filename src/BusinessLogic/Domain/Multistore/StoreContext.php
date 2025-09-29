@@ -3,6 +3,8 @@
 namespace SeQura\Core\BusinessLogic\Domain\Multistore;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
+use SeQura\Core\Infrastructure\ServiceRegister;
 
 /**
  * Class StoreContext
@@ -22,10 +24,13 @@ class StoreContext
     /**
      * @var string
      */
-    protected $storeId = '';
+    protected $storeId;
 
     protected function __construct()
     {
+        $storeService = ServiceRegister::getService(StoreServiceInterface::class);
+        $defaultStore = $storeService->getDefaultStore();
+        $this->storeId = $defaultStore ? $defaultStore->getStoreId() : '';
     }
 
     public static function getInstance(): StoreContext
