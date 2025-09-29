@@ -130,6 +130,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvid
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
 use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
@@ -181,6 +182,9 @@ class BaseTestCase extends TestCase
             },
             HttpClient::class => function () {
                 return new TestHttpClient();
+            },
+            StoreServiceInterface::class => function () {
+                return new MockStoreService();
             },
             StoreContext::class => function () {
                 return StoreContext::getInstance();

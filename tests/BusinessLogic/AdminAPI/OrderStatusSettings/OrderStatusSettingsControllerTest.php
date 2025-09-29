@@ -360,7 +360,7 @@ class OrderStatusSettingsControllerTest extends BaseTestCase
     public function testApprovedStatusMapping(): void
     {
         $mapping = new OrderStatusSettings();
-        $mapping->setStoreId('');
+        $mapping->setStoreId('1');
         $mapping->setOrderStatusMappings([
             new OrderStatusMapping(OrderStates::STATE_APPROVED, 'Success'),
             new OrderStatusMapping(OrderStates::STATE_CANCELLED, 'Failed'),
@@ -384,7 +384,7 @@ class OrderStatusSettingsControllerTest extends BaseTestCase
     public function testReviewStatusMapping(): void
     {
         $mapping = new OrderStatusSettings();
-        $mapping->setStoreId('');
+        $mapping->setStoreId('1');
         $mapping->setOrderStatusMappings([
             new OrderStatusMapping(OrderStates::STATE_APPROVED, 'Success'),
             new OrderStatusMapping(OrderStates::STATE_CANCELLED, 'Failed'),
@@ -407,7 +407,7 @@ class OrderStatusSettingsControllerTest extends BaseTestCase
     public function testCancelledStatusMapping(): void
     {
         $mapping = new OrderStatusSettings();
-        $mapping->setStoreId('');
+        $mapping->setStoreId('1');
         $mapping->setOrderStatusMappings([
             new OrderStatusMapping(OrderStates::STATE_APPROVED, 'Success'),
             new OrderStatusMapping(OrderStates::STATE_CANCELLED, 'Failed'),
