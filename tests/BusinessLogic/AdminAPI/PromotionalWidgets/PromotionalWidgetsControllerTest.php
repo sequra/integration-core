@@ -46,7 +46,6 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
     {
         // arrange
         $settings = new WidgetSettings(
-            true,
             false,
             false,
             false,
@@ -60,7 +59,6 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
         // assert
         self::assertEquals(
             [
-                'useWidgets' => $settings->isEnabled(),
                 'displayWidgetOnProductPage' => $settings->isDisplayOnProductPage(),
                 'showInstallmentAmountInProductListing' => $settings->isShowInstallmentsInProductListing(),
                 'showInstallmentAmountInCartPage' => $settings->isShowInstallmentsInCartPage(),
@@ -74,7 +72,6 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
     {
         // arrange
         $settings = new WidgetSettingsRequest(
-            false,
             false,
             true,
             true,

@@ -782,7 +782,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
             )
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
-            true,
             false,
             false,
             false,
@@ -826,7 +825,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
             )
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
-            true,
             false,
             false,
             false,
@@ -918,7 +916,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
             )
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
-            true,
             false,
             false,
             true,
@@ -1084,7 +1081,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
             )
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
-            true,
             false,
             false,
             false,
@@ -1128,7 +1124,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
             )
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
-            true,
             false,
             true,
             false,
@@ -1294,7 +1289,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
             )
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
-            true,
             false,
             false,
             false,
@@ -1347,7 +1341,6 @@ class WidgetSettingsServiceTest extends BaseTestCase
             )
         );
         $this->widgetSettingsRepository->setWidgetSettings(new WidgetSettingsModel(
-            true,
             true,
             false,
             false,

@@ -12,10 +12,6 @@ class WidgetSettings
     /**
      * @var bool
      */
-    protected $enabled;
-    /**
-     * @var bool
-     */
     protected $displayOnProductPage;
     /**
      * @var bool
@@ -43,7 +39,6 @@ class WidgetSettings
     protected $widgetSettingsForListing;
 
     /**
-     * @param bool $enabled
      * @param bool $displayOnProductPage
      * @param bool $showInstallmentsInProductListing
      * @param bool $showInstallmentsInCartPage
@@ -53,7 +48,6 @@ class WidgetSettings
      * @param WidgetSelectorSettings|null $widgetSettingsForListing
      */
     public function __construct(
-        bool $enabled,
         bool $displayOnProductPage = false,
         bool $showInstallmentsInProductListing = false,
         bool $showInstallmentsInCartPage = false,
@@ -62,7 +56,6 @@ class WidgetSettings
         ?WidgetSelectorSettings $widgetSettingsForCart = null,
         ?WidgetSelectorSettings $widgetSettingsForListing = null
     ) {
-        $this->enabled = $enabled;
         $this->displayOnProductPage = $displayOnProductPage;
         $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
         $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
@@ -70,24 +63,6 @@ class WidgetSettings
         $this->widgetSettingsForProduct = $widgetSettingsForProduct;
         $this->widgetSettingsForCart = $widgetSettingsForCart;
         $this->widgetSettingsForListing = $widgetSettingsForListing;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isEnabled(): bool
-    {
-        return $this->enabled;
-    }
-
-    /**
-     * @param bool $enabled
-     *
-     * @return void
-     */
-    public function setEnabled(bool $enabled): void
-    {
-        $this->enabled = $enabled;
     }
 
     /**

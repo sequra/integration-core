@@ -122,7 +122,6 @@ class IntegrationControllerTest extends BaseTestCase
             true,
             true,
             true,
-            true,
             '.test'
         );
 
