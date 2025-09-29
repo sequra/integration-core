@@ -28,12 +28,7 @@ class StoreContext
 
     protected function __construct()
     {
-        /**
-         * @var StoreServiceInterface $storeService
-         */
-        $storeService = ServiceRegister::getService(StoreServiceInterface::class);
-        $defaultStore = $storeService->getDefaultStore();
-        $this->storeId = $defaultStore ? $defaultStore->getStoreId() : '';
+        $this->setDefaultStoreId();
     }
 
     public static function getInstance(): StoreContext
@@ -78,5 +73,18 @@ class StoreContext
     public function getStoreId(): string
     {
         return $this->storeId;
+    }
+
+    /**
+     * Sets the default store ID.
+     */
+    protected function setDefaultStoreId(): void
+    {
+        /**
+         * @var StoreServiceInterface $storeService
+         */
+        $storeService = ServiceRegister::getService(StoreServiceInterface::class);
+        $defaultStore = $storeService->getDefaultStore();
+        $this->storeId = $defaultStore ? $defaultStore->getStoreId() : '';
     }
 }
