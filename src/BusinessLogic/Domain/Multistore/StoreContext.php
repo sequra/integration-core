@@ -28,6 +28,9 @@ class StoreContext
 
     protected function __construct()
     {
+        /**
+         * @var StoreServiceInterface $storeService
+         */
         $storeService = ServiceRegister::getService(StoreServiceInterface::class);
         $defaultStore = $storeService->getDefaultStore();
         $this->storeId = $defaultStore ? $defaultStore->getStoreId() : '';
