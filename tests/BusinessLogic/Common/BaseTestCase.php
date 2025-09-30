@@ -61,6 +61,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMe
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreIdProvider;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
@@ -130,7 +131,6 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvid
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
 use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
@@ -183,8 +183,8 @@ class BaseTestCase extends TestCase
             HttpClient::class => function () {
                 return new TestHttpClient();
             },
-            StoreServiceInterface::class => function () {
-                return new MockStoreService();
+            StoreIdProvider::class => function () {
+                return new StoreIdProvider();
             },
             StoreContext::class => function () {
                 return StoreContext::getInstance();

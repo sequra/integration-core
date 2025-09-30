@@ -85,6 +85,7 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\Widg
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreIdProvider;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
@@ -281,6 +282,10 @@ class BootstrapComponent extends BaseBootstrapComponent
 
         ServiceRegister::registerService(StoreContext::class, static function () {
             return StoreContext::getInstance();
+        });
+
+        ServiceRegister::registerService(StoreIdProvider::class, static function () {
+            return new StoreIdProvider();
         });
 
         ServiceRegister::registerService(

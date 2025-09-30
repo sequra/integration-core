@@ -3,7 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\Multistore;
 
 use Exception;
-use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreIdProvider;
 use SeQura\Core\Infrastructure\ServiceRegister;
 
 /**
@@ -81,10 +81,9 @@ class StoreContext
     protected function setDefaultStoreId(): void
     {
         /**
-         * @var StoreServiceInterface $storeService
+         * @var StoreIdProvider $storeIdProvider
          */
-        $storeService = ServiceRegister::getService(StoreServiceInterface::class);
-        $defaultStore = $storeService->getDefaultStore();
-        $this->storeId = $defaultStore ? $defaultStore->getStoreId() : '';
+        $storeIdProvider = ServiceRegister::getService(StoreIdProvider::class);
+        $this->storeId = $storeIdProvider->getCurrentStoreId();
     }
 }
