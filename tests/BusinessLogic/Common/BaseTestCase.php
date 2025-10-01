@@ -61,6 +61,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMe
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreIdProvider;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
@@ -181,6 +182,9 @@ class BaseTestCase extends TestCase
             },
             HttpClient::class => function () {
                 return new TestHttpClient();
+            },
+            StoreIdProvider::class => function () {
+                return new StoreIdProvider();
             },
             StoreContext::class => function () {
                 return StoreContext::getInstance();
