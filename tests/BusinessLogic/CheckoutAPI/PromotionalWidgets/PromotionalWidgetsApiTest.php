@@ -141,7 +141,7 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         //Assert
         self::assertEquals([
             'assetKey' => 'assets1',
-            'merchantId' => 'merchant1',
+            'merchant' => 'merchant1',
             'products' => ['product1', 'product2'],
             'scriptUri' => 'testScriptUri.com',
             'locale' => 'es',
