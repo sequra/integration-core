@@ -38,27 +38,6 @@ class GeneralSettingsRequest extends Request
     protected $excludedProducts;
 
     /**
-     * Whether the integration supports selling services.
-     *
-     * @var bool
-     */
-    protected $enabledForServices;
-
-    /**
-     * Whether the integration allows delaying the first payment for services.
-     *
-     * @var bool
-     */
-    protected $allowFirstServicePaymentDelay;
-
-    /**
-     * Whether the integration allows charging a registration fee for services.
-     *
-     * @var bool
-     */
-    protected $allowServiceRegistrationItems;
-
-    /**
      * ISO 8601 date or duration string representing the default end date for services.
      *
      * @var string|null
@@ -71,9 +50,6 @@ class GeneralSettingsRequest extends Request
      * @param string[]|null $allowedIPAddresses
      * @param string[]|null $excludedProducts
      * @param string[]|null $excludedCategories
-     * @param bool $enabledForServices
-     * @param bool $allowFirstServicePaymentDelay
-     * @param bool $allowServiceRegistrationItems
      * @param string|null $defaultServicesEndDate
      */
     public function __construct(
@@ -82,9 +58,6 @@ class GeneralSettingsRequest extends Request
         ?array $allowedIPAddresses,
         ?array $excludedProducts,
         ?array $excludedCategories,
-        bool $enabledForServices = false,
-        bool $allowFirstServicePaymentDelay = false,
-        bool $allowServiceRegistrationItems = false,
         ?string $defaultServicesEndDate = null
     ) {
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
@@ -92,9 +65,6 @@ class GeneralSettingsRequest extends Request
         $this->allowedIPAddresses = $allowedIPAddresses;
         $this->excludedProducts = $excludedProducts;
         $this->excludedCategories = $excludedCategories;
-        $this->enabledForServices = $enabledForServices;
-        $this->allowFirstServicePaymentDelay = $allowFirstServicePaymentDelay;
-        $this->allowServiceRegistrationItems = $allowServiceRegistrationItems;
         $this->defaultServicesEndDate = $defaultServicesEndDate;
     }
 
@@ -111,9 +81,9 @@ class GeneralSettingsRequest extends Request
             $this->allowedIPAddresses,
             $this->excludedProducts,
             $this->excludedCategories,
-            $this->enabledForServices,
-            $this->allowFirstServicePaymentDelay,
-            $this->allowServiceRegistrationItems,
+            [],
+            [],
+            [],
             $this->defaultServicesEndDate
         );
     }

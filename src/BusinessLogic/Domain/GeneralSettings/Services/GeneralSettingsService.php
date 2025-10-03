@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services;
 
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 
@@ -18,11 +19,19 @@ class GeneralSettingsService
     protected $generalSettingsRepository;
 
     /**
+     * @var ConnectionService
+     */
+    protected $connectionService;
+
+    /**
      * @param GeneralSettingsRepositoryInterface $generalSettingsRepository
      */
-    public function __construct(GeneralSettingsRepositoryInterface $generalSettingsRepository)
-    {
+    public function __construct(
+        GeneralSettingsRepositoryInterface $generalSettingsRepository,
+        ConnectionService $connectionService
+    ) {
         $this->generalSettingsRepository = $generalSettingsRepository;
+        $this->connectionService = $connectionService;
     }
 
     /**
@@ -32,7 +41,25 @@ class GeneralSettingsService
      */
     public function getGeneralSettings(): ?GeneralSettings
     {
-        return $this->generalSettingsRepository->getGeneralSettings();
+        $generalSettings = $this->generalSettingsRepository->getGeneralSettings();
+        $enabledForServices = [];
+        $allowFirstServicePaymentDelay = [];
+        $allowServiceRegistrationItems = [];
+        foreach ($this->connectionService->getCredentials() as $credentials) {
+            if ($credentials->isEnabledForServices()) {
+                $enabledForServices[] = $credentials->getCountry();
+            }
+            if ($credentials->isAllowFirstServicePaymentDelay()) {
+                $allowFirstServicePaymentDelay[] = $credentials->getCountry();
+            }
+            if ($credentials->isAllowServiceRegistrationItems()) {
+                $allowServiceRegistrationItems[] = $credentials->getCountry();
+            }
+        }
+        $generalSettings->setEnabledForServices($enabledForServices);
+        $generalSettings->setAllowFirstServicePaymentDelay($allowFirstServicePaymentDelay);
+        $generalSettings->setAllowServiceRegistrationItems($allowServiceRegistrationItems);
+        return $generalSettings;
     }
 
     /**

@@ -39,9 +39,9 @@ class GeneralSettingsResponse extends Response
             'allowedIPAddresses' => $this->generalSettings->getAllowedIPAddresses(),
             'excludedProducts' => $this->generalSettings->getExcludedProducts(),
             'excludedCategories' => $this->generalSettings->getExcludedCategories(),
-            'enabledForServices' => $this->generalSettings->isEnabledForServices(),
-            'allowFirstServicePaymentDelay' => $this->generalSettings->isAllowFirstServicePaymentDelay(),
-            'allowServiceRegistrationItems' => $this->generalSettings->isAllowServiceRegistrationItems(),
+            'enabledForServices' => $this->generalSettings->getEnabledForServices(),
+            'allowFirstServicePaymentDelay' => $this->generalSettings->getAllowFirstServicePaymentDelay(),
+            'allowServiceRegistrationItems' => $this->generalSettings->getAllowServiceRegistrationItems(),
             'defaultServicesEndDate' => $this->generalSettings->getDefaultServicesEndDate()
         ];
     }

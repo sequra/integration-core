@@ -375,7 +375,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             GeneralSettingsService::class,
             static function () {
                 return new GeneralSettingsService(
-                    ServiceRegister::getService(GeneralSettingsRepositoryInterface::class)
+                    ServiceRegister::getService(GeneralSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(ConnectionService::class)
                 );
             }
         );

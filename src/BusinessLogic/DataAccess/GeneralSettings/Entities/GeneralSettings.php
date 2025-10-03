@@ -38,17 +38,17 @@ class GeneralSettings extends Entity
 
         $generalSettings = $data['generalSettings'] ?? [];
         $this->storeId = $data['storeId'] ?? '';
-
+        $defaultServicesEndDate = self::getArrayValue($generalSettings, 'defaultServicesEndDate', null);
         $this->generalSettings = new DomainGeneralSettings(
             (bool)self::getArrayValue($generalSettings, 'sendOrderReportsPeriodicallyToSeQura', false),
             (bool)self::getArrayValue($generalSettings, 'showSeQuraCheckoutAsHostedPage', null),
             static::getDataValue($generalSettings, 'allowedIPAddresses', []),
             static::getDataValue($generalSettings, 'excludedProducts', []),
             static::getDataValue($generalSettings, 'excludedCategories', []),
-            (bool) self::getArrayValue($generalSettings, 'enabledForServices', false),
-            (bool) self::getArrayValue($generalSettings, 'allowFirstServicePaymentDelay', false),
-            (bool) self::getArrayValue($generalSettings, 'allowServiceRegistrationItems', false),
-            (string) self::getArrayValue($generalSettings, 'defaultServicesEndDate', null)
+            self::getDataValue($generalSettings, 'enabledForServices', []),
+            self::getDataValue($generalSettings, 'allowFirstServicePaymentDelay', []),
+            self::getDataValue($generalSettings, 'allowServiceRegistrationItems', []),
+            is_string($defaultServicesEndDate) ? $defaultServicesEndDate : null
         );
     }
 
@@ -65,9 +65,9 @@ class GeneralSettings extends Entity
             'allowedIPAddresses' => $this->generalSettings->getAllowedIPAddresses(),
             'excludedProducts' => $this->generalSettings->getExcludedProducts(),
             'excludedCategories' => $this->generalSettings->getExcludedCategories(),
-            'enabledForServices' => $this->generalSettings->isEnabledForServices(),
-            'allowFirstServicePaymentDelay' => $this->generalSettings->isAllowFirstServicePaymentDelay(),
-            'allowServiceRegistrationItems' => $this->generalSettings->isAllowServiceRegistrationItems(),
+            'enabledForServices' => $this->generalSettings->getEnabledForServices(),
+            'allowFirstServicePaymentDelay' => $this->generalSettings->getAllowFirstServicePaymentDelay(),
+            'allowServiceRegistrationItems' => $this->generalSettings->getAllowServiceRegistrationItems(),
             'defaultServicesEndDate' => $this->generalSettings->getDefaultServicesEndDate(),
         ];
 

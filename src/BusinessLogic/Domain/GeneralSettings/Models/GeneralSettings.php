@@ -40,23 +40,23 @@ class GeneralSettings
     protected $excludedProducts;
 
     /**
-     * Whether the integration supports selling services.
+     * Countries enabled for services.
      *
-     * @var bool
+     * @var string[]
      */
     protected $enabledForServices;
 
     /**
-     * Whether the integration allows delaying the first payment for services.
+     * Countries where delaying the first payment for services is allowed.
      *
-     * @var bool
+     * @var string[]
      */
     protected $allowFirstServicePaymentDelay;
 
     /**
-     * Whether the integration allows charging a registration fee for services.
+     * Countries where charging a registration fee for services is allowed.
      *
-     * @var bool
+     * @var string[]
      */
     protected $allowServiceRegistrationItems;
 
@@ -73,9 +73,9 @@ class GeneralSettings
      * @param string[]|null $allowedIPAddresses
      * @param string[]|null $excludedProducts
      * @param string[]|null $excludedCategories
-     * @param bool $enabledForServices
-     * @param bool $allowFirstServicePaymentDelay
-     * @param bool $allowServiceRegistrationItems
+     * @param string[] $enabledForServices
+     * @param string[] $allowFirstServicePaymentDelay
+     * @param string[] $allowServiceRegistrationItems
      * @param string $defaultServicesEndDate
      */
     public function __construct(
@@ -84,9 +84,9 @@ class GeneralSettings
         ?array $allowedIPAddresses,
         ?array $excludedProducts,
         ?array $excludedCategories,
-        bool $enabledForServices = false,
-        bool $allowFirstServicePaymentDelay = false,
-        bool $allowServiceRegistrationItems = false,
+        array $enabledForServices = [],
+        array $allowFirstServicePaymentDelay = [],
+        array $allowServiceRegistrationItems = [],
         ?string $defaultServicesEndDate = null
     ) {
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
@@ -94,9 +94,9 @@ class GeneralSettings
         $this->allowedIPAddresses = $allowedIPAddresses;
         $this->excludedProducts = $excludedProducts;
         $this->excludedCategories = $excludedCategories;
-        $this->enabledForServices = $enabledForServices;
-        $this->allowFirstServicePaymentDelay = $allowFirstServicePaymentDelay;
-        $this->allowServiceRegistrationItems = $allowServiceRegistrationItems;
+        $this->setEnabledForServices($enabledForServices);
+        $this->setAllowFirstServicePaymentDelay($allowFirstServicePaymentDelay);
+        $this->setAllowServiceRegistrationItems($allowServiceRegistrationItems);
         $this->setDefaultServicesEndDate($defaultServicesEndDate);
     }
 
@@ -181,51 +181,69 @@ class GeneralSettings
     }
 
     /**
-     * @return bool
+     * @return string[]
      */
-    public function isEnabledForServices(): bool
+    public function getEnabledForServices(): array
     {
         return $this->enabledForServices;
     }
 
     /**
-     * @param bool $enabledForServices
+     * Normalizes country codes to uppercase and removes duplicates.
+     *
+     * @param string[] $countryCodes
+     *
+     * @return string[]
      */
-    public function setEnabledForServices(bool $enabledForServices): void
+    private function normalizeCountryCodes(array $countryCodes): array
     {
-        $this->enabledForServices = $enabledForServices;
+        $normalized = [];
+        foreach ($countryCodes as $value) {
+            if (is_string($value) && !empty(trim($value))) {
+                $normalized[] = strtoupper(trim($value));
+            }
+        }
+        return array_unique($normalized);
     }
 
     /**
-     * @return bool
+     * @param string[] $enabledForServices
      */
-    public function isAllowFirstServicePaymentDelay(): bool
+    public function setEnabledForServices(array $enabledForServices): void
+    {
+        $this->enabledForServices = $this->normalizeCountryCodes($enabledForServices);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAllowFirstServicePaymentDelay(): array
     {
         return $this->allowFirstServicePaymentDelay;
     }
 
     /**
-     * @param bool $allowFirstServicePaymentDelay
+     * @param string[] $allowFirstServicePaymentDelay
      */
-    public function setAllowFirstServicePaymentDelay(bool $allowFirstServicePaymentDelay): void
+    public function setAllowFirstServicePaymentDelay(array $allowFirstServicePaymentDelay): void
     {
-        $this->allowFirstServicePaymentDelay = $allowFirstServicePaymentDelay;
+        $this->allowFirstServicePaymentDelay = $this->normalizeCountryCodes($allowFirstServicePaymentDelay);
     }
 
     /**
-     * @return bool
+     * @return string[]
      */
-    public function isAllowServiceRegistrationItems(): bool
+    public function getAllowServiceRegistrationItems(): array
     {
         return $this->allowServiceRegistrationItems;
     }
 
     /**
-     * @param bool $allowServiceRegistrationItems
+     * @param string[] $allowServiceRegistrationItems
      */
-    public function setAllowServiceRegistrationItems(bool $allowServiceRegistrationItems): void
+    public function setAllowServiceRegistrationItems(array $allowServiceRegistrationItems): void
     {
-        $this->allowServiceRegistrationItems = $allowServiceRegistrationItems;
+        $this->allowServiceRegistrationItems = $this->normalizeCountryCodes($allowServiceRegistrationItems);
     }
 
     /**
