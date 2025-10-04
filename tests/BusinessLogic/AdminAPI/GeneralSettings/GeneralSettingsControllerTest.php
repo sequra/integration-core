@@ -16,7 +16,6 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterfa
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCategoryService;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockShopPaymentMethodsService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -140,9 +139,9 @@ class GeneralSettingsControllerTest extends BaseTestCase
             ['address 1', 'address 2'],
             ['sku 1', 'sku 2'],
             ['1', '2'],
-            true,
-            true,
-            true,
+            [],
+            [],
+            [],
             'P1Y1M'
         );
 
@@ -327,9 +326,9 @@ class GeneralSettingsControllerTest extends BaseTestCase
             'allowedIPAddresses' => ['address 1', 'address 2'],
             'excludedProducts' => ['sku 1', 'sku 2'],
             'excludedCategories' => ['1', '2'],
-            'enabledForServices' => true,
-            'allowFirstServicePaymentDelay' => true,
-            'allowServiceRegistrationItems' => true,
+            'enabledForServices' => [],
+            'allowFirstServicePaymentDelay' => [],
+            'allowServiceRegistrationItems' => [],
             'defaultServicesEndDate' => 'P1Y1M'
         ];
     }

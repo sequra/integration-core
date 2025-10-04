@@ -42,23 +42,25 @@ class GeneralSettingsService
     public function getGeneralSettings(): ?GeneralSettings
     {
         $generalSettings = $this->generalSettingsRepository->getGeneralSettings();
-        $enabledForServices = [];
-        $allowFirstServicePaymentDelay = [];
-        $allowServiceRegistrationItems = [];
-        foreach ($this->connectionService->getCredentials() as $credentials) {
-            if ($credentials->isEnabledForServices()) {
-                $enabledForServices[] = $credentials->getCountry();
+        if ($generalSettings) {
+            $enabledForServices = [];
+            $allowFirstServicePaymentDelay = [];
+            $allowServiceRegistrationItems = [];
+            foreach ($this->connectionService->getCredentials() as $credentials) {
+                if ($credentials->isEnabledForServices()) {
+                    $enabledForServices[] = $credentials->getCountry();
+                }
+                if ($credentials->isAllowFirstServicePaymentDelay()) {
+                    $allowFirstServicePaymentDelay[] = $credentials->getCountry();
+                }
+                if ($credentials->isAllowServiceRegistrationItems()) {
+                    $allowServiceRegistrationItems[] = $credentials->getCountry();
+                }
             }
-            if ($credentials->isAllowFirstServicePaymentDelay()) {
-                $allowFirstServicePaymentDelay[] = $credentials->getCountry();
-            }
-            if ($credentials->isAllowServiceRegistrationItems()) {
-                $allowServiceRegistrationItems[] = $credentials->getCountry();
-            }
+            $generalSettings->setEnabledForServices($enabledForServices);
+            $generalSettings->setAllowFirstServicePaymentDelay($allowFirstServicePaymentDelay);
+            $generalSettings->setAllowServiceRegistrationItems($allowServiceRegistrationItems);
         }
-        $generalSettings->setEnabledForServices($enabledForServices);
-        $generalSettings->setAllowFirstServicePaymentDelay($allowFirstServicePaymentDelay);
-        $generalSettings->setAllowServiceRegistrationItems($allowServiceRegistrationItems);
         return $generalSettings;
     }
 

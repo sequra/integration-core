@@ -285,7 +285,8 @@ class BaseTestCase extends TestCase
             },
             GeneralSettingsService::class => static function () {
                 return new GeneralSettingsService(
-                    TestServiceRegister::getService(GeneralSettingsRepositoryInterface::class)
+                    TestServiceRegister::getService(GeneralSettingsRepositoryInterface::class),
+                    TestServiceRegister::getService(ConnectionService::class)
                 );
             },
             TransactionLogService::class => static function () {
