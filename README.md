@@ -653,6 +653,26 @@ class ConfigurationService extends Configuration
 - **Features**: Query building, connection management, transaction handling, migration support
 - **Performance**: Connection pooling, query optimization, caching
 
+##### 6. **Regex Provider Infrastructure**
+- **Purpose**: Provides regular expressions for common validation tasks
+- **Features**: IP address validation, email format validation, URL structure validation
+- **Extensibility**: Custom regex patterns can be added as needed
+
+If you're using the Integration Core UI library you must provide the regular expressions for validating user input in the admin panel when the `SequraFE` object is initialized. The `RegexProvider` service provides a function `toArray()` for this purpose. Example:
+
+```php
+<?php
+use SeQura\Core\Infrastructure\ServiceRegister;
+use SeQura\Core\Infrastructure\Utility\RegexProvider;
+// Get the RegexProvider service
+$regexProvider = ServiceRegister::getService(RegexProvider::CLASS_NAME);
+// Initialize the SequraFE object as an array to be injected in the frontend later as JavaScript object
+$sequraFe = array(
+    // Other config options...
+    'regex' => $regexProvider->toArray()
+);
+```
+
 #### Key Infrastructure Benefits
 
 1. **Reliability**: Comprehensive error handling and retry mechanisms

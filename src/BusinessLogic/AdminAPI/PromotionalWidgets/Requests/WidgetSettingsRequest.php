@@ -71,7 +71,7 @@ class WidgetSettingsRequest extends Request
      */
     protected $widgetOnListingPage;
     /**
-     * @var array<string,string|bool>
+     * @var array<int,array<string, bool|string>>
      */
     protected $customLocations;
 
@@ -90,7 +90,7 @@ class WidgetSettingsRequest extends Request
      * @param string $widgetOnListingPage
      * @param string $altProductPriceSelector
      * @param string $altProductPriceTriggerSelector
-     * @param array<string,string> $customLocations
+     * @param array<int,array<string, bool|string>> $customLocations
      */
     public function __construct(
         bool $displayOnProductPage,

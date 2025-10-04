@@ -19,6 +19,7 @@ use SeQura\Core\Infrastructure\TaskExecution\TaskRunnerWakeupService;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\GuidProvider;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
+use SeQura\Core\Infrastructure\Utility\RegexProvider;
 
 /**
  * Class BootstrapComponent.
@@ -52,6 +53,12 @@ class BootstrapComponent
             TimeProvider::CLASS_NAME,
             function () {
                 return TimeProvider::getInstance();
+            }
+        );
+        ServiceRegister::registerService(
+            RegexProvider::CLASS_NAME,
+            static function () {
+                return new RegexProvider();
             }
         );
         ServiceRegister::registerService(

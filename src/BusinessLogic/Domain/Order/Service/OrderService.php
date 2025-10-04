@@ -439,7 +439,7 @@ class OrderService
      *
      * @throws OrderNotFoundException
      */
-    private function getSeQuraOrder(string $orderReference): SeQuraOrder
+    public function getSeQuraOrder(string $orderReference): SeQuraOrder
     {
         $seQuraOrder = $this->orderRepository->getByOrderReference($orderReference);
         if (!$seQuraOrder) {

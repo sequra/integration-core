@@ -34,6 +34,8 @@ class ItemFactory extends AbstractItemFactory
                 return InvoiceFeeItem::fromArray($itemData);
             case ItemType::TYPE_OTHER_PAYMENT:
                 return OtherPaymentItem::fromArray($itemData);
+            case ItemType::TYPE_REGISTRATION:
+                return RegistrationItem::fromArray($itemData);
             default:
                 throw new InvalidArgumentException('Invalid cart item type ' . $type);
         }
