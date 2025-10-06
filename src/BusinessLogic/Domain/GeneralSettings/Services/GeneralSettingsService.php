@@ -55,27 +55,29 @@ class GeneralSettingsService
             $allowFirstServicePaymentDelay = [];
             $allowServiceRegistrationItems = [];
             $countryConfigurations = $this->countryConfigurationService->getCountryConfiguration();
-            foreach ($this->connectionService->getCredentials() as $credentials) {
-                // The merchantID must be explicity enabled in the configuration.
-                $isAvailableInCountryConfig = false;
-                foreach ($countryConfigurations as $countryConfiguration) {
-                    if ($countryConfiguration->getMerchantId() === $credentials->getMerchantId()) {
-                        $isAvailableInCountryConfig = true;
-                        break;
+            if (!empty($countryConfigurations)) {
+                foreach ($this->connectionService->getCredentials() as $credentials) {
+                    // The merchantID must be explicity enabled in the configuration.
+                    $isAvailableInCountryConfig = false;
+                    foreach ($countryConfigurations as $countryConfiguration) {
+                        if ($countryConfiguration->getMerchantId() === $credentials->getMerchantId()) {
+                            $isAvailableInCountryConfig = true;
+                            break;
+                        }
                     }
-                }
-                if (!$isAvailableInCountryConfig) {
-                    continue;
-                }
+                    if (!$isAvailableInCountryConfig) {
+                        continue;
+                    }
 
-                if ($credentials->isEnabledForServices()) {
-                    $enabledForServices[] = $credentials->getCountry();
-                }
-                if ($credentials->isAllowFirstServicePaymentDelay()) {
-                    $allowFirstServicePaymentDelay[] = $credentials->getCountry();
-                }
-                if ($credentials->isAllowServiceRegistrationItems()) {
-                    $allowServiceRegistrationItems[] = $credentials->getCountry();
+                    if ($credentials->isEnabledForServices()) {
+                        $enabledForServices[] = $credentials->getCountry();
+                    }
+                    if ($credentials->isAllowFirstServicePaymentDelay()) {
+                        $allowFirstServicePaymentDelay[] = $credentials->getCountry();
+                    }
+                    if ($credentials->isAllowServiceRegistrationItems()) {
+                        $allowServiceRegistrationItems[] = $credentials->getCountry();
+                    }
                 }
             }
             $generalSettings->setEnabledForServices($enabledForServices);
