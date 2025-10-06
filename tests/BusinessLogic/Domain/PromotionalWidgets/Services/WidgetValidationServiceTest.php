@@ -2,8 +2,8 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Domain\PromotionalWidgets\Services;
 
-use PHPUnit\Framework\MockObject\MockObject;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
@@ -54,7 +54,8 @@ class WidgetValidationServiceTest extends BaseTestCase
 
         $this->mockGeneralSettingsService = new MockGeneralSettingsService(
             TestServiceRegister::getService(GeneralSettingsRepositoryInterface::class),
-            TestServiceRegister::getService(ConnectionService::class)
+            TestServiceRegister::getService(ConnectionService::class),
+            TestServiceRegister::getService(CountryConfigurationService::class)
         );
 
         $this->mockProductService = new MockProductService();
