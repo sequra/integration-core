@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 
@@ -24,14 +25,21 @@ class GeneralSettingsService
     protected $connectionService;
 
     /**
+     * @var CountryConfigurationService
+     */
+    protected $countryConfigurationService;
+
+    /**
      * @param GeneralSettingsRepositoryInterface $generalSettingsRepository
      */
     public function __construct(
         GeneralSettingsRepositoryInterface $generalSettingsRepository,
-        ConnectionService $connectionService
+        ConnectionService $connectionService,
+        CountryConfigurationService $countryConfigurationService
     ) {
         $this->generalSettingsRepository = $generalSettingsRepository;
         $this->connectionService = $connectionService;
+        $this->countryConfigurationService = $countryConfigurationService;
     }
 
     /**
@@ -46,7 +54,20 @@ class GeneralSettingsService
             $enabledForServices = [];
             $allowFirstServicePaymentDelay = [];
             $allowServiceRegistrationItems = [];
+            $countryConfigurations = $this->countryConfigurationService->getCountryConfiguration();
             foreach ($this->connectionService->getCredentials() as $credentials) {
+                // The merchantID must be explicity enabled in the configuration.
+                $isAvailableInCountryConfig = false;
+                foreach ($countryConfigurations as $countryConfiguration) {
+                    if ($countryConfiguration->getMerchantId() === $credentials->getMerchantId()) {
+                        $isAvailableInCountryConfig = true;
+                        break;
+                    }
+                }
+                if (!$isAvailableInCountryConfig) {
+                    continue;
+                }
+
                 if ($credentials->isEnabledForServices()) {
                     $enabledForServices[] = $credentials->getCountry();
                 }
