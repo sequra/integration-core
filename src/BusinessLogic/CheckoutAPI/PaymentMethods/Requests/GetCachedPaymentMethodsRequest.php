@@ -75,11 +75,11 @@ class GetCachedPaymentMethodsRequest extends DataTransferObject
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getCurrentCountry(): ?string
+    public function getCurrentCountry(): string
     {
-        return $this->currentCountry;
+        return (string) $this->currentCountry;
     }
 
     /**
