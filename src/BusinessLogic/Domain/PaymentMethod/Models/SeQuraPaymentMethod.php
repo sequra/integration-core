@@ -456,7 +456,7 @@ class SeQuraPaymentMethod
     public function encode(): string
     {
         $json = json_encode($this->toArray(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        return base64_encode($json ? $json : '');
+        return base64_encode($json ?? '');
     }
 
     /**
