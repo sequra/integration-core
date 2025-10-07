@@ -4,7 +4,7 @@ namespace SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models;
 
 use DateTime;
 use Exception;
-use ValueError;
+use Throwable;
 
 /**
  * Class SeQuraPaymentMethod
@@ -473,7 +473,8 @@ class SeQuraPaymentMethod
 
         try {
             $data = json_decode($data, true);
-        } catch (ValueError $e) {
+        } catch (Throwable $e) {
+            // If depth is outside the allowed range, a ValueError is thrown as of PHP 8.0.0, while previously, an error of level E_WARNING was raised.
             return null;
         }
         if (! is_array($data)) {
