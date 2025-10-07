@@ -14,6 +14,12 @@ use ValueError;
 class SeQuraPaymentMethod
 {
     /**
+     * Products that are not allowed to show more info.
+     *
+     * @var string[]
+     */
+    private const NOT_ALLOWED_MORE_PRODUCT_INFO = [ 'fp1' ];
+    /**
      * @var string SeQura product code.
      */
     protected $product;
@@ -433,7 +439,7 @@ class SeQuraPaymentMethod
      */
     public function shouldShowMoreInfo(): bool
     {
-        return ! in_array($this->product, array( 'fp1' ), true);
+        return ! in_array($this->product, self::NOT_ALLOWED_MORE_PRODUCT_INFO, true);
     }
 
     /**
