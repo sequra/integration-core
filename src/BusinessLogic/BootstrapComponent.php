@@ -687,8 +687,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             CachedPaymentMethodsController::class,
             static function () {
                 return new CachedPaymentMethodsController(
-                    ServiceRegister::getService(PaymentMethodsService::class),
-                    ServiceRegister::getService(WidgetSettingsService::class)
+                    ServiceRegister::getService(PaymentMethodsService::class)
                 );
             }
         );
