@@ -57,7 +57,7 @@ class GeneralSettingsService
             $countryConfigurations = $this->countryConfigurationService->getCountryConfiguration();
             if (!empty($countryConfigurations)) {
                 foreach ($this->connectionService->getCredentials() as $credentials) {
-                    // The merchantID must be explicity enabled in the configuration.
+                    // The merchantID must be explicitly enabled in the configuration.
                     $isAvailableInCountryConfig = false;
                     foreach ($countryConfigurations as $countryConfiguration) {
                         if ($countryConfiguration->getMerchantId() === $credentials->getMerchantId()) {
