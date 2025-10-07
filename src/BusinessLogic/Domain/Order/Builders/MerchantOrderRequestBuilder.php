@@ -61,7 +61,7 @@ class MerchantOrderRequestBuilder
      */
     public function build(string $countryCode, string $cartId): Merchant
     {
-        $merchantId = $this->getMerchantIdByCountryCode($countryCode);
+        $merchantId = $this->credentialsService->getMerchantIdByCountryCode($countryCode);
         $defaultParameters = $this->getDefaultParameters($merchantId, $cartId);
         $eventsWebhook = new EventsWebhook(
             $this->merchantDataProvider->getEventsWebhookUrl(),
@@ -85,20 +85,6 @@ class MerchantOrderRequestBuilder
             $this->merchantDataProvider->getOptions(),
             $eventsWebhook
         );
-    }
-
-    /**
-     * Get the merchant ID by country code.
-     *
-     * @throws CredentialsNotFoundException
-     */
-    public function getMerchantIdByCountryCode(string $countryCode): string
-    {
-        $credentials = $this->credentialsService->getCredentialsByCountryCode($countryCode);
-        if (!$credentials) {
-            throw new CredentialsNotFoundException();
-        }
-        return $credentials->getMerchantId();
     }
 
     /**

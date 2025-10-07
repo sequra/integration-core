@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\Connection\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
@@ -149,5 +150,19 @@ class CredentialsService
     public function getCredentialsByMerchantId(string $merchantId): ?Credentials
     {
         return $this->credentialsRepository->getCredentialsByMerchantId($merchantId);
+    }
+
+     /**
+     * Get the merchant ID by country code.
+     *
+     * @throws CredentialsNotFoundException
+     */
+    public function getMerchantIdByCountryCode(string $countryCode): string
+    {
+        $credentials = $this->getCredentialsByCountryCode($countryCode);
+        if (!$credentials) {
+            throw new CredentialsNotFoundException();
+        }
+        return $credentials->getMerchantId();
     }
 }
