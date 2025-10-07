@@ -59,11 +59,11 @@ class GetCachedPaymentMethodsRequest extends DataTransferObject
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getShippingCountry(): ?string
+    public function getShippingCountry(): string
     {
-        return $this->shippingCountry;
+        return (string) $this->shippingCountry;
     }
 
     /**
