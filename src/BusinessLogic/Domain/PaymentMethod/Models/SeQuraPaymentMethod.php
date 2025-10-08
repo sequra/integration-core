@@ -426,12 +426,10 @@ class SeQuraPaymentMethod
 
     /**
      * Check if the instance matches a payment method
-     *
-     * @param SeQuraPaymentMethod $data
      */
-    public function match($data): bool
+    public function match(SeQuraPaymentMethod $paymentMethod): bool
     {
-        return $data instanceof SeQuraPaymentMethod && $this->product === $data->product && $this->campaign === $data->campaign;
+        return $this->product === $paymentMethod->product && $this->campaign === $paymentMethod->campaign;
     }
 
     /**
@@ -462,9 +460,9 @@ class SeQuraPaymentMethod
     /**
      * Decode a raw string into an instance. Assumes that the raw string is a base64 encoded JSON string.
      *
-     * @return SeQuraPaymentMethod|null
+     * @throws Exception
      */
-    public static function decode(string $raw)
+    public static function decode(string $raw): ?SeQuraPaymentMethod
     {
         $data = base64_decode($raw);
         if (! $data) {
