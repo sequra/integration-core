@@ -30,8 +30,37 @@ class RegexProvider
      */
     public function getDateOrDurationRegex(bool $includeSlashes = true): string
     {
+        // ISO 8601 date patterns:
+        // 1. yyyy-mm-dd for non-leap years (Feb 1-28)
+        $dateNonLeap = '\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|1\d|2[0-8])';
+        // 2. yyyy-mm-dd for months with 29 or 30 days (excluding February 29)
+        $dateMonth29Or30 = '\d{4}-(?:0[13-9]|1[0-2])-(?:29|30)';
+        // 3. yyyy-mm-dd for months with 31 days
+        $dateMonth31 = '\d{4}-(?:0[13578]|1[012])-(?:31)';
+        // 4. yyyy-mm-dd for leap year February 29
+        $dateLeapFeb29 = '\d{2}(?:[02468][048]|[13579][26])-(?:02)-29';
+        // ISO 8601 duration pattern (e.g., P3Y6M4DT12H30M5S)
+        $duration = 'P(?:\d+Y)?(?:\d+M)?(?:\d+W)?(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?';
+
+        // Combine all patterns with alternation
+        $fullPattern =
+            '/^(' .
+                '(?:' . $dateNonLeap . ')' . '|' .
+                '(?:' . $dateMonth29Or30 . ')' . '|' .
+                '(?:' . $dateMonth31 . ')' . '|' .
+                '(?:' . $dateLeapFeb29 . ')' . '|' .
+                '(' . $duration . ')' .
+            ')$/';
+
+        // Inline documentation:
+        // - $dateNonLeap: yyyy-mm-dd for non-leap years (Feb 1-28)
+        // - $dateMonth29Or30: yyyy-mm-dd for months with 29 or 30 days (excluding Feb 29)
+        // - $dateMonth31: yyyy-mm-dd for months with 31 days
+        // - $dateLeapFeb29: yyyy-mm-dd for leap year Feb 29
+        // - $duration: ISO 8601 duration (PnYnMnDTnHnMnS)
+
         return $this->maybeStripSlashes(
-            '/^((?:\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|1\d|2[0-8]))|(?:\d{4}-(?:0[13-9]|1[0-2])-(?:29|30))|(?:\d{4}-(?:0[13578]|1[012])-(?:31))|(?:\d{2}(?:[02468][048]|[13579][26])-(?:02)-29)|(P(?:\d+Y)?(?:\d+M)?(?:\d+W)?(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?))$/',
+            $fullPattern,
             $includeSlashes
         );
     }
