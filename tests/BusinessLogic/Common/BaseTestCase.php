@@ -398,8 +398,7 @@ class BaseTestCase extends TestCase
             },
             CachedPaymentMethodsController::class => function () {
                 return new CachedPaymentMethodsController(
-                    TestServiceRegister::getService(PaymentMethodsService::class),
-                    TestServiceRegister::getService(WidgetSettingsService::class)
+                    TestServiceRegister::getService(PaymentMethodsService::class)
                 );
             },
             PromotionalWidgetsCheckoutController::class => function () {
