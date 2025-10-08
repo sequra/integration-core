@@ -19,8 +19,53 @@ class RegexProvider
      */
     public function getIpRegex(bool $includeSlashes = true): string
     {
+        // IPv4 pattern: xxx.xxx.xxx.xxx where xxx is 0-255
+        $ipv4 = '(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)';
+
+        // IPv6 patterns: supporting full, compressed, and embedded IPv4 formats
+        $ipv6Full = '([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}'; // full format
+        $ipv6EndCompressed = '([0-9a-fA-F]{1,4}:){1,7}:'; // :: at end
+        $ipv6LastGroupCompressed = '([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}'; // :: in last group
+        $ipv6Compressed1 = '([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}';
+        $ipv6Compressed2 = '([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}';
+        $ipv6Compressed3 = '([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}';
+        $ipv6Compressed4 = '([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}';
+        $ipv6Compressed5 = '[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})';
+        $ipv6StartCompressed = ':((:[0-9a-fA-F]{1,4}){1,7}|:)'; // :: at start or just ::
+        $ipv6MiddleCompressed = '([0-9a-fA-F]{1,4}:){1,7}:([0-9a-fA-F]{1,4}:){0,6}'; // :: in middle
+        $ipv6EmbeddedIpv4 = '([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)'; // embedded IPv4
+
+        // Combine all patterns with alternation
+        $fullPattern =
+            '/^(' .
+                '(' . $ipv4 . ')' . '|' .
+                '(' .
+                    $ipv6Full . '|' .
+                    $ipv6EndCompressed . '|' .
+                    $ipv6LastGroupCompressed . '|' .
+                    $ipv6Compressed1 . '|' .
+                    $ipv6Compressed2 . '|' .
+                    $ipv6Compressed3 . '|' .
+                    $ipv6Compressed4 . '|' .
+                    $ipv6Compressed5 . '|' .
+                    $ipv6StartCompressed . '|' .
+                    $ipv6MiddleCompressed . '|' .
+                    $ipv6EmbeddedIpv4 .
+                ')' .
+            ')$/';
+
+        // Inline documentation:
+        // - $ipv4: Standard IPv4 format (xxx.xxx.xxx.xxx)
+        // - $ipv6Full: Full IPv6 format (8 groups of 4 hex digits)
+        // - $ipv6EndCompressed: IPv6 with :: at the end
+        // - $ipv6LastGroupCompressed: IPv6 with :: in the last group
+        // - $ipv6Compressed1-5: Various IPv6 compressed formats
+        // - $ipv6StartCompressed: IPv6 with :: at start or just ::
+        // - $ipv6MiddleCompressed: IPv6 with :: in the middle
+        // - $ipv6EmbeddedIpv4: IPv6 with embedded IPv4 address
+
         return $this->maybeStripSlashes(
-            '/^(((25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?))|([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}))$/',
+            $fullPattern,
             $includeSlashes
         );
     }
