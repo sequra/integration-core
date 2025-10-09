@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models;
 
 use DateTime;
 use Exception;
+use Throwable;
 
 /**
  * Class SeQuraPaymentMethod
@@ -12,6 +13,12 @@ use Exception;
  */
 class SeQuraPaymentMethod
 {
+    /**
+     * Products that are not allowed to show more info.
+     *
+     * @var string[]
+     */
+    private const NOT_ALLOWED_MORE_PRODUCT_INFO = [ 'fp1' ];
     /**
      * @var string SeQura product code.
      */
@@ -407,5 +414,70 @@ class SeQuraPaymentMethod
             $data['min_amount'] ?? null,
             $data['max_amount'] ?? null
         );
+    }
+
+    /**
+     * Check if the instance contains valid data.
+     */
+    public function isValid(): bool
+    {
+        return ! empty($this->product);
+    }
+
+    /**
+     * Check if the instance matches a payment method
+     */
+    public function match(SeQuraPaymentMethod $paymentMethod): bool
+    {
+        return $this->product === $paymentMethod->product && $this->campaign === $paymentMethod->campaign;
+    }
+
+    /**
+     * Check if the payment method should show more info
+     */
+    public function shouldShowMoreInfo(): bool
+    {
+        return ! in_array($this->product, self::NOT_ALLOWED_MORE_PRODUCT_INFO, true);
+    }
+
+    /**
+     * Check if the payment method should show cost description
+     */
+    public function shouldShowCostDescription(): bool
+    {
+        return $this->costDescription && strtolower($this->costDescription) !== strtolower($this->claim);
+    }
+
+    /**
+     * Encode the instance into a raw string. Returns a base64 encoded JSON string.
+     */
+    public function encode(): string
+    {
+        $json = json_encode($this->toArray(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return base64_encode(false === $json ? '' : $json);
+    }
+
+    /**
+     * Decode a raw string into an instance. Assumes that the raw string is a base64 encoded JSON string.
+     *
+     * @throws Exception
+     */
+    public static function decode(string $raw): ?SeQuraPaymentMethod
+    {
+        $data = base64_decode($raw);
+        if (! $data) {
+            return null;
+        }
+
+        try {
+            $data = json_decode($data, true);
+        } catch (Throwable $e) {
+            // If depth is outside the allowed range, a ValueError is thrown as of PHP 8.0.0, while previously, an error of level E_WARNING was raised.
+            return null;
+        }
+        if (! is_array($data)) {
+            return null;
+        }
+        return self::fromArray($data);
     }
 }

@@ -375,7 +375,9 @@ class BootstrapComponent extends BaseBootstrapComponent
             GeneralSettingsService::class,
             static function () {
                 return new GeneralSettingsService(
-                    ServiceRegister::getService(GeneralSettingsRepositoryInterface::class)
+                    ServiceRegister::getService(GeneralSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(ConnectionService::class),
+                    ServiceRegister::getService(CountryConfigurationService::class)
                 );
             }
         );
@@ -684,7 +686,9 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             CachedPaymentMethodsController::class,
             static function () {
-                return new CachedPaymentMethodsController(ServiceRegister::getService(PaymentMethodsService::class));
+                return new CachedPaymentMethodsController(
+                    ServiceRegister::getService(PaymentMethodsService::class)
+                );
             }
         );
 

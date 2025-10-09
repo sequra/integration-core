@@ -156,6 +156,7 @@ class BaseTestCase extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $sellingCountriesService = $this->createMock(SellingCountriesServiceInterface::class);
 
         TestServiceRegister::getInstance();
         new TestServiceRegister([
@@ -285,7 +286,9 @@ class BaseTestCase extends TestCase
             },
             GeneralSettingsService::class => static function () {
                 return new GeneralSettingsService(
-                    TestServiceRegister::getService(GeneralSettingsRepositoryInterface::class)
+                    TestServiceRegister::getService(GeneralSettingsRepositoryInterface::class),
+                    TestServiceRegister::getService(ConnectionService::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class)
                 );
             },
             TransactionLogService::class => static function () {
@@ -300,6 +303,9 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(SellingCountriesServiceInterface::class),
                     TestServiceRegister::getService(ConnectionService::class)
                 );
+            },
+            SellingCountriesServiceInterface::class => static function () use ($sellingCountriesService) {
+                return $sellingCountriesService;
             },
             ShopOrderStatusesService::class => static function () {
                 return new ShopOrderStatusesService(

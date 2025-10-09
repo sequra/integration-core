@@ -21,7 +21,7 @@ class CachedPaymentMethodsController
     private $paymentMethodsService;
 
     /**
-     * @param PaymentMethodsService $paymentMethodsService
+     * Constructor.
      */
     public function __construct(PaymentMethodsService $paymentMethodsService)
     {

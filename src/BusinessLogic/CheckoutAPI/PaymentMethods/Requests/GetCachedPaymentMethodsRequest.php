@@ -17,11 +17,29 @@ class GetCachedPaymentMethodsRequest extends DataTransferObject
     protected $merchantId;
 
     /**
-     * @param string $merchantId
+     * Optional shipping country code
+     *
+     * @var string|null
      */
-    public function __construct(string $merchantId)
+    protected $shippingCountry;
+
+    /**
+     * Optional current country code
+     *
+     * @var string|null
+     */
+    protected $currentCountry;
+
+    /**
+     * @param string $merchantId
+     * @param string|null $shippingCountry
+     * @param string|null $currentCountry
+     */
+    public function __construct(string $merchantId, ?string $shippingCountry = null, ?string $currentCountry = null)
     {
         $this->merchantId = $merchantId;
+        $this->shippingCountry = $shippingCountry;
+        $this->currentCountry = $currentCountry;
     }
 
     /**
@@ -41,6 +59,38 @@ class GetCachedPaymentMethodsRequest extends DataTransferObject
     }
 
     /**
+     * @return string
+     */
+    public function getShippingCountry(): string
+    {
+        return (string) $this->shippingCountry;
+    }
+
+    /**
+     * @param string|null $shippingCountry
+     */
+    public function setShippingCountry(?string $shippingCountry): void
+    {
+        $this->shippingCountry = $shippingCountry;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrentCountry(): string
+    {
+        return (string) $this->currentCountry;
+    }
+
+    /**
+     * @param string|null $currentCountry
+     */
+    public function setCurrentCountry(?string $currentCountry): void
+    {
+        $this->currentCountry = $currentCountry;
+    }
+
+    /**
      * Create a GetAvailablePaymentMethodsRequest instance from an array.
      *
      * @param mixed[] $data
@@ -50,7 +100,9 @@ class GetCachedPaymentMethodsRequest extends DataTransferObject
     public static function fromArray(array $data): self
     {
         return new self(
-            self::getDataValue($data, 'merchant_id')
+            self::getDataValue($data, 'merchant_id'),
+            self::getDataValue($data, 'shipping_country', null),
+            self::getDataValue($data, 'current_country', null)
         );
     }
 
@@ -59,8 +111,10 @@ class GetCachedPaymentMethodsRequest extends DataTransferObject
      */
     public function toArray(): array
     {
-        $data['merchant_id'] = $this->merchantId;
-
-        return $data;
+        return [
+            'merchant_id' => $this->merchantId,
+            'shipping_country' => $this->shippingCountry,
+            'current_country' => $this->currentCountry
+        ];
     }
 }

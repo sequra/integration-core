@@ -31,6 +31,11 @@ class Options extends OrderRequestDTO
     protected $immutableCustomerData;
 
     /**
+     * @var string|null The desired first charge date.
+     */
+    protected $desiredFirstChargeOn;
+
+    /**
      * @param bool|null $hasJquery
      * @param bool|null $usesShippedCart
      * @param bool|null $addressesMayBeMissing
@@ -40,12 +45,14 @@ class Options extends OrderRequestDTO
         ?bool $hasJquery = null,
         ?bool $usesShippedCart = null,
         ?bool $addressesMayBeMissing = null,
-        ?bool $immutableCustomerData = null
+        ?bool $immutableCustomerData = null,
+        ?string $desiredFirstChargeOn = null
     ) {
         $this->hasJquery = $hasJquery;
         $this->usesShippedCart = $usesShippedCart;
         $this->addressesMayBeMissing = $addressesMayBeMissing;
         $this->immutableCustomerData = $immutableCustomerData;
+        $this->desiredFirstChargeOn = $desiredFirstChargeOn;
     }
 
     /**
@@ -57,11 +64,13 @@ class Options extends OrderRequestDTO
      */
     public static function fromArray(array $data): Options
     {
+        $desiredFirstChargeOn = self::getDataValue($data, 'desired_first_charge_on', null);
         return new self(
             self::getDataValue($data, 'has_jquery', false),
             self::getDataValue($data, 'uses_shipped_cart', false),
             self::getDataValue($data, 'addresses_may_be_missing', false),
-            self::getDataValue($data, 'immutable_customer_data', false)
+            self::getDataValue($data, 'immutable_customer_data', false),
+            empty($desiredFirstChargeOn) ? null : $desiredFirstChargeOn
         );
     }
 
@@ -95,6 +104,14 @@ class Options extends OrderRequestDTO
     public function getImmutableCustomerData(): ?bool
     {
         return $this->immutableCustomerData;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDesiredFirstChargeOn(): ?string
+    {
+        return $this->desiredFirstChargeOn;
     }
 
     /**

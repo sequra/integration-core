@@ -38,24 +38,34 @@ class GeneralSettingsRequest extends Request
     protected $excludedProducts;
 
     /**
+     * ISO 8601 date or duration string representing the default end date for services.
+     *
+     * @var string|null
+     */
+    protected $defaultServicesEndDate;
+
+    /**
      * @param bool $sendOrderReportsPeriodicallyToSeQura
      * @param bool|null $showSeQuraCheckoutAsHostedPage
      * @param string[]|null $allowedIPAddresses
      * @param string[]|null $excludedProducts
      * @param string[]|null $excludedCategories
+     * @param string|null $defaultServicesEndDate
      */
     public function __construct(
         bool $sendOrderReportsPeriodicallyToSeQura,
         ?bool $showSeQuraCheckoutAsHostedPage,
         ?array $allowedIPAddresses,
         ?array $excludedProducts,
-        ?array $excludedCategories
+        ?array $excludedCategories,
+        ?string $defaultServicesEndDate = null
     ) {
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
         $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
         $this->allowedIPAddresses = $allowedIPAddresses;
         $this->excludedProducts = $excludedProducts;
         $this->excludedCategories = $excludedCategories;
+        $this->defaultServicesEndDate = $defaultServicesEndDate;
     }
 
     /**
@@ -70,7 +80,11 @@ class GeneralSettingsRequest extends Request
             $this->showSeQuraCheckoutAsHostedPage,
             $this->allowedIPAddresses,
             $this->excludedProducts,
-            $this->excludedCategories
+            $this->excludedCategories,
+            [],
+            [],
+            [],
+            $this->defaultServicesEndDate
         );
     }
 }

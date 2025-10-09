@@ -32,7 +32,7 @@ class Credentials extends DataTransferObject
     private $assetsKey;
 
     /**
-     * @var array<string> $payload
+     * @var array<string, mixed> $payload
      */
     private $payload;
 
@@ -46,7 +46,7 @@ class Credentials extends DataTransferObject
      * @param string $country
      * @param string $currency
      * @param string $assetsKey
-     * @param array<string> $payload
+     * @param array<string, mixed> $payload
      * @param string $deployment
      */
     public function __construct(
@@ -149,5 +149,40 @@ class Credentials extends DataTransferObject
             $data['payload'] ?? [],
             $data['deployment'] ?? ''
         );
+    }
+
+    /**
+     * Are services enabled in the contract options.
+     */
+    public function isEnabledForServices(): bool
+    {
+        return $this->hasContractOption('services');
+    }
+
+    /**
+     * Is first service payment delay allowed in the contract options.
+     */
+    public function isAllowFirstServicePaymentDelay(): bool
+    {
+        return $this->hasContractOption('allow_first_instalment_delay');
+    }
+
+    /**
+     * Are registration items allowed in the contract options.
+     */
+    public function isAllowServiceRegistrationItems(): bool
+    {
+        return $this->hasContractOption('with_registration');
+    }
+
+    /**
+     * Check if a specific contract option is present.
+     */
+    private function hasContractOption(string $option): bool
+    {
+        if (!isset($this->payload['contract_options']) || !is_array($this->payload['contract_options'])) {
+            return false;
+        }
+        return in_array($option, $this->payload['contract_options'], true);
     }
 }
