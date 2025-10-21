@@ -18,8 +18,7 @@
   "autoload-dev": {
     "psr-4": {
       "SeQura\\Core\\Tests\\Infrastructure\\": "tests/Infrastructure",
-      "SeQura\\Core\\Tests\\BusinessLogic\\": "tests/BusinessLogic",
-      "SeQura\\Core\\Console\\": "console"
+      "SeQura\\Core\\Tests\\BusinessLogic\\": "tests/BusinessLogic"
     }
   },
   "require-dev": {
