@@ -77,7 +77,7 @@ class PromotionalWidgetsController
      *
      * @return Response
      *
-     * @throws Throwable
+     * @throws Exception
      */
     public function setWidgetSettings(WidgetSettingsRequest $settingsRequest): Response
     {
@@ -112,12 +112,10 @@ class PromotionalWidgetsController
      * @param string $json
      *
      * @return bool
-     *
-     * @throws Throwable
      */
     private function isValidJson(string $json): bool
     {
-        json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        json_decode($json, true);
 
         return json_last_error() === JSON_ERROR_NONE;
     }
