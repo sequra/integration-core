@@ -60,6 +60,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetDefaultSettingsInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
@@ -642,7 +643,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             PromotionalWidgetsController::class,
             static function () {
                 return new PromotionalWidgetsController(
-                    ServiceRegister::getService(WidgetSettingsService::class)
+                    ServiceRegister::getService(WidgetSettingsService::class),
+                    ServiceRegister::getService(WidgetDefaultSettingsInterface::class)
                 );
             }
         );

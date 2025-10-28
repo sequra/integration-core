@@ -3,11 +3,16 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets;
 
 use Exception;
+use JsonException;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Requests\WidgetSettingsRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\SuccessfulWidgetResponse;
+use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\UnsuccessfulJsonResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\WidgetSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\WidgetConfiguratorResponse;
+use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetDefaultSettingsInterface;
+use Throwable;
 
 /**
  * Class PromotionalWidgetsController
@@ -22,12 +27,20 @@ class PromotionalWidgetsController
     protected $widgetSettingsService;
 
     /**
+     * @var WidgetDefaultSettingsInterface
+     */
+    protected $widgetDefaultSettingService;
+
+    /**
      * @param WidgetSettingsService $widgetSettingsService
+     * @param WidgetDefaultSettingsInterface $widgetDefaultSettingService
      */
     public function __construct(
-        WidgetSettingsService $widgetSettingsService
+        WidgetSettingsService $widgetSettingsService,
+        WidgetDefaultSettingsInterface $widgetDefaultSettingService
     ) {
         $this->widgetSettingsService = $widgetSettingsService;
+        $this->widgetDefaultSettingService = $widgetDefaultSettingService;
     }
 
     /**
@@ -49,7 +62,12 @@ class PromotionalWidgetsController
      */
     public function getWidgetSettings(): WidgetSettingsResponse
     {
-        return new WidgetSettingsResponse($this->widgetSettingsService->getWidgetSettings());
+        $widgetSettings = $this->widgetSettingsService->getWidgetSettings();
+
+        return new WidgetSettingsResponse(
+            $widgetSettings,
+            !$widgetSettings ? $this->widgetDefaultSettingService->initializeDefaultWidgetSettings() : null
+        );
     }
 
     /**
@@ -57,14 +75,50 @@ class PromotionalWidgetsController
      *
      * @param WidgetSettingsRequest $settingsRequest
      *
-     * @return SuccessfulWidgetResponse
+     * @return Response
      *
-     * @throws Exception
+     * @throws Throwable
      */
-    public function setWidgetSettings(WidgetSettingsRequest $settingsRequest): SuccessfulWidgetResponse
+    public function setWidgetSettings(WidgetSettingsRequest $settingsRequest): Response
     {
-        $this->widgetSettingsService->setWidgetSettings($settingsRequest->transformToDomainModel());
+        $widgetSettingsModel = $settingsRequest->transformToDomainModel();
+        if (
+            $widgetSettingsModel->getWidgetConfig() === '' ||
+            !$this->isValidJson($widgetSettingsModel->getWidgetConfig())
+        ) {
+            return new UnsuccessfulJsonResponse();
+        }
+
+        $widgetSettingsForProduct = $widgetSettingsModel->getWidgetSettingsForProduct();
+        $productsCustomWidgetSettings = $widgetSettingsForProduct ?
+            $widgetSettingsForProduct->getCustomWidgetsSettings() : [];
+        foreach ($productsCustomWidgetSettings as $productCustomWidgetSetting) {
+            if (
+                $productCustomWidgetSetting->getCustomWidgetStyle() !== '' &&
+                !$this->isValidJson($productCustomWidgetSetting->getCustomWidgetStyle())
+            ) {
+                return new UnsuccessfulJsonResponse();
+            }
+        }
+
+        $this->widgetSettingsService->setWidgetSettings($widgetSettingsModel);
 
         return new SuccessfulWidgetResponse();
+    }
+
+    /**
+     * Verifies if string is valid JSON
+     *
+     * @param string $json
+     *
+     * @return bool
+     *
+     * @throws Throwable
+     */
+    private function isValidJson(string $json): bool
+    {
+        json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+
+        return json_last_error() === JSON_ERROR_NONE;
     }
 }

@@ -470,7 +470,7 @@ class SeQuraPaymentMethod
         }
 
         try {
-            $data = json_decode($data, true);
+            $data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
         } catch (Throwable $e) {
             // If depth is outside the allowed range, a ValueError is thrown as of PHP 8.0.0, while previously, an error of level E_WARNING was raised.
             return null;
