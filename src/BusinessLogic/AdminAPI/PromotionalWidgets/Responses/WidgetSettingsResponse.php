@@ -3,10 +3,11 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\DefaultWidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 
 /**
- * Class WidgetConfigurationResponse
+ * Class WidgetSettingsResponse
  *
  * @package SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses
  */
@@ -18,11 +19,18 @@ class WidgetSettingsResponse extends Response
     protected $widgetSettings;
 
     /**
-     * @param WidgetSettings|null $widgetSettings
+     * @var DefaultWidgetSettings|null
      */
-    public function __construct(?WidgetSettings $widgetSettings)
+    protected $defaultWidgetSettings;
+
+    /**
+     * @param WidgetSettings|null $widgetSettings
+     * @param DefaultWidgetSettings|null $defaultWidgetSettings
+     */
+    public function __construct(?WidgetSettings $widgetSettings, ?DefaultWidgetSettings $defaultWidgetSettings = null)
     {
         $this->widgetSettings = $widgetSettings;
+        $this->defaultWidgetSettings = $defaultWidgetSettings;
     }
 
     /**
@@ -30,15 +38,15 @@ class WidgetSettingsResponse extends Response
      */
     public function toArray(): array
     {
-        if (!$this->widgetSettings) {
-            return [];
+        if (!$this->widgetSettings && $this->defaultWidgetSettings) {
+            return $this->defaultWidgetSettings->toArray();
         }
 
         $widgetSettingsArray = [
             'displayWidgetOnProductPage' => $this->widgetSettings->isDisplayOnProductPage(),
             'showInstallmentAmountInProductListing' => $this->widgetSettings->isShowInstallmentsInProductListing(),
             'showInstallmentAmountInCartPage' => $this->widgetSettings->isShowInstallmentsInCartPage(),
-            'widgetConfiguration' => $this->widgetSettings->getWidgetConfig()
+            'widgetStyles' => $this->widgetSettings->getWidgetConfig()
         ];
 
         $widgetSettingsForProduct = $this->widgetSettings->getWidgetSettingsForProduct();
