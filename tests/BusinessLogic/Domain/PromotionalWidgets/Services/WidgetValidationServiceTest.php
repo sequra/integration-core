@@ -190,7 +190,7 @@ class WidgetValidationServiceTest extends BaseTestCase
     }
 
     /**
-     * @dataProvider dataProvider_isProductSupportedForVirtualProduct
+     * @dataProvider dataProviderIsProductSupportedForVirtualProduct
      * @return void
      */
     public function testIsProductSupportedForVirtualProduct(?GeneralSettings $generalSettings, bool $expected): void
@@ -207,7 +207,7 @@ class WidgetValidationServiceTest extends BaseTestCase
         self::assertEquals($expected, $result);
     }
 
-    public function dataProvider_isProductSupportedForVirtualProduct(): array
+    public function dataProviderIsProductSupportedForVirtualProduct(): array
     {
         return [
             // No general settings
