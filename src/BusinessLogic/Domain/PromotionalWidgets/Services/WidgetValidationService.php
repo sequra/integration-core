@@ -90,14 +90,14 @@ class WidgetValidationService
             return true;
         }
 
-        if ($this->productService->isProductVirtual($productId)) {
-            return false;
-        }
-
         $generalSettings = $this->getGeneralSettings();
 
         if (!$generalSettings) {
             return true;
+        }
+
+        if (empty($generalSettings->getEnabledForServices()) && $this->productService->isProductVirtual($productId)) {
+            return false;
         }
 
         $productSku = $this->productService->getProductsSkuByProductId($productId);
