@@ -13,7 +13,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsSer
 class MockGeneralSettingsService extends GeneralSettingsService
 {
     /**
-     * @var GeneralSettings
+     * @var ?GeneralSettings
      */
     private $generalSettings = null;
 
@@ -26,11 +26,9 @@ class MockGeneralSettingsService extends GeneralSettingsService
     }
 
     /**
-     * @param GeneralSettings $generalSettings
-     *
      * @return void
      */
-    public function saveGeneralSettings(GeneralSettings $generalSettings): void
+    public function saveGeneralSettings(?GeneralSettings $generalSettings): void
     {
         $this->generalSettings = $generalSettings;
     }
