@@ -190,18 +190,56 @@ class WidgetValidationServiceTest extends BaseTestCase
     }
 
     /**
+     * @dataProvider dataProviderIsProductSupportedForVirtualProduct
      * @return void
      */
-    public function testIsProductSupportedForVirtualProduct(): void
+    public function testIsProductSupportedForVirtualProduct(?GeneralSettings $generalSettings, bool $expected): void
     {
         //arrange
+        $this->mockGeneralSettingsService->saveGeneralSettings($generalSettings);
+        $this->mockProductService->setMockProductSku('sku1');
         $this->mockProductService->setMockProductVirtual(true);
 
         // act
         $result = $this->widgetValidationService->isProductSupported('sku1');
 
         // assert
-        self::assertFalse($result);
+        self::assertEquals($expected, $result);
+    }
+
+    public function dataProviderIsProductSupportedForVirtualProduct(): array
+    {
+        return [
+            // No general settings
+            [
+                null,
+                true
+            ],
+            // No service selling enabled
+            [
+                new GeneralSettings(
+                    true,
+                    null,
+                    [],
+                    [],
+                    []
+                ),
+                false
+            ],
+            // Service selling enabled
+            [
+                new GeneralSettings(
+                    true,
+                    null,
+                    [],
+                    [],
+                    [],
+                    ['ES']
+                ),
+                true
+            ],
+
+        ];
     }
 
     /**
