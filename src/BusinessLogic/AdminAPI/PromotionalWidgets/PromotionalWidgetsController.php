@@ -3,7 +3,6 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets;
 
 use Exception;
-use JsonException;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Requests\WidgetSettingsRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\SuccessfulWidgetResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\UnsuccessfulJsonResponse;
@@ -12,7 +11,6 @@ use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\WidgetConfig
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetDefaultSettingsInterface;
-use Throwable;
 
 /**
  * Class PromotionalWidgetsController
@@ -66,7 +64,8 @@ class PromotionalWidgetsController
 
         return new WidgetSettingsResponse(
             $widgetSettings,
-            !$widgetSettings ? $this->widgetDefaultSettingService->initializeDefaultWidgetSettings() : null
+            !$widgetSettings ?
+                $this->widgetDefaultSettingService->initializeDefaultWidgetSettings() : null
         );
     }
 
@@ -83,7 +82,6 @@ class PromotionalWidgetsController
     {
         $widgetSettingsModel = $settingsRequest->transformToDomainModel();
         if (
-            $widgetSettingsModel->getWidgetConfig() === '' ||
             !$this->isValidJson($widgetSettingsModel->getWidgetConfig())
         ) {
             return new UnsuccessfulJsonResponse();
@@ -94,7 +92,7 @@ class PromotionalWidgetsController
             $widgetSettingsForProduct->getCustomWidgetsSettings() : [];
         foreach ($productsCustomWidgetSettings as $productCustomWidgetSetting) {
             if (
-                $productCustomWidgetSetting->getCustomWidgetStyle() !== '' &&
+                !empty($productCustomWidgetSetting->getCustomWidgetStyle()) &&
                 !$this->isValidJson($productCustomWidgetSetting->getCustomWidgetStyle())
             ) {
                 return new UnsuccessfulJsonResponse();
@@ -115,6 +113,10 @@ class PromotionalWidgetsController
      */
     private function isValidJson(string $json): bool
     {
+        if (empty($json)) {
+            return false;
+        }
+
         json_decode($json, true);
 
         return json_last_error() === JSON_ERROR_NONE;
