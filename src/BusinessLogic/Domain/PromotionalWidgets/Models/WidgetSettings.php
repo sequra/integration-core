@@ -2,12 +2,14 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models;
 
+use SeQura\Core\Infrastructure\Data\DataTransferObject;
+
 /**
  * Class WidgetSettings
  *
  * @package SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models
  */
-class WidgetSettings
+class WidgetSettings extends DataTransferObject
 {
     /**
      * @var bool
@@ -183,5 +185,83 @@ class WidgetSettings
     public function setWidgetSettingsForListing(?WidgetSelectorSettings $widgetSettingsForListing): void
     {
         $this->widgetSettingsForListing = $widgetSettingsForListing;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toArray(): array
+    {
+        $widgetSettingsArray = [
+            'displayWidgetOnProductPage' => $this->isDisplayOnProductPage(),
+            'showInstallmentAmountInProductListing' => $this->isShowInstallmentsInProductListing(),
+            'showInstallmentAmountInCartPage' => $this->isShowInstallmentsInCartPage(),
+            'widgetStyles' => $this->getWidgetConfig()
+        ];
+
+        $widgetSettingsForProduct = $this->getWidgetSettingsForProduct();
+        $widgetSettingsForCart = $this->getWidgetSettingsForCart();
+        $widgetSettingsForListing = $this->getWidgetSettingsForListing();
+
+        if ($widgetSettingsForProduct) {
+            $widgetSettingsArray['productPriceSelector'] = $widgetSettingsForProduct->getPriceSelector();
+            $widgetSettingsArray['defaultProductLocationSelector'] = $widgetSettingsForProduct->getLocationSelector();
+            $widgetSettingsArray['altProductPriceSelector'] = $widgetSettingsForProduct->getAltPriceSelector();
+            $widgetSettingsArray['altProductPriceTriggerSelector'] = $widgetSettingsForProduct->getAltPriceTriggerSelector();
+            $widgetSettingsArray['customLocations'] = [];
+
+            foreach ($widgetSettingsForProduct->getCustomWidgetsSettings() as $customWidgetSettings) {
+                $widgetSettingsArray['customLocations'][] = [
+                    'product' => $customWidgetSettings->getProduct(),
+                    'selForTarget' => $customWidgetSettings->getCustomLocationSelector(),
+                    'displayWidget' => $customWidgetSettings->isDisplayWidget(),
+                    'widgetStyles' => $customWidgetSettings->getCustomWidgetStyle()
+                ];
+            }
+        }
+
+        if ($widgetSettingsForCart) {
+            $widgetSettingsArray['cartPriceSelector'] = $widgetSettingsForCart->getPriceSelector();
+            $widgetSettingsArray['cartLocationSelector'] = $widgetSettingsForCart->getLocationSelector();
+            $widgetSettingsArray['widgetOnCartPage'] = $widgetSettingsForCart->getWidgetProduct();
+        }
+
+        if ($widgetSettingsForListing) {
+            $widgetSettingsArray['listingPriceSelector'] = $widgetSettingsForListing->getPriceSelector();
+            $widgetSettingsArray['listingLocationSelector'] = $widgetSettingsForListing->getLocationSelector();
+            $widgetSettingsArray['widgetOnListingPage'] = $widgetSettingsForListing->getWidgetProduct();
+        }
+
+        return $widgetSettingsArray;
+    }
+
+    /**
+     * Factory method to create default WidgetSettings instance.
+     */
+    public static function createDefault(
+        string $productPriceSelector,
+        string $defaultProductLocationSelector,
+        string $cartPriceSelector,
+        string $cartLocationSelector,
+        string $listingPriceSelector,
+        string $listingLocationSelector,
+        string $altProductPriceSelector = '',
+        string $altProductPriceTriggerSelector = ''
+    ): WidgetSettings {
+        return new WidgetSettings(
+            false,
+            false,
+            false,
+            null,
+            new WidgetSelectorSettings(
+                $productPriceSelector,
+                $defaultProductLocationSelector,
+                '',
+                $altProductPriceSelector,
+                $altProductPriceTriggerSelector
+            ),
+            new WidgetSelectorSettings($cartPriceSelector, $cartLocationSelector),
+            new WidgetSelectorSettings($listingPriceSelector, $listingLocationSelector)
+        );
     }
 }

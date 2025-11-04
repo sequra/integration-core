@@ -59,7 +59,6 @@ use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceI
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
-use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetDefaultSettingsInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreIdProvider;
@@ -133,7 +132,6 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetDefaultSettings;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
 use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestShopLogger;
@@ -448,8 +446,7 @@ class BaseTestCase extends TestCase
             },
             PromotionalWidgetsController::class => function () {
                 return new PromotionalWidgetsController(
-                    TestServiceRegister::getService(WidgetSettingsService::class),
-                    TestServiceRegister::getService(WidgetDefaultSettingsInterface::class)
+                    TestServiceRegister::getService(WidgetSettingsService::class)
                 );
             },
             AbstractItemFactory::class => function () {
@@ -460,9 +457,6 @@ class BaseTestCase extends TestCase
             },
             MiniWidgetMessagesProviderInterface::class => function () {
                 return new MockMiniWidgetMessagesProvider();
-            },
-            WidgetDefaultSettingsInterface::class => function () {
-                return new MockWidgetDefaultSettings();
             }
         ]);
 

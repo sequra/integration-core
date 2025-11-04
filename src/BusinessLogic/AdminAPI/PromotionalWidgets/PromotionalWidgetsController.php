@@ -9,8 +9,8 @@ use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\Unsuccessful
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\WidgetSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\WidgetConfiguratorResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
-use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetDefaultSettingsInterface;
 
 /**
  * Class PromotionalWidgetsController
@@ -25,20 +25,12 @@ class PromotionalWidgetsController
     protected $widgetSettingsService;
 
     /**
-     * @var WidgetDefaultSettingsInterface
-     */
-    protected $widgetDefaultSettingService;
-
-    /**
      * @param WidgetSettingsService $widgetSettingsService
-     * @param WidgetDefaultSettingsInterface $widgetDefaultSettingService
      */
     public function __construct(
-        WidgetSettingsService $widgetSettingsService,
-        WidgetDefaultSettingsInterface $widgetDefaultSettingService
+        WidgetSettingsService $widgetSettingsService
     ) {
         $this->widgetSettingsService = $widgetSettingsService;
-        $this->widgetDefaultSettingService = $widgetDefaultSettingService;
     }
 
     /**
@@ -54,19 +46,11 @@ class PromotionalWidgetsController
     /**
      * Gets active widget settings.
      *
-     * @return WidgetSettingsResponse
-     *
      * @throws Exception
      */
-    public function getWidgetSettings(): WidgetSettingsResponse
+    public function getWidgetSettings(?WidgetSettings $default = null): WidgetSettingsResponse
     {
-        $widgetSettings = $this->widgetSettingsService->getWidgetSettings();
-
-        return new WidgetSettingsResponse(
-            $widgetSettings,
-            !$widgetSettings ?
-                $this->widgetDefaultSettingService->initializeDefaultWidgetSettings() : null
-        );
+        return new WidgetSettingsResponse($this->widgetSettingsService->getWidgetSettings() ?? $default);
     }
 
     /**
