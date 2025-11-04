@@ -236,7 +236,18 @@ class WidgetSettings extends DataTransferObject
     }
 
     /**
-     * Factory method to create default WidgetSettings instance.
+     * Factory method to create a default WidgetSettings instance.
+     *
+     * @param string $productPriceSelector Selector for the product price element.
+     * @param string $defaultProductLocationSelector Selector for the default product location.
+     * @param string $cartPriceSelector Selector for the cart price element.
+     * @param string $cartLocationSelector Selector for the cart location element.
+     * @param string $listingPriceSelector Selector for the listing price element.
+     * @param string $listingLocationSelector Selector for the listing location element.
+     * @param string $altProductPriceSelector (Optional) Selector for the alternative product price element.
+     * @param string $altProductPriceTriggerSelector (Optional) Selector for the alternative product price trigger element.
+     *
+     * @return WidgetSettings A new instance of WidgetSettings with the provided selectors.
      */
     public static function createDefault(
         string $productPriceSelector,
