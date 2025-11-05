@@ -16,3 +16,7 @@ vendor
 # VSCODE
 .vscode/
 *.code-workspace
+
+# Environment variables
+.env
+!.env.example
