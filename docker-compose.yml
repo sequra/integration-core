@@ -1,0 +1,18 @@
+services:
+  php:
+    image: sequra/integration-core:php-7.2
+    build:
+      dockerfile: Dockerfile
+      context: ./docker
+      args:
+        - XDEBUG_IDEKEY=${XDEBUG_IDEKEY:-PHPSTORM}
+        - XDEBUG_CONFIG=${XDEBUG_CONFIG:-idekey=PHPSTORM mode=req}
+        - PHP_IDE_CONFIG=${PHP_IDE_CONFIG:-serverName=localhost}
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # For XDebug to work properly on Linux
+    volumes:
+      - ./:/app
+    command: tail -f /dev/null
+    env_file:
+      - .env
