@@ -28,37 +28,41 @@ jobs:
 
     - name: Install Composer dependencies
       if: steps.cache-composer.outputs.cache-hit != 'true'
-      run: docker run --rm -v "$(pwd)":/app -w /app composer:latest composer install --quiet --no-interaction
+      run: ./bin/composer install --quiet --no-interaction
 
     - name: PHP 7.2 Syntax check
-      run: docker run --rm -v "$(pwd)":/app -w /app php:7.2-cli-alpine sh -c "! (find . -type f -name \"*.php\" ! -path \"./tests/*\" ! -path \"./vendor/*\" -exec php -l -n {} \; | grep -v \"No syntax errors detected\")"
+      run: bin/php-syntax-check --php=7.2
 
     - name: PHP 7.3 Syntax check
-      run: docker run --rm -v "$(pwd)":/app -w /app php:7.3-cli-alpine sh -c "! (find . -type f -name \"*.php\" ! -path \"./tests/*\" ! -path \"./vendor/*\" -exec php -l -n {} \; | grep -v \"No syntax errors detected\")"
+      run: bin/php-syntax-check --php=7.3
 
     - name: PHP 7.4 Syntax check
-      run: docker run --rm -v "$(pwd)":/app -w /app php:7.4-cli-alpine sh -c "! (find . -type f -name \"*.php\" ! -path \"./tests/*\" ! -path \"./vendor/*\" -exec php -l -n {} \; | grep -v \"No syntax errors detected\")"
+      run: bin/php-syntax-check --php=7.4
 
     - name: PHP 8.0 Syntax check
-      run: docker run --rm -v "$(pwd)":/app -w /app php:8.0-cli-alpine sh -c "! (find . -type f -name \"*.php\" ! -path \"./tests/*\" ! -path \"./vendor/*\" -exec php -l -n {} \; | grep -v \"No syntax errors detected\")"
+      run: bin/php-syntax-check --php=8.0
 
     - name: PHP 8.1 Syntax check
-      run: docker run --rm -v "$(pwd)":/app -w /app php:8.1-cli-alpine sh -c "! (find . -type f -name \"*.php\" ! -path \"./tests/*\" ! -path \"./vendor/*\" -exec php -l -n {} \; | grep -v \"No syntax errors detected\")"
+      run: bin/php-syntax-check --php=8.1
 
     - name: PHP 8.2 Syntax check
-      run: docker run --rm -v "$(pwd)":/app -w /app php:8.2-cli-alpine sh -c "! (find . -type f -name \"*.php\" ! -path \"./tests/*\" ! -path \"./vendor/*\" -exec php -l -n {} \; | grep -v \"No syntax errors detected\")"
+      run: bin/php-syntax-check --php=8.2
 
     - name: PHP 8.3 Syntax check
-      run: docker run --rm -v "$(pwd)":/app -w /app php:8.3-cli-alpine sh -c "! (find . -type f -name \"*.php\" ! -path \"./tests/*\" ! -path \"./vendor/*\" -exec php -l -n {} \; | grep -v \"No syntax errors detected\")"
+      run: bin/php-syntax-check --php=8.3
 
     - name: PHP 8.4 Syntax check
-      run: docker run --rm -v "$(pwd)":/app -w /app php:8.4-cli-alpine sh -c "! (find . -type f -name \"*.php\" ! -path \"./tests/*\" ! -path \"./vendor/*\" -exec php -l -n {} \; | grep -v \"No syntax errors detected\")"
+      run: bin/php-syntax-check --php=8.4
 
-    - name: PHP_CodeSniffer
-      run: docker run --rm -v "$(pwd)":/app -w /app php:7.2-cli-alpine php vendor/bin/phpcs --standard=.phpcs.xml.dist --warning-severity=0 . # Ignore Warnings for now...
+    - name: Setup
+      run: ./setup.sh
 
-    - name: Run Tests
-      run: docker run --rm -v "$(pwd)":/app -w /app php:7.2-cli-alpine php vendor/bin/phpunit --configuration phpunit.xml --testdox
+    - name: PHP CodeSniffer
+      run: bin/phpcs
 
     - name: PHPStan
-      run: docker run --rm -v "$(pwd)":/app -w /app php:7.2-cli-alpine php vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=512M  --error-format github --no-progress
+      run: bin/phpstan --no-progress --error-format=github
+
+    - name: Run Tests
+      run: bin/phpunit
+
