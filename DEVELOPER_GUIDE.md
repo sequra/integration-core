@@ -449,7 +449,7 @@ docker compose exec -it php bash
    ./bin/phpcs
 
    # Static analysis
-   docker compose exec php ./bin/phpstan analyse src/ phpstan.neon --memory-limit=512M
+   docker compose exec php vendor/bin/phpstan analyse -c phpstan.neon src/ --memory-limit=512M
    ```
 
 4. **Run Tests**
