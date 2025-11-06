@@ -2,7 +2,7 @@ FROM php:7.2-cli-alpine
 
 # Build arguments for dynamic XDebug configuration
 ARG XDEBUG_IDEKEY=PHPSTORM
-ARG XDEBUG_CONFIG=idekey=PHPSTORM\ mode=req
+ARG XDEBUG_CONFIG="idekey=PHPSTORM mode=req"
 ARG PHP_IDE_CONFIG=serverName=localhost
 
 RUN apk add --no-cache --virtual .build-deps \
