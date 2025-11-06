@@ -485,7 +485,7 @@ echo "Running code style check..."
 ./bin/phpcs || exit 1
 
 echo "Running static analysis..."
-docker compose exec php ./bin/phpstan analyse src/ phpstan.neon --memory-limit=512M || exit 1
+docker compose exec php vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=512M || exit 1
 
 echo "All checks passed!"
 ```
