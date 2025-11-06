@@ -482,7 +482,7 @@ echo "Running syntax check..."
 ./bin/php-syntax-check 8.1 || exit 1
 
 echo "Running code style check..."
-docker compose exec php ./bin/phpcs || exit 1
+./bin/phpcs || exit 1
 
 echo "Running static analysis..."
 docker compose exec php ./bin/phpstan analyse src/ phpstan.neon --memory-limit=512M || exit 1
