@@ -442,7 +442,7 @@ docker compose exec -it php bash
 3. **Validate Code**
    ```bash
    # Quick syntax check
-   ./bin/php-syntax-check 8.1
+   ./bin/php-syntax-check --php=7.2
 
    # Code style check and auto-fix
    ./bin/phpcbf
@@ -479,7 +479,7 @@ Create `.git/hooks/pre-commit` to validate before commits:
 ```bash
 #!/bin/bash
 echo "Running syntax check..."
-./bin/php-syntax-check 8.1 || exit 1
+./bin/php-syntax-check --php=7.2 || exit 1
 
 echo "Running code style check..."
 ./bin/phpcs || exit 1
