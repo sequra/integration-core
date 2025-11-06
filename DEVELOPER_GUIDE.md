@@ -445,8 +445,8 @@ docker compose exec -it php bash
    ./bin/php-syntax-check 8.1
 
    # Code style check and auto-fix
-   docker compose exec php ./bin/phpcbf
-   docker compose exec php ./bin/phpcs
+   ./bin/phpcbf
+   ./bin/phpcs
 
    # Static analysis
    docker compose exec php ./bin/phpstan analyse src/ phpstan.neon --memory-limit=512M
