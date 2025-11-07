@@ -1,0 +1,4 @@
+#!/bin/bash
+cd "$(dirname $(realpath $0))/.."
+PARAMS="$@"
+docker compose exec php sh -c "vendor/bin/phpstan analyse -c phpstan.neon $PARAMS --memory-limit=1G"

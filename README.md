@@ -8,6 +8,7 @@
 - [🛠 Installation](#🛠-installation)
     - [Requirements](#requirements)
     - [Installing via Composer](#installing-via-composer)
+    - [Developer guide](#developer-guide)
 - [🚀 Quick Start Guide](#🚀-quick-start-guide)
     - [Services](#services)
     - [Repositories](#repositories)
@@ -105,6 +106,9 @@ Implements **shop-specific adapters and extensions**, bridging CORE with the hos
 ```bash
 composer require sequra/integration-core
 ```
+
+### Developer guide
+If you are planning to contribute to the development of this library, please refer to the [Developer Guide](DEVELOPER_GUIDE.md) for instructions on setting up your development environment, debugging, and running tests.
 
 ## 🚀 Quick Start Guide
 

@@ -1,0 +1,17 @@
+#!/bin/bash
+BASEDIR="$(dirname $(realpath $0))/.."
+cd "$BASEDIR"
+
+# Set auth volume mount if auth.json exists
+AUTH_MOUNT=""
+if [ -f "auth.json" ]; then
+    AUTH_MOUNT="-v ./auth.json:/tmp/auth.json"
+fi
+
+docker run --rm \
+    -v "./:/app" \
+    $AUTH_MOUNT \
+    -w /app \
+    -u $(id -u):$(id -g) \
+    composer:latest \
+    composer "$@"
