@@ -19,6 +19,13 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
      */
     private $widgetSettingsRepository;
 
+    /**
+     * Default widget settings.
+     *
+     * @var WidgetSettings
+     */
+    private $defaultWidgetSettings;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -36,7 +43,7 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
     public function testGetConfigNoConfigSet()
     {
         // act
-        $result = AdminAPI::get()->widgetConfiguration('store1')->getWidgetSettings();
+        $result = AdminAPI::get()->widgetConfiguration('store1')->getWidgetSettings($this->defaultWidgetSettings);
 
         // assert
         self::assertEquals([
@@ -48,6 +55,13 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
             'cartLocationSelector' => '',
             'listingPriceSelector' => '',
             'listingLocationSelector' => '.listing.selector',
+            'displayWidgetOnProductPage' => false,
+            'showInstallmentAmountInProductListing' => false,
+            'showInstallmentAmountInCartPage' => false,
+            'widgetStyles' => null,
+            'customLocations' => [],
+            'widgetOnCartPage' => '',
+            'widgetOnListingPage' => '',
         ], $result->toArray());
     }
 

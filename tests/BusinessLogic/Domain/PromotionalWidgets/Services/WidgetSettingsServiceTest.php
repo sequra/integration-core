@@ -648,8 +648,15 @@ class WidgetSettingsServiceTest extends BaseTestCase
         // act
         $widgetInitialize = $this->widgetSettingsService->getWidgetInitializeData('FR', 'FR');
 
-        // assert
-        self::assertNull($widgetInitialize);
+        // assert the results match the default values
+        self::assertEquals(['i1'], $widgetInitialize->getProducts());
+        self::assertEquals('en-US', $widgetInitialize->getLocale());
+        self::assertEquals('USD', $widgetInitialize->getCurrency());
+        self::assertEquals('!', $widgetInitialize->getDecimalSeparator());
+        self::assertEquals('?', $widgetInitialize->getThousandSeparator());
+        self::assertFalse($widgetInitialize->isProductListingEnabled());
+        self::assertFalse($widgetInitialize->isProductPageEnabled());
+        self::assertNull($widgetInitialize->getWidgetConfig());
     }
 
     /**
