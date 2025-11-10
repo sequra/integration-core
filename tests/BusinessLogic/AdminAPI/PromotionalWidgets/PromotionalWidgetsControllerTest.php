@@ -38,14 +38,6 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
         );
 
         $this->widgetSettingsRepository = TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class);
-        $this->defaultWidgetSettings = WidgetSettings::createDefault(
-            '.product.price',
-            '',
-            '.cart.price',
-            '',
-            '',
-            '.listing.selector'
-        );
     }
 
     public function testGetConfigNoConfigSet()

@@ -89,13 +89,13 @@ class WidgetSettingsService
     /**
      * Retrieves widget settings.
      *
-     * @return WidgetSettings|null
+     * @return WidgetSettings
      *
      * @throws Exception
      */
-    public function getWidgetSettings(): ?WidgetSettings
+    public function getWidgetSettings(): WidgetSettings
     {
-        return $this->widgetSettingsRepository->getWidgetSettings();
+        return $this->widgetSettingsRepository->getWidgetSettings() ?? $this->widgetConfigurator->getDefaultWidgetSettings();
     }
 
     /**
@@ -118,19 +118,15 @@ class WidgetSettingsService
      * @param string $shippingCountry
      * @param string $currentCountry
      *
-     * @return WidgetInitializer|null
+     * @return WidgetInitializer
      *
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
      * @throws Exception
      */
-    public function getWidgetInitializeData(string $shippingCountry, string $currentCountry): ?WidgetInitializer
+    public function getWidgetInitializeData(string $shippingCountry, string $currentCountry): WidgetInitializer
     {
         $widgetSettings = $this->getWidgetSettings();
-        if (!$widgetSettings) {
-            return null;
-        }
-
         $credentials = $this->getCredentialsByCountry($shippingCountry, $currentCountry);
         $merchantId = $credentials ? $credentials->getMerchantId() : '';
 
@@ -163,7 +159,7 @@ class WidgetSettingsService
     public function getAvailableWidgetForCartPage(string $shippingCountry, string $currentCountry): ?Widget
     {
         $widgetSettings = $this->getWidgetSettings();
-        if (!$widgetSettings || !$widgetSettings->isShowInstallmentsInCartPage()) {
+        if (!$widgetSettings->isShowInstallmentsInCartPage()) {
             return null;
         }
 
@@ -207,10 +203,7 @@ class WidgetSettingsService
     public function getAvailableMiniWidget(string $shippingCountry, string $currentCountry): ?Widget
     {
         $widgetSettings = $this->getWidgetSettings();
-        if (
-            !$widgetSettings ||
-            !$widgetSettings->isShowInstallmentsInProductListing()
-        ) {
+        if (!$widgetSettings->isShowInstallmentsInProductListing()) {
             return null;
         }
 
@@ -261,7 +254,7 @@ class WidgetSettingsService
     public function getAvailableWidgetsForProductPage(string $shippingCountry, string $currentCountry): array
     {
         $widgetSettings = $this->getWidgetSettings();
-        if (!$widgetSettings || !$widgetSettings->isDisplayOnProductPage()) {
+        if (!$widgetSettings->isDisplayOnProductPage()) {
             return [];
         }
 

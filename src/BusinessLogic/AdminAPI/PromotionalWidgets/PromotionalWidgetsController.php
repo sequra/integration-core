@@ -46,13 +46,11 @@ class PromotionalWidgetsController
     /**
      * Gets active widget settings.
      *
-     * @param WidgetSettings|null $default Default settings to use if no stored settings exist
-     *
      * @throws Exception
      */
-    public function getWidgetSettings(?WidgetSettings $default = null): WidgetSettingsResponse
+    public function getWidgetSettings(): WidgetSettingsResponse
     {
-        return new WidgetSettingsResponse($this->widgetSettingsService->getWidgetSettings() ?? $default);
+        return new WidgetSettingsResponse($this->widgetSettingsService->getWidgetSettings());
     }
 
     /**

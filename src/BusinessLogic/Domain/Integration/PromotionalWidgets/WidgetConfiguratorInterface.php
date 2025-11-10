@@ -2,6 +2,8 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets;
 
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
+
 /**
  * Interface WidgetConfiguratorInterface
  *
@@ -36,4 +38,10 @@ interface WidgetConfiguratorInterface
      * @return ?string
      */
     public function getThousandsSeparator(): ?string;
+
+    /**
+     * Returns an instance of WidgetSettings having the default values.
+     * See SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings::createDefault().
+     */
+    public function getDefaultWidgetSettings(): WidgetSettings;
 }

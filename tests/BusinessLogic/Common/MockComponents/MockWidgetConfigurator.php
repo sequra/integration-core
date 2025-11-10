@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 
 /**
  * Class MockWidgetConfigurator.
@@ -98,5 +99,17 @@ class MockWidgetConfigurator implements WidgetConfiguratorInterface
     public function setMockThousandSeparator(string $thousandsSeparator): void
     {
         $this->thousandsSeparator = $thousandsSeparator;
+    }
+
+    public function getDefaultWidgetSettings(): WidgetSettings
+    {
+        return WidgetSettings::createDefault(
+            '.product.price',
+            '',
+            '.cart.price',
+            '',
+            '',
+            '.listing.selector'
+        );
     }
 }
