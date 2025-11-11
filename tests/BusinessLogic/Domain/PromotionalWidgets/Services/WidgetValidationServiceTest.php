@@ -281,6 +281,36 @@ class WidgetValidationServiceTest extends BaseTestCase
     }
 
     /**
+     * @dataProvider dataProviderIsProductSupportedEmptySku
+     * @return void
+     */
+    public function testIsProductSupportedEmptySku($sku): void
+    {
+        //arrange
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(
+                true,
+                null,
+                null,
+                null,
+                null
+            )
+        );
+        $this->mockProductService->setMockProductSku('');
+
+        // act
+        $result = $this->widgetValidationService->isProductSupported($sku);
+
+        // assert
+        self::assertTrue($result);
+    }
+
+    public function dataProviderIsProductSupportedEmptySku(): array
+    {
+        return [[''], ['0']];
+    }
+
+    /**
      * @return void
      */
     public function testIsProductSupportedCategoryExcluded(): void
