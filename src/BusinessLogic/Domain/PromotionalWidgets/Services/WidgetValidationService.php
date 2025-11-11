@@ -102,17 +102,15 @@ class WidgetValidationService
 
         $productSku = $this->productService->getProductsSkuByProductId($productId);
 
-        if (!$productSku) {
-            return false;
-        }
+        if ($productSku) {
+            $excludedProducts = $generalSettings->getExcludedProducts() ?? [];
 
-        $excludedProducts = $generalSettings->getExcludedProducts() ?? [];
-
-        if (
-            $excludedProducts &&
-            in_array($productSku, $excludedProducts, true)
-        ) {
-            return false;
+            if (
+                $excludedProducts &&
+                in_array($productSku, $excludedProducts, true)
+            ) {
+                return false;
+            }
         }
 
         $excludedCategories = $generalSettings->getExcludedCategories() ?? [];
