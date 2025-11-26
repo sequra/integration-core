@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\SendOrderReportRequest;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AuthorizedProxyFactory;
@@ -38,6 +39,7 @@ class OrderReportProxy implements OrderReportProxyInterface
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws HttpRequestException
+     * @throws DeploymentNotFoundException
      */
     public function sendReport(SendOrderReportRequest $request): bool
     {
