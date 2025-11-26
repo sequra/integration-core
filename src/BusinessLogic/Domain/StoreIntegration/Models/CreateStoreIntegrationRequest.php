@@ -70,7 +70,7 @@ class CreateStoreIntegrationRequest
     }
 
     /**
-     * @return array[]
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {

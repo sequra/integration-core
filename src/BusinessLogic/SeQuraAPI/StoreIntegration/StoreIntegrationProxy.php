@@ -38,8 +38,6 @@ class StoreIntegrationProxy implements StoreIntegrationsProxyInterface
     }
 
     /**
-     * @inheritDoc
-     *
      * @param CreateStoreIntegrationRequest $request
      *
      * @return CreateStoreIntegrationResponse
@@ -63,8 +61,6 @@ class StoreIntegrationProxy implements StoreIntegrationsProxyInterface
     }
 
     /**
-     * @inheritDoc
-     *
      * @param DeleteStoreIntegrationRequest $request
      *
      * @return DeleteStoreIntegrationResponse

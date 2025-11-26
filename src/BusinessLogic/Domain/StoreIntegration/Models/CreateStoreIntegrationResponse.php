@@ -50,7 +50,7 @@ class CreateStoreIntegrationResponse
         $path = parse_url($locationHeader, PHP_URL_PATH);
 
         if (preg_match('#store_integrations/(\d+)#', $path, $matches)) {
-            return new self($matches[1] ?? '');
+            return new self($matches[1]);
         }
 
         throw new InvalidLocationHeaderException();
