@@ -1,6 +1,6 @@
 <?php
 
-namespace SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions;
+namespace SeQura\Core\BusinessLogic\Domain\URL\Exceptions;
 
 use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableException;
 use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
@@ -11,7 +11,7 @@ use Throwable;
  *
  * @package SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions
  */
-class InvalidWebhookUrlException extends BaseTranslatableException
+class InvalidUrlException extends BaseTranslatableException
 {
     /**
      * @var int
@@ -24,8 +24,8 @@ class InvalidWebhookUrlException extends BaseTranslatableException
     public function __construct(?Throwable $previous = null)
     {
         parent::__construct(new TranslatableLabel(
-            'Invalid webhook URL.',
-            'general.errors.connection.invalidWebhookUrl'
+            'Invalid URL.',
+            'general.errors.URL.invalidUrl'
         ), $previous);
     }
 }

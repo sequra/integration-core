@@ -3,9 +3,10 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\StoreIntegration\Models;
 
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
-use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\InvalidWebhookUrlException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationRequest;
+use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
+use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 
 /**
@@ -19,7 +20,6 @@ class CreateStoreIntegrationRequestTest extends BaseTestCase
      * @return void
      *
      * @throws CapabilitiesEmptyException
-     * @throws InvalidWebhookUrlException
      */
     public function testEmptyCapabilities(): void
     {
@@ -27,7 +27,7 @@ class CreateStoreIntegrationRequestTest extends BaseTestCase
         $this->expectException(CapabilitiesEmptyException::class);
         // act
 
-        new CreateStoreIntegrationRequest('merchant1', 'url', []);
+        new CreateStoreIntegrationRequest('merchant1', new URL('https://test.com'), []);
         // assert
     }
 
@@ -35,15 +35,14 @@ class CreateStoreIntegrationRequestTest extends BaseTestCase
      * @return void
      *
      * @throws CapabilitiesEmptyException
-     * @throws InvalidWebhookUrlException
      */
     public function testInvalidWebhookUrl(): void
     {
         // arrange
-        $this->expectException(InvalidWebhookUrlException::class);
+        $this->expectException(InvalidUrlException::class);
         // act
 
-        new CreateStoreIntegrationRequest('merchant1', 'url', [Capability::general(), Capability::advanced()]);
+        new CreateStoreIntegrationRequest('merchant1', new URL('url'), [Capability::general(), Capability::advanced()]);
         // assert
     }
 
@@ -51,14 +50,13 @@ class CreateStoreIntegrationRequestTest extends BaseTestCase
      * @return void
      *
      * @throws CapabilitiesEmptyException
-     * @throws InvalidWebhookUrlException
      */
     public function testValidCapabilities(): void
     {
         // arrange
         // act
 
-        $request = new CreateStoreIntegrationRequest('merchant1', 'https://test.com', [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest('merchant1', new URL('https://test.com'), [Capability::general()]);
 
         // assert
         self::assertCount(1, $request->getCapabilities());

@@ -3,7 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models;
 
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
-use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\InvalidWebhookUrlException;
+use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
 
 /**
  * Class CreateStoreIntegrationRequest.
@@ -18,7 +18,7 @@ class CreateStoreIntegrationRequest
     private $merchantId;
 
     /**
-     * @var string $webhookUrl
+     * @var URL $webhookUrl
      */
     private $webhookUrl;
 
@@ -29,16 +29,14 @@ class CreateStoreIntegrationRequest
 
     /**
      * @param string $merchantId
-     * @param string $webhookUrl
+     * @param URL $webhookUrl
      * @param Capability[] $capabilities
      *
      * @throws CapabilitiesEmptyException
-     * @throws InvalidWebhookUrlException
      */
-    public function __construct(string $merchantId, string $webhookUrl, array $capabilities)
+    public function __construct(string $merchantId, URL $webhookUrl, array $capabilities)
     {
         $this->validateCapabilities($capabilities);
-        $this->validateWebhookUrl($webhookUrl);
 
         $this->merchantId = $merchantId;
         $this->webhookUrl = $webhookUrl;
@@ -54,9 +52,9 @@ class CreateStoreIntegrationRequest
     }
 
     /**
-     * @return string
+     * @return URL
      */
-    public function getWebhookUrl(): string
+    public function getWebhookUrl(): URL
     {
         return $this->webhookUrl;
     }
@@ -76,7 +74,7 @@ class CreateStoreIntegrationRequest
     {
         return [
             'store_integration' => [
-                'webhook_url' => $this->webhookUrl,
+                'webhook_url' => $this->webhookUrl->buildUrl(),
                 'capabilities' => array_map(
                     function ($capability) {
                         return $capability->getCapability();
@@ -98,20 +96,6 @@ class CreateStoreIntegrationRequest
     {
         if (empty($capabilities)) {
             throw new CapabilitiesEmptyException();
-        }
-    }
-
-    /**
-     * @param string $webhookUrl
-     *
-     * @return void
-     *
-     * @throws InvalidWebhookUrlException
-     */
-    private function validateWebhookUrl(string $webhookUrl): void
-    {
-        if (filter_var($webhookUrl, FILTER_VALIDATE_URL) === false) {
-            throw new InvalidWebhookUrlException();
         }
     }
 }

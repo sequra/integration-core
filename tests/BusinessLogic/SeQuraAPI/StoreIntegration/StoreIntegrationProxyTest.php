@@ -7,12 +7,12 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
-use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\InvalidWebhookUrlException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationResponse;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\ProxyContracts\StoreIntegrationsProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\Http\HttpResponse;
@@ -70,7 +70,6 @@ class StoreIntegrationProxyTest extends BaseTestCase
      * @return void
      *
      * @throws CapabilitiesEmptyException
-     * @throws InvalidWebhookUrlException
      */
     public function testCreateStoreIntegrationRequestUrl(): void
     {
@@ -83,7 +82,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
             ))
         ]);
 
-        $request = new CreateStoreIntegrationRequest('merchant1', 'https://test.com', [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest('merchant1', new URL('https://test.com'), [Capability::general()]);
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -97,7 +96,6 @@ class StoreIntegrationProxyTest extends BaseTestCase
      * @return void
      *
      * @throws CapabilitiesEmptyException
-     * @throws InvalidWebhookUrlException
      */
     public function testCreateStoreIntegrationAuthHeader(): void
     {
@@ -110,7 +108,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
             ))
         ]);
 
-        $request = new CreateStoreIntegrationRequest('merchant1', 'https://test.com', [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest('merchant1', new URL('https://test.com'), [Capability::general()]);
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -124,7 +122,6 @@ class StoreIntegrationProxyTest extends BaseTestCase
      * @return void
      *
      * @throws CapabilitiesEmptyException
-     * @throws InvalidWebhookUrlException
      */
     public function testCreateStoreIntegrationMethod(): void
     {
@@ -137,7 +134,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
             ))
         ]);
 
-        $request = new CreateStoreIntegrationRequest('merchant1', 'https://test.com', [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest('merchant1', new URL('https://test.com'), [Capability::general()]);
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -151,7 +148,37 @@ class StoreIntegrationProxyTest extends BaseTestCase
      * @return void
      *
      * @throws CapabilitiesEmptyException
-     * @throws InvalidWebhookUrlException
+     */
+    public function testCreateStoreIntegrationRequestBody(): void
+    {
+        // arrange
+        $this->httpClient->setMockResponses([
+            new HttpResponse(204, [
+                'location' => 'https://sandbox.sequrapi.com/store_integrations/4'
+            ], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/StoreIntegration/CreateStoreIntegrationResponse.json'
+            ))
+        ]);
+
+        $request = new CreateStoreIntegrationRequest('merchant1', new URL('https://test.com'), [Capability::general()]);
+        // act
+        $this->proxy->createStoreIntegration($request);
+
+        // assert
+        $lastRequest = $this->httpClient->getLastRequest();
+        $body = json_decode($lastRequest['body'], true);
+
+        self::assertArrayHasKey('store_integration', $body);
+        self::assertArrayHasKey('webhook_url', $body['store_integration']);
+        self::assertArrayHasKey('capabilities', $body['store_integration']);
+        self::assertEquals('https://test.com', $body['store_integration']['webhook_url']);
+        self::assertEquals(['general'], $body['store_integration']['capabilities']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
      */
     public function testCreateStoreIntegrationResponse(): void
     {
@@ -164,7 +191,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
             ))
         ]);
 
-        $request = new CreateStoreIntegrationRequest('merchant1', 'https://test.com', [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest('merchant1', new URL('https://test.com'), [Capability::general()]);
         // act
         $response = $this->proxy->createStoreIntegration($request);
 
@@ -236,6 +263,29 @@ class StoreIntegrationProxyTest extends BaseTestCase
         $lastRequest = $this->httpClient->getLastRequest();
         self::assertCount(1, $this->httpClient->getHistory());
         self::assertEquals(HttpClient::HTTP_METHOD_DELETE, $lastRequest['method']);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDeleteStoreIntegrationRequestBody(): void
+    {
+        // arrange
+        $this->httpClient->setMockResponses([
+            new HttpResponse(204, [], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/StoreIntegration/DeleteStoreIntegrationResponse.json'
+            ))
+        ]);
+
+        $request = new DeleteStoreIntegrationRequest('merchant1', '4');
+        // act
+        $this->proxy->deleteStoreIntegration($request);
+
+        // assert
+        $lastRequest = $this->httpClient->getLastRequest();
+        $body = json_decode($lastRequest['body'], true);
+
+        self::assertEmpty($body);
     }
 
     /**
