@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationRequest;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\ProxyContracts\StoreIntegrationsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\URL\Model\Query;
 use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
@@ -61,6 +62,21 @@ class StoreIntegrationService
         );
 
         return $response->getIntegrationId();
+    }
+
+    /**
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     */
+    public function deleteStoreIntegration(ConnectionData $connectionData): void
+    {
+        $this->storeIntegrationsProxy->deleteStoreIntegration(
+            new DeleteStoreIntegrationRequest(
+                $connectionData->getMerchantId(),
+                $connectionData->getIntegrationId()
+            )
+        );
     }
 
     /**

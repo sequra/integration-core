@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationResponse;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationResponse;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
@@ -128,5 +129,27 @@ class StoreIntegrationServiceTest extends BaseTestCase
         self::assertEquals('https://test.com/webhook', $url->getPath());
         self::assertNotNull($url->getQueryByKey('signature'));
         self::assertNotNull($url->getQueryByKey('storeId'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testDeleteStoreIntegration(): void
+    {
+        // arrange
+        $this->storeIntegrationProxy->setMockDeleteResponse(new DeleteStoreIntegrationResponse());
+
+        //act
+        $this->service->deleteStoreIntegration(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'svea',
+            new AuthorizationCredentials('username', 'password')
+        ));
+
+        //assert
+        self::assertTrue($this->storeIntegrationProxy->isDeleted());
     }
 }

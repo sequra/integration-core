@@ -41,11 +41,14 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsReposit
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockGeneralSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationDisconnectService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderStatusMappingRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSendReportRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSeQuraOrderRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStatisticalDataRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\TransactionLog\Mocks\MockTransactionLogRepository;
 
@@ -122,6 +125,11 @@ class DisconnectServiceTest extends BaseTestCase
     private $transactionLogRepository;
 
     /**
+     * @var MockStoreIntegrationService $storeIntegrationService
+     */
+    private $storeIntegrationService;
+
+    /**
      * @var DisconnectService $service
      */
     private $service;
@@ -143,6 +151,10 @@ class DisconnectServiceTest extends BaseTestCase
         $this->widgetSettingsRepository = new MockWidgetSettingsRepository();
         $this->statisticalDataRepository = new MockStatisticalDataRepository();
         $this->transactionLogRepository = new MockTransactionLogRepository();
+        $this->storeIntegrationService = new MockStoreIntegrationService(
+            new MockIntegrationStoreIntegrationService(),
+            new MockStoreIntegrationProxy()
+        );
 
         $this->service = new DisconnectService(
             $this->integrationDisconnectService,
@@ -157,7 +169,8 @@ class DisconnectServiceTest extends BaseTestCase
             $this->paymentMethodRepository,
             $this->widgetSettingsRepository,
             $this->statisticalDataRepository,
-            $this->transactionLogRepository
+            $this->transactionLogRepository,
+            $this->storeIntegrationService
         );
     }
 
@@ -171,11 +184,11 @@ class DisconnectServiceTest extends BaseTestCase
     {
         //Arrange
         $this->credentialsRepository->setCredentials([
-                new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [], 'sequra'),
-                new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [], 'svea'),
-                new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', [], 'sequra'),
-                new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [], 'svea'),
-            ]);
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [], 'sequra'),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [], 'svea'),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', [], 'sequra'),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [], 'svea'),
+        ]);
 
         $this->connectionDataRepository->setConnectionData(
             new ConnectionData(
@@ -306,11 +319,11 @@ class DisconnectServiceTest extends BaseTestCase
     {
         //Arrange
         $this->credentialsRepository->setCredentials([
-                new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [], 'sequra'),
-                new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [], 'sequra'),
-                new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', [], 'sequra'),
-                new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [], 'sequra'),
-            ]);
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [], 'sequra'),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [], 'sequra'),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', [], 'sequra'),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [], 'sequra'),
+        ]);
 
         $this->connectionDataRepository->setConnectionData(
             new ConnectionData(
@@ -421,5 +434,59 @@ class DisconnectServiceTest extends BaseTestCase
         self::assertNull($this->widgetSettingsRepository->getWidgetSettings());
         self::assertNull($this->statisticalDataRepository->getStatisticalData());
         self::assertNull($this->transactionLogRepository->getTransactionLog(''));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws \Exception
+     */
+    public function testDisconnectIntegrationDeleted(): void
+    {
+        //Arrange
+        $this->credentialsRepository->setCredentials([
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [], 'sequra'),
+            new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [], 'sequra'),
+            new Credentials('logeecom3', 'IT', 'EUR', 'assetsKey3', [], 'sequra'),
+            new Credentials('logeecom4', 'ES', 'EUR', 'assetsKey4', [], 'sequra'),
+        ]);
+
+        $this->connectionDataRepository->setConnectionData(
+            new ConnectionData(
+                'sandbox',
+                'merchant',
+                'sequra',
+                new AuthorizationCredentials('username', 'password')
+            )
+        );
+
+
+        $countries = [new CountryConfiguration('FR', 'merchant'), new CountryConfiguration('IT', 'merchant')];
+        $this->countryConfigurationRepository->setCountryConfiguration($countries);
+        $deployments = [
+            new Deployment(
+                'sequra',
+                'seQura',
+                new DeploymentURL('https://live.sequrapi.com/', 'https://live.sequracdn.com/assets/'),
+                new DeploymentURL('https://sandbox.sequrapi.com/', 'https://sandbox.sequracdn.com/assets/')
+            ),
+            new Deployment(
+                'svea',
+                'SVEA',
+                new DeploymentURL('https://live.sequra.svea.com/', 'https://live.cdn.sequra.svea.com/assets/'),
+                new DeploymentURL(
+                    'https://next-sandbox.sequra.svea.com/',
+                    'https://next-sandbox.cdn.sequra.svea.com/assets/'
+                )
+            )
+        ];
+        $this->deploymentsRepository->setDeployments($deployments);
+
+        //Act
+        $this->service->disconnect('sequra', true);
+
+        //Assert
+        self::assertTrue($this->storeIntegrationService->isDeleted());
     }
 }

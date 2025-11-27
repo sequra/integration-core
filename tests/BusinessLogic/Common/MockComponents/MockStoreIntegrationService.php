@@ -17,9 +17,24 @@ class MockStoreIntegrationService extends StoreIntegrationService
      */
     private $integrationId = '';
 
+    /**
+     * @var bool $deleted
+     */
+    private $deleted = false;
+
+    /**
+     * @param ConnectionData $connectionData
+     *
+     * @return string
+     */
     public function createStoreIntegration(ConnectionData $connectionData): string
     {
         return $this->integrationId;
+    }
+
+    public function deleteStoreIntegration(ConnectionData $connectionData): void
+    {
+        $this->deleted = true;
     }
 
     /**
@@ -30,5 +45,13 @@ class MockStoreIntegrationService extends StoreIntegrationService
     public function setMockIntegrationId(string $integrationId): void
     {
         $this->integrationId = $integrationId;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDeleted(): bool
+    {
+        return $this->deleted;
     }
 }

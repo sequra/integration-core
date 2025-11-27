@@ -32,6 +32,11 @@ class MockStoreIntegrationProxy implements StoreIntegrationsProxyInterface
     private $webhookUrl = null;
 
     /**
+     * @var bool $deleted
+     */
+    private $deleted = false;
+
+    /**
      * @inheritDoc
      */
     public function createStoreIntegration(CreateStoreIntegrationRequest $request): CreateStoreIntegrationResponse
@@ -74,6 +79,8 @@ class MockStoreIntegrationProxy implements StoreIntegrationsProxyInterface
      */
     public function setMockDeleteResponse(DeleteStoreIntegrationResponse $deleteStoreIntegrationResponse): void
     {
+        $this->deleted = true;
+
         $this->deleteResponse = $deleteStoreIntegrationResponse;
     }
 
@@ -83,5 +90,13 @@ class MockStoreIntegrationProxy implements StoreIntegrationsProxyInterface
     public function getWebhookUrl(): ?URL
     {
         return $this->webhookUrl;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDeleted(): bool
+    {
+        return $this->deleted;
     }
 }

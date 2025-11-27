@@ -16,6 +16,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMe
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 
 /**
@@ -26,69 +27,74 @@ use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogR
 class DisconnectService
 {
     /**
-     * @var DisconnectServiceInterface
+     * @var DisconnectServiceInterface $integrationDisconnectService
      */
     protected $integrationDisconnectService;
 
     /**
-     * @var SendReportRepositoryInterface
+     * @var SendReportRepositoryInterface $sendReportRepository
      */
     protected $sendReportRepository;
 
     /**
-     * @var ConnectionDataRepositoryInterface
+     * @var ConnectionDataRepositoryInterface $connectionDataRepository
      */
     protected $connectionDataRepository;
 
     /**
-     * @var CredentialsRepositoryInterface
+     * @var CredentialsRepositoryInterface $credentialsRepository
      */
     protected $credentialsRepository;
 
     /**
-     * @var CountryConfigurationRepositoryInterface
+     * @var CountryConfigurationRepositoryInterface $countryConfigurationRepository
      */
     protected $countryConfigurationRepository;
 
     /**
-     * @var DeploymentsRepositoryInterface
+     * @var DeploymentsRepositoryInterface $deploymentsRepository
      */
     protected $deploymentsRepository;
 
     /**
-     * @var GeneralSettingsRepositoryInterface
+     * @var GeneralSettingsRepositoryInterface $generalSettingsRepository
      */
     protected $generalSettingsRepository;
 
     /**
-     * @var SeQuraOrderRepositoryInterface
+     * @var SeQuraOrderRepositoryInterface $sequraOrderRepository
      */
     protected $sequraOrderRepository;
 
     /**
-     * @var OrderStatusSettingsRepositoryInterface
+     * @var OrderStatusSettingsRepositoryInterface $orderStatusSettingsRepository
      */
     protected $orderStatusSettingsRepository;
 
     /**
-     * @var PaymentMethodRepositoryInterface
+     * @var PaymentMethodRepositoryInterface $paymentMethodRepository
      */
     protected $paymentMethodRepository;
 
     /**
-     * @var WidgetSettingsRepositoryInterface
+     * @var WidgetSettingsRepositoryInterface $widgetSettingsRepository
      */
     protected $widgetSettingsRepository;
 
     /**
-     * @var StatisticalDataRepositoryInterface
+     * @var StatisticalDataRepositoryInterface $statisticalDataRepository
      */
     protected $statisticalDataRepository;
 
     /**
-     * @var TransactionLogRepositoryInterface
+     * @var TransactionLogRepositoryInterface $transactionLogRepository
      */
     protected $transactionLogRepository;
+
+    /**
+     * @var StoreIntegrationService $storeIntegrationService
+     */
+    protected $storeIntegrationService;
 
     /**
      * @param DisconnectServiceInterface $integrationDisconnectService
@@ -104,6 +110,7 @@ class DisconnectService
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
      * @param StatisticalDataRepositoryInterface $statisticalDataRepository
      * @param TransactionLogRepositoryInterface $transactionLogRepository
+     * @param StoreIntegrationService $storeIntegrationService
      */
     public function __construct(
         DisconnectServiceInterface $integrationDisconnectService,
@@ -118,7 +125,8 @@ class DisconnectService
         PaymentMethodRepositoryInterface $paymentMethodRepository,
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
         StatisticalDataRepositoryInterface $statisticalDataRepository,
-        TransactionLogRepositoryInterface $transactionLogRepository
+        TransactionLogRepositoryInterface $transactionLogRepository,
+        StoreIntegrationService $storeIntegrationService
     ) {
         $this->integrationDisconnectService = $integrationDisconnectService;
         $this->sendReportRepository = $sendReportRepository;
@@ -133,6 +141,7 @@ class DisconnectService
         $this->widgetSettingsRepository = $widgetSettingsRepository;
         $this->statisticalDataRepository = $statisticalDataRepository;
         $this->transactionLogRepository = $transactionLogRepository;
+        $this->storeIntegrationService = $storeIntegrationService;
     }
 
     /**
@@ -142,10 +151,13 @@ class DisconnectService
      * @param bool $isFullDisconnect
      *
      * @return void
+     *
      * @throws PaymentMethodNotFoundException
      */
     public function disconnect(string $deploymentId, bool $isFullDisconnect): void
     {
+        $connectionData = $this->connectionDataRepository->getConnectionDataByDeploymentId($deploymentId);
+        $this->storeIntegrationService->deleteStoreIntegration($connectionData);
         $this->connectionDataRepository->deleteConnectionDataByDeploymentId($deploymentId);
         if (!$isFullDisconnect) {
             $this->removeAllDeploymentData($deploymentId);
