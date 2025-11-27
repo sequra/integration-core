@@ -17,6 +17,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\Http\HttpResponse;
@@ -511,7 +512,8 @@ class ConnectionControllerTest extends BaseTestCase
         // Arrange
         $mockConnectionService = new MockConnectionService(
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
-            TestServiceRegister::getService(CredentialsService::class)
+            TestServiceRegister::getService(CredentialsService::class),
+            TestServiceRegister::getService(StoreIntegrationService::class)
         );
 
         TestServiceRegister::registerService(ConnectionService::class, function () use ($mockConnectionService) {
@@ -549,7 +551,8 @@ class ConnectionControllerTest extends BaseTestCase
         // Arrange
         $mockConnectionService = new MockConnectionService(
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
-            TestServiceRegister::getService(CredentialsService::class)
+            TestServiceRegister::getService(CredentialsService::class),
+            TestServiceRegister::getService(StoreIntegrationService::class)
         );
 
         $mockConnectionService->setThrowError(true);

@@ -60,7 +60,8 @@ class ConnectionRepositoryTest extends BaseTestCase
             'sandbox',
             'merchant',
             'sequra',
-            new AuthorizationCredentials('username', 'password')
+            new AuthorizationCredentials('username', 'password'),
+            '1'
         );
         $entity = new ConnectionDataEntity();
         $entity->setDeployment('sequra');
@@ -72,7 +73,8 @@ class ConnectionRepositoryTest extends BaseTestCase
             'sandbox',
             'merchant',
             'svea',
-            new AuthorizationCredentials('username', 'password')
+            new AuthorizationCredentials('username', 'password'),
+            '2'
         );
         $entity = new ConnectionDataEntity();
         $entity->setDeployment('sequra');
@@ -91,5 +93,46 @@ class ConnectionRepositoryTest extends BaseTestCase
         $result = $this->repository->select();
         self::assertCount(1, $result);
         self::assertEquals($connectionData2, $result[0]->getConnectionData());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetConnectionData(): void
+    {
+        // arrange
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant',
+            'sequra',
+            new AuthorizationCredentials('username', 'password'),
+            '1'
+        );
+        $entity = new ConnectionDataEntity();
+        $entity->setDeployment('sequra');
+        $entity->setStoreId('1');
+        $entity->setConnectionData($connectionData);
+        $this->repository->save($entity);
+
+        // act
+        StoreContext::doWithStore(
+            '1',
+            [$this->connectionDataRepository, 'getConnectionDataByDeploymentId'],
+            ['sequra']
+        );
+
+        // assert
+        $result = $this->repository->select();
+        self::assertCount(1, $result);
+
+        /** @var ConnectionDataEntity $result */
+        $connectionDataEntity = $result[0];
+        $connectionData = $connectionDataEntity->getConnectionData();
+
+        self::assertEquals('sandbox', $connectionData->getEnvironment());
+        self::assertEquals('sequra', $connectionData->getDeployment());
+        self::assertEquals('username', $connectionData->getAuthorizationCredentials()->getUsername());
+        self::assertEquals('password', $connectionData->getAuthorizationCredentials()->getPassword());
+        self::assertEquals('1', $connectionData->getIntegrationId());
     }
 }
