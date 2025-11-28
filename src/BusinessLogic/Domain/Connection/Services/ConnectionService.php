@@ -70,8 +70,7 @@ class ConnectionService
             try {
                 $credentials = $this->credentialsService->validateAndUpdateCredentials($connectionData);
                 $this->credentialsService->updateCountryConfigurationWithNewMerchantIdsAndRemoveOldPaymentMethods($credentials);
-                $integrationId = $this->storeIntegrationService->createStoreIntegration($connectionData);
-                $connectionData->setIntegrationId($integrationId);
+                $this->registerWebhooks($connectionData);
                 $this->saveConnectionData($connectionData);
             } catch (WrongCredentialsException $exception) {
                 $errors[] = $connectionData->getDeployment();
@@ -185,5 +184,31 @@ class ConnectionService
         }
 
         return $connectionData;
+    }
+
+    /**
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     */
+    public function reRegisterWebhooks(ConnectionData $connectionData): void
+    {
+        $this->registerWebhooks($connectionData);
+        $this->saveConnectionData($connectionData);
+    }
+
+    /**
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     */
+    protected function registerWebhooks(ConnectionData $connectionData): void
+    {
+        $integrationId = $this->storeIntegrationService->createStoreIntegration($connectionData);
+        $connectionData->setIntegrationId($integrationId);
     }
 }

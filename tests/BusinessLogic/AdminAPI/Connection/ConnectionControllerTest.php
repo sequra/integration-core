@@ -6,6 +6,7 @@ use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\ConnectionRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\OnboardingRequest;
+use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\ReRegisterWebhookRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\OnboardingDataResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\SuccessfulConnectionResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
@@ -575,6 +576,46 @@ class ConnectionControllerTest extends BaseTestCase
         // Assert
         self::assertNotEmpty($response->toArray());
         self::assertFalse($response->isSuccessful());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testReRegisterWebhookRequestSuccess(): void
+    {
+        // Act
+        $response = AdminAPI::get()->connection('1')->reRegisterWebhooks(
+            new ReRegisterWebhookRequest(
+                BaseProxy::TEST_MODE,
+                'logeecom',
+                'test_username',
+                'test_password',
+                'sequra'
+            )
+        );
+
+        // Assert
+        self::assertTrue($response->isSuccessful());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testReRegisterWebhookRequestToArray(): void
+    {
+        // Act
+        $response = AdminAPI::get()->connection('1')->reRegisterWebhooks(
+            new ReRegisterWebhookRequest(
+                BaseProxy::TEST_MODE,
+                'logeecom',
+                'test_username',
+                'test_password',
+                'sequra'
+            )
+        );
+
+        // Assert
+        self::assertEquals(['success' => true], $response->toArray());
     }
 
     /**
