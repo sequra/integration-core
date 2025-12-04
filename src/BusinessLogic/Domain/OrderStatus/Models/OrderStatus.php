@@ -30,7 +30,7 @@ class OrderStatus
      */
     public function __construct(string $id, string $name)
     {
-        if ($id === "" || empty($name)) {
+        if (trim($id) === '' || trim($name) === '') {
             throw new EmptyOrderStatusParameterException(
                 new TranslatableLabel('No parameter can be an empty string.', 'general.errors.empty')
             );
