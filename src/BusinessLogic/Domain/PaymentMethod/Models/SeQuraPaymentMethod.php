@@ -18,7 +18,7 @@ class SeQuraPaymentMethod
      *
      * @var string[]
      */
-    private const NOT_ALLOWED_MORE_PRODUCT_INFO = [ 'fp1' ];
+    private const NOT_ALLOWED_MORE_PRODUCT_INFO = ['fp1'];
     /**
      * @var string SeQura product code.
      */
@@ -421,7 +421,7 @@ class SeQuraPaymentMethod
      */
     public function isValid(): bool
     {
-        return ! empty($this->product);
+        return !empty($this->product);
     }
 
     /**
@@ -437,7 +437,7 @@ class SeQuraPaymentMethod
      */
     public function shouldShowMoreInfo(): bool
     {
-        return ! in_array($this->product, self::NOT_ALLOWED_MORE_PRODUCT_INFO, true);
+        return !in_array($this->product, self::NOT_ALLOWED_MORE_PRODUCT_INFO, true);
     }
 
     /**
@@ -465,17 +465,13 @@ class SeQuraPaymentMethod
     public static function decode(string $raw): ?SeQuraPaymentMethod
     {
         $data = base64_decode($raw);
-        if (! $data) {
+        if (!$data) {
             return null;
         }
 
-        try {
-            $data = json_decode($data, true);
-        } catch (Throwable $e) {
-            // If depth is outside the allowed range, a ValueError is thrown as of PHP 8.0.0, while previously, an error of level E_WARNING was raised.
-            return null;
-        }
-        if (! is_array($data)) {
+        $data = json_decode($data, true);
+
+        if (!is_array($data)) {
             return null;
         }
         return self::fromArray($data);

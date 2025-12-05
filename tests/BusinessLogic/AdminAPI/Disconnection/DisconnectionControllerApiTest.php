@@ -17,6 +17,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMe
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
@@ -53,7 +54,8 @@ class DisconnectionControllerApiTest extends BaseTestCase
             ServiceRegister::getService(PaymentMethodRepositoryInterface::class),
             ServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
             ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
-            ServiceRegister::getService(TransactionLogRepositoryInterface::class)
+            ServiceRegister::getService(TransactionLogRepositoryInterface::class),
+            ServiceRegister::getService(StoreIntegrationService::class)
         );
 
         TestServiceRegister::registerService(DisconnectService::class, function () {

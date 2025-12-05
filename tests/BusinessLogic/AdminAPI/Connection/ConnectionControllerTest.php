@@ -6,6 +6,7 @@ use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\ConnectionRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\OnboardingRequest;
+use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\ReRegisterWebhookRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\OnboardingDataResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses\SuccessfulConnectionResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
@@ -17,6 +18,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\Http\HttpResponse;
@@ -511,7 +513,8 @@ class ConnectionControllerTest extends BaseTestCase
         // Arrange
         $mockConnectionService = new MockConnectionService(
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
-            TestServiceRegister::getService(CredentialsService::class)
+            TestServiceRegister::getService(CredentialsService::class),
+            TestServiceRegister::getService(StoreIntegrationService::class)
         );
 
         TestServiceRegister::registerService(ConnectionService::class, function () use ($mockConnectionService) {
@@ -549,7 +552,8 @@ class ConnectionControllerTest extends BaseTestCase
         // Arrange
         $mockConnectionService = new MockConnectionService(
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
-            TestServiceRegister::getService(CredentialsService::class)
+            TestServiceRegister::getService(CredentialsService::class),
+            TestServiceRegister::getService(StoreIntegrationService::class)
         );
 
         $mockConnectionService->setThrowError(true);
@@ -572,6 +576,46 @@ class ConnectionControllerTest extends BaseTestCase
         // Assert
         self::assertNotEmpty($response->toArray());
         self::assertFalse($response->isSuccessful());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testReRegisterWebhookRequestSuccess(): void
+    {
+        // Act
+        $response = AdminAPI::get()->connection('1')->reRegisterWebhooks(
+            new ReRegisterWebhookRequest(
+                BaseProxy::TEST_MODE,
+                'logeecom',
+                'test_username',
+                'test_password',
+                'sequra'
+            )
+        );
+
+        // Assert
+        self::assertTrue($response->isSuccessful());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testReRegisterWebhookRequestToArray(): void
+    {
+        // Act
+        $response = AdminAPI::get()->connection('1')->reRegisterWebhooks(
+            new ReRegisterWebhookRequest(
+                BaseProxy::TEST_MODE,
+                'logeecom',
+                'test_username',
+                'test_password',
+                'sequra'
+            )
+        );
+
+        // Assert
+        self::assertEquals(['success' => true], $response->toArray());
     }
 
     /**

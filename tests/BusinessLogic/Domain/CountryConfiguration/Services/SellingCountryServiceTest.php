@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
@@ -43,7 +44,8 @@ class SellingCountryServiceTest extends BaseTestCase
         $this->integrationSellingCountriesService = new MockSellingCountriesService();
         $this->connectionService = new MockConnectionService(
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
-            TestServiceRegister::getService(CredentialsService::class)
+            TestServiceRegister::getService(CredentialsService::class),
+            TestServiceRegister::getService(StoreIntegrationService::class)
         );
 
         $this->sellingCountriesService = new SellingCountriesService(

@@ -10,6 +10,8 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -30,15 +32,23 @@ class ConnectionService
     protected $credentialsService;
 
     /**
+     * @var StoreIntegrationService $storeIntegrationService
+     */
+    protected $storeIntegrationService;
+
+    /**
      * @param ConnectionDataRepositoryInterface $connectionDataRepository
      * @param CredentialsService $credentialsService
+     * @param StoreIntegrationService $storeIntegrationService
      */
     public function __construct(
         ConnectionDataRepositoryInterface $connectionDataRepository,
-        CredentialsService $credentialsService
+        CredentialsService $credentialsService,
+        StoreIntegrationService $storeIntegrationService
     ) {
         $this->connectionDataRepository = $connectionDataRepository;
         $this->credentialsService = $credentialsService;
+        $this->storeIntegrationService = $storeIntegrationService;
     }
 
     /**
@@ -50,6 +60,7 @@ class ConnectionService
      * @throws HttpRequestException
      * @throws WrongCredentialsException
      * @throws PaymentMethodNotFoundException
+     * @throws CapabilitiesEmptyException
      */
     public function connect(array $connections): void
     {
@@ -59,6 +70,7 @@ class ConnectionService
             try {
                 $credentials = $this->credentialsService->validateAndUpdateCredentials($connectionData);
                 $this->credentialsService->updateCountryConfigurationWithNewMerchantIdsAndRemoveOldPaymentMethods($credentials);
+                $this->registerWebhooks($connectionData);
                 $this->saveConnectionData($connectionData);
             } catch (WrongCredentialsException $exception) {
                 $errors[] = $connectionData->getDeployment();
@@ -172,5 +184,31 @@ class ConnectionService
         }
 
         return $connectionData;
+    }
+
+    /**
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     */
+    public function reRegisterWebhooks(ConnectionData $connectionData): void
+    {
+        $this->registerWebhooks($connectionData);
+        $this->saveConnectionData($connectionData);
+    }
+
+    /**
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     */
+    protected function registerWebhooks(ConnectionData $connectionData): void
+    {
+        $integrationId = $this->storeIntegrationService->createStoreIntegration($connectionData);
+        $connectionData->setIntegrationId($integrationId);
     }
 }

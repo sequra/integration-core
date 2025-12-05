@@ -17,6 +17,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\EventsWebhook;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Merchant;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
@@ -27,6 +28,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsReposit
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
+use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
  * Class MerchantOrderRequestBuilderTest.
@@ -72,7 +74,8 @@ class MerchantOrderRequestBuilderTest extends BaseTestCase
         );
         $this->connectionService = new MockConnectionService(
             new MockConnectionDataRepository(),
-            $this->credentialsService
+            $this->credentialsService,
+            TestServiceRegister::getService(StoreIntegrationService::class)
         );
         $this->merchantDataProvider = new MockMerchantDataProvider();
         $this->builder = new MerchantOrderRequestBuilder(
