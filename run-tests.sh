@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#!/bin/bash
+
 set -e
 
 echo -e "\e[32mUnit tests: PHP 7.4\e[39m"

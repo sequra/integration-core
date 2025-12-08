@@ -6,7 +6,7 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrat
 use SeQura\Core\BusinessLogic\SeQuraAPI\HttpRequest;
 
 /**
- * Class StoreIntegrationHttpRequest.
+ * Class CreateStoreIntegrationHttpRequest.
  *
  * @package SeQura\Core\BusinessLogic\SeQuraAPI\StoreIntegration\Requests
  */

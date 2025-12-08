@@ -7,7 +7,7 @@ use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 use Throwable;
 
 /**
- * Class InvalidWebhookUrlException.
+ * Class InvalidUrlException.
  *
  * @package SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions
  */

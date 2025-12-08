@@ -64,7 +64,6 @@ class StoreIntegrationServiceTest extends BaseTestCase
     {
         // arrange
         $this->expectException(CapabilitiesEmptyException::class);
-        ;
 
         //act
         $this->service->createStoreIntegration(new ConnectionData(
