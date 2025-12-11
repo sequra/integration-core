@@ -2,6 +2,8 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models;
 
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+
 /**
  * Class DeleteStoreIntegrationRequest.
  *
@@ -10,38 +12,23 @@ namespace SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models;
 class DeleteStoreIntegrationRequest
 {
     /**
-     * @var string $merchantId
+     * @var ConnectionData $connectionData
      */
-    private $merchantId;
+    private $connectionData;
 
     /**
-     * @var string $integrationId
+     * @param ConnectionData $connectionData
      */
-    private $integrationId;
-
-    /**
-     * @param string $merchantId
-     * @param string $integrationId
-     */
-    public function __construct(string $merchantId, string $integrationId)
+    public function __construct(ConnectionData $connectionData)
     {
-        $this->merchantId = $merchantId;
-        $this->integrationId = $integrationId;
+        $this->connectionData = $connectionData;
     }
 
     /**
-     * @return string
+     * @return ConnectionData
      */
-    public function getIntegrationId(): string
+    public function getConnectionData(): ConnectionData
     {
-        return $this->integrationId;
-    }
-
-    /**
-     * @return string
-     */
-    public function getMerchantId(): string
-    {
-        return $this->merchantId;
+        return $this->connectionData;
     }
 }

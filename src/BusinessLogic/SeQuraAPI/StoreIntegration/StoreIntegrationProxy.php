@@ -2,8 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\SeQuraAPI\StoreIntegration;
 
-use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
-use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\InvalidLocationHeaderException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\LocationHeaderEmptyException;
@@ -12,7 +10,7 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrat
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationResponse;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\ProxyContracts\StoreIntegrationsProxyInterface;
-use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AuthorizedProxyFactory;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\ConnectionProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\StoreIntegration\Requests\CreateStoreIntegrationHttpRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\StoreIntegration\Requests\DeleteStoreIntegrationHttpRequest;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
@@ -25,16 +23,16 @@ use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 class StoreIntegrationProxy implements StoreIntegrationsProxyInterface
 {
     /**
-     * @var AuthorizedProxyFactory $authorizedProxyFactory
+     * @var ConnectionProxyFactory $connectionProxyFactory
      */
-    private $authorizedProxyFactory;
+    private $connectionProxyFactory;
 
     /**
-     * @param AuthorizedProxyFactory $authorizedProxyFactory
+     * @param ConnectionProxyFactory $connectionProxyFactory
      */
-    public function __construct(AuthorizedProxyFactory $authorizedProxyFactory)
+    public function __construct(ConnectionProxyFactory $connectionProxyFactory)
     {
-        $this->authorizedProxyFactory = $authorizedProxyFactory;
+        $this->connectionProxyFactory = $connectionProxyFactory;
     }
 
     /**
@@ -42,8 +40,6 @@ class StoreIntegrationProxy implements StoreIntegrationsProxyInterface
      *
      * @return CreateStoreIntegrationResponse
      *
-     * @throws ConnectionDataNotFoundException
-     * @throws CredentialsNotFoundException
      * @throws DeploymentNotFoundException
      * @throws HttpRequestException
      * @throws InvalidLocationHeaderException
@@ -51,7 +47,7 @@ class StoreIntegrationProxy implements StoreIntegrationsProxyInterface
      */
     public function createStoreIntegration(CreateStoreIntegrationRequest $request): CreateStoreIntegrationResponse
     {
-        $response = $this->authorizedProxyFactory->build($request->getMerchantId())
+        $response = $this->connectionProxyFactory->buildAuthorizedProxy($request->getConnectionData())
             ->post(new CreateStoreIntegrationHttpRequest($request));
 
         $headers = array_change_key_case($response->getHeaders());
@@ -65,14 +61,12 @@ class StoreIntegrationProxy implements StoreIntegrationsProxyInterface
      *
      * @return DeleteStoreIntegrationResponse
      *
-     * @throws ConnectionDataNotFoundException
-     * @throws CredentialsNotFoundException
      * @throws DeploymentNotFoundException
      * @throws HttpRequestException
      */
     public function deleteStoreIntegration(DeleteStoreIntegrationRequest $request): DeleteStoreIntegrationResponse
     {
-        $this->authorizedProxyFactory->build($request->getMerchantId())
+        $this->connectionProxyFactory->buildAuthorizedProxy($request->getConnectionData())
             ->delete(new DeleteStoreIntegrationHttpRequest($request));
 
         return new DeleteStoreIntegrationResponse();

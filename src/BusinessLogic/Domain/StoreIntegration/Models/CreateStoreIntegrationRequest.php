@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models;
 
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
 use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
 
@@ -13,9 +14,9 @@ use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
 class CreateStoreIntegrationRequest
 {
     /**
-     * @var string $merchantId
+     * @var ConnectionData $connectionData
      */
-    private $merchantId;
+    private $connectionData;
 
     /**
      * @var URL $webhookUrl
@@ -28,27 +29,27 @@ class CreateStoreIntegrationRequest
     private $capabilities;
 
     /**
-     * @param string $merchantId
+     * @param ConnectionData $connectionData
      * @param URL $webhookUrl
      * @param Capability[] $capabilities
      *
      * @throws CapabilitiesEmptyException
      */
-    public function __construct(string $merchantId, URL $webhookUrl, array $capabilities)
+    public function __construct(ConnectionData $connectionData, URL $webhookUrl, array $capabilities)
     {
         $this->validateCapabilities($capabilities);
 
-        $this->merchantId = $merchantId;
+        $this->connectionData = $connectionData;
         $this->webhookUrl = $webhookUrl;
         $this->capabilities = $capabilities;
     }
 
     /**
-     * @return string
+     * @return ConnectionData
      */
-    public function getMerchantId(): string
+    public function getConnectionData(): ConnectionData
     {
-        return $this->merchantId;
+        return $this->connectionData;
     }
 
     /**

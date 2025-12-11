@@ -58,7 +58,7 @@ class StoreIntegrationService
         $webhookUrl = $this->getWebhookUrl($connectionData);
         $capabilities = $this->getSupportedCapabilities();
         $response = $this->storeIntegrationsProxy->createStoreIntegration(
-            new CreateStoreIntegrationRequest($connectionData->getMerchantId(), $webhookUrl, $capabilities)
+            new CreateStoreIntegrationRequest($connectionData, $webhookUrl, $capabilities)
         );
 
         return $response->getIntegrationId();
@@ -72,10 +72,7 @@ class StoreIntegrationService
     public function deleteStoreIntegration(ConnectionData $connectionData): void
     {
         $this->storeIntegrationsProxy->deleteStoreIntegration(
-            new DeleteStoreIntegrationRequest(
-                $connectionData->getMerchantId(),
-                $connectionData->getIntegrationId()
-            )
+            new DeleteStoreIntegrationRequest($connectionData)
         );
     }
 

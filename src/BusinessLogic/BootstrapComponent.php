@@ -805,7 +805,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             StoreIntegrationsProxyInterface::class,
             static function () {
                 return new StoreIntegrationProxy(
-                    ServiceRegister::getService(AuthorizedProxyFactory::class)
+                    ServiceRegister::getService(ConnectionProxyFactory::class)
                 );
             }
         );

@@ -672,7 +672,7 @@ class BaseTestCase extends TestCase
             StoreIntegrationsProxyInterface::class,
             static function () {
                 return new StoreIntegrationProxy(
-                    TestServiceRegister::getService(AuthorizedProxyFactory::class)
+                    TestServiceRegister::getService(ConnectionProxyFactory::class)
                 );
             }
         );

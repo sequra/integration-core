@@ -70,6 +70,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
      * @return void
      *
      * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
      */
     public function testCreateStoreIntegrationRequestUrl(): void
     {
@@ -81,8 +82,14 @@ class StoreIntegrationProxyTest extends BaseTestCase
                 __DIR__ . '/../../Common/ApiResponses/StoreIntegration/CreateStoreIntegrationResponse.json'
             ))
         ]);
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
 
-        $request = new CreateStoreIntegrationRequest('merchant1', new URL('https://test.com'), [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'), [Capability::general()]);
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -96,6 +103,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
      * @return void
      *
      * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
      */
     public function testCreateStoreIntegrationAuthHeader(): void
     {
@@ -107,8 +115,14 @@ class StoreIntegrationProxyTest extends BaseTestCase
                 __DIR__ . '/../../Common/ApiResponses/StoreIntegration/CreateStoreIntegrationResponse.json'
             ))
         ]);
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
 
-        $request = new CreateStoreIntegrationRequest('merchant1', new URL('https://test.com'), [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'), [Capability::general()]);
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -122,6 +136,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
      * @return void
      *
      * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
      */
     public function testCreateStoreIntegrationMethod(): void
     {
@@ -133,8 +148,14 @@ class StoreIntegrationProxyTest extends BaseTestCase
                 __DIR__ . '/../../Common/ApiResponses/StoreIntegration/CreateStoreIntegrationResponse.json'
             ))
         ]);
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
 
-        $request = new CreateStoreIntegrationRequest('merchant1', new URL('https://test.com'), [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'), [Capability::general()]);
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -148,6 +169,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
      * @return void
      *
      * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
      */
     public function testCreateStoreIntegrationRequestBody(): void
     {
@@ -159,8 +181,14 @@ class StoreIntegrationProxyTest extends BaseTestCase
                 __DIR__ . '/../../Common/ApiResponses/StoreIntegration/CreateStoreIntegrationResponse.json'
             ))
         ]);
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
 
-        $request = new CreateStoreIntegrationRequest('merchant1', new URL('https://test.com'), [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'), [Capability::general()]);
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -179,6 +207,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
      * @return void
      *
      * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
      */
     public function testCreateStoreIntegrationResponse(): void
     {
@@ -190,8 +219,14 @@ class StoreIntegrationProxyTest extends BaseTestCase
                 __DIR__ . '/../../Common/ApiResponses/StoreIntegration/CreateStoreIntegrationResponse.json'
             ))
         ]);
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
 
-        $request = new CreateStoreIntegrationRequest('merchant1', new URL('https://test.com'), [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'), [Capability::general()]);
         // act
         $response = $this->proxy->createStoreIntegration($request);
 
@@ -201,6 +236,8 @@ class StoreIntegrationProxyTest extends BaseTestCase
 
     /**
      * @return void
+     *
+     * @throws InvalidEnvironmentException
      */
     public function testDeleteStoreIntegrationRequestUrl(): void
     {
@@ -210,8 +247,15 @@ class StoreIntegrationProxyTest extends BaseTestCase
                 __DIR__ . '/../../Common/ApiResponses/StoreIntegration/DeleteStoreIntegrationResponse.json'
             ))
         ]);
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password'),
+            '4'
+        );
 
-        $request = new DeleteStoreIntegrationRequest('merchant1', '4');
+        $request = new DeleteStoreIntegrationRequest($connectionData);
         // act
         $this->proxy->deleteStoreIntegration($request);
 
@@ -223,6 +267,8 @@ class StoreIntegrationProxyTest extends BaseTestCase
 
     /**
      * @return void
+     *
+     * @throws InvalidEnvironmentException
      */
     public function testDeleteStoreIntegrationAuthHeader(): void
     {
@@ -232,8 +278,14 @@ class StoreIntegrationProxyTest extends BaseTestCase
                 __DIR__ . '/../../Common/ApiResponses/StoreIntegration/DeleteStoreIntegrationResponse.json'
             ))
         ]);
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
 
-        $request = new DeleteStoreIntegrationRequest('merchant1', '4');
+        $request = new DeleteStoreIntegrationRequest($connectionData);
         // act
         $this->proxy->deleteStoreIntegration($request);
 
@@ -245,6 +297,8 @@ class StoreIntegrationProxyTest extends BaseTestCase
 
     /**
      * @return void
+     *
+     * @throws InvalidEnvironmentException
      */
     public function testDeleteStoreIntegrationMethod(): void
     {
@@ -254,8 +308,14 @@ class StoreIntegrationProxyTest extends BaseTestCase
                 __DIR__ . '/../../Common/ApiResponses/StoreIntegration/DeleteStoreIntegrationResponse.json'
             ))
         ]);
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
 
-        $request = new DeleteStoreIntegrationRequest('merchant1', '4');
+        $request = new DeleteStoreIntegrationRequest($connectionData);
         // act
         $this->proxy->deleteStoreIntegration($request);
 
@@ -267,6 +327,8 @@ class StoreIntegrationProxyTest extends BaseTestCase
 
     /**
      * @return void
+     *
+     * @throws InvalidEnvironmentException
      */
     public function testDeleteStoreIntegrationRequestBody(): void
     {
@@ -276,8 +338,13 @@ class StoreIntegrationProxyTest extends BaseTestCase
                 __DIR__ . '/../../Common/ApiResponses/StoreIntegration/DeleteStoreIntegrationResponse.json'
             ))
         ]);
-
-        $request = new DeleteStoreIntegrationRequest('merchant1', '4');
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+        $request = new DeleteStoreIntegrationRequest($connectionData);
         // act
         $this->proxy->deleteStoreIntegration($request);
 
@@ -290,6 +357,8 @@ class StoreIntegrationProxyTest extends BaseTestCase
 
     /**
      * @return void
+     *
+     * @throws InvalidEnvironmentException
      */
     public function testDeleteStoreIntegrationResponse(): void
     {
@@ -299,8 +368,13 @@ class StoreIntegrationProxyTest extends BaseTestCase
                 __DIR__ . '/../../Common/ApiResponses/StoreIntegration/DeleteStoreIntegrationResponse.json'
             ))
         ]);
-
-        $request = new DeleteStoreIntegrationRequest('merchant1', '4');
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+        $request = new DeleteStoreIntegrationRequest($connectionData);
         // act
         $response = $this->proxy->deleteStoreIntegration($request);
 
