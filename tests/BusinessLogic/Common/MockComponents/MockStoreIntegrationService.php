@@ -23,12 +23,19 @@ class MockStoreIntegrationService extends StoreIntegrationService
     private $deleted = false;
 
     /**
+     * @var array $createdIntegrationIds
+     */
+    private $createdIntegrationIds = [];
+
+    /**
      * @param ConnectionData $connectionData
      *
      * @return string
      */
     public function createStoreIntegration(ConnectionData $connectionData): string
     {
+        $this->createdIntegrationIds[$connectionData->getMerchantId()] = true;
+
         return $this->integrationId;
     }
 
@@ -53,5 +60,13 @@ class MockStoreIntegrationService extends StoreIntegrationService
     public function isDeleted(): bool
     {
         return $this->deleted;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCreatedIntegrationIds(): array
+    {
+        return $this->createdIntegrationIds;
     }
 }
