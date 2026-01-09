@@ -102,23 +102,44 @@ class StoreIntegrationService
     protected function getWebhookUrl(ConnectionData $connectionData): URL
     {
         $url = $this->integrationService->getWebhookUrl();
-
-        $signatureQuery = new Query(
-            'signature',
-            HMAC::generateHMAC(
-                [
-                    StoreContext::getInstance()->getStoreId(),
-                    $url->getPath(),
-                    $connectionData->getAuthorizationCredentials()->getUsername(),
-                    $connectionData->getMerchantId()
-                ],
-                $connectionData->getAuthorizationCredentials()->getPassword()
-            )
-        );
-
-        $url->addQuery($signatureQuery);
-        $url->addQuery(new Query('storeId', StoreContext::getInstance()->getStoreId()));
+        $this->addQueriesToWebhookUrl($url, $connectionData);
 
         return $url;
+    }
+
+    /**
+     * Adds storeId and signature to webhook url.
+     *
+     * @param URL $webhookUrl
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     */
+    protected function addQueriesToWebhookUrl(URL $webhookUrl, ConnectionData $connectionData): void
+    {
+        $webhookUrl->addQuery(new Query('storeId', StoreContext::getInstance()->getStoreId()));
+        $webhookUrl->addQuery(new Query('signature', $this->generateWebhookSignature($webhookUrl, $connectionData)));
+    }
+
+    /**
+     * Generates a webhook signature using HMAC based on the provided URL and connection data.
+     *
+     * @param URL $webhookUrl The URL of the webhook for which the signature is generated.
+     * @param ConnectionData $connectionData The connection data containing authorization credentials and merchant
+     * information.
+     *
+     * @return string The generated HMAC-based signature for the webhook.
+     */
+    protected function generateWebhookSignature(URL $webhookUrl, ConnectionData $connectionData): string
+    {
+        return HMAC::generateHMAC(
+            [
+                StoreContext::getInstance()->getStoreId(),
+                $webhookUrl->getPath(),
+                $connectionData->getAuthorizationCredentials()->getUsername(),
+                $connectionData->getMerchantId()
+            ],
+            $connectionData->getAuthorizationCredentials()->getPassword()
+        );
     }
 }
