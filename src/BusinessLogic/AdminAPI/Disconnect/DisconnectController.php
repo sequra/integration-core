@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\Disconnect;
 use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\Requests\DisconnectRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\Responses\DisconnectResponse;
 use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 
 /**
  * Class DisconnectController
@@ -32,6 +33,8 @@ class DisconnectController
      * @param DisconnectRequest $disconnectRequest
      *
      * @return DisconnectResponse
+     *
+     * @throws PaymentMethodNotFoundException
      */
     public function disconnect(DisconnectRequest $disconnectRequest): DisconnectResponse
     {

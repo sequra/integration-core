@@ -86,6 +86,8 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidatio
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\ProxyContracts\StoreIntegrationsProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\BusinessLogic\Domain\UIState\Services\UIStateService;
 use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
@@ -98,6 +100,7 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\ConnectionProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\StoreIntegration\StoreIntegrationProxy;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogService;
 use SeQura\Core\BusinessLogic\Utility\EncryptorInterface;
@@ -127,10 +130,13 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsReposit
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
 use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
@@ -253,7 +259,8 @@ class BaseTestCase extends TestCase
             ConnectionService::class => static function () {
                 return new ConnectionService(
                     TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
-                    TestServiceRegister::getService(CredentialsService::class)
+                    TestServiceRegister::getService(CredentialsService::class),
+                    TestServiceRegister::getService(StoreIntegrationService::class)
                 );
             },
             CredentialsService::class => static function () {
@@ -528,7 +535,8 @@ class BaseTestCase extends TestCase
             static function () {
                 return new MockConnectionService(
                     TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
-                    TestServiceRegister::getService(CredentialsService::class)
+                    TestServiceRegister::getService(CredentialsService::class),
+                    TestServiceRegister::getService(StoreIntegrationService::class)
                 );
             }
         );
@@ -659,6 +667,26 @@ class BaseTestCase extends TestCase
                 return new MockOrderCreation();
             }
         );
+
+        TestServiceRegister::registerService(
+            StoreIntegrationsProxyInterface::class,
+            static function () {
+                return new StoreIntegrationProxy(
+                    TestServiceRegister::getService(ConnectionProxyFactory::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            StoreIntegrationService::class,
+            static function () {
+                return new MockStoreIntegrationService(
+                    new MockIntegrationStoreIntegrationService(),
+                    new MockStoreIntegrationProxy()
+                );
+            }
+        );
+
 
         TestRepositoryRegistry::registerRepository(ConfigEntity::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(

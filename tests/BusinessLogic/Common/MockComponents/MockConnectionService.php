@@ -32,6 +32,11 @@ class MockConnectionService extends ConnectionService
     private $connectionData = null;
 
     /**
+     * @var ConnectionData[] $allConnectionData
+     */
+    private $allConnectionData = [];
+
+    /**
      * @param array $connections
      *
      * @return void
@@ -112,5 +117,27 @@ class MockConnectionService extends ConnectionService
         }
 
         return $this->connectionData;
+    }
+
+    /**
+     * @return ConnectionData[]
+     */
+    public function getAllConnectionData(): array
+    {
+        if (empty($this->allConnectionData)) {
+            return parent::getAllConnectionData();
+        }
+
+        return $this->allConnectionData;
+    }
+
+    /**
+     * @param ConnectionData[] $allConnectionData
+     *
+     * @return void
+     */
+    public function setMockAllConnectionData(array $allConnectionData): void
+    {
+        $this->allConnectionData = $allConnectionData;
     }
 }

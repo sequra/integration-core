@@ -5,17 +5,17 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 
 /**
- * Class SuccessfulOnboardingResponse
+ * Class ReRegisterWebhookResponse.
  *
  * @package SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses
  */
-class SuccessfulOnboardingResponse extends Response
+class ReRegisterWebhookResponse extends Response
 {
     /**
      * @inheritDoc
      */
     public function toArray(): array
     {
-        return [];
+        return ['success' => true];
     }
 }

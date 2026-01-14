@@ -63,6 +63,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfig
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
+use SeQura\Core\BusinessLogic\Domain\Integration\StoreIntegration\StoreIntegrationServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
@@ -89,6 +90,8 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreIdProvider;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\ProxyContracts\StoreIntegrationsProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\BusinessLogic\Domain\UIState\Services\UIStateService;
 use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
@@ -102,6 +105,7 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\ConnectionProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\StoreIntegration\StoreIntegrationProxy;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\AbortedListener;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\CreateListener;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\FailedListener;
@@ -310,7 +314,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new ConnectionService(
                     ServiceRegister::getService(ConnectionDataRepositoryInterface::class),
-                    ServiceRegister::getService(CredentialsService::class)
+                    ServiceRegister::getService(CredentialsService::class),
+                    ServiceRegister::getService(StoreIntegrationService::class)
                 );
             }
         );
@@ -445,7 +450,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(PaymentMethodRepositoryInterface::class),
                     ServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
                     ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
-                    ServiceRegister::getService(TransactionLogRepositoryInterface::class)
+                    ServiceRegister::getService(TransactionLogRepositoryInterface::class),
+                    ServiceRegister::getService(StoreIntegrationService::class)
                 );
             }
         );
@@ -558,6 +564,16 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(CredentialsService::class),
                     ServiceRegister::getService(MerchantDataProviderInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            StoreIntegrationService::class,
+            static function () {
+                return new StoreIntegrationService(
+                    ServiceRegister::getService(StoreIntegrationServiceInterface::class),
+                    ServiceRegister::getService(StoreIntegrationsProxyInterface::class)
                 );
             }
         );
@@ -781,6 +797,15 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new DeploymentsProxy(
                     ServiceRegister::getService(HttpClient::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            StoreIntegrationsProxyInterface::class,
+            static function () {
+                return new StoreIntegrationProxy(
+                    ServiceRegister::getService(ConnectionProxyFactory::class)
                 );
             }
         );
