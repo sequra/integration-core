@@ -16,6 +16,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
@@ -723,6 +724,165 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new DeploymentsController(
                     ServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        // Configuration Webhook API
+        ServiceRegister::registerService(
+            ConfigurationWebhookAPI\Controller\ConfigurationWebhookController::class,
+            static function () {
+                return new ConfigurationWebhookAPI\Controller\ConfigurationWebhookController(
+                    ServiceRegister::getService(ConfigurationWebhookAPI\Handlers\TopicHandlerRegistry::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            ConfigurationWebhookAPI\Handlers\TopicHandlerRegistry::class,
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\TopicHandlerRegistry();
+            }
+        );
+
+        // Configuration Webhook Handlers - General Settings
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings\GetGeneralSettingsHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\GeneralSettings\GetGeneralSettingsHandler(
+                    ServiceRegister::getService(GeneralSettingsController::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings\SaveGeneralSettingsHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\GeneralSettings\SaveGeneralSettingsHandler(
+                    ServiceRegister::getService(GeneralSettingsController::class)
+                );
+            }
+        );
+
+        // Configuration Webhook Handlers - Widget Settings
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\GetWidgetSettingsHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\WidgetSettings\GetWidgetSettingsHandler(
+                    ServiceRegister::getService(PromotionalWidgetsController::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\SaveWidgetSettingsHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\WidgetSettings\SaveWidgetSettingsHandler(
+                    ServiceRegister::getService(PromotionalWidgetsController::class)
+                );
+            }
+        );
+
+        // Configuration Webhook Handlers - Order Status
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\OrderStatus\GetOrderStatusListHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\OrderStatus\GetOrderStatusListHandler(
+                    ServiceRegister::getService(OrderStatusSettingsController::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\OrderStatus\GetOrderStatusSettingsHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\OrderStatus\GetOrderStatusSettingsHandler(
+                    ServiceRegister::getService(OrderStatusSettingsController::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\OrderStatus\SaveOrderStatusSettingsHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\OrderStatus\SaveOrderStatusSettingsHandler(
+                    ServiceRegister::getService(OrderStatusSettingsController::class)
+                );
+            }
+        );
+
+        // Configuration Webhook Handlers - Advanced Settings
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\GetAdvancedSettingsHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\AdvancedSettings\GetAdvancedSettingsHandler(
+                    ServiceRegister::getService(Domain\Integration\AdvancedSettings\AdvancedSettingsServiceInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\SaveAdvancedSettingsHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\AdvancedSettings\SaveAdvancedSettingsHandler(
+                    ServiceRegister::getService(Domain\Integration\AdvancedSettings\AdvancedSettingsServiceInterface::class)
+                );
+            }
+        );
+
+        // Configuration Webhook Handlers - Log
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Log\GetLogContentHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\Log\GetLogContentHandler(
+                    ServiceRegister::getService(Domain\Integration\Log\LogServiceInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Log\RemoveLogContentHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\Log\RemoveLogContentHandler(
+                    ServiceRegister::getService(Domain\Integration\Log\LogServiceInterface::class)
+                );
+            }
+        );
+
+        // Configuration Webhook Handlers - Shop
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Shop\GetShopCategoriesHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\Shop\GetShopCategoriesHandler(
+                    ServiceRegister::getService(GeneralSettingsController::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Shop\GetShopProductsHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\Shop\GetShopProductsHandler(
+                    ServiceRegister::getService(Domain\Integration\ShopProduct\ShopProductServiceInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Shop\GetSellingCountriesHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\Shop\GetSellingCountriesHandler(
+                    ServiceRegister::getService(CountryConfigurationController::class)
+                );
+            }
+        );
+
+        // Configuration Webhook Handlers - Store
+        ServiceRegister::registerService(
+            'SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Store\GetStoreInfoHandler',
+            static function () {
+                return new ConfigurationWebhookAPI\Handlers\Store\GetStoreInfoHandler(
+                    ServiceRegister::getService(Domain\Integration\StoreInfo\StoreInfoServiceInterface::class)
                 );
             }
         );
