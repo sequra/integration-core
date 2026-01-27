@@ -1,0 +1,978 @@
+{
+	"info": {
+		"_postman_id": "a9af8e65-a2c9-4b6e-b4bb-333e622c1720",
+		"name": "SeQura Settings API",
+		"description": "Collection of SeQura WordPress plugin settings API endpoints extracted from HAR file",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34793316",
+		"_collection_link": "https://sequra.postman.co/workspace/seQura~f92e360e-cddd-4a48-ad4e-c1de0c324abf/collection/26169644-a9af8e65-a2c9-4b6e-b4bb-333e622c1720?action=share&source=collection_link&creator=34793316"
+	},
+	"item": [
+		{
+			"name": "Webhook",
+			"item": [
+				{
+					"name": "Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"topic\": \"get-order-status-list\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{mock_server_url}}/webhook",
+							"host": [
+								"{{mock_server_url}}"
+							],
+							"path": [
+								"webhook"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "save-general-settings",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"save-general-settings\",\n    \"showSeQuraCheckoutAsHostedPage\": false,\n    \"sendOrderReportsPeriodicallyToSeQura\": false,\n    \"allowedIPAddresses\": [\n        \"127.0.0.1\"\n    ],\n    \"excludedCategories\": [\n        \"16\"\n    ],\n    \"excludedProducts\": [\n        \"1\",\n        \"2\"\n    ],\n    \"sellingCountries\": [\n        \"ES\",\n        \"FR\",\n        \"IT\",\n        \"PT\"\n    ],\n    \"enabledForServices\": [],\n    \"allowFirstServicePaymentDelay\": [],\n    \"allowServiceRegistrationItems\": [],\n    \"defaultServicesEndDate\": \"P1Y\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								},
+								{
+									"key": "Topic",
+									"value": "save-general-settings",
+									"description": ""
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "[]"
+						},
+						{
+							"name": "save-advanced-settings",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"save-advanced-settings\",\n    \"isEnabled\": false,\n    \"level\": 3\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								},
+								{
+									"key": "Topic",
+									"value": "save-general-settings",
+									"description": ""
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "[]"
+						},
+						{
+							"name": "remove-log-content",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"remove-log-content\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								},
+								{
+									"key": "Topic",
+									"value": "save-general-settings",
+									"description": ""
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "[]"
+						},
+						{
+							"name": "save-widget-settings",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"save-widget-settings\",\n    \"displayWidgetOnProductPage\": true,\n    \"widgetStyles\": \"{\\\"alignment\\\":\\\"center\\\",\\\"amount-font-bold\\\":\\\"true\\\",\\\"amount-font-color\\\":\\\"#1C1C1C\\\",\\\"amount-font-size\\\":\\\"15\\\",\\\"background-color\\\":\\\"white\\\",\\\"border-color\\\":\\\"#B1AEBA\\\",\\\"border-radius\\\":\\\"\\\",\\\"class\\\":\\\"\\\",\\\"font-color\\\":\\\"#1C1C1C\\\",\\\"link-font-color\\\":\\\"#1C1C1C\\\",\\\"link-underline\\\":\\\"true\\\",\\\"no-costs-claim\\\":\\\"\\\",\\\"size\\\":\\\"M\\\",\\\"starting-text\\\":\\\"only\\\",\\\"type\\\":\\\"banner\\\"}\",\n    \"showInstallmentAmountInProductListing\": true,\n    \"showInstallmentAmountInCartPage\": true,\n    \"productPriceSelector\": \".wc-block-components-product-price>.amount,.wc-block-components-product-price ins .amount\",\n    \"altProductPriceSelector\": \".woocommerce-variation-price .price>.amount,.woocommerce-variation-price .price ins .amount\",\n    \"altProductPriceTriggerSelector\": \".variations\",\n    \"defaultProductLocationSelector\": \".summary>.price\",\n    \"customLocations\": [\n        {\n            \"selForTarget\": \"#add-to-cart\",\n            \"product\": \"i1\",\n            \"widgetStyles\": \"{\\\"alignment\\\":\\\"center\\\",\\\"amount-font-bold\\\":\\\"true\\\",\\\"amount-font-color\\\":\\\"#1C1C1C\\\",\\\"amount-font-size\\\":\\\"15\\\",\\\"background-color\\\":\\\"white\\\",\\\"border-color\\\":\\\"#B1AEBA\\\",\\\"border-radius\\\":\\\"\\\",\\\"class\\\":\\\"\\\",\\\"font-color\\\":\\\"#1C1C1C\\\",\\\"link-font-color\\\":\\\"#1C1C1C\\\",\\\"link-underline\\\":\\\"true\\\",\\\"no-costs-claim\\\":\\\"\\\",\\\"size\\\":\\\"M\\\",\\\"starting-text\\\":\\\"only\\\",\\\"type\\\":\\\"banner\\\",\\\"branding\\\":\\\"black\\\"}\",\n            \"displayWidget\": true\n        },\n        {\n            \"selForTarget\": \"\",\n            \"product\": \"sp1\",\n            \"widgetStyles\": \"\",\n            \"displayWidget\": false\n        }\n    ],\n    \"cartPriceSelector\": \".wp-block-woocommerce-cart-totals-block .wc-block-components-totals-footer-item .wc-block-components-totals-item__value\",\n    \"cartLocationSelector\": \".wp-block-woocommerce-cart-totals-block .wc-block-components-totals-footer-item\",\n    \"widgetOnCartPage\": \"pp3\",\n    \"listingPriceSelector\": \".product .wc-block-components-product-price>.amount:first-child,.product .wc-block-components-product-price ins .amount\",\n    \"listingLocationSelector\": \".product .wc-block-components-product-price\",\n    \"widgetOnListingPage\": \"pp3\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								},
+								{
+									"key": "Topic",
+									"value": "save-general-settings",
+									"description": ""
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "[]"
+						},
+						{
+							"name": "save-order-status-settings",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"save-order-status-settings\",\n    \"orderStatusMappings\": [\n        {\n            \"sequraStatus\": \"approved\",\n            \"shopStatus\": \"wc-processing\"\n        },\n        {\n            \"sequraStatus\": \"needs_review\",\n            \"shopStatus\": \"wc-pending\"\n        },\n        {\n            \"sequraStatus\": \"cancelled\",\n            \"shopStatus\": \"wc-cancelled\"\n        },\n        {\n            \"sequraStatus\": \"shipped\",\n            \"shopStatus\": \"wc-completed\"\n        }\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								},
+								{
+									"key": "Topic",
+									"value": "save-order-status-mappings",
+									"description": ""
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "[]"
+						},
+						{
+							"name": "store-info",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-mock-match-request-body",
+										"value": "1",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"get-store-info\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 05 Nov 2025 12:31:54 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Apache/2.4.62 (Debian)"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "PHP/8.2.27"
+								},
+								{
+									"key": "X-Robots-Tag",
+									"value": "noindex"
+								},
+								{
+									"key": "Link",
+									"value": "<http://localhost.sequrapi.com:8000/wp-json/>; rel=\"https://api.w.org/\""
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "Access-Control-Expose-Headers",
+									"value": "X-WP-Total, X-WP-TotalPages, Link"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type"
+								},
+								{
+									"key": "X-WP-Nonce",
+									"value": "715aef0ef2"
+								},
+								{
+									"key": "Allow",
+									"value": "GET"
+								},
+								{
+									"key": "Expires",
+									"value": "Wed, 11 Jan 1984 05:00:00 GMT"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, must-revalidate, max-age=0, no-store, private"
+								},
+								{
+									"key": "Content-Length",
+									"value": "26"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5, max=100"
+								},
+								{
+									"key": "Connection",
+									"value": "Keep-Alive"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": "",
+									"type": "text"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"store_name\": \"Store Name\",\n    \"store_url\": \"https://store.com\",\n    \"platform\": \"magento\",\n    \"platform_version\": \"8.2\",\n    \"plugin_version\": \"7.2.1\",\n    \"php_version\": \"7.4\",\n    \"db\": \"mysql 8.0.0\",\n    \"os\": \"linux\",\n    \"plugins\": [\n        \"asdfasdfasdf\",\n        \"rocket cache\",\n        \"otro plugin\",\n        \"y otro mas\"\n    ]\n}"
+						},
+						{
+							"name": "general-settings",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-mock-match-request-body",
+										"value": "1",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"get-general-settings\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								},
+								{
+									"key": "Topic",
+									"value": "get-general-settings",
+									"description": ""
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n    \"sendOrderReportsPeriodicallyToSeQura\": false,\n    \"showSeQuraCheckoutAsHostedPage\": true,\n    \"allowedIPAddresses\": [\n        \"127.0.0.1\"\n    ],\n    \"excludedProducts\": [\n        {\"id\": \"1\", \"name\": \"Product 001\"},\n        {\"id\": \"11\", \"name\": \"Product 011\"}\n    ],\n    \"excludedCategories\": [\n        {\"id\": \"16\", \"name\": \"Accessories\"}\n    ],\n    \"sellingCountries\": [\n        \"ES\",\n        \"FR\",\n        \"IT\",\n        \"PT\"\n    ],\n    \"enabledForServices\": [\n        \"ES\"\n    ],\n    \"allowFirstServicePaymentDelay\": [\n        \"ES\",\"FR\",\"IT\"\n    ],\n    \"allowServiceRegistrationItems\": [\n        \"ES\"\n    ],\n    \"defaultServicesEndDate\": \"P1Y\"\n}"
+						},
+						{
+							"name": "widget-settings",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-mock-match-request-body",
+										"value": "1",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"get-widget-settings\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "Topic",
+									"value": "get-general-settings",
+									"description": ""
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n    \"paymentMethods\": [\n        {\n            \"category\": \"part_payment\",\n            \"product\": \"pp3\",\n            \"title\": \"Payez en plusieurs fois/Pagamento a rate/Pagamento Fracionado/Paga Fraccionado\"\n        },\n        {\n            \"category\": \"part_payment\",\n            \"product\": \"sp1\",\n            \"title\": \"Divide tu pago en 3\"\n        },\n        {\n            \"category\": \"pay_later\",\n            \"product\": \"i1\",\n            \"title\": \"Paga Después\"\n        }\n    ],\n    \"paymentMethodCategoriesForProductPage\": [\n        \"part_payment\",\n        \"pay_later\"\n    ],\n    \"paymentMethodCategoriesForCart\": [\n        \"part_payment\",\n        \"pay_later\"\n    ],\n    \"paymentMethodCategoriesForListing\": [\n        \"part_payment\"\n    ],\n    \"displayWidgetOnProductPage\": true,\n    \"showInstallmentAmountInProductListing\": true,\n    \"showInstallmentAmountInCartPage\": true,\n    \"productPriceSelector\": \".wc-block-components-product-price>.amount,.wc-block-components-product-price ins .amount\",\n    \"defaultProductLocationSelector\": \".summary>.price\",\n    \"altProductPriceSelector\": \".woocommerce-variation-price .price>.amount,.woocommerce-variation-price .price ins .amount\",\n    \"altProductPriceTriggerSelector\": \".variations\",\n    \"customLocations\": [\n        {\n            \"product\": \"i1\",\n            \"selForTarget\": \"#add-to-cart\",\n            \"displayWidget\": true,\n            \"widgetStyles\": \"{\\\"alignment\\\":\\\"center\\\",\\\"amount-font-bold\\\":\\\"true\\\",\\\"amount-font-color\\\":\\\"#1C1C1C\\\",\\\"amount-font-size\\\":\\\"15\\\",\\\"background-color\\\":\\\"white\\\",\\\"border-color\\\":\\\"#B1AEBA\\\",\\\"border-radius\\\":\\\"\\\",\\\"class\\\":\\\"\\\",\\\"font-color\\\":\\\"#1C1C1C\\\",\\\"link-font-color\\\":\\\"#1C1C1C\\\",\\\"link-underline\\\":\\\"true\\\",\\\"no-costs-claim\\\":\\\"\\\",\\\"size\\\":\\\"M\\\",\\\"starting-text\\\":\\\"only\\\",\\\"type\\\":\\\"banner\\\",\\\"branding\\\":\\\"black\\\"}\"\n        },\n        {\n            \"product\": \"sp1\",\n            \"selForTarget\": \"\",\n            \"displayWidget\": false,\n            \"widgetStyles\": \"\"\n        }\n    ],\n    \"cartPriceSelector\": \".wp-block-woocommerce-cart-totals-block .wc-block-components-totals-footer-item .wc-block-components-totals-item__value\",\n    \"cartLocationSelector\": \".wp-block-woocommerce-cart-totals-block .wc-block-components-totals-footer-item\",\n    \"widgetOnCartPage\": \"pp3\",\n    \"listingPriceSelector\": \".product .wc-block-components-product-price>.amount:first-child,.product .wc-block-components-product-price ins .amount\",\n    \"listingLocationSelector\": \".product .wc-block-components-product-price\",\n    \"widgetOnListingPage\": \"pp3\",\n    \"widgetStyles\": \"{\\\"alignment\\\":\\\"center\\\",\\\"amount-font-bold\\\":\\\"true\\\",\\\"amount-font-color\\\":\\\"#1C1C1C\\\",\\\"amount-font-size\\\":\\\"15\\\",\\\"background-color\\\":\\\"white\\\",\\\"border-color\\\":\\\"#B1AEBA\\\",\\\"border-radius\\\":\\\"\\\",\\\"class\\\":\\\"\\\",\\\"font-color\\\":\\\"#1C1C1C\\\",\\\"link-font-color\\\":\\\"#1C1C1C\\\",\\\"link-underline\\\":\\\"true\\\",\\\"no-costs-claim\\\":\\\"\\\",\\\"size\\\":\\\"M\\\",\\\"starting-text\\\":\\\"only\\\",\\\"type\\\":\\\"banner\\\"}\"\n}"
+						},
+						{
+							"name": "get-order-status-list",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-mock-match-request-body",
+										"value": "1",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"get-order-status-list\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								},
+								{
+									"key": "Topic",
+									"value": "get-order-status-list",
+									"description": ""
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "[\n    {\n        \"id\": \"wc-pending\",\n        \"name\": \"Pending payment\"\n    },\n    {\n        \"id\": \"wc-processing\",\n        \"name\": \"Processing\"\n    },\n    {\n        \"id\": \"wc-on-hold\",\n        \"name\": \"On hold\"\n    },\n    {\n        \"id\": \"wc-completed\",\n        \"name\": \"Completed\"\n    },\n    {\n        \"id\": \"wc-cancelled\",\n        \"name\": \"Cancelled\"\n    },\n    {\n        \"id\": \"wc-refunded\",\n        \"name\": \"Refunded\"\n    },\n    {\n        \"id\": \"wc-failed\",\n        \"name\": \"Failed\"\n    },\n    {\n        \"id\": \"wc-checkout-draft\",\n        \"name\": \"Draft\"\n    }\n]"
+						},
+						{
+							"name": "shop-categories",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-mock-match-request-body",
+										"value": "1",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"get-shop-categories\",\n    \"page\": 1,\n    \"limit\": 5,\n    \"search\": \"\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "Topic",
+									"value": "get-shop-categories",
+									"description": ""
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": " [\n        {\n            \"id\": \"16\",\n            \"name\": \"Accessories\"\n        },\n        {\n            \"id\": \"18\",\n            \"name\": \"Hoodies\"\n        },\n        {\n            \"id\": \"17\",\n            \"name\": \"Music\"\n        },\n        {\n            \"id\": \"15\",\n            \"name\": \"Uncategorized\"\n        }\n    ]"
+						},
+						{
+							"name": "selling-countries",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-mock-match-request-body",
+										"value": "1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"get-selling-countries\",\n    \"page\": 1,\n    \"limit\": 5,\n    \"search\": \"\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "Topic",
+									"value": "get-shop-categories",
+									"description": ""
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "[\n    \"ES\",\n    \"FR\",\n    \"IT\",\n    \"PT\"\n]"
+						},
+						{
+							"name": "shop-products",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-mock-match-request-body",
+										"value": "1",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"get-shop-products\",\n    \"page\": 1,\n    \"limit\": 5,\n    \"search\": \"\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "Topic",
+									"value": "get-shop-categories",
+									"description": ""
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "[\n        {\n            \"id\": \"1\",\n            \"sku\": \"001\",\n            \"name\": \"Product 001\"\n        },\n        {\n            \"id\": \"11\",\n            \"sku\": \"011\",\n            \"name\": \"Product 011\"\n        }\n    ]"
+						},
+						{
+							"name": "get-order-status-settings",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-mock-match-request-body",
+										"value": "1",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"get-order-status-settings\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								},
+								{
+									"key": "Topic",
+									"value": "get-order-status-mappings",
+									"description": ""
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"sequraStatus\": \"approved\",\n        \"shopStatus\": \"wc-processing\"\n    },\n    {\n        \"sequraStatus\": \"needs_review\",\n        \"shopStatus\": \"wc-pending\"\n    },\n    {\n        \"sequraStatus\": \"cancelled\",\n        \"shopStatus\": \"wc-cancelled\"\n    },\n    {\n        \"sequraStatus\": \"shipped\",\n        \"shopStatus\": \"wc-completed\"\n    }\n]"
+						},
+						{
+							"name": "get-advanced-settings",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-mock-match-request-body",
+										"value": "1",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"get-advanced-settings\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								},
+								{
+									"key": "Topic",
+									"value": "get-order-status-mappings",
+									"description": ""
+								}
+							],
+							"cookie": [],
+							"body": "{\"isEnabled\":true,\"level\":3}"
+						},
+						{
+							"name": "get-log-content",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-mock-match-request-body",
+										"value": "1",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topic\": \"get-log-content\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mock_server_url}}/webhook",
+									"host": [
+										"{{mock_server_url}}"
+									],
+									"path": [
+										"webhook"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								},
+								{
+									"key": "Topic",
+									"value": "get-order-status-mappings",
+									"description": ""
+								}
+							],
+							"cookie": [],
+							"body": "[\n    \"DEBUG\\t2026-01-23 15:15:55\\tSending http request to https:\\/\\/live.sequrapi.com\\/deployments\\t [{\\\"name\\\":\\\"Type\\\",\\\"value\\\":\\\"GET\\\"},{\\\"name\\\":\\\"Endpoint\\\",\\\"value\\\":\\\"https:\\/\\/live.sequrapi.com\\/deployments\\\"},{\\\"name\\\":\\\"Headers\\\",\\\"value\\\":{\\\"Content-Type\\\":\\\"Content-Type: application\\/json\\\",\\\"Accept\\\":\\\"Accept: application\\/json\\\"}},{\\\"name\\\":\\\"Content\\\",\\\"value\\\":[]}]\\r\\n\",\n    \"INFO\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\I18n\\\\I18n_Controller::load_text_domain() - Hook executed\\t{\\\"dummyAttrItems\\\":[\\\"dummyItem1\\\",\\\"dummyItem2\\\",\\\"dummyItem3\\\"]}\\r\\n\",\n    \"WARNING\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_gutenberg_block() - Hook executed\\t\\r\\n\",\n    \"ERROR\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\I18n\\\\I18n_Controller::load_text_domain() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_gutenberg_block() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_gutenberg_block_class() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_classes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_gutenberg_block_class() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_classes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\General_Settings_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Onboarding_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Payment_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Log_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\General_Settings_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Onboarding_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Payment_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Log_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSending http request to https:\\/\\/live.sequrapi.com\\/deployments\\t [{\\\"name\\\":\\\"Type\\\",\\\"value\\\":\\\"GET\\\"},{\\\"name\\\":\\\"Endpoint\\\",\\\"value\\\":\\\"https:\\/\\/live.sequrapi.com\\/deployments\\\"},{\\\"name\\\":\\\"Headers\\\",\\\"value\\\":{\\\"Content-Type\\\":\\\"Content-Type: application\\/json\\\",\\\"Accept\\\":\\\"Accept: application\\/json\\\"}},{\\\"name\\\":\\\"Content\\\",\\\"value\\\":[]}]\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tHttp response from https:\\/\\/live.sequrapi.com\\/deployments\\t [{\\\"name\\\":\\\"ResponseFor\\\",\\\"value\\\":\\\"GET at https:\\/\\/live.sequrapi.com\\/deployments\\\"},{\\\"name\\\":\\\"Status\\\",\\\"value\\\":200},{\\\"name\\\":\\\"Headers\\\",\\\"value\\\":{\\\"date\\\":\\\"Fri, 23 Jan 2026 15:15:55 GMT\\\",\\\"content-type\\\":\\\"application\\/json; charset=utf-8\\\",\\\"server\\\":\\\"openresty\\\",\\\"sequra-router-merchant-ref\\\":\\\"-\\\",\\\"sequra-router-routed-to\\\":\\\"sequra\\\",\\\"sequra-router-elapsed-time\\\":\\\"0\\\",\\\"sequra-router-strategy\\\":\\\"Non routed URI\\\",\\\"sequra-merchant-router-version\\\":\\\"1.0\\\",\\\"vary\\\":\\\"Accept\\\",\\\"x-frame-options\\\":\\\"SAMEORIGIN\\\",\\\"x-xss-protection\\\":\\\"0\\\",\\\"x-content-type-options\\\":\\\"nosniff\\\",\\\"x-permitted-cross-domain-policies\\\":\\\"none\\\",\\\"referrer-policy\\\":\\\"strict-origin-when-cross-origin\\\",\\\"etag\\\":\\\"W\\/\\\\\\\"086551b98ec3107af4c883774ffbb120\\\\\\\"\\\",\\\"cache-control\\\":\\\"max-age=0, private, must-revalidate\\\",\\\"x-request-id\\\":\\\"1-697390ab-2c293f907a5cddf61d688a71\\\",\\\"x-runtime\\\":\\\"0.001745\\\",\\\"strict-transport-security\\\":\\\"max-age=31536000; includeSubdomains;\\\"}},{\\\"name\\\":\\\"Content\\\",\\\"value\\\":[{\\\"id\\\":\\\"sequra\\\",\\\"name\\\":\\\"seQura\\\",\\\"live\\\":{\\\"api_base_url\\\":\\\"https:\\/\\/live.sequrapi.com\\/\\\",\\\"assets_base_url\\\":\\\"https:\\/\\/live.sequracdn.com\\/assets\\/\\\",\\\"portal_base_url\\\":\\\"https:\\/\\/portal.sequra.com\\/\\\"},\\\"sandbox\\\":{\\\"api_base_url\\\":\\\"https:\\/\\/sandbox.sequrapi.com\\/\\\",\\\"assets_base_url\\\":\\\"https:\\/\\/sandbox.sequracdn.com\\/assets\\/\\\",\\\"portal_base_url\\\":\\\"https:\\/\\/portal-sandbox.sequra.com\\/\\\"}},{\\\"id\\\":\\\"svea\\\",\\\"name\\\":\\\"SVEA\\\",\\\"live\\\":{\\\"api_base_url\\\":\\\"https:\\/\\/live.sequra.svea.com\\/\\\",\\\"assets_base_url\\\":\\\"https:\\/\\/live.cdn.sequra.svea.com\\/assets\\/\\\",\\\"portal_base_url\\\":\\\"https:\\/\\/portal.sequra.com\\/\\\"},\\\"sandbox\\\":{\\\"api_base_url\\\":\\\"https:\\/\\/sandbox.sequra.svea.com\\/\\\",\\\"assets_base_url\\\":\\\"https:\\/\\/sandbox.cdn.sequra.svea.com\\/assets\\/\\\",\\\"portal_base_url\\\":\\\"https:\\/\\/portal-sandbox.sequra.com\\/\\\"}}]}]\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tHttp response from https:\\/\\/live.sequrapi.com\\/deployments\\t [{\\\"name\\\":\\\"ResponseFor\\\",\\\"value\\\":\\\"GET at https:\\/\\/live.sequrapi.com\\/deployments\\\"},{\\\"name\\\":\\\"Status\\\",\\\"value\\\":200},{\\\"name\\\":\\\"Headers\\\",\\\"value\\\":{\\\"date\\\":\\\"Fri, 23 Jan 2026 15:15:55 GMT\\\",\\\"content-type\\\":\\\"application\\/json; charset=utf-8\\\",\\\"server\\\":\\\"openresty\\\",\\\"sequra-router-merchant-ref\\\":\\\"-\\\",\\\"sequra-router-routed-to\\\":\\\"sequra\\\",\\\"sequra-router-elapsed-time\\\":\\\"0\\\",\\\"sequra-router-strategy\\\":\\\"Non routed URI\\\",\\\"sequra-merchant-router-version\\\":\\\"1.0\\\",\\\"vary\\\":\\\"Accept\\\",\\\"x-frame-options\\\":\\\"SAMEORIGIN\\\",\\\"x-xss-protection\\\":\\\"0\\\",\\\"x-content-type-options\\\":\\\"nosniff\\\",\\\"x-permitted-cross-domain-policies\\\":\\\"none\\\",\\\"referrer-policy\\\":\\\"strict-origin-when-cross-origin\\\",\\\"etag\\\":\\\"W\\/\\\\\\\"086551b98ec3107af4c883774ffbb120\\\\\\\"\\\",\\\"cache-control\\\":\\\"max-age=0, private, must-revalidate\\\",\\\"x-request-id\\\":\\\"1-697390ab-5ec60d1d6ee7d6eb1b8bddc3\\\",\\\"x-runtime\\\":\\\"0.001436\\\",\\\"strict-transport-security\\\":\\\"max-age=31536000; includeSubdomains;\\\"}},{\\\"name\\\":\\\"Content\\\",\\\"value\\\":[{\\\"id\\\":\\\"sequra\\\",\\\"name\\\":\\\"seQura\\\",\\\"live\\\":{\\\"api_base_url\\\":\\\"https:\\/\\/live.sequrapi.com\\/\\\",\\\"assets_base_url\\\":\\\"https:\\/\\/live.sequracdn.com\\/assets\\/\\\",\\\"portal_base_url\\\":\\\"https:\\/\\/portal.sequra.com\\/\\\"},\\\"sandbox\\\":{\\\"api_base_url\\\":\\\"https:\\/\\/sandbox.sequrapi.com\\/\\\",\\\"assets_base_url\\\":\\\"https:\\/\\/sandbox.sequracdn.com\\/assets\\/\\\",\\\"portal_base_url\\\":\\\"https:\\/\\/portal-sandbox.sequra.com\\/\\\"}},{\\\"id\\\":\\\"svea\\\",\\\"name\\\":\\\"SVEA\\\",\\\"live\\\":{\\\"api_base_url\\\":\\\"https:\\/\\/live.sequra.svea.com\\/\\\",\\\"assets_base_url\\\":\\\"https:\\/\\/live.cdn.sequra.svea.com\\/assets\\/\\\",\\\"portal_base_url\\\":\\\"https:\\/\\/portal.sequra.com\\/\\\"},\\\"sandbox\\\":{\\\"api_base_url\\\":\\\"https:\\/\\/sandbox.sequra.svea.com\\/\\\",\\\"assets_base_url\\\":\\\"https:\\/\\/sandbox.cdn.sequra.svea.com\\/assets\\/\\\",\\\"portal_base_url\\\":\\\"https:\\/\\/portal-sandbox.sequra.com\\/\\\"}}]}]\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\I18n\\\\I18n_Controller::load_text_domain() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_gutenberg_block() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_gutenberg_block_class() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_classes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\General_Settings_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Onboarding_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Payment_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:55\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Log_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:56\\tSending http request to https:\\/\\/sandbox.sequrapi.com\\/merchants\\/credentials\\t [{\\\"name\\\":\\\"Type\\\",\\\"value\\\":\\\"GET\\\"},{\\\"name\\\":\\\"Endpoint\\\",\\\"value\\\":\\\"https:\\/\\/sandbox.sequrapi.com\\/merchants\\/credentials\\\"},{\\\"name\\\":\\\"Headers\\\",\\\"value\\\":{\\\"Content-Type\\\":\\\"Content-Type: application\\/json\\\",\\\"Accept\\\":\\\"Accept: application\\/json\\\",\\\"Authorization\\\":\\\"Authorization: Basic ZHVtbXlfYXV0b21hdGVkX3Rlc3RzOnA2ZFd6YVlBV3E5YlpGNzExVkw0Y0xUSkk2ZDRjRQ==\\\"}},{\\\"name\\\":\\\"Content\\\",\\\"value\\\":[]}]\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:56\\tHttp response from https:\\/\\/sandbox.sequrapi.com\\/merchants\\/credentials\\t [{\\\"name\\\":\\\"ResponseFor\\\",\\\"value\\\":\\\"GET at https:\\/\\/sandbox.sequrapi.com\\/merchants\\/credentials\\\"},{\\\"name\\\":\\\"Status\\\",\\\"value\\\":200},{\\\"name\\\":\\\"Headers\\\",\\\"value\\\":{\\\"date\\\":\\\"Fri, 23 Jan 2026 15:15:56 GMT\\\",\\\"content-type\\\":\\\"application\\/json; charset=utf-8\\\",\\\"server\\\":\\\"openresty\\\",\\\"sequra-router-merchant-ref\\\":\\\"dummy_automated_tests\\\",\\\"sequra-router-routed-to\\\":\\\"sequra\\\",\\\"sequra-router-elapsed-time\\\":\\\"0\\\",\\\"sequra-router-strategy\\\":\\\"Merchant ref in Basic auth\\\",\\\"sequra-merchant-router-version\\\":\\\"1.0\\\",\\\"vary\\\":\\\"Accept\\\",\\\"x-frame-options\\\":\\\"SAMEORIGIN\\\",\\\"x-xss-protection\\\":\\\"0\\\",\\\"x-content-type-options\\\":\\\"nosniff\\\",\\\"x-permitted-cross-domain-policies\\\":\\\"none\\\",\\\"referrer-policy\\\":\\\"strict-origin-when-cross-origin\\\",\\\"etag\\\":\\\"W\\/\\\\\\\"b6a96813a63bb79f61e63a35a1b92ca3\\\\\\\"\\\",\\\"cache-control\\\":\\\"max-age=0, private, must-revalidate\\\",\\\"x-request-id\\\":\\\"1-697390ac-684088b8450546af25bc4a5e\\\",\\\"x-runtime\\\":\\\"0.510533\\\",\\\"strict-transport-security\\\":\\\"max-age=31536000; includeSubdomains;\\\"}},{\\\"name\\\":\\\"Content\\\",\\\"value\\\":[{\\\"ref\\\":\\\"dummy_automated_tests\\\",\\\"name\\\":null,\\\"country\\\":\\\"ES\\\",\\\"allowed_countries\\\":[\\\"ES\\\"],\\\"currency\\\":\\\"EUR\\\",\\\"assets_key\\\":\\\"ADc3ZdOLh4\\\",\\\"contract_options\\\":[\\\"allow_first_instalment_delay\\\",\\\"with_registration\\\"],\\\"extra_information\\\":{\\\"type\\\":\\\"regular\\\",\\\"phone_number\\\":\\\"\\\"},\\\"verify_signature\\\":false,\\\"signature_secret\\\":\\\"d0d7908d2018f5a3ae37358ed66bc17a\\\",\\\"confirmation_path\\\":\\\"default\\\",\\\"realm\\\":\\\"sequra\\\"}]}]\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:56\\tSending http request to https:\\/\\/sandbox.sequra.svea.com\\/merchants\\/credentials\\t [{\\\"name\\\":\\\"Type\\\",\\\"value\\\":\\\"GET\\\"},{\\\"name\\\":\\\"Endpoint\\\",\\\"value\\\":\\\"https:\\/\\/sandbox.sequra.svea.com\\/merchants\\/credentials\\\"},{\\\"name\\\":\\\"Headers\\\",\\\"value\\\":{\\\"Content-Type\\\":\\\"Content-Type: application\\/json\\\",\\\"Accept\\\":\\\"Accept: application\\/json\\\",\\\"Authorization\\\":\\\"Authorization: Basic ZHVtbXlfYXV0b21hdGVkX3Rlc3RzOnA2ZFd6YVlBV3E5YlpGNzExVkw0Y0xUSkk2ZDRjRQ==\\\"}},{\\\"name\\\":\\\"Content\\\",\\\"value\\\":[]}]\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:57\\tHttp response from https:\\/\\/sandbox.sequra.svea.com\\/merchants\\/credentials\\t [{\\\"name\\\":\\\"ResponseFor\\\",\\\"value\\\":\\\"GET at https:\\/\\/sandbox.sequra.svea.com\\/merchants\\/credentials\\\"},{\\\"name\\\":\\\"Status\\\",\\\"value\\\":200},{\\\"name\\\":\\\"Headers\\\",\\\"value\\\":{\\\"date\\\":\\\"Fri, 23 Jan 2026 15:15:57 GMT\\\",\\\"content-type\\\":\\\"application\\/json; charset=utf-8\\\",\\\"server\\\":\\\"nginx\\\",\\\"vary\\\":\\\"Accept\\\",\\\"x-frame-options\\\":\\\"SAMEORIGIN\\\",\\\"x-xss-protection\\\":\\\"0\\\",\\\"x-content-type-options\\\":\\\"nosniff\\\",\\\"x-permitted-cross-domain-policies\\\":\\\"none\\\",\\\"referrer-policy\\\":\\\"strict-origin-when-cross-origin\\\",\\\"etag\\\":\\\"W\\/\\\\\\\"7e739ed4150c0d7d7946090dcf076678\\\\\\\"\\\",\\\"cache-control\\\":\\\"max-age=0, private, must-revalidate\\\",\\\"x-request-id\\\":\\\"1-697390ad-3e2296b617db9df971619b0a\\\",\\\"x-runtime\\\":\\\"0.013026\\\",\\\"strict-transport-security\\\":\\\"max-age=31536000; includeSubdomains;\\\"}},{\\\"name\\\":\\\"Content\\\",\\\"value\\\":[{\\\"ref\\\":\\\"dummy_automated_tests_pt\\\",\\\"name\\\":null,\\\"country\\\":\\\"PT\\\",\\\"allowed_countries\\\":[\\\"ES\\\"],\\\"currency\\\":\\\"EUR\\\",\\\"assets_key\\\":\\\"ADc3ZdOLh4\\\",\\\"contract_options\\\":[],\\\"extra_information\\\":{\\\"type\\\":\\\"regular\\\",\\\"phone_number\\\":\\\"\\\"},\\\"verify_signature\\\":false,\\\"signature_secret\\\":\\\"3446a5a57c5a1c3dabbd3a9bcd770f62\\\",\\\"confirmation_path\\\":\\\"down_payment_on_confirmation\\\",\\\"realm\\\":\\\"svea\\\"},{\\\"ref\\\":\\\"dummy_automated_tests_fr\\\",\\\"name\\\":null,\\\"country\\\":\\\"FR\\\",\\\"allowed_countries\\\":[\\\"ES\\\"],\\\"currency\\\":\\\"EUR\\\",\\\"assets_key\\\":\\\"ADc3ZdOLh4\\\",\\\"contract_options\\\":[],\\\"extra_information\\\":{\\\"type\\\":\\\"regular\\\",\\\"phone_number\\\":\\\"\\\"},\\\"verify_signature\\\":false,\\\"signature_secret\\\":\\\"aad0bdc1a4a7c2eac655842bf86f624d\\\",\\\"confirmation_path\\\":\\\"down_payment_on_confirmation\\\",\\\"realm\\\":\\\"svea\\\"},{\\\"ref\\\":\\\"dummy_automated_tests_it\\\",\\\"name\\\":null,\\\"country\\\":\\\"IT\\\",\\\"allowed_countries\\\":[\\\"ES\\\"],\\\"currency\\\":\\\"EUR\\\",\\\"assets_key\\\":\\\"ADc3ZdOLh4\\\",\\\"contract_options\\\":[],\\\"extra_information\\\":{\\\"type\\\":\\\"regular\\\",\\\"phone_number\\\":\\\"\\\"},\\\"verify_signature\\\":false,\\\"signature_secret\\\":\\\"f1bd4509c8f5ff441bde35da35f58bb8\\\",\\\"confirmation_path\\\":\\\"down_payment_on_confirmation\\\",\\\"realm\\\":\\\"svea\\\"}]}]\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:57\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\I18n\\\\I18n_Controller::load_text_domain() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:57\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_gutenberg_block() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:57\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_gutenberg_block_class() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:57\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_classes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:57\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\General_Settings_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:57\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Onboarding_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:57\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Payment_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:15:57\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Log_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:16:03\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\I18n\\\\I18n_Controller::load_text_domain() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:16:03\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_gutenberg_block() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:16:03\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_gutenberg_block_class() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:16:03\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_classes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:16:03\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\General_Settings_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:16:03\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Onboarding_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:16:03\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Payment_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:16:03\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Log_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:32:11\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\I18n\\\\I18n_Controller::load_text_domain() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:32:11\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_gutenberg_block() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:32:11\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_gutenberg_block_class() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:32:11\\tSeQura\\\\WC\\\\Controllers\\\\Hooks\\\\Payment\\\\Payment_Controller::register_gateway_classes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:32:11\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\General_Settings_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:32:11\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Onboarding_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:32:11\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Payment_REST_Controller::register_routes() - Hook executed\\t\\r\\n\",\n    \"DEBUG\\t2026-01-23 15:32:11\\tSeQura\\\\WC\\\\Controllers\\\\Rest\\\\Log_REST_Controller::register_routes() - Hook executed\\t\\r\\n\"\n]"
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "store_id",
+			"value": "1"
+		},
+		{
+			"key": "base_url",
+			"value": "https://a21aee8e-6ed3-4720-bbe4-b1e78573e577.mock.pstmn.io"
+		}
+	]
+}
