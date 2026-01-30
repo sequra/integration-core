@@ -2,10 +2,13 @@
 
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\OrderStatus;
 
-use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
-use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\Requests\OrderStatusSettingsRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\OrderStatus\SaveOrderStatusRequest;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\OrderStatus\SaveOrderStatusSettingsResponse;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Exceptions\EmptyOrderStatusMappingParameterException;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Exceptions\InvalidSeQuraOrderStatusException;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
 
 /**
  * Class SaveOrderStatusSettingsHandler
@@ -15,29 +18,32 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInter
 class SaveOrderStatusSettingsHandler implements TopicHandlerInterface
 {
     /**
-     * @var OrderStatusSettingsController
+     * @var OrderStatusSettingsService
      */
-    protected $orderStatusSettingsController;
+    protected $orderStatusSettingsService;
 
     /**
-     * @param OrderStatusSettingsController $orderStatusSettingsController
+     * @param OrderStatusSettingsService $orderStatusSettingsService
      */
-    public function __construct(OrderStatusSettingsController $orderStatusSettingsController)
+    public function __construct(OrderStatusSettingsService $orderStatusSettingsService)
     {
-        $this->orderStatusSettingsController = $orderStatusSettingsController;
+        $this->orderStatusSettingsService = $orderStatusSettingsService;
     }
 
     /**
-     * @inheritDoc
+     * @param array $payload
+     * @param string $merchantId
+     *
+     * @return Response
+     *
+     * @throws EmptyOrderStatusMappingParameterException
+     * @throws InvalidSeQuraOrderStatusException
      */
-    public function handle(array $payload): Response
+    public function handle(array $payload, string $merchantId): Response
     {
-        $data = $payload['data'] ?? [];
+        $request = SaveOrderStatusRequest::fromPayload($payload);
+        $this->orderStatusSettingsService->saveOrderStatusSettings($request->transformToDomainModel());
 
-        $request = new OrderStatusSettingsRequest(
-            $data['orderStatusMappings'] ?? []
-        );
-
-        return $this->orderStatusSettingsController->saveOrderStatusSettings($request);
+        return new SaveOrderStatusSettingsResponse();
     }
 }

@@ -2,8 +2,10 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 
 /**
@@ -27,6 +29,11 @@ class MockWidgetSettingsService extends WidgetSettingsService
      * @var Widget[]
      */
     private $widgets = [];
+
+    /**
+     * @var ?WidgetSettings
+     */
+    private $widgetSettings;
 
     /**
      * @param string $shippingCountry
@@ -100,5 +107,25 @@ class MockWidgetSettingsService extends WidgetSettingsService
     public function setMockWidgets(array $widgets): void
     {
         $this->widgets = $widgets;
+    }
+
+    /**
+     * @return WidgetSettings
+     *
+     * @throws Exception
+     */
+    public function getWidgetSettings(): WidgetSettings
+    {
+        return $this->widgetSettings;
+    }
+
+    /**
+     * @param WidgetSettings $settings
+     *
+     * @return void
+     */
+    public function setWidgetSettings(WidgetSettings $settings): void
+    {
+        $this->widgetSettings = $settings;
     }
 }

@@ -30,7 +30,7 @@ class SaveAdvancedSettingsHandler implements TopicHandlerInterface
     /**
      * @inheritDoc
      */
-    public function handle(array $payload): Response
+    public function handle(array $payload, string $merchantId): Response
     {
         $data = $payload['data'] ?? [];
 

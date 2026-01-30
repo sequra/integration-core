@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\Store;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\Domain\Stores\Models\StoreInfo;
 
 /**
  * Class StoreInfoResponse
@@ -12,39 +13,14 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 class StoreInfoResponse extends Response
 {
     /**
-     * @var bool
-     */
-    protected $successful = true;
-
-    /**
-     * @var array{
-     *     store_name: string,
-     *     store_url: string,
-     *     platform: string,
-     *     platform_version: string,
-     *     plugin_version: string,
-     *     php_version: string,
-     *     db: string,
-     *     os: string,
-     *     plugins: string[]
-     * }
+     * @var StoreInfo $storeInfo
      */
     protected $storeInfo;
 
     /**
-     * @param array{
-     *     store_name: string,
-     *     store_url: string,
-     *     platform: string,
-     *     platform_version: string,
-     *     plugin_version: string,
-     *     php_version: string,
-     *     db: string,
-     *     os: string,
-     *     plugins: string[]
-     * } $storeInfo
+     * @param StoreInfo $storeInfo
      */
-    public function __construct(array $storeInfo)
+    public function __construct(StoreInfo $storeInfo)
     {
         $this->storeInfo = $storeInfo;
     }
@@ -54,6 +30,6 @@ class StoreInfoResponse extends Response
      */
     public function toArray(): array
     {
-        return $this->storeInfo;
+        return $this->storeInfo->toArray();
     }
 }

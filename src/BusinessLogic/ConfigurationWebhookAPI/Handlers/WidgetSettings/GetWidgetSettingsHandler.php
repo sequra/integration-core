@@ -2,9 +2,12 @@
 
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings;
 
-use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
+use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\WidgetSettings\GetWidgetSettingsResponse;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 
 /**
  * Class GetWidgetSettingsHandler
@@ -14,23 +17,37 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInter
 class GetWidgetSettingsHandler implements TopicHandlerInterface
 {
     /**
-     * @var PromotionalWidgetsController
+     * @var WidgetSettingsService $widgetSettingsService
      */
-    protected $promotionalWidgetsController;
+    protected $widgetSettingsService;
 
     /**
-     * @param PromotionalWidgetsController $promotionalWidgetsController
+     * @var PaymentMethodsService $paymentMethodsService
      */
-    public function __construct(PromotionalWidgetsController $promotionalWidgetsController)
-    {
-        $this->promotionalWidgetsController = $promotionalWidgetsController;
+    protected $paymentMethodsService;
+
+    /**
+     * @param WidgetSettingsService $widgetSettingsService
+     * @param PaymentMethodsService $paymentMethodsService
+     */
+    public function __construct(
+        WidgetSettingsService $widgetSettingsService,
+        PaymentMethodsService $paymentMethodsService
+    ) {
+        $this->widgetSettingsService = $widgetSettingsService;
+        $this->paymentMethodsService = $paymentMethodsService;
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws Exception
      */
-    public function handle(array $payload): Response
+    public function handle(array $payload, string $merchantId): Response
     {
-        return $this->promotionalWidgetsController->getWidgetSettings();
+        return new GetWidgetSettingsResponse(
+            $this->widgetSettingsService->getWidgetSettings(),
+            $this->paymentMethodsService->getCachedPaymentMethods($merchantId)
+        );
     }
 }

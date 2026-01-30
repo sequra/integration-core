@@ -2,10 +2,16 @@
 
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings;
 
-use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
-use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Requests\GeneralSettingsRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\GeneralSettings\SaveGeneralSettingsRequest;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\GeneralSettings\SaveSellingCountriesRequest;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\GeneralSettings\SaveGeneralSettingsResponse;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 
 /**
  * Class SaveGeneralSettingsHandler
@@ -15,34 +21,46 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInter
 class SaveGeneralSettingsHandler implements TopicHandlerInterface
 {
     /**
-     * @var GeneralSettingsController
+     * @var GeneralSettingsService $generalSettingsService
      */
-    protected $generalSettingsController;
+    protected $generalSettingsService;
 
     /**
-     * @param GeneralSettingsController $generalSettingsController
+     * @var CountryConfigurationService $countryConfigurationService
      */
-    public function __construct(GeneralSettingsController $generalSettingsController)
-    {
-        $this->generalSettingsController = $generalSettingsController;
+    protected $countryConfigurationService;
+
+    /**
+     * @param GeneralSettingsService $generalSettingsService
+     * @param CountryConfigurationService $countryConfigurationService
+     */
+    public function __construct(
+        GeneralSettingsService $generalSettingsService,
+        CountryConfigurationService $countryConfigurationService
+    ) {
+        $this->generalSettingsService = $generalSettingsService;
+        $this->countryConfigurationService = $countryConfigurationService;
     }
 
     /**
-     * @inheritDoc
+     * @param array $payload
+     * @param string $merchantId
+     *
+     * @return Response
+     *
+     * @throws EmptyCountryConfigurationParameterException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws InvalidCountryCodeForConfigurationException
      */
-    public function handle(array $payload): Response
+    public function handle(array $payload, string $merchantId): Response
     {
-        $data = $payload['data'] ?? [];
+        $generalSettingsRequest = SaveGeneralSettingsRequest::fromPayload($payload);
+        $this->generalSettingsService->saveGeneralSettings($generalSettingsRequest->transformToDomainModel());
 
-        $request = new GeneralSettingsRequest(
-            $data['sendOrderReportsPeriodicallyToSeQura'] ?? false,
-            $data['showSeQuraCheckoutAsHostedPage'] ?? null,
-            $data['allowedIPAddresses'] ?? null,
-            $data['excludedProducts'] ?? null,
-            $data['excludedCategories'] ?? null,
-            $data['defaultServicesEndDate'] ?? null
-        );
+        $sellingCountriesRequest = SaveSellingCountriesRequest::fromPayload($payload);
+        $this->countryConfigurationService
+            ->saveCountryConfigurationForCountriesCodes($sellingCountriesRequest->getSellingCountries());
 
-        return $this->generalSettingsController->saveGeneralSettings($request);
+        return new SaveGeneralSettingsResponse();
     }
 }

@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\Shop;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\Domain\Product\Model\ShopProduct;
 
 /**
  * Class ShopProductsResponse
@@ -12,17 +13,12 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 class ShopProductsResponse extends Response
 {
     /**
-     * @var bool
-     */
-    protected $successful = true;
-
-    /**
-     * @var array<int, array{id: string, sku: string, name: string}>
+     * @var ShopProduct[]
      */
     protected $products;
 
     /**
-     * @param array<int, array{id: string, sku: string, name: string}> $products
+     * @param ShopProduct[] $products
      */
     public function __construct(array $products)
     {
@@ -34,6 +30,8 @@ class ShopProductsResponse extends Response
      */
     public function toArray(): array
     {
-        return $this->products;
+        return array_map(function (ShopProduct $product) {
+            return $product->toArray();
+        }, $this->products);
     }
 }

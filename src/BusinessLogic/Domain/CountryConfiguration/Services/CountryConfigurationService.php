@@ -2,7 +2,9 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services;
 
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
@@ -70,6 +72,32 @@ class CountryConfigurationService
     public function saveCountryConfiguration(array $countryConfiguration): void
     {
         $this->countryConfigurationRepository->setCountryConfiguration($countryConfiguration);
+    }
+
+    /**
+     * @param string[] $countriesCodes
+     *
+     * @return void
+     *
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws EmptyCountryConfigurationParameterException
+     * @throws InvalidCountryCodeForConfigurationException
+     */
+    public function saveCountryConfigurationForCountriesCodes(array $countriesCodes): void
+    {
+        $sellingCountries = $this->sellingCountriesService->getSellingCountries();
+
+        $countryConfiguration = array_map(function($countryCode) use ($sellingCountries) {
+            foreach ($sellingCountries as $sellingCountry) {
+                if ($sellingCountry->getCode() === $countryCode) {
+                    return new CountryConfiguration($countryCode, $sellingCountry->getMerchantId());
+                }
+            }
+            return null;
+        }, $countriesCodes);
+        $countryConfiguration = array_filter($countryConfiguration);
+
+        $this->saveCountryConfiguration($countryConfiguration);
     }
 
     /**

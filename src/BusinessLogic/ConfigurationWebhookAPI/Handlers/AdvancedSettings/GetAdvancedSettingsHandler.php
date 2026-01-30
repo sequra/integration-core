@@ -30,7 +30,7 @@ class GetAdvancedSettingsHandler implements TopicHandlerInterface
     /**
      * @inheritDoc
      */
-    public function handle(array $payload): Response
+    public function handle(array $payload, string $merchantId): Response
     {
         return new AdvancedSettingsResponse($this->advancedSettingsService->getAdvancedSettings());
     }

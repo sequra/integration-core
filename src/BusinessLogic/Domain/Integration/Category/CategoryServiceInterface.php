@@ -12,9 +12,20 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\Category;
 interface CategoryServiceInterface
 {
     /**
-     * Returns all categories from a shop.
+     * Returns categories from a shop.
+     *
+     * @param ?int $page
+     * @param ?int $limit
+     * @param ?string $search
      *
      * @return Category[]
      */
-    public function getCategories(): array;
+    public function getCategories(?int $page = null, ?int $limit = null, ?string $search = null): array;
+
+    /**
+     * @param string[] $ids
+     *
+     * @return Category[]
+     */
+    public function getCategoriesByIds(array $ids): array;
 }

@@ -2,6 +2,8 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Integration\Product;
 
+use SeQura\Core\BusinessLogic\Domain\Product\Model\ShopProduct;
+
 /**
  * Interface ProductServiceInterface.
  *
@@ -36,4 +38,22 @@ interface ProductServiceInterface
      * @return string[]
      */
     public function getProductCategoriesByProductId(string $productId): array;
+
+    /**
+     * Gets all shop products with their basic information.
+     *
+     * @param int $page
+     * @param int $limit
+     * @param string $search
+     *
+     * @return ShopProduct[]
+     */
+    public function getShopProducts(int $page, int $limit, string $search): array;
+
+    /**
+     * @param string[] $ids
+     *
+     * @return ShopProduct[]
+     */
+    public function getShopProductByIds(array $ids): array;
 }

@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\Log;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\Domain\Log\Model\Log;
 
 /**
  * Class LogContentResponse
@@ -12,21 +13,16 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 class LogContentResponse extends Response
 {
     /**
-     * @var bool
+     * @var Log
      */
-    protected $successful = true;
+    protected $log;
 
     /**
-     * @var string[]
+     * @param Log $logEntries
      */
-    protected $logEntries;
-
-    /**
-     * @param string[] $logEntries
-     */
-    public function __construct(array $logEntries)
+    public function __construct(Log $logEntries)
     {
-        $this->logEntries = $logEntries;
+        $this->log = $logEntries;
     }
 
     /**
@@ -34,6 +30,6 @@ class LogContentResponse extends Response
      */
     public function toArray(): array
     {
-        return $this->logEntries;
+        return $this->log->toArray();
     }
 }

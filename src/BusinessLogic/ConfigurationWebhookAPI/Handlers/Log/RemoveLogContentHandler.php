@@ -4,7 +4,7 @@ namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Log;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
-use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\SuccessResponse;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\Log\RemoveLogContentResponse;
 use SeQura\Core\BusinessLogic\Domain\Integration\Log\LogServiceInterface;
 
 /**
@@ -30,10 +30,10 @@ class RemoveLogContentHandler implements TopicHandlerInterface
     /**
      * @inheritDoc
      */
-    public function handle(array $payload): Response
+    public function handle(array $payload, string $merchantId): Response
     {
-        $this->logService->removeLogContent();
+        $this->logService->removeLog();
 
-        return new SuccessResponse();
+        return new RemoveLogContentResponse();
     }
 }

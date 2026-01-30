@@ -2,6 +2,8 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Integration\Log;
 
+use SeQura\Core\BusinessLogic\Domain\Log\Model\Log;
+
 /**
  * Interface LogServiceInterface
  *
@@ -10,16 +12,16 @@ namespace SeQura\Core\BusinessLogic\Domain\Integration\Log;
 interface LogServiceInterface
 {
     /**
-     * Gets the log content as an array of formatted log entries.
+     * Gets the log model.
      *
-     * @return string[]
+     * @return Log
      */
-    public function getLogContent(): array;
+    public function getLog(): Log;
 
     /**
      * Removes/clears all log content.
      *
      * @return void
      */
-    public function removeLogContent(): void;
+    public function removeLog(): void;
 }

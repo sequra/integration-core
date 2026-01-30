@@ -12,11 +12,6 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 class SuccessResponse extends Response
 {
     /**
-     * @var bool
-     */
-    protected $successful = true;
-
-    /**
      * @inheritDoc
      */
     public function toArray(): array

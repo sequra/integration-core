@@ -80,4 +80,15 @@ class OrderStatusMapping
     {
         $this->shopStatus = $shopStatus;
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function toArray(): array
+    {
+        return [
+            'sequraStatus' => $this->sequraStatus,
+            'shopStatus' => $this->shopStatus,
+        ];
+    }
 }

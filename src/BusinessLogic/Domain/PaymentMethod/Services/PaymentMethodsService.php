@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services;
 
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
@@ -152,6 +153,8 @@ class PaymentMethodsService
      * Retrieves available merchant ids from database.
      *
      * @return string[]
+     *
+     * @throws FailedToRetrieveSellingCountriesException
      */
     private function getMerchantIds(): array
     {

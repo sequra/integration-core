@@ -2,9 +2,11 @@
 
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Shop;
 
-use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\Shop\GetShopCategoriesRequest;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\Shop\ShopCategoryResponse;
+use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 
 /**
  * Class GetShopCategoriesHandler
@@ -14,23 +16,33 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInter
 class GetShopCategoriesHandler implements TopicHandlerInterface
 {
     /**
-     * @var GeneralSettingsController
+     * @var CategoryServiceInterface
      */
-    protected $generalSettingsController;
+    protected $categoryService;
 
     /**
-     * @param GeneralSettingsController $generalSettingsController
+     * @param CategoryServiceInterface $categoryService
      */
-    public function __construct(GeneralSettingsController $generalSettingsController)
+    public function __construct(CategoryServiceInterface $categoryService)
     {
-        $this->generalSettingsController = $generalSettingsController;
+        $this->categoryService = $categoryService;
     }
 
     /**
-     * @inheritDoc
+     * @param array $payload
+     *
+     * @return ShopCategoryResponse
      */
-    public function handle(array $payload): Response
+    public function handle(array $payload, string $merchantId): Response
     {
-        return $this->generalSettingsController->getShopCategories();
+        $request = GetShopCategoriesRequest::fromPayload($payload);
+
+        return new ShopCategoryResponse(
+            $this->categoryService->getCategories(
+                $request->getPage(),
+                $request->getLimit(),
+                $request->getSearch()
+            )
+        );
     }
 }

@@ -77,6 +77,18 @@ class StoreIntegrationService
     }
 
     /**
+     * @param ConnectionData $connectionData
+     *
+     * @return array
+     */
+    public function getExpectedWebhookSignaturePayload(ConnectionData $connectionData): array
+    {
+        $url = $this->integrationService->getWebhookUrl();
+
+        return $this->getWebhookSignaturePayload($connectionData, $url);
+    }
+
+    /**
      * @return Capability[]
      *
      * @throws CapabilitiesEmptyException
@@ -118,6 +130,7 @@ class StoreIntegrationService
     protected function addQueriesToWebhookUrl(URL $webhookUrl, ConnectionData $connectionData): void
     {
         $webhookUrl->addQuery(new Query('storeId', StoreContext::getInstance()->getStoreId()));
+        $webhookUrl->addQuery(new Query('merchantId', $connectionData->getMerchantId()));
         $webhookUrl->addQuery(new Query('signature', $this->generateWebhookSignature($webhookUrl, $connectionData)));
     }
 
@@ -133,13 +146,24 @@ class StoreIntegrationService
     protected function generateWebhookSignature(URL $webhookUrl, ConnectionData $connectionData): string
     {
         return HMAC::generateHMAC(
-            [
-                StoreContext::getInstance()->getStoreId(),
-                $webhookUrl->getPath(),
-                $connectionData->getAuthorizationCredentials()->getUsername(),
-                $connectionData->getMerchantId()
-            ],
+            $this->getWebhookSignaturePayload($connectionData, $webhookUrl),
             $connectionData->getAuthorizationCredentials()->getPassword()
         );
+    }
+
+    /**
+     * @param ConnectionData $connectionData
+     * @param URL $webhookUrl
+     *
+     * @return array
+     */
+    protected function getWebhookSignaturePayload(ConnectionData $connectionData, URL $webhookUrl): array
+    {
+        return [
+            StoreContext::getInstance()->getStoreId(),
+            $webhookUrl->getPath(),
+            $connectionData->getAuthorizationCredentials()->getUsername(),
+            $connectionData->getMerchantId()
+        ];
     }
 }

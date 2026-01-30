@@ -2,9 +2,10 @@
 
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\OrderStatus;
 
-use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\OrderStatus\GetOrderStatusSettingsResponse;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
 
 /**
  * Class GetOrderStatusSettingsHandler
@@ -14,23 +15,23 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInter
 class GetOrderStatusSettingsHandler implements TopicHandlerInterface
 {
     /**
-     * @var OrderStatusSettingsController
+     * @var OrderStatusSettingsService
      */
-    protected $orderStatusSettingsController;
+    protected $orderStatusSettingsService;
 
     /**
-     * @param OrderStatusSettingsController $orderStatusSettingsController
+     * @param OrderStatusSettingsService $orderStatusSettingsService
      */
-    public function __construct(OrderStatusSettingsController $orderStatusSettingsController)
+    public function __construct(OrderStatusSettingsService $orderStatusSettingsService)
     {
-        $this->orderStatusSettingsController = $orderStatusSettingsController;
+        $this->orderStatusSettingsService = $orderStatusSettingsService;
     }
 
     /**
      * @inheritDoc
      */
-    public function handle(array $payload): Response
+    public function handle(array $payload, string $merchantId): Response
     {
-        return $this->orderStatusSettingsController->getOrderStatusSettings();
+        return new GetOrderStatusSettingsResponse($this->orderStatusSettingsService->getOrderStatusSettings());
     }
 }

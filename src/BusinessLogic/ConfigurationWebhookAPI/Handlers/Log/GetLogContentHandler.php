@@ -30,8 +30,8 @@ class GetLogContentHandler implements TopicHandlerInterface
     /**
      * @inheritDoc
      */
-    public function handle(array $payload): Response
+    public function handle(array $payload, string $merchantId): Response
     {
-        return new LogContentResponse($this->logService->getLogContent());
+        return new LogContentResponse($this->logService->getLog());
     }
 }

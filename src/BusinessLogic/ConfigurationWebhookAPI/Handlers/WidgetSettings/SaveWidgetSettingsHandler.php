@@ -2,10 +2,12 @@
 
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings;
 
-use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
-use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Requests\WidgetSettingsRequest;
+use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\WidgetSettings\SaveWidgetSettingsRequest;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\WidgetSettings\SaveWidgetSettingsResponse;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 
 /**
  * Class SaveWidgetSettingsHandler
@@ -15,43 +17,28 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInter
 class SaveWidgetSettingsHandler implements TopicHandlerInterface
 {
     /**
-     * @var PromotionalWidgetsController
+     * @var WidgetSettingsService
      */
-    protected $promotionalWidgetsController;
+    protected $widgetSettingsService;
 
     /**
-     * @param PromotionalWidgetsController $promotionalWidgetsController
+     * @param WidgetSettingsService $widgetSettingsService
      */
-    public function __construct(PromotionalWidgetsController $promotionalWidgetsController)
+    public function __construct(WidgetSettingsService $widgetSettingsService)
     {
-        $this->promotionalWidgetsController = $promotionalWidgetsController;
+        $this->widgetSettingsService = $widgetSettingsService;
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws Exception
      */
-    public function handle(array $payload): Response
+    public function handle(array $payload, string $merchantId): Response
     {
-        $data = $payload['data'] ?? [];
+        $request = SaveWidgetSettingsRequest::fromPayload($payload);
+        $this->widgetSettingsService->setWidgetSettings($request->transformToDomainModel());
 
-        $request = new WidgetSettingsRequest(
-            $data['displayOnProductPage'] ?? false,
-            $data['showInstallmentsInProductListing'] ?? false,
-            $data['showInstallmentsInCartPage'] ?? false,
-            $data['widgetConfiguration'] ?? '',
-            $data['productPriceSelector'] ?? '',
-            $data['defaultProductLocationSelector'] ?? '',
-            $data['cartPriceSelector'] ?? '',
-            $data['cartLocationSelector'] ?? '',
-            $data['widgetOnCartPage'] ?? '',
-            $data['widgetOnListingPage'] ?? '',
-            $data['listingPriceSelector'] ?? '',
-            $data['listingLocationSelector'] ?? '',
-            $data['altProductPriceSelector'] ?? '',
-            $data['altProductPriceTriggerSelector'] ?? '',
-            $data['customLocations'] ?? []
-        );
-
-        return $this->promotionalWidgetsController->setWidgetSettings($request);
+        return new SaveWidgetSettingsResponse();
     }
 }

@@ -4,8 +4,9 @@ namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Shop;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\Shop\GetShopProductsRequest;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\Shop\ShopProductsResponse;
-use SeQura\Core\BusinessLogic\Domain\Integration\ShopProduct\ShopProductServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 
 /**
  * Class GetShopProductsHandler
@@ -15,23 +16,31 @@ use SeQura\Core\BusinessLogic\Domain\Integration\ShopProduct\ShopProductServiceI
 class GetShopProductsHandler implements TopicHandlerInterface
 {
     /**
-     * @var ShopProductServiceInterface
+     * @var ProductServiceInterface
      */
-    protected $shopProductService;
+    protected $productService;
 
     /**
-     * @param ShopProductServiceInterface $shopProductService
+     * @param ProductServiceInterface $productService
      */
-    public function __construct(ShopProductServiceInterface $shopProductService)
+    public function __construct(ProductServiceInterface $productService)
     {
-        $this->shopProductService = $shopProductService;
+        $this->productService = $productService;
     }
 
     /**
      * @inheritDoc
      */
-    public function handle(array $payload): Response
+    public function handle(array $payload, string $merchantId): Response
     {
-        return new ShopProductsResponse($this->shopProductService->getShopProducts());
+        $request = GetShopProductsRequest::fromPayload($payload);
+
+        return new ShopProductsResponse(
+            $this->productService->getShopProducts(
+                $request->getPage(),
+                $request->getLimit(),
+                $request->getSearch()
+            )
+        );
     }
 }

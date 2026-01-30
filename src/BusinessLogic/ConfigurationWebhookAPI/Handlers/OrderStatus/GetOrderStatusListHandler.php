@@ -2,9 +2,11 @@
 
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\OrderStatus;
 
-use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\OrderStatus\GetOrderStatusListResponse;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Exceptions\FailedToRetrieveShopOrderStatusesException;
+use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\ShopOrderStatusesService;
 
 /**
  * Class GetOrderStatusListHandler
@@ -14,23 +16,25 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInter
 class GetOrderStatusListHandler implements TopicHandlerInterface
 {
     /**
-     * @var OrderStatusSettingsController
+     * @var ShopOrderStatusesService
      */
-    protected $orderStatusSettingsController;
+    protected $shopOrderStatusesService;
 
     /**
-     * @param OrderStatusSettingsController $orderStatusSettingsController
+     * @param ShopOrderStatusesService $shopOrderStatusesService
      */
-    public function __construct(OrderStatusSettingsController $orderStatusSettingsController)
+    public function __construct(ShopOrderStatusesService $shopOrderStatusesService)
     {
-        $this->orderStatusSettingsController = $orderStatusSettingsController;
+        $this->shopOrderStatusesService = $shopOrderStatusesService;
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws FailedToRetrieveShopOrderStatusesException
      */
-    public function handle(array $payload): Response
+    public function handle(array $payload, string $merchantId): Response
     {
-        return $this->orderStatusSettingsController->getShopOrderStatuses();
+        return new GetOrderStatusListResponse($this->shopOrderStatusesService->getShopOrderStatuses());
     }
 }

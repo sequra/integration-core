@@ -2,6 +2,8 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo;
 
+use SeQura\Core\BusinessLogic\Domain\Stores\Models\StoreInfo;
+
 /**
  * Interface StoreInfoServiceInterface
  *
@@ -12,17 +14,7 @@ interface StoreInfoServiceInterface
     /**
      * Gets store information including platform details, versions, and installed plugins.
      *
-     * @return array{
-     *     store_name: string,
-     *     store_url: string,
-     *     platform: string,
-     *     platform_version: string,
-     *     plugin_version: string,
-     *     php_version: string,
-     *     db: string,
-     *     os: string,
-     *     plugins: string[]
-     * }
+     * @return StoreInfo
      */
-    public function getStoreInfo(): array;
+    public function getStoreInfo(): StoreInfo;
 }
