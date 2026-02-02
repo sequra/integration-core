@@ -79,7 +79,7 @@ class StoreIntegrationService
     /**
      * @param ConnectionData $connectionData
      *
-     * @return array
+     * @return mixed[]
      */
     public function getExpectedWebhookSignaturePayload(ConnectionData $connectionData): array
     {
@@ -155,7 +155,7 @@ class StoreIntegrationService
      * @param ConnectionData $connectionData
      * @param URL $webhookUrl
      *
-     * @return array
+     * @return mixed[]
      */
     protected function getWebhookSignaturePayload(ConnectionData $connectionData, URL $webhookUrl): array
     {

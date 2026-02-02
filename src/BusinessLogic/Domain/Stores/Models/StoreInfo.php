@@ -172,7 +172,7 @@ class StoreInfo
     /**
      * Converts the model to an array.
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
@@ -192,7 +192,7 @@ class StoreInfo
     /**
      * Creates a StoreInfo instance from an array.
      *
-     * @param array $data
+     * @param mixed[] $data
      *
      * @return static
      */
