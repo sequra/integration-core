@@ -14,5 +14,5 @@ abstract class ConfigurationWebhookRequest
      *
      * @return object
      */
-    public static abstract function fromPayload(array $payload): object;
+    abstract public static function fromPayload(array $payload): object;
 }

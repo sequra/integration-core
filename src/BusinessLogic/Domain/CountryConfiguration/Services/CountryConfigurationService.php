@@ -87,7 +87,7 @@ class CountryConfigurationService
     {
         $sellingCountries = $this->sellingCountriesService->getSellingCountries();
 
-        $countryConfiguration = array_map(function($countryCode) use ($sellingCountries) {
+        $countryConfiguration = array_map(function ($countryCode) use ($sellingCountries) {
             foreach ($sellingCountries as $sellingCountry) {
                 if ($sellingCountry->getCode() === $countryCode) {
                     return new CountryConfiguration($countryCode, $sellingCountry->getMerchantId());

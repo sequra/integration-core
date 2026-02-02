@@ -55,11 +55,13 @@ class ConfigurationWebhookValidationService
         $payload = $this->storeIntegrationService
             ->getExpectedWebhookSignaturePayload($connectionData);
 
-        if (!HMAC::validateHMAC(
-            $payload,
-            $connectionData->getAuthorizationCredentials()->getPassword(),
-            $webhookValidationRequest->getWebhookSignature()
-        )) {
+        if (
+            !HMAC::validateHMAC(
+                $payload,
+                $connectionData->getAuthorizationCredentials()->getPassword(),
+                $webhookValidationRequest->getWebhookSignature()
+            )
+        ) {
             throw new WebhookSignatureValidationFailed(
                 new TranslatableLabel('Webhook signature validation failed.', 'webhook.signature.validation.failed')
             );

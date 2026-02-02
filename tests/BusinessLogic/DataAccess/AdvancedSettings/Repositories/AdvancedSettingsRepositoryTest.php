@@ -74,7 +74,8 @@ class AdvancedSettingsRepositoryTest extends BaseTestCase
     {
         // arrange
         $advancedSettings = new AdvancedSettings(true, 1);
-        $entity = new AdvancedSettingsEntity();;
+        $entity = new AdvancedSettingsEntity();
+        ;
         $entity->setAdvancedSettings($advancedSettings);
         $entity->setStoreId('1');
         $this->repository->save($entity);
@@ -97,13 +98,15 @@ class AdvancedSettingsRepositoryTest extends BaseTestCase
     {
         // arrange
         $advancedSettings1 = new AdvancedSettings(true, 1);
-        $entity = new AdvancedSettingsEntity();;
+        $entity = new AdvancedSettingsEntity();
+        ;
         $entity->setAdvancedSettings($advancedSettings1);
         $entity->setStoreId('1');
         $this->repository->save($entity);
 
         $advancedSettings2 = new AdvancedSettings(false, 2);
-        $entity = new AdvancedSettingsEntity();;
+        $entity = new AdvancedSettingsEntity();
+        ;
         $entity->setAdvancedSettings($advancedSettings2);
         $entity->setStoreId('2');
         $this->repository->save($entity);
@@ -140,7 +143,8 @@ class AdvancedSettingsRepositoryTest extends BaseTestCase
 
         // assert
         $savedEntity = $this->repository->select();
-        self::assertEquals($advancedSettings, $savedEntity[0]->getAdvancedSettings());;
+        self::assertEquals($advancedSettings, $savedEntity[0]->getAdvancedSettings());
+        ;
     }
 
     /**
@@ -178,7 +182,8 @@ class AdvancedSettingsRepositoryTest extends BaseTestCase
     {
         // arrange
         $advancedSettings1 = new AdvancedSettings(true, 1);
-        $entity = new AdvancedSettingsEntity();;
+        $entity = new AdvancedSettingsEntity();
+        ;
         $entity->setAdvancedSettings($advancedSettings1);
         $entity->setStoreId('1');
         $this->repository->save($entity);

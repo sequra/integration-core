@@ -2,7 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\SellingCountries;
 
-
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\PaginationRequest;
 
 /**

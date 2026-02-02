@@ -9,38 +9,69 @@ namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Enums;
  */
 interface Topics
 {
-    /** @var string */
+    /**
+     * @var string
+     */
     public const GET_GENERAL_SETTINGS = 'get-general-settings';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const SAVE_GENERAL_SETTINGS = 'save-general-settings';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const GET_WIDGET_SETTINGS = 'get-widget-settings';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const SAVE_WIDGET_SETTINGS = 'save-widget-settings';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const GET_ORDER_STATUS_LIST = 'get-order-status-list';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const GET_ORDER_STATUS_SETTINGS = 'get-order-status-settings';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const SAVE_ORDER_STATUS_SETTINGS = 'save-order-status-settings';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const GET_ADVANCED_SETTINGS = 'get-advanced-settings';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const SAVE_ADVANCED_SETTINGS = 'save-advanced-settings';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const GET_LOG_CONTENT = 'get-log-content';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const REMOVE_LOG_CONTENT = 'remove-log-content';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const GET_SHOP_CATEGORIES = 'get-shop-categories';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const GET_SHOP_PRODUCTS = 'get-shop-products';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const GET_SELLING_COUNTRIES = 'get-selling-countries';
-    /** @var string */
+    /**
+     * @var string
+     */
     public const GET_STORE_INFO = 'get-store-info';
-
-    /** @var array */
+    /**
+     * @var array
+     */
     public const ALL_TOPICS = [
         self::GET_GENERAL_SETTINGS,
         self::SAVE_GENERAL_SETTINGS,

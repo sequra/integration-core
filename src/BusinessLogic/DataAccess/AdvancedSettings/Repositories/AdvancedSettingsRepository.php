@@ -82,7 +82,8 @@ class AdvancedSettingsRepository implements AdvancedSettingsRepositoryInterface
     {
         $entity = $this->getAdvancedSettingsEntity();
 
-        $entity && $this->repository->delete($entity);    }
+        $entity && $this->repository->delete($entity);
+    }
 
     /**
      * Gets the advanced settings entity from the database.

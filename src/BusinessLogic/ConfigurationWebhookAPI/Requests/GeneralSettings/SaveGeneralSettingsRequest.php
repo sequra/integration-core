@@ -19,7 +19,8 @@ class SaveGeneralSettingsRequest extends ConfigurationWebhookRequest
      */
     public static function fromPayload(array $payload): object
     {
-        return new self($payload['sendOrderReportsPeriodicallyToSeQura'] ?? false,
+        return new self(
+            $payload['sendOrderReportsPeriodicallyToSeQura'] ?? false,
             $payload['showSeQuraCheckoutAsHostedPage'] ?? false,
             $payload['allowedIPAddresses'] ?? [],
             $payload['excludedProducts'] ?? [],

@@ -1474,7 +1474,9 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 ['id' => 'wc-refunded', 'name' => 'Refunded'],
                 ['id' => 'wc-failed', 'name' => 'Failed'],
                 ['id' => 'wc-checkout-draft', 'name' => 'Draft']
-            ], $response->toArray());
+            ],
+            $response->toArray()
+        );
     }
 
     /**
@@ -1532,7 +1534,9 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 ['sequraStatus' => 'needs_review', 'shopStatus' => 'wc-pending'],
                 ['sequraStatus' => 'cancelled', 'shopStatus' => 'wc-cancelled'],
                 ['sequraStatus' => 'solicited', 'shopStatus' => 'wc-completed'],
-            ], $response->toArray());
+            ],
+            $response->toArray()
+        );
     }
 
     /**
@@ -1686,6 +1690,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         self::assertEquals([
             'isEnabled' => true,
             'level' => 1
-        ],$response->toArray());
+        ], $response->toArray());
     }
 }
