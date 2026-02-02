@@ -43,15 +43,15 @@ trait SaveGeneralSettingsRequestTrait
      */
     protected $defaultServicesEndDate;
     /**
-     * @var array $enabledForServices
+     * @var string[] $enabledForServices
      */
     protected $enabledForServices;
     /**
-     * @var array $allowFirstServicePaymentDelay
+     * @var string[] $allowFirstServicePaymentDelay
      */
     protected $allowFirstServicePaymentDelay;
     /**
-     * @var array $allowServiceRegistrationItems
+     * @var string[] $allowServiceRegistrationItems
      */
     protected $allowServiceRegistrationItems;
 
@@ -62,9 +62,9 @@ trait SaveGeneralSettingsRequestTrait
      * @param string[]|null $excludedProducts
      * @param string[]|null $excludedCategories
      * @param string|null $defaultServicesEndDate
-     * @param array $enabledForServices
-     * @param array $allowFirstServicePaymentDelay
-     * @param array $allowServiceRegistrationItems
+     * @param string[] $enabledForServices
+     * @param string[] $allowFirstServicePaymentDelay
+     * @param string[] $allowServiceRegistrationItems
      */
     public function __construct(
         bool $sendOrderReportsPeriodicallyToSeQura,
