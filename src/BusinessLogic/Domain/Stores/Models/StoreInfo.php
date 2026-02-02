@@ -194,7 +194,7 @@ class StoreInfo
      *
      * @param mixed[] $data
      *
-     * @return static
+     * @return StoreInfo
      */
     public static function fromArray(array $data): self
     {
