@@ -191,7 +191,7 @@ class AdvancedSettingsRepositoryTest extends BaseTestCase
         // act
         StoreContext::doWithStore(
             '1',
-            [$this->advancedSettingsRepository, 'deleteAdvancedSettings'],
+            [$this->advancedSettingsRepository, 'deleteAdvancedSettings']
         );
 
         // assert
