@@ -43,7 +43,7 @@ class SaveGeneralSettingsHandler implements TopicHandlerInterface
     }
 
     /**
-     * @param array $payload
+     * @param mixed[] $payload
      * @param string $merchantId
      *
      * @return Response

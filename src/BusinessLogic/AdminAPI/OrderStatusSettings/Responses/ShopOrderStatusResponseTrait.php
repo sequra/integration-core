@@ -25,7 +25,7 @@ trait ShopOrderStatusResponseTrait
     }
 
     /**
-     * @return array<string, string>
+     * @return mixed[]
      */
     public function toArray(): array
     {

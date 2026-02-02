@@ -50,7 +50,7 @@ class GetGeneralSettingsHandler implements TopicHandlerInterface
     }
 
     /**
-     * @param array $payload
+     * @param mixed[] $payload
      * @param string $merchantId
      *
      * @return GetGeneralSettingsResponse

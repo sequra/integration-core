@@ -70,7 +70,7 @@ interface Topics
      */
     public const GET_STORE_INFO = 'get-store-info';
     /**
-     * @var array
+     * @var string[]
      */
     public const ALL_TOPICS = [
         self::GET_GENERAL_SETTINGS,
