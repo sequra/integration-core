@@ -4,8 +4,9 @@ namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSet
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\AdvancedSettings\SaveAdvancedSettingsRequest;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\SuccessResponse;
-use SeQura\Core\BusinessLogic\Domain\Integration\AdvancedSettings\AdvancedSettingsServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
 
 /**
  * Class SaveAdvancedSettingsHandler
@@ -15,14 +16,14 @@ use SeQura\Core\BusinessLogic\Domain\Integration\AdvancedSettings\AdvancedSettin
 class SaveAdvancedSettingsHandler implements TopicHandlerInterface
 {
     /**
-     * @var AdvancedSettingsServiceInterface
+     * @var AdvancedSettingsService
      */
     protected $advancedSettingsService;
 
     /**
-     * @param AdvancedSettingsServiceInterface $advancedSettingsService
+     * @param AdvancedSettingsService $advancedSettingsService
      */
-    public function __construct(AdvancedSettingsServiceInterface $advancedSettingsService)
+    public function __construct(AdvancedSettingsService $advancedSettingsService)
     {
         $this->advancedSettingsService = $advancedSettingsService;
     }
@@ -32,12 +33,8 @@ class SaveAdvancedSettingsHandler implements TopicHandlerInterface
      */
     public function handle(array $payload, string $merchantId): Response
     {
-        $data = $payload['data'] ?? [];
-
-        $this->advancedSettingsService->saveAdvancedSettings(
-            $data['isEnabled'] ?? false,
-            $data['level'] ?? 3
-        );
+        $request = SaveAdvancedSettingsRequest::fromPayload($payload);
+        $this->advancedSettingsService->setAdvancedSettings($request->transformToDomainModel());
 
         return new SuccessResponse();
     }

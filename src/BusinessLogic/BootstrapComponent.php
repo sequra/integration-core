@@ -34,6 +34,8 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Store\GetStoreInf
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerRegistry;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\GetWidgetSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\SaveWidgetSettingsHandler;
+use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Entities\AdvancedSettings;
+use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Repositories\AdvancedSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
@@ -56,6 +58,8 @@ use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalDat
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
+use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\RepositoryContracts\AdvancedSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
@@ -71,7 +75,6 @@ use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
-use SeQura\Core\BusinessLogic\Domain\Integration\AdvancedSettings\AdvancedSettingsServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Log\LogServiceInterface;
@@ -83,7 +86,6 @@ use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMe
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
-use SeQura\Core\BusinessLogic\Domain\Integration\ShopProduct\ShopProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreIdProvider;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo\StoreInfoServiceInterface;
@@ -299,6 +301,16 @@ class BootstrapComponent extends BaseBootstrapComponent
                 );
             }
         );
+
+        ServiceRegister::registerService(
+            AdvancedSettingsRepositoryInterface::class,
+            static function () {
+                return new AdvancedSettingsRepository(
+                    RepositoryRegistry::getRepository(AdvancedSettings::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
     }
 
     /**
@@ -475,7 +487,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
                     ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
                     ServiceRegister::getService(TransactionLogRepositoryInterface::class),
-                    ServiceRegister::getService(StoreIntegrationService::class)
+                    ServiceRegister::getService(StoreIntegrationService::class),
+                    ServiceRegister::getService(AdvancedSettingsRepositoryInterface::class)
                 );
             }
         );
@@ -608,6 +621,15 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new ConfigurationWebhookValidationService(
                     ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(StoreIntegrationService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            AdvancedSettingsService::class,
+            static function () {
+                return new AdvancedSettingsService(
+                    ServiceRegister::getService(AdvancedSettingsRepositoryInterface::class)
                 );
             }
         );
@@ -1079,7 +1101,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             GetAdvancedSettingsHandler::class,
             static function () {
                 return new GetAdvancedSettingsHandler(
-                    ServiceRegister::getService(AdvancedSettingsServiceInterface::class)
+                    ServiceRegister::getService(AdvancedSettingsService::class)
                 );
             }
         );
@@ -1088,7 +1110,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             SaveAdvancedSettingsHandler::class,
             static function () {
                 return new SaveAdvancedSettingsHandler(
-                    ServiceRegister::getService(AdvancedSettingsServiceInterface::class)
+                    ServiceRegister::getService(AdvancedSettingsService::class)
                 );
             }
         );

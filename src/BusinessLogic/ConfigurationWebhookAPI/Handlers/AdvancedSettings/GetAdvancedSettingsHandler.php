@@ -5,7 +5,7 @@ namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSet
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\AdvancedSettings\AdvancedSettingsResponse;
-use SeQura\Core\BusinessLogic\Domain\Integration\AdvancedSettings\AdvancedSettingsServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
 
 /**
  * Class GetAdvancedSettingsHandler
@@ -15,14 +15,14 @@ use SeQura\Core\BusinessLogic\Domain\Integration\AdvancedSettings\AdvancedSettin
 class GetAdvancedSettingsHandler implements TopicHandlerInterface
 {
     /**
-     * @var AdvancedSettingsServiceInterface
+     * @var AdvancedSettingsService
      */
     protected $advancedSettingsService;
 
     /**
-     * @param AdvancedSettingsServiceInterface $advancedSettingsService
+     * @param AdvancedSettingsService $advancedSettingsService
      */
-    public function __construct(AdvancedSettingsServiceInterface $advancedSettingsService)
+    public function __construct(AdvancedSettingsService $advancedSettingsService)
     {
         $this->advancedSettingsService = $advancedSettingsService;
     }

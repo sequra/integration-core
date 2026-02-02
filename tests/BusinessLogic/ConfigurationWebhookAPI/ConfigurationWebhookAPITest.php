@@ -3,6 +3,8 @@
 namespace SeQura\Core\Tests\BusinessLogic\ConfigurationWebhookAPI;
 
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\ConfigurationWebhookAPI;
+use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Models\AdvancedSettings;
+use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
@@ -51,6 +53,8 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationS
 use SeQura\Core\BusinessLogic\Domain\Stores\Models\StoreInfo;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCategoryService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCoreSellingCountriesService;
@@ -161,6 +165,11 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      * @var MockCoreSellingCountriesService $domainSellingCountriesService
      */
     private $domainSellingCountriesService;
+
+    /**
+     * @var AdvancedSettingsService $advancedSettingsService
+     */
+    private $advancedSettingsService;
 
     /**
      * @return void
@@ -309,6 +318,14 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         TestServiceRegister::registerService(CountryConfigurationService::class, function () {
             return $this->countryConfigurationService;
+        });
+
+        $this->advancedSettingsService = new MockAdvancedSettingsService(
+            new MockAdvancedSettingsRepository()
+        );
+
+        TestServiceRegister::registerService(AdvancedSettingsService::class, function () {
+            return $this->advancedSettingsService;
         });
     }
 
@@ -1575,5 +1592,100 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         self::assertTrue($response->isSuccessful());
         self::assertEmpty($response->toArray());
         self::assertCount(4, $this->orderStatusSettingsService->getOrderStatusSettings());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws EmptyCategoryParameterException
+     */
+    public function testSetAdvancedSettingsResponse(): void
+    {
+        //Arrange
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant1',
+            'sequra',
+            new AuthorizationCredentials('username', 'password'),
+            '1'
+        );
+        $this->connectionService->saveConnectionData($connectionData);
+        $signaturePayload = [
+            StoreContext::getInstance()->getStoreId(),
+            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
+            $connectionData->getAuthorizationCredentials()->getUsername(),
+            $connectionData->getMerchantId()
+        ];
+        $signature = HMAC::generateHMAC(
+            $signaturePayload,
+            $connectionData->getAuthorizationCredentials()->getPassword()
+        );
+
+        $advancedSettings = new AdvancedSettings(true, 1);
+        $this->advancedSettingsService->setAdvancedSettings($advancedSettings);
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            'merchant1',
+            $signature,
+            [
+                "topic" => "save-advanced-settings",
+                "isEnabled" => false,
+                "level" => 3
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws EmptyCategoryParameterException
+     */
+    public function testGetAdvancedSettingsResponse(): void
+    {
+        //Arrange
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant1',
+            'sequra',
+            new AuthorizationCredentials('username', 'password'),
+            '1'
+        );
+        $this->connectionService->saveConnectionData($connectionData);
+        $signaturePayload = [
+            StoreContext::getInstance()->getStoreId(),
+            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
+            $connectionData->getAuthorizationCredentials()->getUsername(),
+            $connectionData->getMerchantId()
+        ];
+        $signature = HMAC::generateHMAC(
+            $signaturePayload,
+            $connectionData->getAuthorizationCredentials()->getPassword()
+        );
+
+        $advancedSettings = new AdvancedSettings(true, 1);
+        $this->advancedSettingsService->setAdvancedSettings($advancedSettings);
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            'merchant1',
+            $signature,
+            [
+                "topic" => "get-advanced-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals([
+            'isEnabled' => true,
+            'level' => 1
+        ],$response->toArray());
     }
 }

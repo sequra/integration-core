@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Disconnect\Services;
 
+use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\RepositoryContracts\AdvancedSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
@@ -97,6 +98,11 @@ class DisconnectService
     protected $storeIntegrationService;
 
     /**
+     * @var AdvancedSettingsRepositoryInterface $advancedSettingsRepository
+     */
+    protected $advancedSettingsRepository;
+
+    /**
      * @param DisconnectServiceInterface $integrationDisconnectService
      * @param SendReportRepositoryInterface $sendReportRepository
      * @param ConnectionDataRepositoryInterface $connectionDataRepository
@@ -111,6 +117,7 @@ class DisconnectService
      * @param StatisticalDataRepositoryInterface $statisticalDataRepository
      * @param TransactionLogRepositoryInterface $transactionLogRepository
      * @param StoreIntegrationService $storeIntegrationService
+     * @param AdvancedSettingsRepositoryInterface $advancedSettingsRepository
      */
     public function __construct(
         DisconnectServiceInterface $integrationDisconnectService,
@@ -126,7 +133,8 @@ class DisconnectService
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
         StatisticalDataRepositoryInterface $statisticalDataRepository,
         TransactionLogRepositoryInterface $transactionLogRepository,
-        StoreIntegrationService $storeIntegrationService
+        StoreIntegrationService $storeIntegrationService,
+        AdvancedSettingsRepositoryInterface $advancedSettingsRepository
     ) {
         $this->integrationDisconnectService = $integrationDisconnectService;
         $this->sendReportRepository = $sendReportRepository;
@@ -142,6 +150,7 @@ class DisconnectService
         $this->statisticalDataRepository = $statisticalDataRepository;
         $this->transactionLogRepository = $transactionLogRepository;
         $this->storeIntegrationService = $storeIntegrationService;
+        $this->advancedSettingsRepository = $advancedSettingsRepository;
     }
 
     /**
@@ -177,6 +186,7 @@ class DisconnectService
         $this->sendReportRepository->deleteSendReportForContext(StoreContext::getInstance()->getStoreId());
         $this->statisticalDataRepository->deleteStatisticalData();
         $this->transactionLogRepository->deleteAllTransactionLogs();
+        $this->advancedSettingsRepository->deleteAdvancedSettings();
 
         $this->integrationDisconnectService->disconnect();
     }

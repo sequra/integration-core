@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\AdvancedSettings;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Models\AdvancedSettings;
 
 /**
  * Class AdvancedSettingsResponse
@@ -12,19 +13,14 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 class AdvancedSettingsResponse extends Response
 {
     /**
-     * @var bool
-     */
-    protected $successful = true;
-
-    /**
-     * @var array{isEnabled: bool, level: int}
+     * @var AdvancedSettings $settings
      */
     protected $settings;
 
     /**
-     * @param array{isEnabled: bool, level: int} $settings
+     * @param AdvancedSettings $settings
      */
-    public function __construct(array $settings)
+    public function __construct(AdvancedSettings $settings)
     {
         $this->settings = $settings;
     }
@@ -34,6 +30,6 @@ class AdvancedSettingsResponse extends Response
      */
     public function toArray(): array
     {
-        return $this->settings;
+        return $this->settings->toArray();
     }
 }

@@ -34,6 +34,7 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Store\GetStoreInf
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerRegistry;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\GetWidgetSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\SaveWidgetSettingsHandler;
+use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Entities\AdvancedSettings;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
@@ -55,6 +56,7 @@ use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalDat
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
+use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
@@ -70,7 +72,6 @@ use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
-use SeQura\Core\BusinessLogic\Domain\Integration\AdvancedSettings\AdvancedSettingsServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Log\LogServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
@@ -796,7 +797,7 @@ class BaseTestCase extends TestCase
             GetAdvancedSettingsHandler::class,
             static function () {
                 return new GetAdvancedSettingsHandler(
-                    TestServiceRegister::getService(AdvancedSettingsServiceInterface::class)
+                    TestServiceRegister::getService(AdvancedSettingsService::class)
                 );
             }
         );
@@ -805,7 +806,7 @@ class BaseTestCase extends TestCase
             SaveAdvancedSettingsHandler::class,
             static function () {
                 return new SaveAdvancedSettingsHandler(
-                    TestServiceRegister::getService(AdvancedSettingsServiceInterface::class)
+                    TestServiceRegister::getService(AdvancedSettingsService::class)
                 );
             }
         );
@@ -965,6 +966,7 @@ class BaseTestCase extends TestCase
         TestRepositoryRegistry::registerRepository(PaymentMethod::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(Credentials::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(Deployment::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(AdvancedSettings::getClassName(), MemoryRepository::getClassName());
     }
 
     /**
