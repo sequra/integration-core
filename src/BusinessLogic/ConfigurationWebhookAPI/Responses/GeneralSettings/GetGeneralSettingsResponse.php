@@ -29,7 +29,9 @@ class GetGeneralSettingsResponse extends Response
     protected $categories;
 
     /**
-     * @param ?GeneralSettings $generalSettings
+     * @param GeneralSettings $generalSettings
+     * @param ShopProduct[] $products
+     * @param Category[] $categories
      */
     public function __construct(GeneralSettings $generalSettings, array $products, array $categories)
     {

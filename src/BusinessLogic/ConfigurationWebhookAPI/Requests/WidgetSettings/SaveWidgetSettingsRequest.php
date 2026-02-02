@@ -16,7 +16,9 @@ class SaveWidgetSettingsRequest extends ConfigurationWebhookRequest
     use SaveWidgetSettingsRequestTrait;
 
     /**
-     * @inheritDoc
+     * @param mixed[] $payload
+     *
+     * @return self
      */
     public static function fromPayload(array $payload): object
     {

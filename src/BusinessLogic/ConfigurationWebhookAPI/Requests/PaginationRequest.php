@@ -57,8 +57,11 @@ class PaginationRequest extends ConfigurationWebhookRequest
     {
         return $this->search;
     }
+
     /**
-     * @inheritDoc
+     * @param mixed[] $payload
+     *
+     * @return self
      */
     public static function fromPayload(array $payload): object
     {

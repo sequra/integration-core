@@ -15,7 +15,9 @@ class SaveGeneralSettingsRequest extends ConfigurationWebhookRequest
     use SaveGeneralSettingsRequestTrait;
 
     /**
-     * @inheritDoc
+     * @param mixed[] $payload
+     *
+     * @return self
      */
     public static function fromPayload(array $payload): object
     {

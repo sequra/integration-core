@@ -33,7 +33,9 @@ class SaveAdvancedSettingsRequest extends ConfigurationWebhookRequest
     }
 
     /**
-     * @inheritDoc
+     * @param mixed[] $payload
+     *
+     * @return self
      */
     public static function fromPayload(array $payload): object
     {

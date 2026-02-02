@@ -10,7 +10,7 @@ namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests;
 abstract class ConfigurationWebhookRequest
 {
     /**
-     * @param array $payload
+     * @param mixed[] $payload
      *
      * @return object
      */

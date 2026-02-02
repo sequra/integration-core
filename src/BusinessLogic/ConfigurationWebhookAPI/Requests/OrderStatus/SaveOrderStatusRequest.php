@@ -15,7 +15,7 @@ class SaveOrderStatusRequest extends ConfigurationWebhookRequest
     use SaveOrderStatusSettingsRequestTrait;
 
     /**
-     * @param array $payload
+     * @param mixed[] $payload
      *
      * @return self
      */

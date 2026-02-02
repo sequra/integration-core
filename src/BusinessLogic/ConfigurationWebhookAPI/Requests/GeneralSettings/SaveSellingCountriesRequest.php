@@ -33,7 +33,7 @@ class SaveSellingCountriesRequest extends ConfigurationWebhookRequest
     }
 
     /**
-     * @param array $payload
+     * @param mixed[] $payload
      *
      * @return self
      */
