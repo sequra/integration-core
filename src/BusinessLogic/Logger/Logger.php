@@ -14,7 +14,7 @@ use SeQura\Core\Infrastructure\ServiceRegister;
 class Logger extends InfrastructureLogger
 {
     /**
-     * @var Logger
+     * @var InfrastructureLogger
      */
     protected static $instance;
 
