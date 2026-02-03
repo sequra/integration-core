@@ -22,7 +22,7 @@ class Logger extends InfrastructureLogger
      * @param int $level
      * @param string $message
      * @param string $component
-     * @param array $context
+     * @param mixed[] $context
      *
      * @return void
      */
@@ -30,7 +30,7 @@ class Logger extends InfrastructureLogger
     {
         $advancedSettings = $this->getAdvancedSettingsService()->getAdvancedSettings();
 
-        if(!$advancedSettings || !$advancedSettings->isEnabled() || $level <= $advancedSettings->getLevel()) {
+        if (!$advancedSettings || !$advancedSettings->isEnabled() || $level <= $advancedSettings->getLevel()) {
             parent::logMessage($level, $message, $component, $context);
         }
     }
