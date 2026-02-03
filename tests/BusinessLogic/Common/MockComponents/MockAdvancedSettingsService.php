@@ -30,11 +30,11 @@ class MockAdvancedSettingsService extends AdvancedSettingsService
     }
 
     /**
-     * @param AdvancedSettings $advancedSettings
+     * @param ?AdvancedSettings $advancedSettings
      *
      * @return void
      */
-    public function setAdvancedSettings(AdvancedSettings $advancedSettings): void
+    public function setAdvancedSettings(?AdvancedSettings $advancedSettings): void
     {
         $this->advancedSettings = $advancedSettings;
     }

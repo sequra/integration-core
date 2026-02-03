@@ -183,7 +183,7 @@ class AdvancedSettingsRepositoryTest extends BaseTestCase
         // arrange
         $advancedSettings1 = new AdvancedSettings(true, 1);
         $entity = new AdvancedSettingsEntity();
-        ;
+
         $entity->setAdvancedSettings($advancedSettings1);
         $entity->setStoreId('1');
         $this->repository->save($entity);
