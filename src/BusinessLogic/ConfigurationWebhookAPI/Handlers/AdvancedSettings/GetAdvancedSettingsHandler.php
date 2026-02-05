@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSet
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\AdvancedSettings\AdvancedSettingsResponse;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\SuccessResponse;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
 
 /**
@@ -32,6 +33,12 @@ class GetAdvancedSettingsHandler implements TopicHandlerInterface
      */
     public function handle(array $payload, string $merchantId): Response
     {
-        return new AdvancedSettingsResponse($this->advancedSettingsService->getAdvancedSettings());
+        $advancedSettings = $this->advancedSettingsService->getAdvancedSettings();
+
+        if (!$advancedSettings) {
+            return new SuccessResponse();
+        }
+
+        return new AdvancedSettingsResponse($advancedSettings);
     }
 }

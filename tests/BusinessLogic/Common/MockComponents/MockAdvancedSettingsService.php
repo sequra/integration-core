@@ -13,19 +13,15 @@ use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsS
 class MockAdvancedSettingsService extends AdvancedSettingsService
 {
     /**
-     * @var AdvancedSettings $advancedSettings
+     * @var ?AdvancedSettings $advancedSettings
      */
     private $advancedSettings;
 
     /**
-     * @return AdvancedSettings
+     * @return ?AdvancedSettings
      */
-    public function getAdvancedSettings(): AdvancedSettings
+    public function getAdvancedSettings(): ?AdvancedSettings
     {
-        if (!$this->advancedSettings) {
-            return new AdvancedSettings(true, 1);
-        }
-
         return $this->advancedSettings;
     }
 

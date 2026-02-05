@@ -1692,4 +1692,48 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'level' => 1
         ], $response->toArray());
     }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws EmptyCategoryParameterException
+     */
+    public function testGetAdvancedSettingsResponseNoAdvancedSettings(): void
+    {
+        //Arrange
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant1',
+            'sequra',
+            new AuthorizationCredentials('username', 'password'),
+            '1'
+        );
+        $this->connectionService->saveConnectionData($connectionData);
+        $signaturePayload = [
+            StoreContext::getInstance()->getStoreId(),
+            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
+            $connectionData->getAuthorizationCredentials()->getUsername(),
+            $connectionData->getMerchantId()
+        ];
+        $signature = HMAC::generateHMAC(
+            $signaturePayload,
+            $connectionData->getAuthorizationCredentials()->getPassword()
+        );
+
+        $this->advancedSettingsService->setAdvancedSettings(null);
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            'merchant1',
+            $signature,
+            [
+                "topic" => "get-advanced-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
 }
