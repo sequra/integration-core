@@ -18,9 +18,9 @@ class AdvancedSettingsResponse extends Response
     protected $settings;
 
     /**
-     * @param AdvancedSettings $settings
+     * @param ?AdvancedSettings $settings
      */
-    public function __construct(AdvancedSettings $settings)
+    public function __construct(?AdvancedSettings $settings)
     {
         $this->settings = $settings;
     }
@@ -30,6 +30,6 @@ class AdvancedSettingsResponse extends Response
      */
     public function toArray(): array
     {
-        return $this->settings->toArray();
+        return !$this->settings ? [] : $this->settings->toArray();
     }
 }
