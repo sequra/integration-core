@@ -51,16 +51,14 @@ class GetGeneralSettingsHandler implements TopicHandlerInterface
 
     /**
      * @param mixed[] $payload
-     * @param string $merchantId
-     *
      * @return GetGeneralSettingsResponse|SuccessResponse
      *
      * @throws BadMerchantIdException
-     * @throws WrongCredentialsException
      * @throws FailedToRetrieveSellingCountriesException
      * @throws HttpRequestException
+     * @throws WrongCredentialsException
      */
-    public function handle(array $payload, string $merchantId): Response
+    public function handle(array $payload): Response
     {
         $generalSettings = $this->generalSettingsService->getGeneralSettings();
 

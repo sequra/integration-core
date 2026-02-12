@@ -1,6 +1,6 @@
 <?php
 
-namespace Domain\StoreIntegration\Services;
+namespace SeQura\Core\Tests\BusinessLogic\Domain\StoreIntegration\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmp
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationResponse;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationResponse;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\StoreIntegration;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
@@ -16,6 +17,7 @@ use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationRepository;
 
 /**
  * Class StoreIntegrationServiceTest.
@@ -40,6 +42,11 @@ class StoreIntegrationServiceTest extends BaseTestCase
     private $storeIntegrationService;
 
     /**
+     * @var MockStoreIntegrationRepository
+     */
+    private $storeIntegrationRepository;
+
+    /**
      * @return void
      *
      * @throws RepositoryClassException
@@ -50,8 +57,13 @@ class StoreIntegrationServiceTest extends BaseTestCase
 
         $this->storeIntegrationProxy = new MockStoreIntegrationProxy();
         $this->storeIntegrationService = new MockIntegrationStoreIntegrationService();
+        $this->storeIntegrationRepository = new MockStoreIntegrationRepository();
 
-        $this->service = new StoreIntegrationService($this->storeIntegrationService, $this->storeIntegrationProxy);
+        $this->service = new StoreIntegrationService(
+            $this->storeIntegrationService,
+            $this->storeIntegrationProxy,
+            $this->storeIntegrationRepository
+        );
     }
 
     /**
@@ -89,7 +101,7 @@ class StoreIntegrationServiceTest extends BaseTestCase
         $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('123456789'));
 
         //act
-        $storeIntegrationId = $this->service->createStoreIntegration(new ConnectionData(
+        $this->service->createStoreIntegration(new ConnectionData(
             'sandbox',
             'merchant',
             'svea',
@@ -97,7 +109,9 @@ class StoreIntegrationServiceTest extends BaseTestCase
         ));
 
         //assert
-        self::assertEquals('123456789', $storeIntegrationId);
+        $savedIntegration = $this->storeIntegrationRepository->getStoreIntegration();
+        self::assertEquals('123456789', $savedIntegration->getIntegrationId());
+        self::assertNotEmpty($savedIntegration->getSignature());
     }
 
     /**
@@ -141,12 +155,19 @@ class StoreIntegrationServiceTest extends BaseTestCase
         $this->storeIntegrationProxy->setMockDeleteResponse(new DeleteStoreIntegrationResponse());
 
         //act
-        $this->service->deleteStoreIntegration(new ConnectionData(
-            'sandbox',
-            'merchant',
-            'svea',
-            new AuthorizationCredentials('username', 'password')
-        ));
+        $this->service->deleteStoreIntegration(
+            new ConnectionData(
+                'sandbox',
+                'merchant',
+                'svea',
+                new AuthorizationCredentials('username', 'password')
+            ),
+            new StoreIntegration(
+                '1',
+                'signature',
+                '4'
+            )
+        );
 
         //assert
         self::assertTrue($this->storeIntegrationProxy->isDeleted());

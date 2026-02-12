@@ -23,6 +23,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDomainStoreService
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -72,7 +73,8 @@ class StoreIntegrationMigrateTaskTest extends BaseTestCase
 
         $this->storeIntegrationService = new MockStoreIntegrationService(
             new MockIntegrationStoreIntegrationService(),
-            new MockStoreIntegrationProxy()
+            new MockStoreIntegrationProxy(),
+            new MockStoreIntegrationRepository()
         );
 
         TestServiceRegister::registerService(StoreService::class, function () {
@@ -104,7 +106,6 @@ class StoreIntegrationMigrateTaskTest extends BaseTestCase
     {
         // Arrange
         $this->storeService->setMockConnectedStores(['2']);
-        $this->storeIntegrationService->setMockIntegrationId('int1');
 
         $connectionData1 = new ConnectionData(
             'sandbox',
@@ -127,12 +128,8 @@ class StoreIntegrationMigrateTaskTest extends BaseTestCase
         $task->execute();
 
         // Assert
-
         $createdIntegrations = $this->storeIntegrationService->getCreatedIntegrationIds();
-        $connectionData = $this->connectionService->getConnectionDataByMerchantId('merchant2');
-
         self::assertTrue($createdIntegrations['merchant']);
         self::assertTrue($createdIntegrations['merchant2']);
-        self::assertEquals('int1', $connectionData->getIntegrationId());
     }
 }

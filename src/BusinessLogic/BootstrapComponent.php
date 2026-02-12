@@ -56,6 +56,7 @@ use SeQura\Core\BusinessLogic\DataAccess\SendReport\Entities\SendReport;
 use SeQura\Core\BusinessLogic\DataAccess\SendReport\Repositories\SendReportRepository;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
+use SeQura\Core\BusinessLogic\DataAccess\StoreIntegration\Repositories\StoreIntegrationRepository;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\RepositoryContracts\AdvancedSettingsRepositoryInterface;
@@ -115,6 +116,7 @@ use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRe
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\ProxyContracts\StoreIntegrationsProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\RepositoryContracts\StoreIntegrationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\BusinessLogic\Domain\UIState\Services\UIStateService;
@@ -197,6 +199,16 @@ class BootstrapComponent extends BaseBootstrapComponent
             ConnectionDataRepositoryInterface::class,
             static function () {
                 return new ConnectionDataRepository(
+                    RepositoryRegistry::getRepository(ConnectionData::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            StoreIntegrationRepositoryInterface::class,
+            static function () {
+                return new StoreIntegrationRepository(
                     RepositoryRegistry::getRepository(ConnectionData::getClassName()),
                     ServiceRegister::getService(StoreContext::class)
                 );
@@ -488,7 +500,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
                     ServiceRegister::getService(TransactionLogRepositoryInterface::class),
                     ServiceRegister::getService(StoreIntegrationService::class),
-                    ServiceRegister::getService(AdvancedSettingsRepositoryInterface::class)
+                    ServiceRegister::getService(AdvancedSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(StoreIntegrationRepositoryInterface::class)
                 );
             }
         );
@@ -610,7 +623,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new StoreIntegrationService(
                     ServiceRegister::getService(StoreIntegrationServiceInterface::class),
-                    ServiceRegister::getService(StoreIntegrationsProxyInterface::class)
+                    ServiceRegister::getService(StoreIntegrationsProxyInterface::class),
+                    ServiceRegister::getService(StoreIntegrationRepositoryInterface::class)
                 );
             }
         );
@@ -619,7 +633,6 @@ class BootstrapComponent extends BaseBootstrapComponent
             ConfigurationWebhookValidationService::class,
             static function () {
                 return new ConfigurationWebhookValidationService(
-                    ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(StoreIntegrationService::class)
                 );
             }
@@ -1056,7 +1069,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new GetWidgetSettingsHandler(
                     ServiceRegister::getService(WidgetSettingsService::class),
-                    ServiceRegister::getService(PaymentMethodsService::class)
+                    ServiceRegister::getService(PaymentMethodsService::class),
+                    ServiceRegister::getService(CredentialsService::class)
                 );
             }
         );

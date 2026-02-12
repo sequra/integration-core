@@ -51,4 +51,11 @@ interface CredentialsRepositoryInterface
      * @return ?Credentials
      */
     public function getCredentialsByMerchantId(string $merchantId): ?Credentials;
+
+    /**
+     * Retrieves merchant ID for store ID.
+     *
+     * @return string
+     */
+    public function getMerchantIdByStoreId(): string;
 }

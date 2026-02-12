@@ -32,14 +32,12 @@ class SaveOrderStatusSettingsHandler implements TopicHandlerInterface
 
     /**
      * @param mixed[] $payload
-     * @param string $merchantId
-     *
      * @return Response
      *
      * @throws EmptyOrderStatusMappingParameterException
      * @throws InvalidSeQuraOrderStatusException
      */
-    public function handle(array $payload, string $merchantId): Response
+    public function handle(array $payload): Response
     {
         $request = SaveOrderStatusRequest::fromPayload($payload);
         $this->orderStatusSettingsService->saveOrderStatusSettings($request->transformToDomainModel());

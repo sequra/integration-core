@@ -6,6 +6,7 @@ use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\WidgetSettings\GetWidgetSettingsResponse;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 
@@ -27,15 +28,23 @@ class GetWidgetSettingsHandler implements TopicHandlerInterface
     protected $paymentMethodsService;
 
     /**
+     * @var CredentialsService
+     */
+    protected $credentialsService;
+
+    /**
      * @param WidgetSettingsService $widgetSettingsService
      * @param PaymentMethodsService $paymentMethodsService
+     * @param CredentialsService $credentialsService
      */
     public function __construct(
         WidgetSettingsService $widgetSettingsService,
-        PaymentMethodsService $paymentMethodsService
+        PaymentMethodsService $paymentMethodsService,
+        CredentialsService $credentialsService
     ) {
         $this->widgetSettingsService = $widgetSettingsService;
         $this->paymentMethodsService = $paymentMethodsService;
+        $this->credentialsService = $credentialsService;
     }
 
     /**
@@ -43,8 +52,10 @@ class GetWidgetSettingsHandler implements TopicHandlerInterface
      *
      * @throws Exception
      */
-    public function handle(array $payload, string $merchantId): Response
+    public function handle(array $payload): Response
     {
+        $merchantId = $this->credentialsService->getMerchantIdByStoreId();
+
         return new GetWidgetSettingsResponse(
             $this->widgetSettingsService->getWidgetSettings(),
             $this->paymentMethodsService->getCachedPaymentMethods($merchantId)

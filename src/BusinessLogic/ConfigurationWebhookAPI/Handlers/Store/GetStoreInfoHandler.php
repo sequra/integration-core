@@ -30,7 +30,7 @@ class GetStoreInfoHandler implements TopicHandlerInterface
     /**
      * @inheritDoc
      */
-    public function handle(array $payload, string $merchantId): Response
+    public function handle(array $payload): Response
     {
         return new StoreInfoResponse($this->storeInfoService->getStoreInfo());
     }

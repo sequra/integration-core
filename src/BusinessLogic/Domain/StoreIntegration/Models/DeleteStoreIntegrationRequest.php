@@ -17,11 +17,18 @@ class DeleteStoreIntegrationRequest
     private $connectionData;
 
     /**
-     * @param ConnectionData $connectionData
+     * @var StoreIntegration
      */
-    public function __construct(ConnectionData $connectionData)
+    private $storeIntegration;
+
+    /**
+     * @param ConnectionData $connectionData
+     * @param StoreIntegration $storeIntegration
+     */
+    public function __construct(ConnectionData $connectionData, StoreIntegration $storeIntegration)
     {
         $this->connectionData = $connectionData;
+        $this->storeIntegration = $storeIntegration;
     }
 
     /**
@@ -30,5 +37,13 @@ class DeleteStoreIntegrationRequest
     public function getConnectionData(): ConnectionData
     {
         return $this->connectionData;
+    }
+
+    /**
+     * @return StoreIntegration
+     */
+    public function getStoreIntegration(): StoreIntegration
+    {
+        return $this->storeIntegration;
     }
 }

@@ -15,9 +15,8 @@ interface TopicHandlerInterface
      * Handles the webhook request for a specific topic.
      *
      * @param mixed[] $payload
-     * @param string $merchantId
      *
      * @return Response
      */
-    public function handle(array $payload, string $merchantId): Response;
+    public function handle(array $payload): Response;
 }

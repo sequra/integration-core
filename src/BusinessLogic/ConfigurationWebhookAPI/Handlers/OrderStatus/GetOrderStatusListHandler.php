@@ -33,7 +33,7 @@ class GetOrderStatusListHandler implements TopicHandlerInterface
      *
      * @throws FailedToRetrieveShopOrderStatusesException
      */
-    public function handle(array $payload, string $merchantId): Response
+    public function handle(array $payload): Response
     {
         return new GetOrderStatusListResponse($this->shopOrderStatusesService->getShopOrderStatuses());
     }

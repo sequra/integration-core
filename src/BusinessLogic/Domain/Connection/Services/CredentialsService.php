@@ -165,4 +165,14 @@ class CredentialsService
         }
         return $credentials->getMerchantId();
     }
+
+    /**
+     * Retrieves merchant ID for store ID.
+     *
+     * @return string
+     */
+    public function getMerchantIdByStoreId(): string
+    {
+        return $this->credentialsRepository->getMerchantIdByStoreId();
+    }
 }

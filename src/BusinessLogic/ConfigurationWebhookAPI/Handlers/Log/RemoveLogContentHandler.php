@@ -30,7 +30,7 @@ class RemoveLogContentHandler implements TopicHandlerInterface
     /**
      * @inheritDoc
      */
-    public function handle(array $payload, string $merchantId): Response
+    public function handle(array $payload): Response
     {
         $this->logService->removeLog();
 

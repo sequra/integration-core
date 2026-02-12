@@ -50,6 +50,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSendReportReposito
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSeQuraOrderRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStatisticalDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\TransactionLog\Mocks\MockTransactionLogRepository;
@@ -137,6 +138,11 @@ class DisconnectServiceTest extends BaseTestCase
     private $advancedSettingsRepository;
 
     /**
+     * @var MockStoreIntegrationRepository $storeIntegrationRepository
+     */
+    private $storeIntegrationRepository;
+
+    /**
      * @var DisconnectService $service
      */
     private $service;
@@ -160,9 +166,11 @@ class DisconnectServiceTest extends BaseTestCase
         $this->transactionLogRepository = new MockTransactionLogRepository();
         $this->storeIntegrationService = new MockStoreIntegrationService(
             new MockIntegrationStoreIntegrationService(),
-            new MockStoreIntegrationProxy()
+            new MockStoreIntegrationProxy(),
+            new MockStoreIntegrationRepository()
         );
         $this->advancedSettingsRepository = new MockAdvancedSettingsRepository();
+        $this->storeIntegrationRepository = new MockStoreIntegrationRepository();
 
         $this->service = new DisconnectService(
             $this->integrationDisconnectService,
@@ -179,7 +187,8 @@ class DisconnectServiceTest extends BaseTestCase
             $this->statisticalDataRepository,
             $this->transactionLogRepository,
             $this->storeIntegrationService,
-            $this->advancedSettingsRepository
+            $this->advancedSettingsRepository,
+            $this->storeIntegrationRepository
         );
     }
 

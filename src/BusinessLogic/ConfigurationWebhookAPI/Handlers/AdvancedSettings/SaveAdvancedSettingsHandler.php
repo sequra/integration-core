@@ -31,7 +31,7 @@ class SaveAdvancedSettingsHandler implements TopicHandlerInterface
     /**
      * @inheritDoc
      */
-    public function handle(array $payload, string $merchantId): Response
+    public function handle(array $payload): Response
     {
         $request = SaveAdvancedSettingsRequest::fromPayload($payload);
         $this->advancedSettingsService->setAdvancedSettings($request->transformToDomainModel());

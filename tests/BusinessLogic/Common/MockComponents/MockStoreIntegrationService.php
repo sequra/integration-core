@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\StoreIntegration;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 
 /**
@@ -12,11 +13,6 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationS
  */
 class MockStoreIntegrationService extends StoreIntegrationService
 {
-    /**
-     * @var string $integrationId
-     */
-    private $integrationId = '';
-
     /**
      * @var bool $deleted
      */
@@ -30,28 +26,16 @@ class MockStoreIntegrationService extends StoreIntegrationService
     /**
      * @param ConnectionData $connectionData
      *
-     * @return string
-     */
-    public function createStoreIntegration(ConnectionData $connectionData): string
-    {
-        $this->createdIntegrationIds[$connectionData->getMerchantId()] = true;
-
-        return $this->integrationId;
-    }
-
-    public function deleteStoreIntegration(ConnectionData $connectionData): void
-    {
-        $this->deleted = true;
-    }
-
-    /**
-     * @param string $integrationId
-     *
      * @return void
      */
-    public function setMockIntegrationId(string $integrationId): void
+    public function createStoreIntegration(ConnectionData $connectionData): void
     {
-        $this->integrationId = $integrationId;
+        $this->createdIntegrationIds[$connectionData->getMerchantId()] = true;
+    }
+
+    public function deleteStoreIntegration(ConnectionData $connectionData, StoreIntegration $storeIntegration): void
+    {
+        $this->deleted = true;
     }
 
     /**
@@ -68,5 +52,10 @@ class MockStoreIntegrationService extends StoreIntegrationService
     public function getCreatedIntegrationIds(): array
     {
         return $this->createdIntegrationIds;
+    }
+
+    public function getWebhookSignature(): string
+    {
+        return $this->storeIntegrationRepository->getWebhookSignature();
     }
 }

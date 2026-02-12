@@ -141,7 +141,6 @@ use SeQura\Core\Infrastructure\Logger\LoggerConfiguration;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Infrastructure\Serializer\Concrete\JsonSerializer;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
-use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStateTransitionEventBus;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\TaskRunnerWakeup;
 use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
@@ -160,6 +159,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessages
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
@@ -463,7 +463,6 @@ class BaseTestCase extends TestCase
             },
             ConfigurationWebhookValidationService::class => function () {
                 return new ConfigurationWebhookValidationService(
-                    TestServiceRegister::getService(ConnectionService::class),
                     TestServiceRegister::getService(StoreIntegrationService::class)
                 );
             },
@@ -721,7 +720,8 @@ class BaseTestCase extends TestCase
             static function () {
                 return new MockStoreIntegrationService(
                     new MockIntegrationStoreIntegrationService(),
-                    new MockStoreIntegrationProxy()
+                    new MockStoreIntegrationProxy(),
+                    new MockStoreIntegrationRepository()
                 );
             }
         );
@@ -752,7 +752,8 @@ class BaseTestCase extends TestCase
             static function () {
                 return new GetWidgetSettingsHandler(
                     TestServiceRegister::getService(WidgetSettingsService::class),
-                    TestServiceRegister::getService(PaymentMethodsService::class)
+                    TestServiceRegister::getService(PaymentMethodsService::class),
+                    TestServiceRegister::getService(CredentialsService::class)
                 );
             }
         );

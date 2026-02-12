@@ -34,16 +34,10 @@ class ConnectionData extends DataTransferObject
     protected $authorizationCredentials;
 
     /**
-     * @var string
-     */
-    protected $integrationId;
-
-    /**
      * @param string $environment
      * @param string|null $merchantId
      * @param string $deployment
      * @param AuthorizationCredentials $authorizationCredentials
-     * @param string $integrationId
      *
      * @throws InvalidEnvironmentException
      */
@@ -51,8 +45,7 @@ class ConnectionData extends DataTransferObject
         string $environment,
         ?string $merchantId,
         string $deployment,
-        AuthorizationCredentials $authorizationCredentials,
-        string $integrationId = ''
+        AuthorizationCredentials $authorizationCredentials
     ) {
         if (!in_array($environment, [BaseProxy::LIVE_MODE, BaseProxy::TEST_MODE], true)) {
             throw new InvalidEnvironmentException();
@@ -62,7 +55,6 @@ class ConnectionData extends DataTransferObject
         $this->merchantId = $merchantId;
         $this->deployment = $deployment;
         $this->authorizationCredentials = $authorizationCredentials;
-        $this->integrationId = $integrationId;
     }
 
     /**
@@ -132,24 +124,6 @@ class ConnectionData extends DataTransferObject
     }
 
     /**
-     * @return string
-     */
-    public function getIntegrationId(): string
-    {
-        return $this->integrationId;
-    }
-
-    /**
-     * @param string $integrationId
-     *
-     * @return void
-     */
-    public function setIntegrationId(string $integrationId): void
-    {
-        $this->integrationId = $integrationId;
-    }
-
-    /**
      * @inheritDoc
      */
     public function toArray(): array
@@ -159,7 +133,6 @@ class ConnectionData extends DataTransferObject
             'merchantId' => $this->merchantId,
             'deployment' => $this->deployment,
             'authorizationCredentials' => $this->authorizationCredentials->toArray(),
-            'integrationId' => $this->integrationId
         ];
 
         return $data;

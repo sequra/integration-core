@@ -34,7 +34,7 @@ class SaveWidgetSettingsHandler implements TopicHandlerInterface
      *
      * @throws Exception
      */
-    public function handle(array $payload, string $merchantId): Response
+    public function handle(array $payload): Response
     {
         $request = SaveWidgetSettingsRequest::fromPayload($payload);
         $this->widgetSettingsService->setWidgetSettings($request->transformToDomainModel());

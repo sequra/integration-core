@@ -44,15 +44,13 @@ class SaveGeneralSettingsHandler implements TopicHandlerInterface
 
     /**
      * @param mixed[] $payload
-     * @param string $merchantId
-     *
      * @return Response
      *
      * @throws EmptyCountryConfigurationParameterException
      * @throws FailedToRetrieveSellingCountriesException
      * @throws InvalidCountryCodeForConfigurationException
      */
-    public function handle(array $payload, string $merchantId): Response
+    public function handle(array $payload): Response
     {
         $generalSettingsRequest = SaveGeneralSettingsRequest::fromPayload($payload);
         $this->generalSettingsService->saveGeneralSettings($generalSettingsRequest->transformToDomainModel());

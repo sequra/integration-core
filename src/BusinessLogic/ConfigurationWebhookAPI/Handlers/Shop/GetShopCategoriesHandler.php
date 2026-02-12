@@ -30,11 +30,9 @@ class GetShopCategoriesHandler implements TopicHandlerInterface
 
     /**
      * @param mixed[] $payload
-     * @param string $merchantId
-     *
      * @return ShopCategoryResponse
      */
-    public function handle(array $payload, string $merchantId): Response
+    public function handle(array $payload): Response
     {
         $request = GetShopCategoriesRequest::fromPayload($payload);
 

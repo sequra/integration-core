@@ -24,6 +24,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDisconnectService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationDisconnectService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationRepository;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -57,7 +58,8 @@ class DisconnectionControllerApiTest extends BaseTestCase
             ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
             ServiceRegister::getService(TransactionLogRepositoryInterface::class),
             ServiceRegister::getService(StoreIntegrationService::class),
-            new MockAdvancedSettingsRepository()
+            new MockAdvancedSettingsRepository(),
+            new MockStoreIntegrationRepository()
         );
 
         TestServiceRegister::registerService(DisconnectService::class, function () {

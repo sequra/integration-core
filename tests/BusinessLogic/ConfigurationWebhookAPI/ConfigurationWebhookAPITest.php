@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsS
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
@@ -22,7 +23,6 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
-use SeQura\Core\BusinessLogic\Domain\HMAC\HMAC;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Log\LogServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
@@ -33,7 +33,6 @@ use SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo\StoreInfoServiceInter
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreIntegration\StoreIntegrationServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Log\Model\Log;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
-use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderStatus\Models\OrderStatus;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
@@ -56,20 +55,26 @@ use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCategoryService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCoreSellingCountriesService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDomainShopOrderStatusesService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockGeneralSettingsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockLogService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderStatusSettingsService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockShopOrderStatusesService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreInfoService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetSettingsService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -172,6 +177,11 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     private $advancedSettingsService;
 
     /**
+     * @var MockCredentialsService
+     */
+    private $credentialsService;
+
+    /**
      * @return void
      *
      * @throws RepositoryClassException
@@ -194,7 +204,8 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         $this->storeIntegrationService = new MockStoreIntegrationService(
             $this->integrationStoreIntegrationService,
-            new MockStoreIntegrationProxy()
+            new MockStoreIntegrationProxy(),
+            new MockStoreIntegrationRepository()
         );
 
         TestServiceRegister::registerService(StoreIntegrationService::class, function () {
@@ -327,6 +338,17 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         TestServiceRegister::registerService(AdvancedSettingsService::class, function () {
             return $this->advancedSettingsService;
         });
+
+        $this->credentialsService = new MockCredentialsService(
+            new MockConnectionProxy(),
+            new MockCredentialsRepository(),
+            new MockCountryConfigurationRepository(),
+            new MockPaymentMethodRepository()
+        );
+
+        TestServiceRegister::registerService(CredentialsService::class, function () {
+            return $this->credentialsService;
+        });
     }
 
     /**
@@ -340,7 +362,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             'test',
             [
                 'page' => 1,
@@ -370,14 +391,12 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'sandbox',
             'merchant1',
             'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
+            new AuthorizationCredentials('username', 'password')
         );
         $this->connectionService->saveConnectionData($connectionData);
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             'testFail',
             [
                 'topic' => 'get-shop-categories',
@@ -408,20 +427,10 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 'topic' => 'get-shop-categories',
@@ -447,24 +456,13 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'sandbox',
             'merchant1',
             'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
+            new AuthorizationCredentials('username', 'password')
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 'topic' => 'get-payment-data',
@@ -499,16 +497,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->storeInfoService->setMockStoreInfo(
             new StoreInfo(
@@ -530,7 +519,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 'topic' => 'get-store-info'
@@ -568,16 +556,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->storeInfoService->setMockStoreInfo(
             new StoreInfo(
@@ -605,7 +584,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 'topic' => 'get-log-content'
@@ -637,16 +615,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->storeInfoService->setMockStoreInfo(
             new StoreInfo(
@@ -674,7 +643,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 'topic' => 'remove-log-content'
@@ -703,16 +671,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->productService->setMockShopProducts(
             [
@@ -724,7 +683,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 'topic' => 'get-shop-products',
@@ -772,16 +730,8 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
+
         $this->shopCategoryService->setMockCategories(
             [
                 new Category(1, 'Test1'),
@@ -792,7 +742,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 'topic' => 'get-shop-categories',
@@ -837,16 +786,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
         $this->sellingCountriesService->setSellingCountries(
             [
                 'ES',
@@ -858,7 +798,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 'topic' => 'get-selling-countries',
@@ -891,20 +830,18 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'sandbox',
             'merchant1',
             'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
+            new AuthorizationCredentials('username', 'password')
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
+        $this->credentialsService->setCredentials(new Credentials(
+                'merchant1',
+                'ES',
+                'EUR',
+                'assets_key',
+                [],
+                'sequra' )
         );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $widgetSettings = new WidgetSettings(
             true,
@@ -984,7 +921,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 'topic' => 'get-widget-settings'
@@ -1057,6 +993,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      * @return void
      *
      * @throws InvalidEnvironmentException
+     * @throws \Exception
      */
     public function testSaveWidgetSettingsResponse(): void
     {
@@ -1069,16 +1006,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $widgetSettings = new WidgetSettings(
             false,
@@ -1158,7 +1086,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 "topic" => "save-widget-settings",
@@ -1216,16 +1143,8 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
+
         $generalSettings = new GeneralSettings(
             false,
             true,
@@ -1247,7 +1166,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 "topic" => "get-general-settings"
@@ -1301,16 +1219,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->shopCategoryService->setMockCategories([new Category('16', 'Accessories')]);
         $this->productService->setMockShopProducts([
@@ -1320,7 +1229,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 "topic" => "get-general-settings"
@@ -1349,16 +1257,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->shopCategoryService->setMockCategories([new Category('16', 'Accessories')]);
         $this->domainSellingCountriesService->setMockSellingCountries(
@@ -1373,7 +1272,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 "topic" => "save-general-settings",
@@ -1428,16 +1326,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->shopCategoryService->setMockCategories([new Category('16', 'Accessories')]);
         $this->shopOrderStatusService->setMockShopOrderStatuses(
@@ -1455,7 +1344,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 "topic" => "get-order-status-list"
@@ -1496,16 +1384,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->shopCategoryService->setMockCategories([new Category('16', 'Accessories')]);
         $this->orderStatusSettingsService->setMockOrderStatusSettings(
@@ -1519,7 +1398,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 "topic" => "get-order-status-settings"
@@ -1556,16 +1434,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->shopCategoryService->setMockCategories([new Category('16', 'Accessories')]);
         $this->orderStatusSettingsService->setMockOrderStatusSettings(
@@ -1579,7 +1448,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 "topic" => "save-order-status-settings",
@@ -1615,23 +1483,13 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $advancedSettings = new AdvancedSettings(true, 1);
         $this->advancedSettingsService->setAdvancedSettings($advancedSettings);
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 "topic" => "save-advanced-settings",
@@ -1662,23 +1520,13 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $advancedSettings = new AdvancedSettings(true, 1);
         $this->advancedSettingsService->setAdvancedSettings($advancedSettings);
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 "topic" => "get-advanced-settings"
@@ -1710,22 +1558,12 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signaturePayload = [
-            StoreContext::getInstance()->getStoreId(),
-            $this->integrationStoreIntegrationService->getWebhookUrl()->getPath(),
-            $connectionData->getAuthorizationCredentials()->getUsername(),
-            $connectionData->getMerchantId()
-        ];
-        $signature = HMAC::generateHMAC(
-            $signaturePayload,
-            $connectionData->getAuthorizationCredentials()->getPassword()
-        );
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->advancedSettingsService->setAdvancedSettings(null);
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'merchant1',
             $signature,
             [
                 "topic" => "get-advanced-settings"
