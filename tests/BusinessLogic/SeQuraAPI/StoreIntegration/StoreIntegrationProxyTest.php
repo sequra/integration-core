@@ -90,8 +90,11 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'),
-            [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -124,8 +127,11 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'),
-            [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -158,8 +164,11 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'),
-            [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -192,8 +201,11 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'),
-            [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -231,8 +243,11 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'),
-            [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
         // act
         $response = $this->proxy->createStoreIntegration($request);
 

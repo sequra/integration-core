@@ -834,13 +834,13 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         );
         $this->connectionService->saveConnectionData($connectionData);
         $this->credentialsService->setCredentials(new Credentials(
-                'merchant1',
-                'ES',
-                'EUR',
-                'assets_key',
-                [],
-                'sequra' )
-        );
+            'merchant1',
+            'ES',
+            'EUR',
+            'assets_key',
+            [],
+            'sequra'
+        ));
         $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $widgetSettings = new WidgetSettings(

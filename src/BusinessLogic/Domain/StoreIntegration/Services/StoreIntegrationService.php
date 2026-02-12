@@ -90,6 +90,7 @@ class StoreIntegrationService
     /**
      * @param ConnectionData $connectionData
      * @param StoreIntegration $storeIntegration
+     *
      * @return void
      */
     public function deleteStoreIntegration(ConnectionData $connectionData, StoreIntegration $storeIntegration): void
@@ -120,6 +121,7 @@ class StoreIntegrationService
     /**
      * @param URL $webhookUrl
      * @param string $signature
+     *
      * @return URL
      */
     protected function buildWebhookUrl(URL $webhookUrl, string $signature): URL
@@ -131,6 +133,9 @@ class StoreIntegrationService
         return $webhookUrl;
     }
 
+    /**
+     * @return string
+     */
     public function getWebhookSignature(): string
     {
         return $this->storeIntegrationRepository->getWebhookSignature();
@@ -138,6 +143,7 @@ class StoreIntegrationService
 
     /**
      * @param string $webhookSignature
+     *
      * @return void
      * @throws InvalidSignatureException
      */
@@ -145,13 +151,14 @@ class StoreIntegrationService
     {
         $storedSignature = $this->storeIntegrationRepository->getWebhookSignature();
 
-        if(!hash_equals($storedSignature, $webhookSignature)) {
+        if (!hash_equals($storedSignature, $webhookSignature)) {
             throw new InvalidSignatureException('Webhook signature mismatch.', 400);
         }
     }
 
     /**
      * @param StoreIntegration $storeIntegration
+     *
      * @return void
      */
     private function setStoreIntegration(StoreIntegration $storeIntegration): void

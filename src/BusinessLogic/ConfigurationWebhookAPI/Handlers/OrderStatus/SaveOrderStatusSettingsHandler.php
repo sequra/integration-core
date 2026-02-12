@@ -32,6 +32,7 @@ class SaveOrderStatusSettingsHandler implements TopicHandlerInterface
 
     /**
      * @param mixed[] $payload
+     *
      * @return Response
      *
      * @throws EmptyOrderStatusMappingParameterException

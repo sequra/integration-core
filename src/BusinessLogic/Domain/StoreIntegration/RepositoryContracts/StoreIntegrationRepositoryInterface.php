@@ -8,6 +8,7 @@ interface StoreIntegrationRepositoryInterface
 {
     /**
      * @param StoreIntegration $storeIntegration
+     *
      * @return mixed
      */
     public function setStoreIntegration(StoreIntegration $storeIntegration): void;

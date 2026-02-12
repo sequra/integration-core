@@ -30,6 +30,7 @@ class GetShopCategoriesHandler implements TopicHandlerInterface
 
     /**
      * @param mixed[] $payload
+     *
      * @return ShopCategoryResponse
      */
     public function handle(array $payload): Response

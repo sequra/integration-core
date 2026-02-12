@@ -11,13 +11,19 @@ use SeQura\Core\Infrastructure\Data\DataTransferObject;
  */
 class StoreIntegration extends DataTransferObject
 {
-    /** @var string  */
+    /**
+     * @var string
+     */
     protected $storeId;
 
-    /** @var string  */
+    /**
+     * @var string
+     */
     protected $signature;
 
-    /** @var string  */
+    /**
+     * @var string
+     */
     protected $integrationId;
 
     /**
@@ -42,6 +48,7 @@ class StoreIntegration extends DataTransferObject
 
     /**
      * @param string $storeId
+     *
      * @return void
      */
     public function setStoreId(string $storeId): void
@@ -59,6 +66,7 @@ class StoreIntegration extends DataTransferObject
 
     /**
      * @param string $signature
+     *
      * @return void
      */
     public function setSignature(string $signature): void
@@ -66,11 +74,19 @@ class StoreIntegration extends DataTransferObject
         $this->signature = $signature;
     }
 
+    /**
+     * @return string
+     */
     public function getIntegrationId(): string
     {
         return $this->integrationId;
     }
 
+    /**
+     * @param string $integrationId
+     *
+     * @return void
+     */
     public function setIntegrationId(string $integrationId): void
     {
         $this->integrationId = $integrationId;

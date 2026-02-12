@@ -44,6 +44,7 @@ class SaveGeneralSettingsHandler implements TopicHandlerInterface
 
     /**
      * @param mixed[] $payload
+     *
      * @return Response
      *
      * @throws EmptyCountryConfigurationParameterException

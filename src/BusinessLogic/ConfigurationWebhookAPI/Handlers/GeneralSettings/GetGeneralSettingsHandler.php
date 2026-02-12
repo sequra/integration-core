@@ -51,6 +51,7 @@ class GetGeneralSettingsHandler implements TopicHandlerInterface
 
     /**
      * @param mixed[] $payload
+     *
      * @return GetGeneralSettingsResponse|SuccessResponse
      *
      * @throws BadMerchantIdException

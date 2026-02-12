@@ -30,6 +30,7 @@ class GetAdvancedSettingsHandler implements TopicHandlerInterface
 
     /**
      * @param array $payload
+     *
      * @return Response
      */
     public function handle(array $payload): Response

@@ -35,6 +35,7 @@ class StoreIntegrationRepository implements StoreIntegrationRepositoryInterface
 
     /**
      * @param DomainStoreIntegration $storeIntegration
+     *
      * @return void
      */
     public function setStoreIntegration(DomainStoreIntegration $storeIntegration): void
