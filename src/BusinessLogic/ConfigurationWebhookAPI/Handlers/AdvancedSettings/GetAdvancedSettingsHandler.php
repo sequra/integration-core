@@ -29,7 +29,7 @@ class GetAdvancedSettingsHandler implements TopicHandlerInterface
     }
 
     /**
-     * @param array $payload
+     * @param mixed[] $payload
      *
      * @return Response
      */

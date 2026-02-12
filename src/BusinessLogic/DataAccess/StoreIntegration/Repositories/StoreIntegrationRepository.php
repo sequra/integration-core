@@ -55,7 +55,7 @@ class StoreIntegrationRepository implements StoreIntegrationRepositoryInterface
     {
         $entity = $this->getStoreIntegrationEntityByStoreId();
 
-        $entity && $this->repository->delete($entity);
+        $this->repository->delete($entity);
     }
 
     /**

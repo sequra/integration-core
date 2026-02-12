@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\DataAccess\Credentials\Repositories;
 
+use SeQura\Core\BusinessLogic\DataAccess\Credentials\Entities\Credentials as EntityCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
@@ -185,6 +186,7 @@ class CredentialsRepository implements CredentialsRepositoryInterface
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
+        /** @var EntityCredentials  $entity */
         $entity = $this->repository->selectOne($queryFilter);
 
         return $entity->getMerchantId();
