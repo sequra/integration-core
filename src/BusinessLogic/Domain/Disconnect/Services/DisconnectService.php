@@ -174,25 +174,25 @@ class DisconnectService
      */
     public function disconnect(string $deploymentId, bool $isFullDisconnect): void
     {
-        $connectionData = $this->connectionDataRepository->getConnectionDataByDeploymentId($deploymentId);
+        $connectionData = $this->connectionDataRepository
+            ->getConnectionDataByDeploymentId($deploymentId);
+
         $this->connectionDataRepository->deleteConnectionDataByDeploymentId($deploymentId);
 
-        $remainingConnections = $this->connectionDataRepository
-            ->getAllConnectionSettings();
+        if (!$isFullDisconnect) {
+            $this->removeAllDeploymentData($deploymentId);
+            return;
+        }
+
+        $remainingConnections = $this->connectionDataRepository->getAllConnectionSettings();
 
         if (empty($remainingConnections)) {
             $storeIntegration = $this->storeIntegrationRepository->getStoreIntegration();
 
-            if ($storeIntegration) {
+            if ($storeIntegration !== null) {
                 $this->storeIntegrationService
                     ->deleteStoreIntegration($connectionData, $storeIntegration);
             }
-        }
-
-        if (!$isFullDisconnect) {
-            $this->removeAllDeploymentData($deploymentId);
-
-            return;
         }
 
         $this->credentialsRepository->deleteCredentialsByDeploymentId($deploymentId);
@@ -200,7 +200,6 @@ class DisconnectService
         $this->deploymentsRepository->deleteDeployments();
         $this->generalSettingsRepository->deleteGeneralSettings();
         $this->sequraOrderRepository->deleteAllOrders();
-        $this->orderStatusSettingsRepository->getOrderStatusMapping();
         $this->orderStatusSettingsRepository->deleteOrderStatusMapping();
         $this->paymentMethodRepository->deleteAllPaymentMethods();
         $this->widgetSettingsRepository->deleteWidgetSettings();
