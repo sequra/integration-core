@@ -26,5 +26,5 @@ interface StoreIntegrationRepositoryInterface
     /**
      * @return StoreIntegration
      */
-    public function getStoreIntegration(): StoreIntegration;
+    public function getStoreIntegration(): ?StoreIntegration;
 }

@@ -13,10 +13,11 @@ class MockStoreIntegrationRepository implements StoreIntegrationRepositoryInterf
     private $storeIntegration;
 
     /**
-     * @param StoreIntegration $storeIntegration
+     * @param ?StoreIntegration $storeIntegration
+     *
      * @return void
      */
-    public function setStoreIntegration(StoreIntegration $storeIntegration): void
+    public function setStoreIntegration(?StoreIntegration $storeIntegration): void
     {
         $this->storeIntegration = $storeIntegration;
     }
@@ -40,12 +41,8 @@ class MockStoreIntegrationRepository implements StoreIntegrationRepositoryInterf
     /**
      * @return StoreIntegration
      */
-    public function getStoreIntegration(): StoreIntegration
+    public function getStoreIntegration(): ?StoreIntegration
     {
-        return $this->storeIntegration ?? new StoreIntegration(
-            '1',
-            'signature',
-            '4'
-        );
+        return $this->storeIntegration;
     }
 }

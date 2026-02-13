@@ -65,9 +65,13 @@ class StoreIntegrationService
      * @throws CapabilitiesEmptyException
      * @throws Exception
      */
-    public function createStoreIntegration(ConnectionData $connectionData): void
+    public function getOrCreateStoreIntegration(ConnectionData $connectionData): void
     {
-        $storeId = StoreContext::getInstance()->getStoreId();
+        $existing = $this->storeIntegrationRepository->getStoreIntegration();
+
+        if ($existing) {
+            return;
+        }
 
         $signature = bin2hex(random_bytes(32));
 
@@ -79,7 +83,7 @@ class StoreIntegrationService
         );
 
         $storeIntegration = new StoreIntegration(
-            $storeId,
+            StoreContext::getInstance()->getStoreId(),
             $signature,
             $response->getIntegrationId()
         );

@@ -70,10 +70,20 @@ class StoreIntegrationRepository implements StoreIntegrationRepositoryInterface
     }
 
     /**
+     * @throws QueryFilterInvalidParamException
+     */
+    public function getStoreIntegration(): ?DomainStoreIntegration
+    {
+        $entity = $this->getStoreIntegrationEntityByStoreId();
+
+        return $entity ? $entity->getStoreIntegration() : null;
+    }
+
+    /**
      * @return StoreIntegration
      * @throws QueryFilterInvalidParamException
      */
-    private function getStoreIntegrationEntityByStoreId(): StoreIntegration
+    private function getStoreIntegrationEntityByStoreId(): ?StoreIntegration
     {
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
@@ -84,13 +94,5 @@ class StoreIntegrationRepository implements StoreIntegrationRepositoryInterface
         $storeIntegration = $this->repository->selectOne($queryFilter);
 
         return $storeIntegration;
-    }
-
-    /**
-     * @throws QueryFilterInvalidParamException
-     */
-    public function getStoreIntegration(): DomainStoreIntegration
-    {
-        return $this->getStoreIntegrationEntityByStoreId()->getStoreIntegration();
     }
 }

@@ -28,12 +28,18 @@ class MockStoreIntegrationService extends StoreIntegrationService
      *
      * @return void
      */
-    public function createStoreIntegration(ConnectionData $connectionData): void
+    public function getOrCreateStoreIntegration(ConnectionData $connectionData): void
     {
         $this->createdIntegrationIds[$connectionData->getMerchantId()] = true;
     }
 
-    public function deleteStoreIntegration(ConnectionData $connectionData, StoreIntegration $storeIntegration): void
+    /**
+     * @param ConnectionData $connectionData
+     * @param StoreIntegration|null $storeIntegration
+     *
+     * @return void
+     */
+    public function deleteStoreIntegration(ConnectionData $connectionData, ?StoreIntegration $storeIntegration): void
     {
         $this->deleted = true;
     }
@@ -54,6 +60,9 @@ class MockStoreIntegrationService extends StoreIntegrationService
         return $this->createdIntegrationIds;
     }
 
+    /**
+     * @return string
+     */
     public function getWebhookSignature(): string
     {
         return $this->storeIntegrationRepository->getWebhookSignature();
