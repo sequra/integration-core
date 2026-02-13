@@ -24,7 +24,7 @@ interface StoreIntegrationRepositoryInterface
     public function getWebhookSignature(): string;
 
     /**
-     * @return StoreIntegration
+     * @return ?StoreIntegration
      */
     public function getStoreIntegration(): ?StoreIntegration;
 }

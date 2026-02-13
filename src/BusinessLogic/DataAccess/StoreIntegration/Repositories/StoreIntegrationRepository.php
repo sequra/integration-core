@@ -80,7 +80,7 @@ class StoreIntegrationRepository implements StoreIntegrationRepositoryInterface
     }
 
     /**
-     * @return StoreIntegration
+     * @return ?StoreIntegration
      * @throws QueryFilterInvalidParamException
      */
     private function getStoreIntegrationEntityByStoreId(): ?StoreIntegration
@@ -89,7 +89,7 @@ class StoreIntegrationRepository implements StoreIntegrationRepositoryInterface
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
         /**
-         * @var StoreIntegration $storeIntegration
+         * @var StoreIntegration|null $storeIntegration
          */
         $storeIntegration = $this->repository->selectOne($queryFilter);
 

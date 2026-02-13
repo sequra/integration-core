@@ -176,7 +176,7 @@ class DisconnectService
     {
         $connectionData = $this->connectionDataRepository->getConnectionDataByDeploymentId($deploymentId);
         $storeIntegration = $this->storeIntegrationRepository->getStoreIntegration();
-        if (!$storeIntegration) {
+        if ($storeIntegration) {
             $this->storeIntegrationService->deleteStoreIntegration($connectionData, $storeIntegration);
         }
         $this->connectionDataRepository->deleteConnectionDataByDeploymentId($deploymentId);

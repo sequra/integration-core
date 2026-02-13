@@ -34,6 +34,7 @@ use SeQura\Core\BusinessLogic\Domain\SendReport\Models\SendReport;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\StoreIntegration;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsRepository;
@@ -471,6 +472,11 @@ class DisconnectServiceTest extends BaseTestCase
     public function testDisconnectIntegrationDeleted(): void
     {
         //Arrange
+        $this->storeIntegrationRepository->setStoreIntegration(new StoreIntegration(
+            '1',
+            'signature',
+            '4')
+        );
         $this->credentialsRepository->setCredentials([
             new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [], 'sequra'),
             new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [], 'sequra'),
