@@ -186,7 +186,9 @@ class CredentialsRepository implements CredentialsRepositoryInterface
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
-        /** @var EntityCredentials  $entity */
+        /**
+         * @var EntityCredentials  $entity
+         */
         $entity = $this->repository->selectOne($queryFilter);
 
         return $entity->getMerchantId();
