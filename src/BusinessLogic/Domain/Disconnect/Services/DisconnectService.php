@@ -175,11 +175,20 @@ class DisconnectService
     public function disconnect(string $deploymentId, bool $isFullDisconnect): void
     {
         $connectionData = $this->connectionDataRepository->getConnectionDataByDeploymentId($deploymentId);
-        $storeIntegration = $this->storeIntegrationRepository->getStoreIntegration();
-        if ($storeIntegration) {
-            $this->storeIntegrationService->deleteStoreIntegration($connectionData, $storeIntegration);
-        }
         $this->connectionDataRepository->deleteConnectionDataByDeploymentId($deploymentId);
+
+        $remainingConnections = $this->connectionDataRepository
+            ->getAllConnectionSettings();
+
+        if (empty($remainingConnections)) {
+            $storeIntegration = $this->storeIntegrationRepository->getStoreIntegration();
+
+            if ($storeIntegration) {
+                $this->storeIntegrationService
+                    ->deleteStoreIntegration($connectionData, $storeIntegration);
+            }
+        }
+
         if (!$isFullDisconnect) {
             $this->removeAllDeploymentData($deploymentId);
 
