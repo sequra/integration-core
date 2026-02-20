@@ -4,6 +4,11 @@ namespace SeQura\Core\BusinessLogic\Domain\StoreIntegration\RepositoryContracts;
 
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\StoreIntegration;
 
+/**
+ * Interface StoreIntegrationRepositoryInterface.
+ *
+ * @package SeQura\Core\BusinessLogic\Domain\StoreIntegration\RepositoryContracts
+ */
 interface StoreIntegrationRepositoryInterface
 {
     /**

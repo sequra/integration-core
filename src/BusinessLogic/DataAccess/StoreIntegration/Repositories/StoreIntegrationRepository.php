@@ -11,6 +11,11 @@ use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 
+/**
+ * Class StoreIntegrationRepository.
+ *
+ * @package SeQura\Core\BusinessLogic\DataAccess\StoreIntegration\Repositories
+ */
 class StoreIntegrationRepository implements StoreIntegrationRepositoryInterface
 {
     /**

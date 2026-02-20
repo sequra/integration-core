@@ -9,6 +9,11 @@ use SeQura\Core\Infrastructure\ORM\Configuration\IndexMap;
 use SeQura\Core\Infrastructure\ORM\Entity;
 use SeQura\Core\Infrastructure\ServiceRegister;
 
+/**
+ * Class StoreIntegration.
+ *
+ * @package SeQura\Core\BusinessLogic\DataAccess\StoreIntegration\Entities
+ */
 class StoreIntegration extends Entity
 {
     /**
@@ -69,21 +74,37 @@ class StoreIntegration extends Entity
         return $data;
     }
 
+    /**
+     * @return string
+     */
     public function getStoreId(): string
     {
         return $this->storeId;
     }
 
+    /**
+     * @param string $storeId
+     *
+     * @return void
+     */
     public function setStoreId(string $storeId): void
     {
         $this->storeId = $storeId;
     }
 
+    /**
+     * @return DomainStoreIntegration
+     */
     public function getStoreIntegration(): DomainStoreIntegration
     {
         return $this->storeIntegration;
     }
 
+    /**
+     * @param DomainStoreIntegration $storeIntegration
+     *
+     * @return void
+     */
     public function setStoreIntegration(DomainStoreIntegration $storeIntegration): void
     {
         $this->storeIntegration = $storeIntegration;
