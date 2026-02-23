@@ -54,6 +54,16 @@ class MockPaymentMethodService extends PaymentMethodsService
     }
 
     /**
+     * @param bool $cache
+     *
+     * @return SeQuraPaymentMethod[]
+     */
+    public function getAvailablePaymentMethodsForAllMerchants(bool $cache = false): array
+    {
+        return $this->paymentMethods;
+    }
+
+    /**
      * @param array $paymentMethods
      *
      * @return void

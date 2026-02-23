@@ -175,22 +175,4 @@ class CredentialsRepository implements CredentialsRepositoryInterface
 
         return $entity;
     }
-
-    /**
-     * @return string
-     *
-     * @throws QueryFilterInvalidParamException
-     */
-    public function getMerchantIdByStoreId(): string
-    {
-        $queryFilter = new QueryFilter();
-        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
-
-        /**
-         * @var EntityCredentials  $entity
-         */
-        $entity = $this->repository->selectOne($queryFilter);
-
-        return $entity->getMerchantId();
-    }
 }

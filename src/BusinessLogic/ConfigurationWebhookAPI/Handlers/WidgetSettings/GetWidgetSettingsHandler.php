@@ -54,11 +54,9 @@ class GetWidgetSettingsHandler implements TopicHandlerInterface
      */
     public function handle(array $payload): Response
     {
-        $merchantId = $this->credentialsService->getMerchantIdByStoreId();
-
         return new GetWidgetSettingsResponse(
             $this->widgetSettingsService->getWidgetSettings(),
-            $this->paymentMethodsService->getCachedPaymentMethods($merchantId)
+            $this->paymentMethodsService->getAvailablePaymentMethodsForAllMerchants(true)
         );
     }
 }

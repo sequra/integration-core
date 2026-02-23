@@ -77,6 +77,7 @@ class PaymentMethodsService
      * @return SeQuraPaymentMethod[]
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
+     * @throws FailedToRetrieveSellingCountriesException
      */
     public function getAvailablePaymentMethodsForAllMerchants(bool $cache = false): array
     {

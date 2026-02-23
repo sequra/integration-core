@@ -84,12 +84,4 @@ class MockCredentialsRepository implements CredentialsRepositoryInterface
 
         return null;
     }
-
-    /**
-     * @return string
-     */
-    public function getMerchantIdByStoreId(): string
-    {
-        return self::$credentials[0]->getMerchantId();
-    }
 }
