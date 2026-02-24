@@ -17,10 +17,12 @@ class PromotionalWidgetsCheckoutResponse extends Response
      */
     protected $widgetInitializer;
 
+    /**
+     * @param ?WidgetInitializer $widgetInitializer
+     */
 
-    public function __construct(
-        ?WidgetInitializer $widgetInitializer
-    ) {
+    public function __construct(?WidgetInitializer $widgetInitializer)
+    {
         $this->widgetInitializer = $widgetInitializer;
     }
 

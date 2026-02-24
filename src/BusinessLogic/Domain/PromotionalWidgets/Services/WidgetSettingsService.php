@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
@@ -118,31 +119,35 @@ class WidgetSettingsService
      * @param string $shippingCountry
      * @param string $currentCountry
      *
-     * @return WidgetInitializer
+     * @return ?WidgetInitializer
      *
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
      * @throws Exception
      */
-    public function getWidgetInitializeData(string $shippingCountry, string $currentCountry): WidgetInitializer
+    public function getWidgetInitializeData(string $shippingCountry, string $currentCountry): ?WidgetInitializer
     {
-        $widgetSettings = $this->getWidgetSettings();
-        $credentials = $this->getCredentialsByCountry($shippingCountry, $currentCountry);
-        $merchantId = $credentials ? $credentials->getMerchantId() : '';
+        try {
+            $widgetSettings = $this->getWidgetSettings();
+            $credentials = $this->getCredentialsByCountry($shippingCountry, $currentCountry);
+            $merchantId = $credentials ? $credentials->getMerchantId() : '';
 
-        return new WidgetInitializer(
-            $credentials ? $credentials->getAssetsKey() : '',
-            $merchantId,
-            $this->getWidgetSupportedProducts($merchantId),
-            $this->getScriptUri($credentials ? $credentials->getDeployment() : ''),
-            $this->widgetConfigurator->getLocale() ?? 'es-ES',
-            $this->widgetConfigurator->getCurrency() ?? 'EUR',
-            $this->widgetConfigurator->getDecimalSeparator() ?? ',',
-            $this->widgetConfigurator->getThousandsSeparator() ?? '.',
-            $widgetSettings->isShowInstallmentsInProductListing(),
-            $widgetSettings->isDisplayOnProductPage(),
-            $widgetSettings->getWidgetConfig()
-        );
+            return new WidgetInitializer(
+                $credentials ? $credentials->getAssetsKey() : '',
+                $merchantId,
+                $this->getWidgetSupportedProducts($merchantId),
+                $this->getScriptUri($credentials ? $credentials->getDeployment() : ''),
+                $this->widgetConfigurator->getLocale() ?? 'es-ES',
+                $this->widgetConfigurator->getCurrency() ?? 'EUR',
+                $this->widgetConfigurator->getDecimalSeparator() ?? ',',
+                $this->widgetConfigurator->getThousandsSeparator() ?? '.',
+                $widgetSettings->isShowInstallmentsInProductListing(),
+                $widgetSettings->isDisplayOnProductPage(),
+                $widgetSettings->getWidgetConfig()
+            );
+        } catch (CredentialsNotFoundException $exception) {
+            return null;
+        }
     }
 
     /**
