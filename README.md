@@ -3151,9 +3151,7 @@ The Configuration WebhookAPI follows a **simplified Controller pattern** with **
 ##### 3. **ConfigurationWebhookValidationService**
 - **Purpose**: Validates configuration webhook authenticity and content
 - **Validation Steps**:
-    - **Fetch connection data related to provided merchant ID**: Merchant ID is required and must match the merchant ID of the SeQura integration
-    - **Validate signature**: Signature is required and must match the signature of the SeQura integration
-    - **Signature Verification**: Validates webhook signature against stored merchant credentials
+    - **Validate signature**: Signature is required and must match the signature of the SeQura integration stored securely in the database
 
 #### 4. **TopicHandlerRegistry**
 - **Purpose**: Registry for storing topic handlers
