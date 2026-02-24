@@ -184,17 +184,11 @@ class DisconnectService
             return;
         }
 
-        $remainingConnections = $this->connectionDataRepository->getAllConnectionSettings();
-
-        if (empty($remainingConnections)) {
-            $storeIntegration = $this->storeIntegrationRepository->getStoreIntegration();
-
-            if ($storeIntegration !== null) {
-                $this->storeIntegrationService
-                    ->deleteStoreIntegration($connectionData, $storeIntegration);
-            }
+        $storeIntegration = $this->storeIntegrationRepository->getStoreIntegration();
+        if ($storeIntegration !== null) {
+            $this->storeIntegrationService
+                ->deleteStoreIntegration($connectionData, $storeIntegration);
         }
-
         $this->credentialsRepository->deleteCredentialsByDeploymentId($deploymentId);
         $this->countryConfigurationRepository->deleteCountryConfigurations();
         $this->deploymentsRepository->deleteDeployments();
