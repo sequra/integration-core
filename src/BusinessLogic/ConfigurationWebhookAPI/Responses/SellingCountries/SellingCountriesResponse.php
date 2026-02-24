@@ -29,6 +29,6 @@ class SellingCountriesResponse extends Response
      */
     public function toArray(): array
     {
-        return $this->sellingCountries;
+        return array_values($this->sellingCountries);
     }
 }
