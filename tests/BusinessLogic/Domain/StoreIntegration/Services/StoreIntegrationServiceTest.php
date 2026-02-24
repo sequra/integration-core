@@ -79,7 +79,7 @@ class StoreIntegrationServiceTest extends BaseTestCase
         $this->expectException(CapabilitiesEmptyException::class);
 
         //act
-        $this->service->getOrCreateStoreIntegration(new ConnectionData(
+        $this->service->createStoreIntegration(new ConnectionData(
             'sandbox',
             'merchant',
             'svea',
@@ -102,7 +102,7 @@ class StoreIntegrationServiceTest extends BaseTestCase
         $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('123456789'));
 
         //act
-        $this->service->getOrCreateStoreIntegration(new ConnectionData(
+        $this->service->createStoreIntegration(new ConnectionData(
             'sandbox',
             'merchant',
             'svea',
@@ -130,7 +130,7 @@ class StoreIntegrationServiceTest extends BaseTestCase
         $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('123456789'));
 
         //act
-        $this->service->getOrCreateStoreIntegration(new ConnectionData(
+        $this->service->createStoreIntegration(new ConnectionData(
             'sandbox',
             'merchant',
             'svea',

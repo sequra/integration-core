@@ -65,15 +65,14 @@ class StoreIntegrationService
      * @throws CapabilitiesEmptyException
      * @throws Exception
      */
-    public function getOrCreateStoreIntegration(ConnectionData $connectionData): void
+    public function createStoreIntegration(ConnectionData $connectionData): void
     {
         $existing = $this->storeIntegrationRepository->getStoreIntegration();
 
-        if ($existing) {
-            return;
-        }
-
         $signature = bin2hex(random_bytes(32));
+        if ($existing) {
+            $signature = $existing->getSignature();
+        }
 
         $webhookUrl = $this->buildWebhookUrl($this->integrationService->getWebhookUrl(), $signature);
         $capabilities = $this->getSupportedCapabilities();
@@ -81,6 +80,10 @@ class StoreIntegrationService
         $response = $this->storeIntegrationsProxy->createStoreIntegration(
             new CreateStoreIntegrationRequest($connectionData, $webhookUrl, $capabilities)
         );
+
+        if ($existing) {
+            return;
+        }
 
         $storeIntegration = new StoreIntegration(
             StoreContext::getInstance()->getStoreId(),

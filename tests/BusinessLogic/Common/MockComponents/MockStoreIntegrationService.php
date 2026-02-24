@@ -28,7 +28,7 @@ class MockStoreIntegrationService extends StoreIntegrationService
      *
      * @return void
      */
-    public function getOrCreateStoreIntegration(ConnectionData $connectionData): void
+    public function createStoreIntegration(ConnectionData $connectionData): void
     {
         $this->createdIntegrationIds[$connectionData->getMerchantId()] = true;
     }

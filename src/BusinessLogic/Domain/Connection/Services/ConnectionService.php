@@ -210,6 +210,6 @@ class ConnectionService
      */
     protected function registerWebhooks(ConnectionData $connectionData): void
     {
-        $this->storeIntegrationService->getOrCreateStoreIntegration($connectionData);
+        $this->storeIntegrationService->createStoreIntegration($connectionData);
     }
 }
