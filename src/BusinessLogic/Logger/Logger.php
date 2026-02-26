@@ -25,7 +25,7 @@ class Logger extends InfrastructureLogger
     {
         $advancedSettings = $this->getAdvancedSettingsService()->getAdvancedSettings();
 
-        if(!$advancedSettings && $level <= self::WARNING) {
+        if (!$advancedSettings && $level <= self::WARNING) {
             parent::logMessage($level, $message, $component, $context);
         }
 
