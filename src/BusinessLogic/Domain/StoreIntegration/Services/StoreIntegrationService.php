@@ -88,7 +88,8 @@ class StoreIntegrationService
         $storeIntegration = new StoreIntegration(
             StoreContext::getInstance()->getStoreId(),
             $signature,
-            $response->getIntegrationId()
+            $response->getIntegrationId(),
+            $webhookUrl->buildUrl()
         );
 
         $this->setStoreIntegration($storeIntegration);

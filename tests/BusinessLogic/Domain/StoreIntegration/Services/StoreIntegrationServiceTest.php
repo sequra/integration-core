@@ -166,7 +166,8 @@ class StoreIntegrationServiceTest extends BaseTestCase
             new StoreIntegration(
                 '1',
                 'signature',
-                '4'
+                '4',
+                'https://test.com'
             )
         );
 

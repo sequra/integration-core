@@ -782,7 +782,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'sandbox',
             'merchant1',
             'sequra',
-            new AuthorizationCredentials('username', 'password'),
+            new AuthorizationCredentials('username', 'password')
         );
         $this->connectionService->saveConnectionData($connectionData);
         $signature = $this->storeIntegrationService->getWebhookSignature();

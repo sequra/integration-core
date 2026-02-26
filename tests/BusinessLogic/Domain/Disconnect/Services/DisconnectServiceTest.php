@@ -475,7 +475,8 @@ class DisconnectServiceTest extends BaseTestCase
         $this->storeIntegrationRepository->setStoreIntegration(new StoreIntegration(
             '1',
             'signature',
-            '4'
+            '4',
+            'https://test.com'
         ));
         $this->credentialsRepository->setCredentials([
             new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [], 'sequra'),

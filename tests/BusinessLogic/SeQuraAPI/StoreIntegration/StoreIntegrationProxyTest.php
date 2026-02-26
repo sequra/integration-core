@@ -274,7 +274,12 @@ class StoreIntegrationProxyTest extends BaseTestCase
             'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
-        $storeIntegration = new StoreIntegration('1', 'signature', '4');
+        $storeIntegration = new StoreIntegration(
+            '1',
+            'signature',
+            '4',
+            'https://test.com'
+        );
 
         $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
         // act
@@ -283,7 +288,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
         // assert
         $lastRequest = $this->httpClient->getLastRequest();
         self::assertCount(1, $this->httpClient->getHistory());
-        self::assertEquals('https://sandbox.sequrapi.com/store_integrations/4', $lastRequest['url']);
+        self::assertEquals('https://sandbox.sequrapi.com/store_integrations/https%3A%2F%2Ftest.com', $lastRequest['url']);
     }
 
     /**
@@ -305,7 +310,12 @@ class StoreIntegrationProxyTest extends BaseTestCase
             'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
-        $storeIntegration = new StoreIntegration('1', 'signature', '4');
+        $storeIntegration = new StoreIntegration(
+            '1',
+            'signature',
+            '4',
+            'https://test.com'
+        );
 
         $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
         // act
@@ -337,7 +347,12 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $storeIntegration = new StoreIntegration('1', 'signature', '4');
+        $storeIntegration = new StoreIntegration(
+            '1',
+            'signature',
+            '4',
+            'https://test.com'
+        );
 
         $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
         // act
@@ -369,7 +384,11 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $storeIntegration = new StoreIntegration('1', 'signature', '4');
+        $storeIntegration = new StoreIntegration(
+            '1',
+            'signature',
+            '4',
+            'https://test.com');
 
         $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
         // act
@@ -402,7 +421,12 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $storeIntegration = new StoreIntegration('1', 'signature', '4');
+        $storeIntegration = new StoreIntegration(
+            '1',
+            'signature',
+            '4',
+            'https://test.com'
+        );
 
         $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
         // act

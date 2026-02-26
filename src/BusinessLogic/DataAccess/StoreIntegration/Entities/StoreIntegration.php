@@ -51,7 +51,8 @@ class StoreIntegration extends Entity
             $this->getEncryptorUtility()->decrypt(
                 self::getArrayValue($storeIntegration, 'signature')
             ),
-            self::getArrayValue($storeIntegration, 'integrationId')
+            self::getArrayValue($storeIntegration, 'integrationId'),
+            self::getArrayValue($storeIntegration, 'webhookUrl')
         );
     }
 
@@ -68,7 +69,8 @@ class StoreIntegration extends Entity
             'signature' => $this->getEncryptorUtility()->encrypt(
                 $this->storeIntegration->getSignature()
             ),
-            'integrationId' => $this->storeIntegration->getIntegrationId()
+            'integrationId' => $this->storeIntegration->getIntegrationId(),
+            'webhookUrl' => $this->storeIntegration->getWebhookUrl(),
         ];
 
         return $data;

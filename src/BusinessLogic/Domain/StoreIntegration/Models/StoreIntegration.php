@@ -27,15 +27,22 @@ class StoreIntegration extends DataTransferObject
     protected $integrationId;
 
     /**
+     * @var string
+     */
+    protected $webhookUrl;
+
+    /**
      * @param string $storeId
      * @param string $signature
      * @param string $integrationId
+     * @param string $webhookUrl
      */
-    public function __construct(string $storeId, string $signature, string $integrationId)
+    public function __construct(string $storeId, string $signature, string $integrationId, string $webhookUrl)
     {
         $this->storeId = $storeId;
         $this->signature = $signature;
         $this->integrationId = $integrationId;
+        $this->webhookUrl = $webhookUrl;
     }
 
     /**
@@ -93,6 +100,24 @@ class StoreIntegration extends DataTransferObject
     }
 
     /**
+     * @return string
+     */
+    public function getWebhookUrl(): string
+    {
+        return $this->webhookUrl;
+    }
+
+    /**
+     * @param string $webhookUrl
+     *
+     * @return void
+     */
+    public function setWebhookUrl(string $webhookUrl): void
+    {
+        $this->webhookUrl = $webhookUrl;
+    }
+
+    /**
      * @inheritDoc
      */
     public function toArray(): array
@@ -100,7 +125,8 @@ class StoreIntegration extends DataTransferObject
         $data['storeIntegration'] = [
             'storeId' => $this->storeId,
             'signature' => $this->signature,
-            'integrationId' => $this->integrationId
+            'integrationId' => $this->integrationId,
+            'webhookUrl' => $this->webhookUrl
         ];
 
         return $data;
