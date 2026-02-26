@@ -19,7 +19,7 @@ class MockSellingCountriesService implements SellingCountriesServiceInterface
     /**
      * @inheritDoc
      */
-    public function getSellingCountries(?int $page = null, ?int $limit = null, ?string $search = null): array
+    public function getSellingCountries(): array
     {
         return !empty(self::$sellingCountries) ? self::$sellingCountries : [
             'MO',

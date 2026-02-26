@@ -783,16 +783,15 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'merchant1',
             'sequra',
             new AuthorizationCredentials('username', 'password'),
-            '1'
         );
         $this->connectionService->saveConnectionData($connectionData);
         $signature = $this->storeIntegrationService->getWebhookSignature();
-        $this->sellingCountriesService->setSellingCountries(
+        $this->domainSellingCountriesService->setMockSellingCountries(
             [
-                'ES',
-                'FR',
-                'IT',
-                'PT'
+                new SellingCountry("ES", 'Spain', 'merchantSpain'),
+                new SellingCountry("FR", 'France', 'merchantFrance'),
+                new SellingCountry("IT", 'Italy', 'merchantItaly'),
+                new SellingCountry("PT", 'Portugal', 'merchantPortugal')
             ]
         );
 
@@ -1253,8 +1252,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'sandbox',
             'merchant1',
             'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
+            new AuthorizationCredentials('username', 'password')
         );
         $this->connectionService->saveConnectionData($connectionData);
         $signature = $this->storeIntegrationService->getWebhookSignature();

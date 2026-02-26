@@ -6,7 +6,8 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\SellingCountries\SellingCountriesResponse;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\SellingCountries\GetSellingCountriesRequest;
-use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
 
 /**
  * Class GetSellingCountriesHandler
@@ -16,29 +17,44 @@ use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountri
 class GetSellingCountriesHandler implements TopicHandlerInterface
 {
     /**
-     * @var SellingCountriesServiceInterface $sellingCountriesService
+     * @var SellingCountriesService $sellingCountriesService
      */
     protected $sellingCountriesService;
 
     /**
-     * @param SellingCountriesServiceInterface $sellingCountriesService
+     * @param SellingCountriesService $sellingCountriesService
      */
-    public function __construct(SellingCountriesServiceInterface $sellingCountriesService)
+    public function __construct(SellingCountriesService $sellingCountriesService)
     {
         $this->sellingCountriesService = $sellingCountriesService;
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws FailedToRetrieveSellingCountriesException
      */
     public function handle(array $payload): Response
     {
         $request = GetSellingCountriesRequest::fromPayload($payload);
 
-        return new SellingCountriesResponse($this->sellingCountriesService->getSellingCountries(
-            $request->getPage(),
-            $request->getLimit(),
-            $request->getSearch()
-        ));
+        $items = $this->sellingCountriesService->getSellingCountries();
+        $offset = $request->getPage();
+        $limit = $request->getLimit();
+        $search = $request->getSearch();
+
+        if ($search !== '') {
+            $items = array_filter($items, function ($item) use ($search) {
+                return stripos($item->getName(), $search) !== false;
+            });
+        }
+        $items = array_values($items);
+        $paginatedItems = array_slice($items, $offset - 1, $limit);
+
+        $data = array_map(function ($item) {
+            return $item->getCode();
+        }, $paginatedItems);
+
+        return new SellingCountriesResponse($data);
     }
 }

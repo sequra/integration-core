@@ -852,7 +852,7 @@ class BaseTestCase extends TestCase
             GetSellingCountriesHandler::class,
             static function () {
                 return new GetSellingCountriesHandler(
-                    TestServiceRegister::getService(SellingCountriesServiceInterface::class)
+                    TestServiceRegister::getService(SellingCountriesService::class)
                 );
             }
         );

@@ -1170,7 +1170,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             GetSellingCountriesHandler::class,
             static function () {
                 return new GetSellingCountriesHandler(
-                    ServiceRegister::getService(SellingCountriesServiceInterface::class)
+                    ServiceRegister::getService(SellingCountriesService::class)
                 );
             }
         );
