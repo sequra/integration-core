@@ -388,7 +388,8 @@ class StoreIntegrationProxyTest extends BaseTestCase
             '1',
             'signature',
             '4',
-            'https://test.com');
+            'https://test.com'
+        );
 
         $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
         // act
