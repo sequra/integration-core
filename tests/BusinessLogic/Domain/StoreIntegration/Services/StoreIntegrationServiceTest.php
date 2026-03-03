@@ -214,4 +214,3 @@ class StoreIntegrationServiceTest extends BaseTestCase
         self::assertEquals('signature', $signature);
     }
 }
-

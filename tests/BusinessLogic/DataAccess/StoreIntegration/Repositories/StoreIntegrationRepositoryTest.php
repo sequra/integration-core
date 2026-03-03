@@ -139,7 +139,8 @@ class StoreIntegrationRepositoryTest extends BaseTestCase
 
         // assert
         $savedEntity = $this->repository->select();
-        self::assertEquals($storeIntegration, $savedEntity[0]->getStoreIntegration());;
+        self::assertEquals($storeIntegration, $savedEntity[0]->getStoreIntegration());
+        ;
     }
 
     /**
