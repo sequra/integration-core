@@ -3155,7 +3155,7 @@ The Configuration WebhookAPI follows a **simplified Controller pattern** with **
 
 #### 4. **TopicHandlerRegistry**
 - **Purpose**: Registry for storing topic handlers
-- **Key Method**: `registerHandler(string $topic, TopicHandlerInterface $handler)` - Registers topic handler for a specific topic
+- **Key Method**: `register(string $topic, TopicHandlerInterface $handler)` - Registers topic handler for a specific topic
 - **Topic Handlers**: Each topic handler, registered in Bootstrap can be overridden in integration if necessary, handles a specific webhook topic:
     - **GetAdvancedSettingsHandler**: Handles `get-advanced-settings` webhook topic
     - **SaveAdvancedSettingsHandler**: Handles `save-advanced-settings` webhook topic

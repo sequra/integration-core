@@ -24,11 +24,6 @@ interface StoreIntegrationRepositoryInterface
     public function deleteStoreIntegration(): void;
 
     /**
-     * @return string
-     */
-    public function getWebhookSignature(): string;
-
-    /**
      * @return ?StoreIntegration
      */
     public function getStoreIntegration(): ?StoreIntegration;

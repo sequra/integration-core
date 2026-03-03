@@ -122,13 +122,13 @@ class StoreIntegration extends DataTransferObject
      */
     public function toArray(): array
     {
-        $data['storeIntegration'] = [
-            'storeId' => $this->storeId,
-            'signature' => $this->signature,
-            'integrationId' => $this->integrationId,
-            'webhookUrl' => $this->webhookUrl
+        return [
+            'storeIntegration' => [
+                'storeId' => $this->storeId,
+                'signature' => $this->signature,
+                'integrationId' => $this->integrationId,
+                'webhookUrl' => $this->webhookUrl
+            ]
         ];
-
-        return $data;
     }
 }

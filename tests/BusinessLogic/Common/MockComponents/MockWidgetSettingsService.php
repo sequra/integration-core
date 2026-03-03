@@ -116,6 +116,17 @@ class MockWidgetSettingsService extends WidgetSettingsService
      */
     public function getWidgetSettings(): WidgetSettings
     {
+        if (!$this->widgetSettings) {
+            return WidgetSettings::createDefault(
+                '.product.price',
+                '',
+                '.cart.price',
+                '',
+                '',
+                '.listing.selector'
+            );
+        }
+
         return $this->widgetSettings;
     }
 

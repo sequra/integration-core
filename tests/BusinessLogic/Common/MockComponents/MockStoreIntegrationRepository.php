@@ -31,14 +31,6 @@ class MockStoreIntegrationRepository implements StoreIntegrationRepositoryInterf
     }
 
     /**
-     * @return string
-     */
-    public function getWebhookSignature(): string
-    {
-        return $this->storeIntegration ? $this->storeIntegration->getSignature() : 'signature';
-    }
-
-    /**
      * @return StoreIntegration
      */
     public function getStoreIntegration(): ?StoreIntegration

@@ -42,9 +42,22 @@ class StoreIntegrationRepository implements StoreIntegrationRepositoryInterface
      * @param DomainStoreIntegration $storeIntegration
      *
      * @return void
+     *
+     * @throws QueryFilterInvalidParamException
      */
     public function setStoreIntegration(DomainStoreIntegration $storeIntegration): void
     {
+        $existingStoreIntegration = $this->getStoreIntegrationEntityByStoreId();
+
+        if ($existingStoreIntegration) {
+            $existingStoreIntegration->setStoreId($this->storeContext->getStoreId());
+            $existingStoreIntegration->setStoreIntegration($storeIntegration);
+
+            $this->repository->update($existingStoreIntegration);
+
+            return;
+        }
+
         $entity = new StoreIntegration();
 
         $entity->setStoreId($this->storeContext->getStoreId());
@@ -61,17 +74,6 @@ class StoreIntegrationRepository implements StoreIntegrationRepositoryInterface
         $entity = $this->getStoreIntegrationEntityByStoreId();
 
         $this->repository->delete($entity);
-    }
-
-    /**
-     * @return string
-     * @throws QueryFilterInvalidParamException
-     */
-    public function getWebhookSignature(): string
-    {
-        $storeIntegration = $this->getStoreIntegrationEntityByStoreId();
-
-        return $storeIntegration->getStoreIntegration()->getSignature();
     }
 
     /**

@@ -19,6 +19,11 @@ class MockStoreIntegrationService extends StoreIntegrationService
     private $deleted = false;
 
     /**
+     * @var string $signature
+     */
+    private $signature = 'testSignature';
+
+    /**
      * @var array $createdIntegrationIds
      */
     private $createdIntegrationIds = [];
@@ -65,6 +70,16 @@ class MockStoreIntegrationService extends StoreIntegrationService
      */
     public function getWebhookSignature(): string
     {
-        return $this->storeIntegrationRepository->getWebhookSignature();
+        return $this->signature;
+    }
+
+    /**
+     * @param string $signature
+     *
+     * @return void
+     */
+    public function setMockSignature(string $signature): void
+    {
+        $this->signature = $signature;
     }
 }

@@ -21,6 +21,6 @@ class SaveOrderStatusRequest extends ConfigurationWebhookRequest
      */
     public static function fromPayload(array $payload): object
     {
-        return new self($payload['orderStatusMappings']);
+        return new self($payload['orderStatusMappings'] ?? []);
     }
 }

@@ -54,6 +54,7 @@ use SeQura\Core\BusinessLogic\DataAccess\SendReport\Entities\SendReport;
 use SeQura\Core\BusinessLogic\DataAccess\SendReport\Repositories\SendReportRepository;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
+use SeQura\Core\BusinessLogic\DataAccess\StoreIntegration\Entities\StoreIntegration;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
@@ -968,6 +969,7 @@ class BaseTestCase extends TestCase
         TestRepositoryRegistry::registerRepository(Credentials::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(Deployment::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(AdvancedSettings::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(StoreIntegration::getClassName(), MemoryRepository::getClassName());
     }
 
     /**
