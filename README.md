@@ -3169,7 +3169,7 @@ The Configuration WebhookAPI follows a **simplified Controller pattern** with **
     - **GetSellingCountriesHandler**: Handles `get-selling-countries` webhook topic
     - **GetShopCategoriesHandler**: Handles `get-shop-categories` webhook topic
     - **GetShopProductsHandler**: Handles `get-shop-products` webhook topic
-    - **GetStoreInfoHandler**: Handles `get-widget-settings` webhook topic
+    - **GetStoreInfoHandler**: Handles `get-store-info` webhook topic
     - **SaveWidgetSettingsHandler**: Handles `save-widget-settings` webhook topic
   
 #### Webhook Processing Flow
