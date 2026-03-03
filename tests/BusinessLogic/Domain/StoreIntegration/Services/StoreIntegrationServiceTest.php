@@ -6,6 +6,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentExc
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\StoreIntegrationNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationResponse;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationResponse;
@@ -174,4 +175,43 @@ class StoreIntegrationServiceTest extends BaseTestCase
         //assert
         self::assertTrue($this->storeIntegrationProxy->isDeleted());
     }
+
+    /**
+     * @return void
+     */
+    public function testGetWebhookSignatureNoSignature(): void
+    {
+        // arrange
+        $this->expectException(StoreIntegrationNotFoundException::class);
+
+        //act
+        $this->service->getWebhookSignature();
+
+        //assert
+    }
+
+    /**
+     * @return void
+     *
+     * @throws StoreIntegrationNotFoundException
+     */
+    public function testGetWebhookSignature(): void
+    {
+        // arrange
+        $this->storeIntegrationRepository->setStoreIntegration(
+            new StoreIntegration(
+                '1',
+                'signature',
+                '4',
+                'https://test.com'
+            )
+        );
+
+        //act
+        $signature = $this->service->getWebhookSignature();
+
+        //assert
+        self::assertEquals('signature', $signature);
+    }
 }
+

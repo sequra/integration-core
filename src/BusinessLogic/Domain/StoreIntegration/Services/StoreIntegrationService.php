@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreIntegration\StoreIntegrationServiceInterface as IntegrationsStoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\StoreIntegrationNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationRequest;
@@ -143,21 +144,31 @@ class StoreIntegrationService
 
     /**
      * @return string
+     *
+     * @throws StoreIntegrationNotFoundException
      */
     public function getWebhookSignature(): string
     {
-        return $this->storeIntegrationRepository->getWebhookSignature();
+        $storeIntegration = $this->storeIntegrationRepository->getStoreIntegration();
+
+        if (!$storeIntegration) {
+            throw new StoreIntegrationNotFoundException();
+        }
+
+        return $storeIntegration->getSignature();
     }
 
     /**
      * @param string $webhookSignature
      *
      * @return void
+     *
      * @throws InvalidSignatureException
+     * @throws StoreIntegrationNotFoundException
      */
     public function validateWebhookSignature(string $webhookSignature): void
     {
-        $storedSignature = $this->storeIntegrationRepository->getWebhookSignature();
+        $storedSignature = $this->getWebhookSignature();
 
         if (!hash_equals($storedSignature, $webhookSignature)) {
             throw new InvalidSignatureException('Webhook signature mismatch.', 400);
