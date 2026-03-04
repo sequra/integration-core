@@ -17,7 +17,10 @@ class MockOrderStatusSettingsService extends OrderStatusSettingsService
      */
     private $orderStatusSettings = [];
 
-    public function getOrderStatusSettings(): ?array
+    /**
+     * @return OrderStatusMapping[]
+     */
+    public function getOrderStatusSettings(): array
     {
         return $this->orderStatusSettings;
     }

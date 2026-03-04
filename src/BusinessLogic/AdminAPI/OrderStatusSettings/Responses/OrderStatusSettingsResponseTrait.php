@@ -17,9 +17,9 @@ trait OrderStatusSettingsResponseTrait
     protected $orderStatusMappings;
 
     /**
-     * @param OrderStatusMapping[]|null $orderStatusMappings
+     * @param OrderStatusMapping[] $orderStatusMappings
      */
-    public function __construct(?array $orderStatusMappings)
+    public function __construct(array $orderStatusMappings)
     {
         $this->orderStatusMappings = $orderStatusMappings;
     }
@@ -29,7 +29,7 @@ trait OrderStatusSettingsResponseTrait
      */
     public function toArray(): array
     {
-        if (!$this->orderStatusMappings) {
+        if (empty($this->orderStatusMappings)) {
             return [];
         }
 

@@ -38,11 +38,11 @@ class OrderStatusSettingsService implements OrderStatusProvider
     }
 
     /**
-     * Retrieves order status settings from the database via order status settings repository.
+     * Retrieves order status settings from the database via the order status settings repository.
      *
-     * @return OrderStatusMapping[]|null
+     * @return OrderStatusMapping[]
      */
-    public function getOrderStatusSettings(): ?array
+    public function getOrderStatusSettings(): array
     {
         return $this->orderStatusSettingsRepository->getOrderStatusMapping() ?? $this->getDefaultStatusMappings();
     }
@@ -97,7 +97,8 @@ class OrderStatusSettingsService implements OrderStatusProvider
         return [
             new OrderStatusMapping(OrderStates::STATE_APPROVED, ''),
             new OrderStatusMapping(OrderStates::STATE_NEEDS_REVIEW, ''),
-            new OrderStatusMapping(OrderStates::STATE_CANCELLED, '')
+            new OrderStatusMapping(OrderStates::STATE_CANCELLED, ''),
+            new OrderStatusMapping(OrderStates::STATE_SHIPPED, ''),
         ];
     }
 }
