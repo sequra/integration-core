@@ -3,6 +3,7 @@
 namespace SeQura\Core\Infrastructure\Logger;
 
 use SeQura\Core\Infrastructure\Configuration\Configuration;
+use SeQura\Core\Infrastructure\Logger\Interfaces\LoggerSettingsProviderInterface;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\Singleton;
 use Exception;
@@ -43,7 +44,7 @@ class LoggerConfiguration extends Singleton
     /**
      * Minimum log level set.
      *
-     * @var int
+     * @var ?int
      */
     protected $minLogLevel;
     /**
@@ -73,7 +74,10 @@ class LoggerConfiguration extends Singleton
     {
         if (empty($this->isDefaultLoggerEnabled)) {
             try {
-                $this->isDefaultLoggerEnabled = $this->getShopConfiguration()->isDefaultLoggerEnabled();
+                $provider = $this->getLoggerSettingsProvider();
+                $this->isDefaultLoggerEnabled = $provider !== null
+                    ? $provider->isDefaultLoggerEnabled()
+                    : $this->getShopConfiguration()->isDefaultLoggerEnabled();
             } catch (Exception $ex) {
                 // Catch if configuration is not set properly and for some reason throws exception
                 // e.g. Client is still not authorized (meaning that configuration is not set)
@@ -108,17 +112,21 @@ class LoggerConfiguration extends Singleton
      */
     public function getMinLogLevel(): int
     {
-        if ($this->minLogLevel === null) {
-            try {
-                $this->minLogLevel = $this->getShopConfiguration()->getMinLogLevel();
-            } catch (Exception $ex) {
-                // Catch if configuration is not set properly and for some reason throws exception
-                // e.g. Client is still not authorized (meaning that configuration is not set)
-                // and we want to log something
-            }
+        if ($this->minLogLevel !== null) {
+            return $this->minLogLevel;
+        }
+        try {
+            $provider = $this->getLoggerSettingsProvider();
+            $this->minLogLevel = $provider !== null
+                ? $provider->getMinLogLevel()
+                : $this->getShopConfiguration()->getMinLogLevel();
+        } catch (Exception $ex) {
+            // Catch if configuration is not set properly and for some reason throws exception
+            // e.g. Client is still not authorized (meaning that configuration is not set)
+            // and we want to log something
         }
 
-        return $this->minLogLevel !== null ? $this->minLogLevel : self::DEFAULT_MIN_LOG_LEVEL;
+        return $this->minLogLevel ?? self::DEFAULT_MIN_LOG_LEVEL;
     }
 
     /**
@@ -128,7 +136,13 @@ class LoggerConfiguration extends Singleton
      */
     public function setMinLogLevel($minLogLevel): void
     {
-        $this->getShopConfiguration()->saveMinLogLevel($minLogLevel);
+        $provider = $this->getLoggerSettingsProvider();
+        if ($provider !== null) {
+            $provider->saveMinLogLevel($minLogLevel);
+        } else {
+            $this->getShopConfiguration()->saveMinLogLevel($minLogLevel);
+        }
+
         $this->minLogLevel = $minLogLevel;
     }
 
@@ -150,6 +164,20 @@ class LoggerConfiguration extends Singleton
         }
 
         return !empty($this->integrationName) ? $this->integrationName : 'unknown';
+    }
+
+    /**
+     * Gets instance of logger settings provider if registered.
+     *
+     * @return LoggerSettingsProviderInterface|null
+     */
+    protected function getLoggerSettingsProvider(): ?LoggerSettingsProviderInterface
+    {
+        try {
+            return ServiceRegister::getService(LoggerSettingsProviderInterface::CLASS_NAME);
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     /**

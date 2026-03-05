@@ -61,7 +61,9 @@ use SeQura\Core\BusinessLogic\DataAccess\StoreIntegration\Repositories\StoreInte
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\RepositoryContracts\AdvancedSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedLoggerSettingsProvider;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\Infrastructure\Logger\Interfaces\LoggerSettingsProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
@@ -644,6 +646,16 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new AdvancedSettingsService(
                     ServiceRegister::getService(AdvancedSettingsRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            LoggerSettingsProviderInterface::CLASS_NAME,
+            static function () {
+                return new AdvancedLoggerSettingsProvider(
+                    ServiceRegister::getService(AdvancedSettingsService::class),
+                    ServiceRegister::getService(Configuration::CLASS_NAME)
                 );
             }
         );
