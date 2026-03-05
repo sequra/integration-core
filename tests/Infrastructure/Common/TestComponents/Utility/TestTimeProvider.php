@@ -35,7 +35,7 @@ class TestTimeProvider extends TimeProvider
      * @return \DateTime
      * @throws \Exception
      */
-    public function getCurrentLocalTime()
+    public function getCurrentLocalTime(): \DateTime
     {
         return new \DateTime('@' . $this->time->getTimestamp());
     }
