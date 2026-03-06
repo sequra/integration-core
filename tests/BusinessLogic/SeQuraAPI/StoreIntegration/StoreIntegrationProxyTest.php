@@ -69,6 +69,16 @@ class StoreIntegrationProxyTest extends BaseTestCase
 
     /**
      * @return void
+     */
+    protected function tearDown(): void
+    {
+        putenv(BaseProxy::SANDBOX_API_BASE_URL_ENV);
+
+        parent::tearDown();
+    }
+
+    /**
+     * @return void
      *
      * @throws CapabilitiesEmptyException
      * @throws InvalidEnvironmentException
@@ -102,6 +112,88 @@ class StoreIntegrationProxyTest extends BaseTestCase
         $lastRequest = $this->httpClient->getLastRequest();
         self::assertCount(1, $this->httpClient->getHistory());
         self::assertEquals('https://sandbox.sequrapi.com/store_integrations', $lastRequest['url']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
+     */
+    public function testCreateStoreIntegrationRequestUrlUsesNonLiveEnvApiBaseUrlWhenDefined(): void
+    {
+        // arrange
+        putenv(BaseProxy::SANDBOX_API_BASE_URL_ENV . '=https://sandbox-proxy.domain.com/custom-path');
+
+        $this->httpClient->setMockResponses([
+            new HttpResponse(204, [
+                'location' => 'https://sandbox.sequrapi.com/store_integrations/4'
+            ], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/StoreIntegration/CreateStoreIntegrationResponse.json'
+            ))
+        ]);
+
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
+
+        // act
+        $this->proxy->createStoreIntegration($request);
+
+        // assert
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertCount(1, $this->httpClient->getHistory());
+        self::assertEquals('https://sandbox-proxy.domain.com/custom-path/store_integrations', $lastRequest['url']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
+     */
+    public function testCreateStoreIntegrationRequestUrlUsesLiveDeploymentUrlWhenEnvironmentIsLive(): void
+    {
+        // arrange
+        putenv(BaseProxy::SANDBOX_API_BASE_URL_ENV . '=https://sandbox-proxy.domain.com/custom-path');
+
+        $this->httpClient->setMockResponses([
+            new HttpResponse(204, [
+                'location' => 'https://live.sequrapi.com/store_integrations/4'
+            ], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/StoreIntegration/CreateStoreIntegrationResponse.json'
+            ))
+        ]);
+
+        $connectionData = new ConnectionData(
+            BaseProxy::LIVE_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
+
+        // act
+        $this->proxy->createStoreIntegration($request);
+
+        // assert
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertCount(1, $this->httpClient->getHistory());
+        self::assertEquals('https://live.sequrapi.com/store_integrations', $lastRequest['url']);
     }
 
     /**

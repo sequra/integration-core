@@ -25,6 +25,11 @@ class BaseProxy
     protected const BASE_API_URL = 'https://live.sequrapi.com/';
 
     /**
+     * Sandbox API base URL env var key.
+     */
+    public const SANDBOX_API_BASE_URL_ENV = 'SEQURA_SANDBOX_API_BASE_URL';
+
+    /**
      * Test mode string.
      */
     public const TEST_MODE = 'sandbox';
@@ -58,6 +63,26 @@ class BaseProxy
     ) {
         $this->httpClient = $httpClient;
         $this->baseUrl = $baseUrl;
+    }
+
+    /**
+     * Gets sandbox API base URL override from env var.
+     *
+     * @return string|null
+     */
+    public static function getSandboxApiBaseUrlOverride(): ?string
+    {
+        $apiBaseUrl = getenv(self::SANDBOX_API_BASE_URL_ENV);
+        if (!is_string($apiBaseUrl)) {
+            return null;
+        }
+
+        $apiBaseUrl = trim($apiBaseUrl);
+        if ($apiBaseUrl === '') {
+            return null;
+        }
+
+        return rtrim($apiBaseUrl, '/') . '/';
     }
 
     /**

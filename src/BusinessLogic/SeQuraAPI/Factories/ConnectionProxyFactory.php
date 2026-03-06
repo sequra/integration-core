@@ -52,7 +52,8 @@ class ConnectionProxyFactory
         return new BaseProxy(
             $this->client,
             $connectionData->getEnvironment() === BaseProxy::LIVE_MODE ?
-            $deployment->getLiveDeploymentURL()->getApiBaseUrl() : $deployment->getSandboxDeploymentURL()->getApiBaseUrl()
+            $deployment->getLiveDeploymentURL()->getApiBaseUrl() :
+            (BaseProxy::getSandboxApiBaseUrlOverride() ?: $deployment->getSandboxDeploymentURL()->getApiBaseUrl())
         );
     }
 
