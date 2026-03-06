@@ -29,15 +29,22 @@ class GetGeneralSettingsResponse extends Response
     protected $categories;
 
     /**
+     * @var string[] $sellingCountries
+     */
+    protected $sellingCountries;
+
+    /**
      * @param GeneralSettings $generalSettings
      * @param ShopProduct[] $products
      * @param Category[] $categories
+     * @param string[] $sellingCountries
      */
-    public function __construct(GeneralSettings $generalSettings, array $products, array $categories)
+    public function __construct(GeneralSettings $generalSettings, array $products, array $categories, array $sellingCountries)
     {
         $this->generalSettings = $generalSettings;
         $this->products = $products;
         $this->categories = $categories;
+        $this->sellingCountries = $sellingCountries;
     }
 
     /**
@@ -64,6 +71,8 @@ class GetGeneralSettingsResponse extends Response
                 ];
             }, $this->categories);
         }
+
+        $response['sellingCountries'] = $this->sellingCountries;
 
         return $response;
     }

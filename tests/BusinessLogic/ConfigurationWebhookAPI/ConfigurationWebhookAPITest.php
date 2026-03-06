@@ -12,6 +12,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
@@ -1267,6 +1268,12 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             new ShopProduct('1', 'sku1', 'Product 001'),
             new ShopProduct('11', 'sku2', 'Product 011')
         ]);
+        $this->countryConfigurationService->saveCountryConfiguration([
+            new CountryConfiguration('ES', 'merchant1'),
+            new CountryConfiguration('FR', 'merchant2'),
+            new CountryConfiguration('IT', 'merchant3'),
+            new CountryConfiguration('PT', 'merchant4'),
+        ]);
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
@@ -1302,7 +1309,8 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'allowServiceRegistrationItems' => [
                 'ES'
             ],
-            'defaultServicesEndDate' => 'P1Y'
+            'defaultServicesEndDate' => 'P1Y',
+            'sellingCountries' => ['ES', 'FR', 'IT', 'PT'],
         ], $response->toArray());
     }
 

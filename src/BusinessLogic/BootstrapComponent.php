@@ -1062,7 +1062,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new GetGeneralSettingsHandler(
                     ServiceRegister::getService(GeneralSettingsService::class),
                     ServiceRegister::getService(ProductServiceInterface::class),
-                    ServiceRegister::getService(CategoryServiceInterface::class)
+                    ServiceRegister::getService(CategoryServiceInterface::class),
+                    ServiceRegister::getService(CountryConfigurationService::class)
                 );
             }
         );

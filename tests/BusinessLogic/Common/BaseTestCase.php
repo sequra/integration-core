@@ -733,7 +733,8 @@ class BaseTestCase extends TestCase
                 return new GetGeneralSettingsHandler(
                     TestServiceRegister::getService(GeneralSettingsService::class),
                     TestServiceRegister::getService(ProductServiceInterface::class),
-                    TestServiceRegister::getService(CategoryServiceInterface::class)
+                    TestServiceRegister::getService(CategoryServiceInterface::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class)
                 );
             }
         );

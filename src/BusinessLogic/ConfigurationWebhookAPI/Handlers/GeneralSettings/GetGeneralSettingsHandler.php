@@ -9,6 +9,8 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\SuccessResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
@@ -35,18 +37,26 @@ class GetGeneralSettingsHandler implements TopicHandlerInterface
     protected $categoryService;
 
     /**
+     * @var CountryConfigurationService $countryConfigurationService
+     */
+    protected $countryConfigurationService;
+
+    /**
      * @param GeneralSettingsService $generalSettingsService
      * @param ProductServiceInterface $productService
      * @param CategoryServiceInterface $categoryService
+     * @param CountryConfigurationService $countryConfigurationService
      */
     public function __construct(
         GeneralSettingsService $generalSettingsService,
         ProductServiceInterface $productService,
-        CategoryServiceInterface $categoryService
+        CategoryServiceInterface $categoryService,
+        CountryConfigurationService $countryConfigurationService
     ) {
         $this->generalSettingsService = $generalSettingsService;
         $this->productService = $productService;
         $this->categoryService = $categoryService;
+        $this->countryConfigurationService = $countryConfigurationService;
     }
 
     /**
@@ -73,6 +83,11 @@ class GetGeneralSettingsHandler implements TopicHandlerInterface
         $categories = !empty($generalSettings->getExcludedCategories())
             ? $this->categoryService->getCategoriesByIds($generalSettings->getExcludedCategories()) : [];
 
-        return new GetGeneralSettingsResponse($generalSettings, $products, $categories);
+        $countryConfigurations = $this->countryConfigurationService->getCountryConfiguration() ?? [];
+        $sellingCountries = array_map(function (CountryConfiguration $cc) {
+            return $cc->getCountryCode();
+        }, $countryConfigurations);
+
+        return new GetGeneralSettingsResponse($generalSettings, $products, $categories, $sellingCountries);
     }
 }
