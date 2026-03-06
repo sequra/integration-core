@@ -992,6 +992,111 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      * @return void
      *
      * @throws InvalidEnvironmentException
+     * @throws EmptyCategoryParameterException
+     */
+    public function testGetWidgetSettingsResponseGroupsPaymentMethodsByProduct(): void
+    {
+        //Arrange
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant1',
+            'sequra',
+            new AuthorizationCredentials('username', 'password')
+        );
+        $this->connectionService->saveConnectionData($connectionData);
+        $this->credentialsService->setCredentials(new Credentials(
+            'merchant1',
+            'ES',
+            'EUR',
+            'assets_key',
+            [],
+            'sequra'
+        ));
+        $signature = $this->storeIntegrationService->getWebhookSignature();
+
+        $this->paymentMethodsService->setMockPaymentMethods([
+            new SeQuraPaymentMethod(
+                'pp3',
+                'Paga Fraccionado',
+                'Description1',
+                'part_payment',
+                new SeQuraCost(0, 0, 0, 0),
+                new \DateTime('0022-02-22T22:36:44Z'),
+                new \DateTime('0022-02-22T22:36:44Z'),
+                null,
+                ''
+            ),
+            new SeQuraPaymentMethod(
+                'pp3',
+                'Pagamento Fracionado',
+                'Description2',
+                'part_payment',
+                new SeQuraCost(0, 0, 0, 0),
+                new \DateTime('0022-02-22T22:36:44Z'),
+                new \DateTime('0022-02-22T22:36:44Z'),
+                null,
+                ''
+            ),
+            new SeQuraPaymentMethod(
+                'pp3',
+                'Pagamento a rate',
+                'Description3',
+                'part_payment',
+                new SeQuraCost(0, 0, 0, 0),
+                new \DateTime('0022-02-22T22:36:44Z'),
+                new \DateTime('0022-02-22T22:36:44Z'),
+                null,
+                ''
+            ),
+            new SeQuraPaymentMethod(
+                'pp3',
+                'Payez en plusieurs fois',
+                'Description4',
+                'part_payment',
+                new SeQuraCost(0, 0, 0, 0),
+                new \DateTime('0022-02-22T22:36:44Z'),
+                new \DateTime('0022-02-22T22:36:44Z'),
+                null,
+                ''
+            ),
+            new SeQuraPaymentMethod(
+                'sp1',
+                'Divide tu pago en 3',
+                'Description5',
+                'part_payment',
+                new SeQuraCost(0, 0, 0, 0),
+                new \DateTime('0022-02-22T22:36:44Z'),
+                new \DateTime('0022-02-22T22:36:44Z'),
+                null,
+                ''
+            ),
+        ]);
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $signature,
+            [
+                'topic' => 'get-widget-settings'
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        $paymentMethods = $response->toArray()['paymentMethods'];
+        self::assertCount(2, $paymentMethods);
+        self::assertEquals('pp3', $paymentMethods[0]['product']);
+        self::assertEquals(
+            'Paga Fraccionado/Pagamento Fracionado/Pagamento a rate/Payez en plusieurs fois',
+            $paymentMethods[0]['title']
+        );
+        self::assertEquals('sp1', $paymentMethods[1]['product']);
+        self::assertEquals('Divide tu pago en 3', $paymentMethods[1]['title']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
      * @throws \Exception
      */
     public function testSaveWidgetSettingsResponse(): void

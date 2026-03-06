@@ -70,6 +70,24 @@ class PaymentMethodsService
     }
 
     /**
+     * Returns available payment methods for all merchants, grouped by product.
+     * Payment methods sharing the same product code have their titles concatenated with `/`.
+     *
+     * @param bool $cache
+     *
+     * @return SeQuraPaymentMethod[]
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     * @throws FailedToRetrieveSellingCountriesException
+     */
+    public function getGroupedPaymentMethodsForAllMerchants(bool $cache = false): array
+    {
+        return $this->groupPaymentMethodsByProduct(
+            $this->getAvailablePaymentMethodsForAllMerchants($cache)
+        );
+    }
+
+    /**
      *  Returns available payment methods for all enabled merchants.
      *
      * @param bool $cache
@@ -148,6 +166,32 @@ class PaymentMethodsService
         foreach ($paymentMethods as $paymentMethod) {
             $this->paymentMethodsRepository->setPaymentMethod($merchantId, $paymentMethod);
         }
+    }
+
+    /**
+     * Groups payment methods by product code, concatenating titles with `/`.
+     *
+     * @param SeQuraPaymentMethod[] $paymentMethods
+     *
+     * @return SeQuraPaymentMethod[]
+     */
+    private function groupPaymentMethodsByProduct(array $paymentMethods): array
+    {
+        $grouped = [];
+        foreach ($paymentMethods as $method) {
+            $product = $method->getProduct();
+            if (isset($grouped[$product])) {
+                $existingTitle = $grouped[$product]->getTitle();
+                $newTitle = $method->getTitle();
+                if (strpos($existingTitle, $newTitle) === false) {
+                    $grouped[$product]->setTitle($existingTitle . '/' . $newTitle);
+                }
+                continue;
+            }
+            $grouped[$product] = $method;
+        }
+
+        return array_values($grouped);
     }
 
     /**

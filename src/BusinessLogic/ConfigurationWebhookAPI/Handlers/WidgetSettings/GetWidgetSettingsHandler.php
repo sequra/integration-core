@@ -56,7 +56,7 @@ class GetWidgetSettingsHandler implements TopicHandlerInterface
     {
         return new GetWidgetSettingsResponse(
             $this->widgetSettingsService->getWidgetSettings(),
-            $this->paymentMethodsService->getAvailablePaymentMethodsForAllMerchants(true)
+            $this->paymentMethodsService->getGroupedPaymentMethodsForAllMerchants(true)
         );
     }
 }
