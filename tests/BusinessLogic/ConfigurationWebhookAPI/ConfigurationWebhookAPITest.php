@@ -821,6 +821,212 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      * @return void
      *
      * @throws InvalidEnvironmentException
+     */
+    public function testGetSellingCountriesPagination(): void
+    {
+        //Arrange
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant1',
+            'sequra',
+            new AuthorizationCredentials('username', 'password')
+        );
+        $this->connectionService->saveConnectionData($connectionData);
+        $signature = $this->storeIntegrationService->getWebhookSignature();
+        $this->domainSellingCountriesService->setMockSellingCountries(
+            [
+                new SellingCountry("ES", 'Spain', 'merchantSpain'),
+                new SellingCountry("FR", 'France', 'merchantFrance'),
+                new SellingCountry("IT", 'Italy', 'merchantItaly'),
+                new SellingCountry("PT", 'Portugal', 'merchantPortugal'),
+                new SellingCountry("DE", 'Germany', 'merchantGermany')
+            ]
+        );
+
+        //Act - page 1, limit 2
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $signature,
+            [
+                'topic' => 'get-selling-countries',
+                'page' => 1,
+                'limit' => 2,
+                'search' => '',
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals(['ES', 'FR'], $response->toArray());
+
+        //Act - page 2, limit 2
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $signature,
+            [
+                'topic' => 'get-selling-countries',
+                'page' => 2,
+                'limit' => 2,
+                'search' => '',
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals(['IT', 'PT'], $response->toArray());
+
+        //Act - page 3, limit 2 (partial last page)
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $signature,
+            [
+                'topic' => 'get-selling-countries',
+                'page' => 3,
+                'limit' => 2,
+                'search' => '',
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals(['DE'], $response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetSellingCountriesPageOutOfRange(): void
+    {
+        //Arrange
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant1',
+            'sequra',
+            new AuthorizationCredentials('username', 'password')
+        );
+        $this->connectionService->saveConnectionData($connectionData);
+        $signature = $this->storeIntegrationService->getWebhookSignature();
+        $this->domainSellingCountriesService->setMockSellingCountries(
+            [
+                new SellingCountry("ES", 'Spain', 'merchantSpain'),
+                new SellingCountry("FR", 'France', 'merchantFrance')
+            ]
+        );
+
+        //Act - page far beyond available data
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $signature,
+            [
+                'topic' => 'get-selling-countries',
+                'page' => 100,
+                'limit' => 10,
+                'search' => '',
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetSellingCountriesNegativePageAndZeroLimit(): void
+    {
+        //Arrange
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant1',
+            'sequra',
+            new AuthorizationCredentials('username', 'password')
+        );
+        $this->connectionService->saveConnectionData($connectionData);
+        $signature = $this->storeIntegrationService->getWebhookSignature();
+        $this->domainSellingCountriesService->setMockSellingCountries(
+            [
+                new SellingCountry("ES", 'Spain', 'merchantSpain'),
+                new SellingCountry("FR", 'France', 'merchantFrance')
+            ]
+        );
+
+        //Act - negative page should be treated as page 1, zero limit as limit 1
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $signature,
+            [
+                'topic' => 'get-selling-countries',
+                'page' => -1,
+                'limit' => 0,
+                'search' => '',
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals(['ES'], $response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetSellingCountriesSearchWithPagination(): void
+    {
+        //Arrange
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant1',
+            'sequra',
+            new AuthorizationCredentials('username', 'password')
+        );
+        $this->connectionService->saveConnectionData($connectionData);
+        $signature = $this->storeIntegrationService->getWebhookSignature();
+        $this->domainSellingCountriesService->setMockSellingCountries(
+            [
+                new SellingCountry("ES", 'Spain', 'merchantSpain'),
+                new SellingCountry("FR", 'France', 'merchantFrance'),
+                new SellingCountry("IT", 'Italy', 'merchantItaly'),
+                new SellingCountry("PT", 'Portugal', 'merchantPortugal')
+            ]
+        );
+
+        //Act - search narrows results, then paginate
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $signature,
+            [
+                'topic' => 'get-selling-countries',
+                'page' => 1,
+                'limit' => 1,
+                'search' => 'al',
+            ]
+        );
+
+        //Assert - "Italy" and "Portugal" match "al"
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals(['IT'], $response->toArray());
+
+        //Act - page 2 of search results
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $signature,
+            [
+                'topic' => 'get-selling-countries',
+                'page' => 2,
+                'limit' => 1,
+                'search' => 'al',
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals(['PT'], $response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
      * @throws EmptyCategoryParameterException
      */
     public function testGetWidgetSettingsResponse(): void

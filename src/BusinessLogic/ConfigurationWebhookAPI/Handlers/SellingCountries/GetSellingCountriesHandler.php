@@ -39,8 +39,8 @@ class GetSellingCountriesHandler implements TopicHandlerInterface
         $request = GetSellingCountriesRequest::fromPayload($payload);
 
         $items = $this->sellingCountriesService->getSellingCountries();
-        $offset = $request->getPage();
-        $limit = $request->getLimit();
+        $page = max(1, $request->getPage());
+        $limit = max(1, $request->getLimit());
         $search = $request->getSearch();
 
         if ($search !== '') {
@@ -49,7 +49,7 @@ class GetSellingCountriesHandler implements TopicHandlerInterface
             });
         }
         $items = array_values($items);
-        $paginatedItems = array_slice($items, $offset - 1, $limit);
+        $paginatedItems = array_slice($items, ($page - 1) * $limit, $limit);
 
         $data = array_map(function ($item) {
             return $item->getCode();
