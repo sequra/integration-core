@@ -13,6 +13,11 @@ use SeQura\Core\Infrastructure\Singleton;
 class TopicHandlerRegistry extends Singleton
 {
     /**
+     * @var static
+     */
+    protected static $instance;
+
+    /**
      * Map of registered topic handlers
      *
      * @var array<string, class-string<TopicHandlerInterface>>
