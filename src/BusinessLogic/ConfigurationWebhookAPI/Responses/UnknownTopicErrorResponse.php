@@ -26,7 +26,7 @@ class UnknownTopicErrorResponse extends Response
      */
     public function __construct(string $topic)
     {
-        $this->topic = $topic;
+        $this->topic = htmlspecialchars($topic, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 
     /**
