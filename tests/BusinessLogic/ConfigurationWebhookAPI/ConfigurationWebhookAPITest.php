@@ -183,6 +183,11 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     private $credentialsService;
 
     /**
+     * @var string
+     */
+    private $signature;
+
+    /**
      * @return void
      *
      * @throws RepositoryClassException
@@ -350,6 +355,15 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         TestServiceRegister::registerService(CredentialsService::class, function () {
             return $this->credentialsService;
         });
+
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant1',
+            'sequra',
+            new AuthorizationCredentials('username', 'password')
+        );
+        $this->connectionService->saveConnectionData($connectionData);
+        $this->signature = $this->storeIntegrationService->getWebhookSignature();
     }
 
     /**
@@ -360,18 +374,10 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testTopicMissingResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password')
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'page' => 1,
                 'limit' => 5,
@@ -395,15 +401,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      */
     public function testInvalidValidWebhookSignature(): void
     {
-        //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password')
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
             'testFail',
@@ -428,19 +425,10 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testValidWebhook(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-shop-categories',
                 'page' => 1,
@@ -458,21 +446,13 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      *
      * @throws InvalidEnvironmentException
      */
-    public function testUnknownEpicError(): void
+    public function testUnknownTopicError(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password')
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-payment-data',
                 'page' => 1,
@@ -498,15 +478,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testStoreInfoResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->storeInfoService->setMockStoreInfo(
             new StoreInfo(
@@ -528,7 +499,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-store-info'
             ]
@@ -557,15 +528,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testGetLogResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->storeInfoService->setMockStoreInfo(
             new StoreInfo(
@@ -593,7 +555,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-log-content'
             ]
@@ -616,15 +578,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testRemoveLogResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->storeInfoService->setMockStoreInfo(
             new StoreInfo(
@@ -652,7 +605,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'remove-log-content'
             ]
@@ -672,15 +625,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testGetStoreProductsResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->productService->setMockShopProducts(
             [
@@ -692,7 +636,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-shop-products',
                 'page' => 1,
@@ -731,15 +675,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testGetShopCategoriesResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->shopCategoryService->setMockCategories(
             [
@@ -751,7 +686,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-shop-categories',
                 'page' => 1,
@@ -794,7 +729,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             new AuthorizationCredentials('username', 'password')
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
+
         $this->domainSellingCountriesService->setMockSellingCountries(
             [
                 new SellingCountry("ES", 'Spain', 'merchantSpain'),
@@ -806,7 +741,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-selling-countries',
                 'page' => 1,
@@ -840,7 +775,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             new AuthorizationCredentials('username', 'password')
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
+
         $this->domainSellingCountriesService->setMockSellingCountries(
             [
                 new SellingCountry("ES", 'Spain', 'merchantSpain'),
@@ -853,7 +788,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act - page 1, limit 2
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-selling-countries',
                 'page' => 1,
@@ -868,7 +803,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act - page 2, limit 2
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-selling-countries',
                 'page' => 2,
@@ -883,7 +818,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act - page 3, limit 2 (partial last page)
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-selling-countries',
                 'page' => 3,
@@ -912,7 +847,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             new AuthorizationCredentials('username', 'password')
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
+
         $this->domainSellingCountriesService->setMockSellingCountries(
             [
                 new SellingCountry("ES", 'Spain', 'merchantSpain'),
@@ -922,7 +857,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act - page far beyond available data
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-selling-countries',
                 'page' => 100,
@@ -951,7 +886,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             new AuthorizationCredentials('username', 'password')
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
+
         $this->domainSellingCountriesService->setMockSellingCountries(
             [
                 new SellingCountry("ES", 'Spain', 'merchantSpain'),
@@ -961,7 +896,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act - negative page should be treated as page 1, zero limit as limit 1
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-selling-countries',
                 'page' => -1,
@@ -990,7 +925,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             new AuthorizationCredentials('username', 'password')
         );
         $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
+
         $this->domainSellingCountriesService->setMockSellingCountries(
             [
                 new SellingCountry("ES", 'Spain', 'merchantSpain'),
@@ -1002,7 +937,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act - search narrows results, then paginate
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-selling-countries',
                 'page' => 1,
@@ -1017,7 +952,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act - page 2 of search results
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-selling-countries',
                 'page' => 2,
@@ -1055,7 +990,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             [],
             'sequra'
         ));
-        $signature = $this->storeIntegrationService->getWebhookSignature();
+
 
         $widgetSettings = new WidgetSettings(
             true,
@@ -1135,7 +1070,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-widget-settings'
             ]
@@ -1227,7 +1162,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             [],
             'sequra'
         ));
-        $signature = $this->storeIntegrationService->getWebhookSignature();
+
 
         $this->paymentMethodsService->setMockPaymentMethods([
             new SeQuraPaymentMethod(
@@ -1289,7 +1224,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 'topic' => 'get-widget-settings'
             ]
@@ -1317,15 +1252,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testSaveWidgetSettingsResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $widgetSettings = new WidgetSettings(
             false,
@@ -1405,7 +1331,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 "topic" => "save-widget-settings",
                 "displayWidgetOnProductPage" => true,
@@ -1454,15 +1380,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testGetGeneralSettingsResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $generalSettings = new GeneralSettings(
             false,
@@ -1491,7 +1408,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 "topic" => "get-general-settings"
             ]
@@ -1537,15 +1454,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testGetGeneralSettingsResponseNoGeneralSettings(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->shopCategoryService->setMockCategories([new Category('16', 'Accessories')]);
         $this->productService->setMockShopProducts([
@@ -1555,7 +1463,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 "topic" => "get-general-settings"
             ]
@@ -1575,14 +1483,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testSaveGeneralSettingsResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password')
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->shopCategoryService->setMockCategories([new Category('16', 'Accessories')]);
         $this->domainSellingCountriesService->setMockSellingCountries(
@@ -1597,7 +1497,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 "topic" => "save-general-settings",
                 "showSeQuraCheckoutAsHostedPage" => false,
@@ -1643,15 +1543,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testGetOrderStatusListResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->shopCategoryService->setMockCategories([new Category('16', 'Accessories')]);
         $this->shopOrderStatusService->setMockShopOrderStatuses(
@@ -1669,7 +1560,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 "topic" => "get-order-status-list"
             ]
@@ -1701,15 +1592,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testGetOrderStatusSettingsResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->shopCategoryService->setMockCategories([new Category('16', 'Accessories')]);
         $this->orderStatusSettingsService->setMockOrderStatusSettings(
@@ -1723,7 +1605,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 "topic" => "get-order-status-settings"
             ]
@@ -1751,15 +1633,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testSaveOrderStatusSettingsResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->shopCategoryService->setMockCategories([new Category('16', 'Accessories')]);
         $this->orderStatusSettingsService->setMockOrderStatusSettings(
@@ -1773,7 +1646,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 "topic" => "save-order-status-settings",
                 "orderStatusMappings" => [
@@ -1800,22 +1673,13 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testSetAdvancedSettingsResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $advancedSettings = new AdvancedSettings(true, 1);
         $this->advancedSettingsService->setAdvancedSettings($advancedSettings);
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 "topic" => "save-advanced-settings",
                 "isEnabled" => false,
@@ -1837,22 +1701,13 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testGetAdvancedSettingsResponse(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $advancedSettings = new AdvancedSettings(true, 1);
         $this->advancedSettingsService->setAdvancedSettings($advancedSettings);
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 "topic" => "get-advanced-settings"
             ]
@@ -1875,21 +1730,12 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testGetAdvancedSettingsResponseNoAdvancedSettings(): void
     {
         //Arrange
-        $connectionData = new ConnectionData(
-            'sandbox',
-            'merchant1',
-            'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
-        );
-        $this->connectionService->saveConnectionData($connectionData);
-        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         $this->advancedSettingsService->setAdvancedSettings(null);
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $signature,
+            $this->signature,
             [
                 "topic" => "get-advanced-settings"
             ]
