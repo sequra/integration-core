@@ -360,10 +360,18 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testTopicMissingResponse(): void
     {
         //Arrange
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant1',
+            'sequra',
+            new AuthorizationCredentials('username', 'password')
+        );
+        $this->connectionService->saveConnectionData($connectionData);
+        $signature = $this->storeIntegrationService->getWebhookSignature();
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            'test',
+            $signature,
             [
                 'page' => 1,
                 'limit' => 5,
