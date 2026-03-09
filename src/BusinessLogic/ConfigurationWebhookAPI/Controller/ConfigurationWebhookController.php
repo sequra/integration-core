@@ -53,14 +53,14 @@ class ConfigurationWebhookController
      */
     public function handleRequest(string $signature, array $payload): Response
     {
+        $this->configurationWebhookValidationService
+            ->validateWebhookSignature(new WebhookValidationRequest($signature));
+
         $topic = $payload['topic'] ?? '';
 
         if (empty($topic)) {
             return new TopicMissingErrorResponse();
         }
-
-        $this->configurationWebhookValidationService
-            ->validateWebhookSignature(new WebhookValidationRequest($signature));
 
         $handler = $this->topicHandlerRegistry->getHandlerForTopic($topic);
 
