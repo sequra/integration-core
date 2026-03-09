@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Webhook\Services;
 
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\StoreIntegrationNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Exceptions\WebhookSignatureValidationFailed;
@@ -41,7 +42,7 @@ class ConfigurationWebhookValidationService
             $this->storeIntegrationService->validateWebhookSignature(
                 $webhookValidationRequest->getWebhookSignature()
             );
-        } catch (InvalidSignatureException $e) {
+        } catch (InvalidSignatureException | StoreIntegrationNotFoundException $e) {
             throw new WebhookSignatureValidationFailed(
                 new TranslatableLabel(
                     'Webhook signature validation failed.',
