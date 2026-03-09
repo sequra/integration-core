@@ -40,7 +40,7 @@ class AdvancedSettings extends Entity
         $this->storeId = $data['storeId'] ?? '';
 
         $this->advancedSettings = new DomainAdvancedSettings(
-            (bool)self::getDataValue($generalSettings, 'isEnabled', []),
+            (bool)self::getDataValue($generalSettings, 'isEnabled', false),
             (int)self::getDataValue($generalSettings, 'level', 1)
         );
     }
