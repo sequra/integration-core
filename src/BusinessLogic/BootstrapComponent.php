@@ -1083,8 +1083,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new GetWidgetSettingsHandler(
                     ServiceRegister::getService(WidgetSettingsService::class),
-                    ServiceRegister::getService(PaymentMethodsService::class),
-                    ServiceRegister::getService(CredentialsService::class)
+                    ServiceRegister::getService(PaymentMethodsService::class)
                 );
             }
         );
