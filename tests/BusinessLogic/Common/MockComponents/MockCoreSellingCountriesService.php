@@ -17,7 +17,7 @@ class MockCoreSellingCountriesService extends SellingCountriesService
      */
     private static $sellingCountries = [];
 
-    public function getSellingCountries(): array
+    public function getSellingCountries(?int $page = null, ?int $limit = null, ?string $search = null): array
     {
         return self::$sellingCountries;
     }

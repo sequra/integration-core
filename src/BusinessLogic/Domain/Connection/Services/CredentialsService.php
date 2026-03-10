@@ -163,6 +163,7 @@ class CredentialsService
         if (!$credentials) {
             throw new CredentialsNotFoundException();
         }
+
         return $credentials->getMerchantId();
     }
 }

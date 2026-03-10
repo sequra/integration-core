@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Connection\Services;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
@@ -205,10 +206,10 @@ class ConnectionService
      * @return void
      *
      * @throws CapabilitiesEmptyException
+     * @throws Exception
      */
     protected function registerWebhooks(ConnectionData $connectionData): void
     {
-        $integrationId = $this->storeIntegrationService->createStoreIntegration($connectionData);
-        $connectionData->setIntegrationId($integrationId);
+        $this->storeIntegrationService->createStoreIntegration($connectionData);
     }
 }

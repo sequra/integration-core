@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services;
 
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
@@ -69,6 +70,24 @@ class PaymentMethodsService
     }
 
     /**
+     * Returns available payment methods for all merchants, grouped by product.
+     * Payment methods sharing the same product code have their titles concatenated with `/`.
+     *
+     * @param bool $cache
+     *
+     * @return SeQuraPaymentMethod[]
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     * @throws FailedToRetrieveSellingCountriesException
+     */
+    public function getGroupedPaymentMethodsForAllMerchants(bool $cache = false): array
+    {
+        return $this->groupPaymentMethodsByProduct(
+            $this->getAvailablePaymentMethodsForAllMerchants($cache)
+        );
+    }
+
+    /**
      *  Returns available payment methods for all enabled merchants.
      *
      * @param bool $cache
@@ -76,6 +95,7 @@ class PaymentMethodsService
      * @return SeQuraPaymentMethod[]
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
+     * @throws FailedToRetrieveSellingCountriesException
      */
     public function getAvailablePaymentMethodsForAllMerchants(bool $cache = false): array
     {
@@ -149,9 +169,37 @@ class PaymentMethodsService
     }
 
     /**
+     * Groups payment methods by product code, concatenating titles with `/`.
+     *
+     * @param SeQuraPaymentMethod[] $paymentMethods
+     *
+     * @return SeQuraPaymentMethod[]
+     */
+    private function groupPaymentMethodsByProduct(array $paymentMethods): array
+    {
+        $grouped = [];
+        foreach ($paymentMethods as $method) {
+            $product = $method->getProduct();
+            if (isset($grouped[$product])) {
+                $existingTitle = $grouped[$product]->getTitle();
+                $newTitle = $method->getTitle();
+                if (strpos($existingTitle, $newTitle) === false) {
+                    $grouped[$product]->setTitle($existingTitle . '/' . $newTitle);
+                }
+                continue;
+            }
+            $grouped[$product] = $method;
+        }
+
+        return array_values($grouped);
+    }
+
+    /**
      * Retrieves available merchant ids from database.
      *
      * @return string[]
+     *
+     * @throws FailedToRetrieveSellingCountriesException
      */
     private function getMerchantIds(): array
     {

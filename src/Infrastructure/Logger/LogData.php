@@ -5,6 +5,7 @@ namespace SeQura\Core\Infrastructure\Logger;
 use SeQura\Core\Infrastructure\ORM\Configuration\EntityConfiguration;
 use SeQura\Core\Infrastructure\ORM\Configuration\IndexMap;
 use SeQura\Core\Infrastructure\ORM\Entity;
+use SeQura\Core\Infrastructure\Utility\TimeProvider;
 
 /**
  * Class LogData.
@@ -68,15 +69,15 @@ class LogData extends Entity
      * @param int $timestamp Log timestamp.
      * @param string $component Name of the log component.
      * @param string $message Log message.
-     * @param LogContextData[]|array $context Log contexts as an array of @see LogContextData or as key value entries.
+     * @param LogContextData[] $context Log contexts as an array of @see LogContextData or as key value entries.
      */
     public function __construct(
-        $integration = '',
-        $logLevel = Logger::ERROR,
-        $timestamp = 0,
-        $component = '',
-        $message = '',
-        array $context = array()
+        string $integration = '',
+        int $logLevel = Logger::ERROR,
+        int $timestamp = 0,
+        string $component = '',
+        string $message = '',
+        array $context = []
     ) {
         parent::__construct();
 
@@ -85,7 +86,7 @@ class LogData extends Entity
         $this->component = $component;
         $this->timestamp = $timestamp;
         $this->message = $message;
-        $this->context = array();
+        $this->context = [];
 
         foreach ($context as $key => $item) {
             if (!($item instanceof LogContextData)) {
@@ -121,8 +122,8 @@ class LogData extends Entity
     {
         parent::inflate($data);
 
-        $context = !empty($data['context']) ? $data['context'] : array();
-        $this->context = array();
+        $context = !empty($data['context']) ? $data['context'] : [];
+        $this->context = [];
         foreach ($context as $key => $value) {
             $item = new LogContextData($key, $value);
             $this->context[] = $item;
@@ -150,7 +151,7 @@ class LogData extends Entity
      *
      * @return string Name of the integration.
      */
-    public function getIntegration()
+    public function getIntegration(): string
     {
         return $this->integration;
     }
@@ -160,7 +161,7 @@ class LogData extends Entity
      *
      * @return LogContextData[] Array of LogContextData.
      */
-    public function getContext()
+    public function getContext(): array
     {
         return $this->context;
     }
@@ -175,7 +176,7 @@ class LogData extends Entity
      *    - info => 2
      *    - debug => 3
      */
-    public function getLogLevel()
+    public function getLogLevel(): int
     {
         return $this->logLevel;
     }
@@ -185,7 +186,7 @@ class LogData extends Entity
      *
      * @return int Log timestamp.
      */
-    public function getTimestamp()
+    public function getTimestamp(): int
     {
         return $this->timestamp;
     }
@@ -195,7 +196,7 @@ class LogData extends Entity
      *
      * @return string Log component.
      */
-    public function getComponent()
+    public function getComponent(): string
     {
         return $this->component;
     }
@@ -205,8 +206,72 @@ class LogData extends Entity
      *
      * @return string Log message.
      */
-    public function getMessage()
+    public function getMessage(): string
     {
         return $this->message;
+    }
+
+    /**
+     * @return string
+     */
+    public function formatLogMessage(): string
+    {
+        $dateTime = TimeProvider::getInstance()->getDateTime((int)($this->getTimestamp() / 1000));
+
+        return sprintf(
+            "%s\t%s\t%s\t%s\r\n",
+            $this->getLevelName(),
+            TimeProvider::getInstance()->serializeDate($dateTime, 'Y-m-d H:i:s'),
+            $this->getMessage(),
+            $this->formatContext()
+        );
+    }
+
+    /**
+     * @return string
+     */
+    private function formatContext(): string
+    {
+        if (empty($this->getContext())) {
+            return '';
+        }
+
+        $ctx = [];
+        foreach ($this->getContext() as $logContextData) {
+            $arr = $logContextData->toArray();
+            if (isset($arr['value']) && is_string($arr['value'])) {
+                $decoded = json_decode($arr['value'], true);
+                if ($decoded !== null) {
+                    $arr['value'] = $decoded;
+                }
+            }
+            $ctx[] = $arr;
+        }
+
+        return ' ' . json_encode(
+            $ctx,
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS
+        );
+    }
+
+    /**
+     * Returns string constant of Log level.
+     *
+     * @return string
+     */
+    private function getLevelName(): string
+    {
+        switch ($this->getLogLevel()) {
+            case Logger::DEBUG:
+                return 'DEBUG';
+            case Logger::INFO:
+                return 'INFO';
+            case Logger::WARNING:
+                return 'WARNING';
+            case Logger::ERROR:
+                return 'ERROR';
+            default:
+                return '';
+        }
     }
 }

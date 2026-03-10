@@ -27,6 +27,7 @@
   - [Admin API Layer](#admin-api-layer)
   - [Checkout API Layer](#checkout-api-layer)
   - [Webhook API Layer](#webhook-api-layer)
+  - [Configuration Webhook API Layer](#configuration-webhook-api-layer)
   - [API Proxy Layer](#api-proxy-layer)
   - [Task Execution System](#task-execution-system)
   - [ORM & Data Persistence Layer](#orm--data-persistence-layer)
@@ -3125,6 +3126,74 @@ StoreContext::doWithStore($storeId, function() {
     // - Event handling
 });
 ```
+
+
+### Configuration Webhook API Layer
+
+The **Configuration WebhookAPI layer** in the SeQura integration-core library handles incoming webhook notifications from SeQura to synchronize all integration settings from [Merchant portal](https://portal.sequra.com/login), allowing faster support and removing the need to grant seQura integrators access to their e-commerce platform.
+
+#### Overview
+
+The Configuration WebhookAPI follows a **simplified Controller pattern** with **validation, handling, and configuration synchronization** to ensure reliable webhook processing even under high load or temporary system issues.
+
+#### Core Components
+
+##### 1. **Configuration WebhookAPI Main Class**
+- **Purpose**: Factory for accessing webhook handler with store context
+- **Pattern**: Simple factory with store context aspect
+- **Key Method**: `configurationHandler(string $storeId)` - Returns configuration webhook controller with store context applied
+
+##### 2. **ConfigurationWebhookController**
+- **Purpose**: Handles incoming configuration webhook requests from SeQura
+- **Key Method**: `handleRequest(array $payload)` - Validates and processes webhook payload
+- **Response Strategy**: Returns appropriate HTTP status codes as expected by SeQura
+
+##### 3. **ConfigurationWebhookValidationService**
+- **Purpose**: Validates configuration webhook authenticity and content
+- **Validation Steps**:
+    - **Validate signature**: Signature is required and must match the signature of the SeQura integration stored securely in the database
+
+#### 4. **TopicHandlerRegistry**
+- **Purpose**: Registry for storing topic handlers
+- **Key Method**: `register(string $topic, TopicHandlerInterface $handler)` - Registers topic handler for a specific topic
+- **Topic Handlers**: Each topic handler, registered in Bootstrap can be overridden in integration if necessary, handles a specific webhook topic:
+    - **GetAdvancedSettingsHandler**: Handles `get-advanced-settings` webhook topic
+    - **SaveAdvancedSettingsHandler**: Handles `save-advanced-settings` webhook topic
+    - **GetGeneralSettingsHandler**: Handles `get-general-settings` webhook topic
+    - **SaveGeneralSettingsHandler**: Handles `save-general-settings` webhook topic
+    - **GetLogContentHandler**: Handles `get-log-content` webhook topic
+    - **RemoveLogContentHandler**: Handles `remove-log-content` webhook topic
+    - **GetOrderStatusListHandler**: Handles `get-order-status-list` webhook topic
+    - **GetOrderStatusSettingsHandler**: Handles `get-order-status-settings` webhook topic
+    - **SaveOrderStatusSettingsHandler**: Handles `save-order-status-settings` webhook topic
+    - **GetSellingCountriesHandler**: Handles `get-selling-countries` webhook topic
+    - **GetShopCategoriesHandler**: Handles `get-shop-categories` webhook topic
+    - **GetShopProductsHandler**: Handles `get-shop-products` webhook topic
+    - **GetStoreInfoHandler**: Handles `get-store-info` webhook topic
+    - **SaveWidgetSettingsHandler**: Handles `save-widget-settings` webhook topic
+  
+#### Webhook Processing Flow
+
+```mermaid
+sequenceDiagram
+    participant SeQura
+    participant PlatformEndpoint as Platform Webhook Endpoint
+    participant ConfigurationWebhookAPI
+    participant ConfigurationWebhookController as ConfigurationWebhookController.handleRequest()
+    participant ConfigurationWebhookValidationService
+    participant ConfigurationWebhookHandler
+    participant Platform
+
+    SeQura->>PlatformEndpoint: 1. Send webhook
+    PlatformEndpoint->>ConfigurationWebhookAPI: 2. Receive payload
+    ConfigurationWebhookAPI->>ConfigurationWebhookController: Dispatch to handleRequest()
+    ConfigurationWebhookController->>ConfigurationWebhookValidationService: 3. validateWebhookSignature (Signature)
+    ConfigurationWebhookValidationService-->>ConfigurationWebhookController: Validation result
+    ConfigurationWebhookController->>TopicHandler: 4. Process payload
+    TopicHandler->>handle: Handles specific topic logic
+    PlatformEndpoint-->>SeQura: 7. Respond with HTTP 200/201/202 (or 410/404/501)
+```
+
 
 ### SeQura API Proxy Layer
 

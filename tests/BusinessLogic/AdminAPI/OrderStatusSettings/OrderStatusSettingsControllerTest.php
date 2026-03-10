@@ -156,7 +156,6 @@ class OrderStatusSettingsControllerTest extends BaseTestCase
         self::assertEquals($this->defaultOrderStatusMappingsToArrayResponse(), $response->toArray());
     }
 
-
     /**
      * @throws InvalidSeQuraOrderStatusException
      * @throws EmptyOrderStatusMappingParameterException
@@ -501,6 +500,10 @@ class OrderStatusSettingsControllerTest extends BaseTestCase
             ],
             [
                 'sequraStatus' => OrderStates::STATE_CANCELLED,
+                'shopStatus' => '',
+            ],
+            [
+                'sequraStatus' => OrderStates::STATE_SHIPPED,
                 'shopStatus' => '',
             ]
         ];

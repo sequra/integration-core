@@ -6,7 +6,6 @@ use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
-use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidOrderStateException;
@@ -84,7 +83,6 @@ class WebhookHandler
         }
     }
 
-
     /**
      * @param Webhook $webhook
      *
@@ -128,6 +126,7 @@ class WebhookHandler
      * @throws CredentialsNotFoundException
      * @throws DeploymentNotFoundException
      * @throws InvalidCartItemsException
+     * @throws InvalidUrlException
      */
     protected function acknowledgeOrder(string $orderReference, string $state): void
     {

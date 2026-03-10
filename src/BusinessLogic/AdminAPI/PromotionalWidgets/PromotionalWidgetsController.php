@@ -9,7 +9,6 @@ use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\Unsuccessful
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\WidgetSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\WidgetConfiguratorResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 
 /**
@@ -27,9 +26,8 @@ class PromotionalWidgetsController
     /**
      * @param WidgetSettingsService $widgetSettingsService
      */
-    public function __construct(
-        WidgetSettingsService $widgetSettingsService
-    ) {
+    public function __construct(WidgetSettingsService $widgetSettingsService)
+    {
         $this->widgetSettingsService = $widgetSettingsService;
     }
 

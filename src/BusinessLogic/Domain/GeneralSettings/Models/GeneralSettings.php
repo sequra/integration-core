@@ -76,7 +76,7 @@ class GeneralSettings
      * @param string[] $enabledForServices
      * @param string[] $allowFirstServicePaymentDelay
      * @param string[] $allowServiceRegistrationItems
-     * @param string $defaultServicesEndDate
+     * @param string|null $defaultServicesEndDate
      */
     public function __construct(
         bool $sendOrderReportsPeriodicallyToSeQura,
@@ -260,5 +260,23 @@ class GeneralSettings
     public function setDefaultServicesEndDate(?string $defaultServicesEndDate): void
     {
         $this->defaultServicesEndDate = empty($defaultServicesEndDate) ? self::DEFAULT_SERVICE_END_DATE : $defaultServicesEndDate;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'sendOrderReportsPeriodicallyToSeQura' => $this->isSendOrderReportsPeriodicallyToSeQura(),
+            'showSeQuraCheckoutAsHostedPage' => $this->isShowSeQuraCheckoutAsHostedPage(),
+            'allowedIPAddresses' => $this->getAllowedIPAddresses(),
+            'excludedProducts' => $this->getExcludedProducts(),
+            'excludedCategories' => $this->getExcludedCategories(),
+            'enabledForServices' => $this->getEnabledForServices(),
+            'allowFirstServicePaymentDelay' => $this->getAllowFirstServicePaymentDelay(),
+            'allowServiceRegistrationItems' => $this->getAllowServiceRegistrationItems(),
+            'defaultServicesEndDate' => $this->getDefaultServicesEndDate()
+        ];
     }
 }

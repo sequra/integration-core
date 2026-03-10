@@ -26,6 +26,8 @@ class MockGeneralSettingsService extends GeneralSettingsService
     }
 
     /**
+     * @param GeneralSettings|null $generalSettings
+     *
      * @return void
      */
     public function saveGeneralSettings(?GeneralSettings $generalSettings): void

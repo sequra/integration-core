@@ -64,8 +64,7 @@ class ConnectionData extends Entity
                 $this->getEncryptorUtility()->decrypt(
                     self::getArrayValue($connectionData['authorizationCredentials'], 'password')
                 )
-            ),
-            self::getArrayValue($connectionData, 'integrationId')
+            )
         );
     }
 
@@ -87,8 +86,7 @@ class ConnectionData extends Entity
                 'password' => $this->getEncryptorUtility()->encrypt(
                     $this->connectionData->getAuthorizationCredentials()->getPassword()
                 )
-            ],
-            'integrationId' => $this->connectionData->getIntegrationId()
+            ]
         ];
 
         return $data;

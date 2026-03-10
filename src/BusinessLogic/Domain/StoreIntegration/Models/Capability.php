@@ -36,6 +36,20 @@ class Capability
      */
     private const ADVANCED = 'advanced';
 
+    /**
+     * Hosted checkout capability string constant.
+     */
+    private const HOSTED_CHECKOUT = 'hosted-checkout';
+
+    /**
+     * Listing selectors capability string constant.
+     */
+    private const LISTING_SELECTORS = 'listing-selectors';
+
+    /**
+     * Alt product price capability string constant.
+     */
+    private const ALT_PRODUCT_PRICE = 'alt-product-price';
 
     /**
      * @var string
@@ -101,6 +115,36 @@ class Capability
     }
 
     /**
+     * Called for Hosted checkout capability.
+     *
+     * @return Capability
+     */
+    public static function hostedCheckout(): self
+    {
+        return new self(self::HOSTED_CHECKOUT);
+    }
+
+    /**
+     * Called for Listing selectors capability.
+     *
+     * @return Capability
+     */
+    public static function listingSelectors(): self
+    {
+        return new self(self::LISTING_SELECTORS);
+    }
+
+    /**
+     * Called for Alt product price capability.
+     *
+     * @return Capability
+     */
+    public static function altProductPrice(): self
+    {
+        return new self(self::ALT_PRODUCT_PRICE);
+    }
+
+    /**
      * @return string
      */
     public function getCapability(): string
@@ -137,6 +181,18 @@ class Capability
 
         if ($capability === self::ADVANCED) {
             return self::advanced();
+        }
+
+        if ($capability === self::HOSTED_CHECKOUT) {
+            return self::hostedCheckout();
+        }
+
+        if ($capability === self::LISTING_SELECTORS) {
+            return self::listingSelectors();
+        }
+
+        if ($capability === self::ALT_PRODUCT_PRICE) {
+            return self::altProductPrice();
         }
 
         throw new InvalidCapabilityException();

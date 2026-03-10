@@ -77,12 +77,12 @@ class GeneralSettingsService
 
                 if ($credentials->isEnabledForServices()) {
                     $enabledForServices[] = $credentials->getCountry();
-                }
-                if ($credentials->isAllowFirstServicePaymentDelay()) {
-                    $allowFirstServicePaymentDelay[] = $credentials->getCountry();
-                }
-                if ($credentials->isAllowServiceRegistrationItems()) {
-                    $allowServiceRegistrationItems[] = $credentials->getCountry();
+                    if ($credentials->isAllowFirstServicePaymentDelay()) {
+                        $allowFirstServicePaymentDelay[] = $credentials->getCountry();
+                    }
+                    if ($credentials->isAllowServiceRegistrationItems()) {
+                        $allowServiceRegistrationItems[] = $credentials->getCountry();
+                    }
                 }
             }
         }

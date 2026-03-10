@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\DataAccess\Credentials\Repositories;
 
+use SeQura\Core\BusinessLogic\DataAccess\Credentials\Entities\Credentials as EntityCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;

@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationResponse;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\StoreIntegration;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\ProxyContracts\StoreIntegrationsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
@@ -68,6 +69,16 @@ class StoreIntegrationProxyTest extends BaseTestCase
 
     /**
      * @return void
+     */
+    protected function tearDown(): void
+    {
+        putenv(BaseProxy::SANDBOX_API_BASE_URL_ENV);
+
+        parent::tearDown();
+    }
+
+    /**
+     * @return void
      *
      * @throws CapabilitiesEmptyException
      * @throws InvalidEnvironmentException
@@ -89,7 +100,11 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'), [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -97,6 +112,88 @@ class StoreIntegrationProxyTest extends BaseTestCase
         $lastRequest = $this->httpClient->getLastRequest();
         self::assertCount(1, $this->httpClient->getHistory());
         self::assertEquals('https://sandbox.sequrapi.com/store_integrations', $lastRequest['url']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
+     */
+    public function testCreateStoreIntegrationRequestUrlUsesNonLiveEnvApiBaseUrlWhenDefined(): void
+    {
+        // arrange
+        putenv(BaseProxy::SANDBOX_API_BASE_URL_ENV . '=https://sandbox-proxy.domain.com/custom-path');
+
+        $this->httpClient->setMockResponses([
+            new HttpResponse(204, [
+                'location' => 'https://sandbox.sequrapi.com/store_integrations/4'
+            ], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/StoreIntegration/CreateStoreIntegrationResponse.json'
+            ))
+        ]);
+
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
+
+        // act
+        $this->proxy->createStoreIntegration($request);
+
+        // assert
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertCount(1, $this->httpClient->getHistory());
+        self::assertEquals('https://sandbox-proxy.domain.com/custom-path/store_integrations', $lastRequest['url']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
+     */
+    public function testCreateStoreIntegrationRequestUrlUsesLiveDeploymentUrlWhenEnvironmentIsLive(): void
+    {
+        // arrange
+        putenv(BaseProxy::SANDBOX_API_BASE_URL_ENV . '=https://sandbox-proxy.domain.com/custom-path');
+
+        $this->httpClient->setMockResponses([
+            new HttpResponse(204, [
+                'location' => 'https://live.sequrapi.com/store_integrations/4'
+            ], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/StoreIntegration/CreateStoreIntegrationResponse.json'
+            ))
+        ]);
+
+        $connectionData = new ConnectionData(
+            BaseProxy::LIVE_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
+
+        // act
+        $this->proxy->createStoreIntegration($request);
+
+        // assert
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertCount(1, $this->httpClient->getHistory());
+        self::assertEquals('https://live.sequrapi.com/store_integrations', $lastRequest['url']);
     }
 
     /**
@@ -122,7 +219,11 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'), [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -155,7 +256,11 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'), [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -188,7 +293,11 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'), [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
         // act
         $this->proxy->createStoreIntegration($request);
 
@@ -226,7 +335,11 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $request = new CreateStoreIntegrationRequest($connectionData, new URL('https://test.com'), [Capability::general()]);
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
         // act
         $response = $this->proxy->createStoreIntegration($request);
 
@@ -251,18 +364,23 @@ class StoreIntegrationProxyTest extends BaseTestCase
             BaseProxy::TEST_MODE,
             'logeecom',
             'sequra',
-            new AuthorizationCredentials('test_username', 'test_password'),
-            '4'
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+        $storeIntegration = new StoreIntegration(
+            '1',
+            'signature',
+            '4',
+            'https://test.com'
         );
 
-        $request = new DeleteStoreIntegrationRequest($connectionData);
+        $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
         // act
         $this->proxy->deleteStoreIntegration($request);
 
         // assert
         $lastRequest = $this->httpClient->getLastRequest();
         self::assertCount(1, $this->httpClient->getHistory());
-        self::assertEquals('https://sandbox.sequrapi.com/store_integrations/4', $lastRequest['url']);
+        self::assertEquals('https://sandbox.sequrapi.com/store_integrations/https%3A%2F%2Ftest.com', $lastRequest['url']);
     }
 
     /**
@@ -284,8 +402,14 @@ class StoreIntegrationProxyTest extends BaseTestCase
             'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
+        $storeIntegration = new StoreIntegration(
+            '1',
+            'signature',
+            '4',
+            'https://test.com'
+        );
 
-        $request = new DeleteStoreIntegrationRequest($connectionData);
+        $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
         // act
         $this->proxy->deleteStoreIntegration($request);
 
@@ -315,7 +439,14 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $request = new DeleteStoreIntegrationRequest($connectionData);
+        $storeIntegration = new StoreIntegration(
+            '1',
+            'signature',
+            '4',
+            'https://test.com'
+        );
+
+        $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
         // act
         $this->proxy->deleteStoreIntegration($request);
 
@@ -344,7 +475,15 @@ class StoreIntegrationProxyTest extends BaseTestCase
             'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
-        $request = new DeleteStoreIntegrationRequest($connectionData);
+
+        $storeIntegration = new StoreIntegration(
+            '1',
+            'signature',
+            '4',
+            'https://test.com'
+        );
+
+        $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
         // act
         $this->proxy->deleteStoreIntegration($request);
 
@@ -374,7 +513,15 @@ class StoreIntegrationProxyTest extends BaseTestCase
             'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
-        $request = new DeleteStoreIntegrationRequest($connectionData);
+
+        $storeIntegration = new StoreIntegration(
+            '1',
+            'signature',
+            '4',
+            'https://test.com'
+        );
+
+        $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
         // act
         $response = $this->proxy->deleteStoreIntegration($request);
 

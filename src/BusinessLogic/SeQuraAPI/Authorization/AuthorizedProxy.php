@@ -56,7 +56,8 @@ class AuthorizedProxy extends BaseProxy
         parent::__construct(
             $client,
             $connectionData->getEnvironment() === self::LIVE_MODE ?
-                $deployment->getLiveDeploymentURL()->getApiBaseUrl() : $deployment->getSandboxDeploymentURL()->getApiBaseUrl()
+                $deployment->getLiveDeploymentURL()->getApiBaseUrl() :
+                (self::getSandboxApiBaseUrlOverride() ?: $deployment->getSandboxDeploymentURL()->getApiBaseUrl())
         );
     }
 

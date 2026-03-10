@@ -37,7 +37,7 @@ class TimeProvider
      *
      * @return TimeProvider An instance.
      */
-    public static function getInstance()
+    public static function getInstance(): TimeProvider
     {
         if (static::$instance === null) {
             static::$instance = new static();
@@ -53,7 +53,7 @@ class TimeProvider
      *
      * @return DateTime Current time as @see \DateTime object.
      */
-    public function getCurrentLocalTime()
+    public function getCurrentLocalTime(): DateTime
     {
         return new DateTime();
     }
@@ -66,7 +66,7 @@ class TimeProvider
      * @return DateTime Object from timestamp.
      * @see    \DateTime object from timestamp.
      */
-    public function getDateTime(int $timestamp)
+    public function getDateTime(int $timestamp): DateTime
     {
         return new DateTime("@{$timestamp}");
     }
@@ -76,7 +76,7 @@ class TimeProvider
      *
      * @return int Current time in milliseconds.
      */
-    public function getMillisecondsTimestamp()
+    public function getMillisecondsTimestamp(): int
     {
         return (int)round($this->getMicroTimestamp() * 1000);
     }
@@ -86,7 +86,7 @@ class TimeProvider
      *
      * @return float Current timestamp as float value with microseconds.
      */
-    public function getMicroTimestamp()
+    public function getMicroTimestamp(): float
     {
         return microtime(true);
     }

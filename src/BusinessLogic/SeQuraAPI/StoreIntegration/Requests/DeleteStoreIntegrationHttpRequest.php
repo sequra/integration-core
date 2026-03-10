@@ -17,6 +17,8 @@ class DeleteStoreIntegrationHttpRequest extends HttpRequest
      */
     public function __construct(DeleteStoreIntegrationRequest $request)
     {
-        parent::__construct("store_integrations/{$request->getConnectionData()->getIntegrationId()}");
+        parent::__construct(
+            'store_integrations/' . rawurlencode($request->getStoreIntegration()->getWebhookUrl())
+        );
     }
 }

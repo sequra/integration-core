@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Product\Model\ShopProduct;
 
 /**
  * Class MockProductService.
@@ -74,5 +75,42 @@ class MockProductService implements ProductServiceInterface
     public function setMockProductSku(string $productSku): void
     {
         $this->productSku = $productSku;
+    }
+
+    /**
+     * @var ShopProduct[] $shopProducts
+     */
+    private $shopProducts = [];
+
+    /**
+     * @param int $page
+     * @param int $limit
+     * @param string $search
+     *
+     * @return ShopProduct[]
+     */
+    public function getShopProducts(int $page, int $limit, string $search): array
+    {
+        return $this->shopProducts;
+    }
+
+    /**
+     * @param ShopProduct[] $shopProducts
+     *
+     * @return void
+     */
+    public function setMockShopProducts(array $shopProducts): void
+    {
+        $this->shopProducts = $shopProducts;
+    }
+
+    /**
+     * @param string[] $ids
+     *
+     * @return ShopProduct[]
+     */
+    public function getShopProductByIds(array $ids): array
+    {
+        return $this->shopProducts;
     }
 }

@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\StoreIntegration;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 
 /**
@@ -13,14 +14,14 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationS
 class MockStoreIntegrationService extends StoreIntegrationService
 {
     /**
-     * @var string $integrationId
-     */
-    private $integrationId = '';
-
-    /**
      * @var bool $deleted
      */
     private $deleted = false;
+
+    /**
+     * @var string $signature
+     */
+    private $signature = 'testSignature';
 
     /**
      * @var array $createdIntegrationIds
@@ -30,28 +31,22 @@ class MockStoreIntegrationService extends StoreIntegrationService
     /**
      * @param ConnectionData $connectionData
      *
-     * @return string
+     * @return void
      */
-    public function createStoreIntegration(ConnectionData $connectionData): string
+    public function createStoreIntegration(ConnectionData $connectionData): void
     {
         $this->createdIntegrationIds[$connectionData->getMerchantId()] = true;
-
-        return $this->integrationId;
-    }
-
-    public function deleteStoreIntegration(ConnectionData $connectionData): void
-    {
-        $this->deleted = true;
     }
 
     /**
-     * @param string $integrationId
+     * @param ConnectionData $connectionData
+     * @param StoreIntegration|null $storeIntegration
      *
      * @return void
      */
-    public function setMockIntegrationId(string $integrationId): void
+    public function deleteStoreIntegration(ConnectionData $connectionData, ?StoreIntegration $storeIntegration): void
     {
-        $this->integrationId = $integrationId;
+        $this->deleted = true;
     }
 
     /**
@@ -68,5 +63,23 @@ class MockStoreIntegrationService extends StoreIntegrationService
     public function getCreatedIntegrationIds(): array
     {
         return $this->createdIntegrationIds;
+    }
+
+    /**
+     * @return string
+     */
+    public function getWebhookSignature(): string
+    {
+        return $this->signature;
+    }
+
+    /**
+     * @param string $signature
+     *
+     * @return void
+     */
+    public function setMockSignature(string $signature): void
+    {
+        $this->signature = $signature;
     }
 }

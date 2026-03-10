@@ -73,8 +73,7 @@ class ConnectionRepositoryTest extends BaseTestCase
             'sandbox',
             'merchant',
             'svea',
-            new AuthorizationCredentials('username', 'password'),
-            '2'
+            new AuthorizationCredentials('username', 'password')
         );
         $entity = new ConnectionDataEntity();
         $entity->setDeployment('sequra');
@@ -105,8 +104,7 @@ class ConnectionRepositoryTest extends BaseTestCase
             'sandbox',
             'merchant',
             'sequra',
-            new AuthorizationCredentials('username', 'password'),
-            '1'
+            new AuthorizationCredentials('username', 'password')
         );
         $entity = new ConnectionDataEntity();
         $entity->setDeployment('sequra');
@@ -133,6 +131,5 @@ class ConnectionRepositoryTest extends BaseTestCase
         self::assertEquals('sequra', $connectionData->getDeployment());
         self::assertEquals('username', $connectionData->getAuthorizationCredentials()->getUsername());
         self::assertEquals('password', $connectionData->getAuthorizationCredentials()->getPassword());
-        self::assertEquals('1', $connectionData->getIntegrationId());
     }
 }

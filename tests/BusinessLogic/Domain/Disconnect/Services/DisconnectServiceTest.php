@@ -5,6 +5,7 @@ namespace SeQura\Core\Tests\BusinessLogic\Domain\Disconnect\Services;
 use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
+use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Models\AdvancedSettings;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
@@ -33,8 +34,10 @@ use SeQura\Core\BusinessLogic\Domain\SendReport\Models\SendReport;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\StoreIntegration;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
@@ -48,6 +51,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSendReportReposito
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSeQuraOrderRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStatisticalDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\TransactionLog\Mocks\MockTransactionLogRepository;
@@ -130,6 +134,16 @@ class DisconnectServiceTest extends BaseTestCase
     private $storeIntegrationService;
 
     /**
+     * @var MockAdvancedSettingsRepository $advancedSettingsRepository
+     */
+    private $advancedSettingsRepository;
+
+    /**
+     * @var MockStoreIntegrationRepository $storeIntegrationRepository
+     */
+    private $storeIntegrationRepository;
+
+    /**
      * @var DisconnectService $service
      */
     private $service;
@@ -153,8 +167,11 @@ class DisconnectServiceTest extends BaseTestCase
         $this->transactionLogRepository = new MockTransactionLogRepository();
         $this->storeIntegrationService = new MockStoreIntegrationService(
             new MockIntegrationStoreIntegrationService(),
-            new MockStoreIntegrationProxy()
+            new MockStoreIntegrationProxy(),
+            new MockStoreIntegrationRepository()
         );
+        $this->advancedSettingsRepository = new MockAdvancedSettingsRepository();
+        $this->storeIntegrationRepository = new MockStoreIntegrationRepository();
 
         $this->service = new DisconnectService(
             $this->integrationDisconnectService,
@@ -170,7 +187,9 @@ class DisconnectServiceTest extends BaseTestCase
             $this->widgetSettingsRepository,
             $this->statisticalDataRepository,
             $this->transactionLogRepository,
-            $this->storeIntegrationService
+            $this->storeIntegrationService,
+            $this->advancedSettingsRepository,
+            $this->storeIntegrationRepository
         );
     }
 
@@ -291,6 +310,9 @@ class DisconnectServiceTest extends BaseTestCase
         $log = new TransactionLog();
         $this->transactionLogRepository->setTransactionLog($log);
 
+        $advancedSettings = new AdvancedSettings(true, 1);
+        $this->advancedSettingsRepository->setAdvancedSettings($advancedSettings);
+
         //Act
         $this->service->disconnect('sequra', false);
 
@@ -307,6 +329,7 @@ class DisconnectServiceTest extends BaseTestCase
         self::assertEquals($widget, $this->widgetSettingsRepository->getWidgetSettings());
         self::assertEquals($statisticalData, $this->statisticalDataRepository->getStatisticalData());
         self::assertEquals($log, $this->transactionLogRepository->getTransactionLog(''));
+        self::assertEquals($advancedSettings, $this->advancedSettingsRepository->getAdvancedSettings());
     }
 
     /**
@@ -418,6 +441,9 @@ class DisconnectServiceTest extends BaseTestCase
         $log = new TransactionLog();
         $this->transactionLogRepository->setTransactionLog($log);
 
+        $advancedSettings = new AdvancedSettings(true, 1);
+        $this->advancedSettingsRepository->setAdvancedSettings($advancedSettings);
+
         //Act
         $this->service->disconnect('sequra', true);
 
@@ -434,6 +460,7 @@ class DisconnectServiceTest extends BaseTestCase
         self::assertNull($this->widgetSettingsRepository->getWidgetSettings());
         self::assertNull($this->statisticalDataRepository->getStatisticalData());
         self::assertNull($this->transactionLogRepository->getTransactionLog(''));
+        self::assertNull($this->advancedSettingsRepository->getAdvancedSettings());
     }
 
     /**
@@ -445,6 +472,12 @@ class DisconnectServiceTest extends BaseTestCase
     public function testDisconnectIntegrationDeleted(): void
     {
         //Arrange
+        $this->storeIntegrationRepository->setStoreIntegration(new StoreIntegration(
+            '1',
+            'signature',
+            '4',
+            'https://test.com'
+        ));
         $this->credentialsRepository->setCredentials([
             new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [], 'sequra'),
             new Credentials('logeecom2', 'FR', 'EUR', 'assetsKey2', [], 'sequra'),

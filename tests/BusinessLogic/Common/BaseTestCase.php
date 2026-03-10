@@ -16,6 +16,25 @@ use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Controller\ConfigurationWebhookController;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\GetAdvancedSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\SaveAdvancedSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Enums\Topics;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings\GetGeneralSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings\SaveGeneralSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Log\GetLogContentHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Log\RemoveLogContentHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\OrderStatus\GetOrderStatusListHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\OrderStatus\GetOrderStatusSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\OrderStatus\SaveOrderStatusSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\SellingCountries\GetSellingCountriesHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Shop\GetShopCategoriesHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Shop\GetShopProductsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Store\GetStoreInfoHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerRegistry;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\GetWidgetSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\SaveWidgetSettingsHandler;
+use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Entities\AdvancedSettings;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
@@ -35,8 +54,10 @@ use SeQura\Core\BusinessLogic\DataAccess\SendReport\Entities\SendReport;
 use SeQura\Core\BusinessLogic\DataAccess\SendReport\Repositories\SendReportRepository;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Entities\StatisticalData;
 use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\StatisticalDataRepository;
+use SeQura\Core\BusinessLogic\DataAccess\StoreIntegration\Entities\StoreIntegration;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
+use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
@@ -53,6 +74,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\General
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Log\LogServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\OrderReport\OrderReportServiceInterface;
@@ -63,6 +85,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountri
 use SeQura\Core\BusinessLogic\Domain\Integration\ShopOrderStatuses\ShopOrderStatusesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreIdProvider;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo\StoreInfoServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
@@ -91,6 +114,7 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationS
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\BusinessLogic\Domain\UIState\Services\UIStateService;
 use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
+use SeQura\Core\BusinessLogic\Domain\Webhook\Services\ConfigurationWebhookValidationService;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
@@ -132,10 +156,11 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsReposit
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvider;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
@@ -431,6 +456,20 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(DeploymentsService::class)
                 );
             },
+            ConfigurationWebhookController::class => function () {
+                return new ConfigurationWebhookController(
+                    TestServiceRegister::getService(TopicHandlerRegistry::class),
+                    TestServiceRegister::getService(ConfigurationWebhookValidationService::class)
+                );
+            },
+            ConfigurationWebhookValidationService::class => function () {
+                return new ConfigurationWebhookValidationService(
+                    TestServiceRegister::getService(StoreIntegrationService::class)
+                );
+            },
+            TopicHandlerRegistry::class => function () {
+                return TopicHandlerRegistry::getInstance();
+            },
             WidgetSettingsService::class => function () {
                 return new WidgetSettingsService(
                     TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
@@ -682,11 +721,227 @@ class BaseTestCase extends TestCase
             static function () {
                 return new MockStoreIntegrationService(
                     new MockIntegrationStoreIntegrationService(),
-                    new MockStoreIntegrationProxy()
+                    new MockStoreIntegrationProxy(),
+                    new MockStoreIntegrationRepository()
                 );
             }
         );
 
+        TestServiceRegister::registerService(
+            GetGeneralSettingsHandler::class,
+            static function () {
+                return new GetGeneralSettingsHandler(
+                    TestServiceRegister::getService(GeneralSettingsService::class),
+                    TestServiceRegister::getService(ProductServiceInterface::class),
+                    TestServiceRegister::getService(CategoryServiceInterface::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            SaveGeneralSettingsHandler::class,
+            static function () {
+                return new SaveGeneralSettingsHandler(
+                    TestServiceRegister::getService(GeneralSettingsService::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            GetWidgetSettingsHandler::class,
+            static function () {
+                return new GetWidgetSettingsHandler(
+                    TestServiceRegister::getService(WidgetSettingsService::class),
+                    TestServiceRegister::getService(PaymentMethodsService::class),
+                    TestServiceRegister::getService(CredentialsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            SaveWidgetSettingsHandler::class,
+            static function () {
+                return new SaveWidgetSettingsHandler(
+                    TestServiceRegister::getService(WidgetSettingsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            GetOrderStatusListHandler::class,
+            static function () {
+                return new GetOrderStatusListHandler(
+                    TestServiceRegister::getService(ShopOrderStatusesService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            GetOrderStatusSettingsHandler::class,
+            static function () {
+                return new GetOrderStatusSettingsHandler(
+                    TestServiceRegister::getService(OrderStatusSettingsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            SaveOrderStatusSettingsHandler::class,
+            static function () {
+                return new SaveOrderStatusSettingsHandler(
+                    TestServiceRegister::getService(OrderStatusSettingsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            GetAdvancedSettingsHandler::class,
+            static function () {
+                return new GetAdvancedSettingsHandler(
+                    TestServiceRegister::getService(AdvancedSettingsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            SaveAdvancedSettingsHandler::class,
+            static function () {
+                return new SaveAdvancedSettingsHandler(
+                    TestServiceRegister::getService(AdvancedSettingsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            GetLogContentHandler::class,
+            static function () {
+                return new GetLogContentHandler(
+                    TestServiceRegister::getService(LogServiceInterface::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            RemoveLogContentHandler::class,
+            static function () {
+                return new RemoveLogContentHandler(
+                    TestServiceRegister::getService(LogServiceInterface::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            GetShopCategoriesHandler::class,
+            static function () {
+                return new GetShopCategoriesHandler(
+                    TestServiceRegister::getService(CategoryServiceInterface::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            GetShopProductsHandler::class,
+            static function () {
+                return new GetShopProductsHandler(
+                    TestServiceRegister::getService(ProductServiceInterface::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            GetSellingCountriesHandler::class,
+            static function () {
+                return new GetSellingCountriesHandler(
+                    TestServiceRegister::getService(SellingCountriesService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            GetStoreInfoHandler::class,
+            static function () {
+                return new GetStoreInfoHandler(
+                    TestServiceRegister::getService(StoreInfoServiceInterface::class)
+                );
+            }
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_GENERAL_SETTINGS,
+            GetGeneralSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::SAVE_GENERAL_SETTINGS,
+            SaveGeneralSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_WIDGET_SETTINGS,
+            GetWidgetSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::SAVE_WIDGET_SETTINGS,
+            SaveWidgetSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_ORDER_STATUS_LIST,
+            GetOrderStatusListHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_ORDER_STATUS_SETTINGS,
+            GetOrderStatusSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::SAVE_ORDER_STATUS_SETTINGS,
+            SaveOrderStatusSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_ADVANCED_SETTINGS,
+            GetAdvancedSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::SAVE_ADVANCED_SETTINGS,
+            SaveAdvancedSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_LOG_CONTENT,
+            GetLogContentHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::REMOVE_LOG_CONTENT,
+            RemoveLogContentHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_SHOP_CATEGORIES,
+            GetShopCategoriesHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_SHOP_PRODUCTS,
+            GetShopProductsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_SELLING_COUNTRIES,
+            GetSellingCountriesHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_STORE_INFO,
+            GetStoreInfoHandler::class
+        );
 
         TestRepositoryRegistry::registerRepository(ConfigEntity::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(
@@ -714,6 +969,8 @@ class BaseTestCase extends TestCase
         TestRepositoryRegistry::registerRepository(PaymentMethod::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(Credentials::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(Deployment::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(AdvancedSettings::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(StoreIntegration::getClassName(), MemoryRepository::getClassName());
     }
 
     /**

@@ -112,4 +112,56 @@ class CapabilityModelTest extends BaseTestCase
         self::assertEquals('advanced', $capability->getCapability());
         self::assertEquals(Capability::advanced(), $capability);
     }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidCapabilityException
+     */
+    public function testHostedCheckoutCapability(): void
+    {
+        // arrange
+
+        // act
+        $capability = Capability::parse('hosted-checkout');
+        ;
+
+        // assert
+        self::assertEquals('hosted-checkout', $capability->getCapability());
+        self::assertEquals(Capability::hostedCheckout(), $capability);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidCapabilityException
+     */
+    public function testListingSelectorsCapability(): void
+    {
+        // arrange
+
+        // act
+        $capability = Capability::parse('listing-selectors');
+
+        // assert
+        self::assertEquals('listing-selectors', $capability->getCapability());
+        self::assertEquals(Capability::listingSelectors(), $capability);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidCapabilityException
+     */
+    public function testAltProductPriceCapability(): void
+    {
+        // arrange
+
+        // act
+        $capability = Capability::parse('alt-product-price');
+
+        // assert
+        self::assertEquals('alt-product-price', $capability->getCapability());
+        self::assertEquals(Capability::altProductPrice(), $capability);
+    }
 }
