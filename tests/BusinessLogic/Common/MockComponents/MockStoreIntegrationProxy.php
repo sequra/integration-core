@@ -37,10 +37,16 @@ class MockStoreIntegrationProxy implements StoreIntegrationsProxyInterface
     private $deleted = false;
 
     /**
+     * @var int $createCallCount
+     */
+    private $createCallCount = 0;
+
+    /**
      * @inheritDoc
      */
     public function createStoreIntegration(CreateStoreIntegrationRequest $request): CreateStoreIntegrationResponse
     {
+        $this->createCallCount++;
         $this->webhookUrl = $request->getWebhookUrl();
 
         if ($this->createResponse) {
@@ -98,5 +104,13 @@ class MockStoreIntegrationProxy implements StoreIntegrationsProxyInterface
     public function isDeleted(): bool
     {
         return $this->deleted;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCreateCallCount(): int
+    {
+        return $this->createCallCount;
     }
 }
