@@ -30,11 +30,11 @@ class MockStoreIntegrationService extends StoreIntegrationService
 
     /**
      * @param ConnectionData $connectionData
-     * @param bool $forceRecreate
+     * @param bool $skipIfExists
      *
      * @return void
      */
-    public function createStoreIntegration(ConnectionData $connectionData, bool $forceRecreate = true): void
+    public function createStoreIntegration(ConnectionData $connectionData, bool $skipIfExists = false): void
     {
         $this->createdIntegrationIds[$connectionData->getMerchantId()] = true;
     }

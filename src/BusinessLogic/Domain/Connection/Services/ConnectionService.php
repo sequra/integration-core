@@ -202,15 +202,15 @@ class ConnectionService
 
     /**
      * @param ConnectionData $connectionData
-     * @param bool $forceRecreate
+     * @param bool $skipIfExists When true, skips the HTTP call if a local record already exists.
      *
      * @return void
      *
      * @throws CapabilitiesEmptyException
      * @throws Exception
      */
-    protected function registerWebhooks(ConnectionData $connectionData, bool $forceRecreate = true): void
+    protected function registerWebhooks(ConnectionData $connectionData, bool $skipIfExists = false): void
     {
-        $this->storeIntegrationService->createStoreIntegration($connectionData, $forceRecreate);
+        $this->storeIntegrationService->createStoreIntegration($connectionData, $skipIfExists);
     }
 }

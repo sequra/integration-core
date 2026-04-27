@@ -60,18 +60,18 @@ class StoreIntegrationService
      * Returns integration id.
      *
      * @param ConnectionData $connectionData
-     * @param bool $forceRecreate When false, skips the HTTP call if a local record already exists.
+     * @param bool $skipIfExists When true, skips the HTTP call if a local record already exists.
      *
      * @return void
      *
      * @throws CapabilitiesEmptyException
      * @throws Exception
      */
-    public function createStoreIntegration(ConnectionData $connectionData, bool $forceRecreate = true): void
+    public function createStoreIntegration(ConnectionData $connectionData, bool $skipIfExists = false): void
     {
         $existing = $this->storeIntegrationRepository->getStoreIntegration();
 
-        if (!$forceRecreate && $existing) {
+        if ($skipIfExists && $existing) {
             return;
         }
 
