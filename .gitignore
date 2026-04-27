@@ -20,3 +20,6 @@ vendor
 # Environment variables
 .env
 !.env.example
+.sdd/
+.claude/
+CLAUDE.md
