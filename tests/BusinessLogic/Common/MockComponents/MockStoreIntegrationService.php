@@ -4,6 +4,7 @@ namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
+use SeQura\Core\BusinessLogic\Webhook\Exceptions\InvalidSignatureException;
 
 /**
  * Class StoreIntegrationService.
@@ -69,6 +70,20 @@ class MockStoreIntegrationService extends StoreIntegrationService
     public function getWebhookSignature(): string
     {
         return $this->signature;
+    }
+
+    /**
+     * @param string $webhookSignature
+     *
+     * @return void
+     *
+     * @throws InvalidSignatureException
+     */
+    public function validateWebhookSignature(string $webhookSignature): void
+    {
+        if (!hash_equals($this->signature, $webhookSignature)) {
+            throw new InvalidSignatureException('Webhook signature mismatch.', 400);
+        }
     }
 
     /**
