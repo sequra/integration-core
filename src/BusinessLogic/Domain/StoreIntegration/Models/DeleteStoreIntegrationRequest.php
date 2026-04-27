@@ -17,18 +17,18 @@ class DeleteStoreIntegrationRequest
     private $connectionData;
 
     /**
-     * @var StoreIntegration
+     * @var string $webhookUrl
      */
-    private $storeIntegration;
+    private $webhookUrl;
 
     /**
      * @param ConnectionData $connectionData
-     * @param StoreIntegration $storeIntegration
+     * @param string $webhookUrl
      */
-    public function __construct(ConnectionData $connectionData, StoreIntegration $storeIntegration)
+    public function __construct(ConnectionData $connectionData, string $webhookUrl)
     {
         $this->connectionData = $connectionData;
-        $this->storeIntegration = $storeIntegration;
+        $this->webhookUrl = $webhookUrl;
     }
 
     /**
@@ -40,10 +40,10 @@ class DeleteStoreIntegrationRequest
     }
 
     /**
-     * @return StoreIntegration
+     * @return string
      */
-    public function getStoreIntegration(): StoreIntegration
+    public function getWebhookUrl(): string
     {
-        return $this->storeIntegration;
+        return $this->webhookUrl;
     }
 }

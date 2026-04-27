@@ -2,8 +2,9 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services;
 
-use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\HMAC\HMAC;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreIntegration\StoreIntegrationServiceInterface as IntegrationsStoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
@@ -11,9 +12,7 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\StoreIntegratio
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationRequest;
-use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\StoreIntegration;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\ProxyContracts\StoreIntegrationsProxyInterface;
-use SeQura\Core\BusinessLogic\Domain\StoreIntegration\RepositoryContracts\StoreIntegrationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\URL\Model\Query;
 use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
 use SeQura\Core\BusinessLogic\Webhook\Exceptions\InvalidSignatureException;
@@ -36,84 +35,58 @@ class StoreIntegrationService
     protected $storeIntegrationsProxy;
 
     /**
-     * @var StoreIntegrationRepositoryInterface $storeIntegrationRepository
+     * @var ConnectionDataRepositoryInterface $connectionDataRepository
      */
-    protected $storeIntegrationRepository;
+    protected $connectionDataRepository;
 
     /**
      * @param IntegrationsStoreServiceInterface $integrationService
      * @param StoreIntegrationsProxyInterface $storeIntegrationsProxy
-     * @param StoreIntegrationRepositoryInterface $storeIntegrationRepository
+     * @param ConnectionDataRepositoryInterface $connectionDataRepository
      */
     public function __construct(
         IntegrationsStoreServiceInterface $integrationService,
         StoreIntegrationsProxyInterface $storeIntegrationsProxy,
-        StoreIntegrationRepositoryInterface $storeIntegrationRepository
+        ConnectionDataRepositoryInterface $connectionDataRepository
     ) {
         $this->integrationService = $integrationService;
         $this->storeIntegrationsProxy = $storeIntegrationsProxy;
-        $this->storeIntegrationRepository = $storeIntegrationRepository;
+        $this->connectionDataRepository = $connectionDataRepository;
     }
 
     /**
      * Creates store integration.
-     * Returns integration id.
      *
      * @param ConnectionData $connectionData
-     * @param bool $skipIfExists When true, skips the HTTP call if a local record already exists.
      *
      * @return void
      *
      * @throws CapabilitiesEmptyException
-     * @throws Exception
      */
-    public function createStoreIntegration(ConnectionData $connectionData, bool $skipIfExists = false): void
+    public function createStoreIntegration(ConnectionData $connectionData): void
     {
-        $existing = $this->storeIntegrationRepository->getStoreIntegration();
-
-        if ($skipIfExists && $existing) {
-            return;
-        }
-
-        $signature = bin2hex(random_bytes(32));
-        if ($existing) {
-            $signature = $existing->getSignature();
-        }
-
+        $signature = $this->computeSignature($connectionData);
         $webhookUrl = $this->buildWebhookUrl($this->integrationService->getWebhookUrl(), $signature);
         $capabilities = $this->getSupportedCapabilities();
 
-        $response = $this->storeIntegrationsProxy->createStoreIntegration(
+        $this->storeIntegrationsProxy->createStoreIntegration(
             new CreateStoreIntegrationRequest($connectionData, $webhookUrl, $capabilities)
         );
-
-        if ($existing) {
-            return;
-        }
-
-        $storeIntegration = new StoreIntegration(
-            StoreContext::getInstance()->getStoreId(),
-            $signature,
-            $response->getIntegrationId(),
-            $webhookUrl->buildUrl()
-        );
-
-        $this->setStoreIntegration($storeIntegration);
     }
 
     /**
      * @param ConnectionData $connectionData
-     * @param StoreIntegration $storeIntegration
      *
      * @return void
      */
-    public function deleteStoreIntegration(ConnectionData $connectionData, StoreIntegration $storeIntegration): void
+    public function deleteStoreIntegration(ConnectionData $connectionData): void
     {
-        $this->storeIntegrationsProxy->deleteStoreIntegration(
-            new DeleteStoreIntegrationRequest($connectionData, $storeIntegration)
-        );
+        $signature = $this->computeSignature($connectionData);
+        $webhookUrl = $this->buildWebhookUrl($this->integrationService->getWebhookUrl(), $signature);
 
-        $this->storeIntegrationRepository->deleteStoreIntegration();
+        $this->storeIntegrationsProxy->deleteStoreIntegration(
+            new DeleteStoreIntegrationRequest($connectionData, $webhookUrl->buildUrl())
+        );
     }
 
     /**
@@ -154,13 +127,13 @@ class StoreIntegrationService
      */
     public function getWebhookSignature(): string
     {
-        $storeIntegration = $this->storeIntegrationRepository->getStoreIntegration();
+        $connectionSettings = $this->connectionDataRepository->getAllConnectionSettings();
 
-        if (!$storeIntegration) {
+        if (empty($connectionSettings)) {
             throw new StoreIntegrationNotFoundException();
         }
 
-        return $storeIntegration->getSignature();
+        return $this->computeSignature($connectionSettings[0]);
     }
 
     /**
@@ -181,12 +154,15 @@ class StoreIntegrationService
     }
 
     /**
-     * @param StoreIntegration $storeIntegration
+     * @param ConnectionData $connectionData
      *
-     * @return void
+     * @return string
      */
-    private function setStoreIntegration(StoreIntegration $storeIntegration): void
+    private function computeSignature(ConnectionData $connectionData): string
     {
-        $this->storeIntegrationRepository->setStoreIntegration($storeIntegration);
+        return HMAC::generateHMAC(
+            [StoreContext::getInstance()->getStoreId()],
+            $connectionData->getAuthorizationCredentials()->getPassword()
+        );
     }
 }
