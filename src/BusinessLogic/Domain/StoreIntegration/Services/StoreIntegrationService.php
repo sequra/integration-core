@@ -155,11 +155,19 @@ class StoreIntegrationService
      */
     public function validateWebhookSignature(string $webhookSignature): void
     {
-        $storedSignature = $this->getWebhookSignature();
+        $connectionSettings = $this->connectionDataRepository->getAllConnectionSettings();
 
-        if (!hash_equals($storedSignature, $webhookSignature)) {
-            throw new InvalidSignatureException('Webhook signature mismatch.', 400);
+        if (empty($connectionSettings)) {
+            throw new StoreIntegrationNotFoundException();
         }
+
+        foreach ($connectionSettings as $connectionData) {
+            if (hash_equals($this->computeSignature($connectionData), $webhookSignature)) {
+                return;
+            }
+        }
+
+        throw new InvalidSignatureException('Webhook signature mismatch.', 400);
     }
 
     /**
