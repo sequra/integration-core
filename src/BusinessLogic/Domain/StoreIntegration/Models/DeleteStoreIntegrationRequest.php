@@ -12,12 +12,12 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 class DeleteStoreIntegrationRequest
 {
     /**
-     * @var ConnectionData $connectionData
+     * @var ConnectionData
      */
     private $connectionData;
 
     /**
-     * @var string $webhookUrl
+     * @var string
      */
     private $webhookUrl;
 

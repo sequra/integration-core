@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\HMAC\HMAC;
+use SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo\StoreInfoServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreIntegration\StoreIntegrationServiceInterface as IntegrationsStoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
@@ -40,18 +41,26 @@ class StoreIntegrationService
     protected $connectionDataRepository;
 
     /**
+     * @var StoreInfoServiceInterface $storeInfoService
+     */
+    protected $storeInfoService;
+
+    /**
      * @param IntegrationsStoreServiceInterface $integrationService
      * @param StoreIntegrationsProxyInterface $storeIntegrationsProxy
      * @param ConnectionDataRepositoryInterface $connectionDataRepository
+     * @param StoreInfoServiceInterface $storeInfoService
      */
     public function __construct(
         IntegrationsStoreServiceInterface $integrationService,
         StoreIntegrationsProxyInterface $storeIntegrationsProxy,
-        ConnectionDataRepositoryInterface $connectionDataRepository
+        ConnectionDataRepositoryInterface $connectionDataRepository,
+        StoreInfoServiceInterface $storeInfoService
     ) {
         $this->integrationService = $integrationService;
         $this->storeIntegrationsProxy = $storeIntegrationsProxy;
         $this->connectionDataRepository = $connectionDataRepository;
+        $this->storeInfoService = $storeInfoService;
     }
 
     /**
@@ -160,8 +169,11 @@ class StoreIntegrationService
      */
     private function computeSignature(ConnectionData $connectionData): string
     {
+        $storeId = StoreContext::getInstance()->getStoreId();
+        $storeUrl = $this->storeInfoService->getStoreInfo()->getStoreUrl();
+
         return HMAC::generateHMAC(
-            [StoreContext::getInstance()->getStoreId()],
+            [$storeId, $storeUrl],
             $connectionData->getAuthorizationCredentials()->getPassword()
         );
     }
