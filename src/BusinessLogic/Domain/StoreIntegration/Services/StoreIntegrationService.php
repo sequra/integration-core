@@ -123,10 +123,11 @@ class StoreIntegrationService
     protected function buildWebhookUrl(URL $webhookUrl, string $signature): URL
     {
         $storeId = StoreContext::getInstance()->getStoreId();
-        $webhookUrl->addQuery(new Query('storeId', $storeId));
-        $webhookUrl->addQuery(new Query('signature', $signature));
+        $signedUrl = new URL($webhookUrl->getPath(), $webhookUrl->getQueries());
+        $signedUrl->addQuery(new Query('storeId', $storeId));
+        $signedUrl->addQuery(new Query('signature', $signature));
 
-        return $webhookUrl;
+        return $signedUrl;
     }
 
     /**
@@ -161,8 +162,11 @@ class StoreIntegrationService
             throw new StoreIntegrationNotFoundException();
         }
 
+        $payload = $this->signaturePayload();
+
         foreach ($connectionSettings as $connectionData) {
-            if (hash_equals($this->computeSignature($connectionData), $webhookSignature)) {
+            $secret = $connectionData->getAuthorizationCredentials()->getPassword();
+            if (HMAC::validateHMAC($payload, $secret, $webhookSignature)) {
                 return;
             }
         }
@@ -177,12 +181,20 @@ class StoreIntegrationService
      */
     private function computeSignature(ConnectionData $connectionData): string
     {
-        $storeId = StoreContext::getInstance()->getStoreId();
-        $storeUrl = $this->storeInfoService->getStoreInfo()->getStoreUrl();
-
         return HMAC::generateHMAC(
-            [$storeId, $storeUrl],
+            $this->signaturePayload(),
             $connectionData->getAuthorizationCredentials()->getPassword()
         );
+    }
+
+    /**
+     * @return string[]
+     */
+    private function signaturePayload(): array
+    {
+        return [
+            StoreContext::getInstance()->getStoreId(),
+            $this->storeInfoService->getStoreInfo()->getStoreUrl(),
+        ];
     }
 }
