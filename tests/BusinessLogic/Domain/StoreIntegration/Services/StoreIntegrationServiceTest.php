@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\HMAC\HMAC;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\Domain\Stores\Models\StoreInfo;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\StoreIntegrationNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
@@ -18,6 +19,7 @@ use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreInfoService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
 
 /**
@@ -48,6 +50,11 @@ class StoreIntegrationServiceTest extends BaseTestCase
     private $connectionDataRepository;
 
     /**
+     * @var MockStoreInfoService $storeInfoService
+     */
+    private $storeInfoService;
+
+    /**
      * @return void
      *
      * @throws RepositoryClassException
@@ -59,11 +66,16 @@ class StoreIntegrationServiceTest extends BaseTestCase
         $this->storeIntegrationProxy = new MockStoreIntegrationProxy();
         $this->storeIntegrationService = new MockIntegrationStoreIntegrationService();
         $this->connectionDataRepository = new MockConnectionDataRepository();
+        $this->storeInfoService = new MockStoreInfoService();
+        $this->storeInfoService->setMockStoreInfo(
+            new StoreInfo('Test Shop', 'https://shop.example.com', '', '', '', '', '', '')
+        );
 
         $this->service = new StoreIntegrationService(
             $this->storeIntegrationService,
             $this->storeIntegrationProxy,
-            $this->connectionDataRepository
+            $this->connectionDataRepository,
+            $this->storeInfoService
         );
     }
 
@@ -91,7 +103,7 @@ class StoreIntegrationServiceTest extends BaseTestCase
      * @throws CapabilitiesEmptyException
      * @throws InvalidEnvironmentException
      */
-    public function testCreateStoreIntegrationCallsProxy(): void
+    public function testCreateStoreIntegrationInvokesProxyOnce(): void
     {
         $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
         $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('123456789'));
@@ -154,7 +166,7 @@ class StoreIntegrationServiceTest extends BaseTestCase
         ));
 
         $url = $this->storeIntegrationProxy->getWebhookUrl();
-        $expected = HMAC::generateHMAC([StoreContext::getInstance()->getStoreId()], 'password');
+        $expected = HMAC::generateHMAC([StoreContext::getInstance()->getStoreId(), 'https://shop.example.com'], 'password');
 
         self::assertEquals($expected, $url->getQueryByKey('signature')->getValue());
     }
@@ -207,7 +219,7 @@ class StoreIntegrationServiceTest extends BaseTestCase
 
         $signature = $this->service->getWebhookSignature();
 
-        $expected = HMAC::generateHMAC([StoreContext::getInstance()->getStoreId()], 'password');
+        $expected = HMAC::generateHMAC([StoreContext::getInstance()->getStoreId(), 'https://shop.example.com'], 'password');
         self::assertEquals($expected, $signature);
     }
 
