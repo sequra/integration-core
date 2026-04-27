@@ -613,7 +613,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new StoreIntegrationService(
                     ServiceRegister::getService(StoreIntegrationServiceInterface::class),
                     ServiceRegister::getService(StoreIntegrationsProxyInterface::class),
-                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+                    ServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                    ServiceRegister::getService(StoreInfoServiceInterface::class)
                 );
             }
         );

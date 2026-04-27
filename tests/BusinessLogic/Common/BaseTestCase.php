@@ -160,6 +160,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessages
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreInfoService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetConfigurator;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TestEncryptor;
@@ -721,7 +722,8 @@ class BaseTestCase extends TestCase
                 return new MockStoreIntegrationService(
                     new MockIntegrationStoreIntegrationService(),
                     new MockStoreIntegrationProxy(),
-                    new MockConnectionDataRepository()
+                    new MockConnectionDataRepository(),
+                    new MockStoreInfoService()
                 );
             }
         );
