@@ -49,6 +49,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepos
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSendReportRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSeQuraOrderRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStatisticalDataRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreInfoService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetSettingsRepository;
@@ -161,7 +162,8 @@ class DisconnectServiceTest extends BaseTestCase
         $this->storeIntegrationService = new MockStoreIntegrationService(
             new MockIntegrationStoreIntegrationService(),
             new MockStoreIntegrationProxy(),
-            new MockConnectionDataRepository()
+            new MockConnectionDataRepository(),
+            new MockStoreInfoService()
         );
         $this->advancedSettingsRepository = new MockAdvancedSettingsRepository();
 
