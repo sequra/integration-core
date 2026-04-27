@@ -22,7 +22,6 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsService
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDomainStoreService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreService;

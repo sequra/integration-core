@@ -148,6 +148,7 @@ use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MemoryRepositoryWithConditionalDelete;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsProxy;
