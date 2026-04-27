@@ -33,8 +33,8 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurati
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -97,7 +97,7 @@ class ConnectionServiceTest extends BaseTestCase
         $this->mockStoreIntegrationService = new MockStoreIntegrationService(
             new MockIntegrationStoreIntegrationService(),
             new MockStoreIntegrationProxy(),
-            new MockStoreIntegrationRepository()
+            new MockConnectionDataRepository()
         );
 
         $this->connectionService = new ConnectionService(

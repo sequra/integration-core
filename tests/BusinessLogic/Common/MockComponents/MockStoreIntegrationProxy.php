@@ -61,6 +61,8 @@ class MockStoreIntegrationProxy implements StoreIntegrationsProxyInterface
      */
     public function deleteStoreIntegration(DeleteStoreIntegrationRequest $request): DeleteStoreIntegrationResponse
     {
+        $this->deleted = true;
+
         if ($this->deleteResponse) {
             return $this->deleteResponse;
         }
@@ -85,8 +87,6 @@ class MockStoreIntegrationProxy implements StoreIntegrationsProxyInterface
      */
     public function setMockDeleteResponse(DeleteStoreIntegrationResponse $deleteStoreIntegrationResponse): void
     {
-        $this->deleted = true;
-
         $this->deleteResponse = $deleteStoreIntegrationResponse;
     }
 

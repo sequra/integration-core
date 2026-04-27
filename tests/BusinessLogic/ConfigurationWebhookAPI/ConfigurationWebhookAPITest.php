@@ -74,8 +74,8 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockShopOrderStatusesService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreInfoService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetSettingsService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -211,7 +211,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         $this->storeIntegrationService = new MockStoreIntegrationService(
             $this->integrationStoreIntegrationService,
             new MockStoreIntegrationProxy(),
-            new MockStoreIntegrationRepository()
+            new MockConnectionDataRepository()
         );
 
         TestServiceRegister::registerService(StoreIntegrationService::class, function () {
