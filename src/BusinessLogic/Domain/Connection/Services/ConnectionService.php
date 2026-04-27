@@ -2,7 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Connection\Services;
 
-use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
@@ -71,7 +70,7 @@ class ConnectionService
             try {
                 $credentials = $this->credentialsService->validateAndUpdateCredentials($connectionData);
                 $this->credentialsService->updateCountryConfigurationWithNewMerchantIdsAndRemoveOldPaymentMethods($credentials);
-                $this->registerWebhooks($connectionData, false);
+                $this->registerWebhooks($connectionData);
                 $this->saveConnectionData($connectionData);
             } catch (WrongCredentialsException $exception) {
                 $errors[] = $connectionData->getDeployment();
@@ -202,15 +201,13 @@ class ConnectionService
 
     /**
      * @param ConnectionData $connectionData
-     * @param bool $skipIfExists When true, skips the HTTP call if a local record already exists.
      *
      * @return void
      *
      * @throws CapabilitiesEmptyException
-     * @throws Exception
      */
-    protected function registerWebhooks(ConnectionData $connectionData, bool $skipIfExists = false): void
+    protected function registerWebhooks(ConnectionData $connectionData): void
     {
-        $this->storeIntegrationService->createStoreIntegration($connectionData, $skipIfExists);
+        $this->storeIntegrationService->createStoreIntegration($connectionData);
     }
 }
