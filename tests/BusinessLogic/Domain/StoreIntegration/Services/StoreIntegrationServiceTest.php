@@ -10,6 +10,7 @@ use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Stores\Models\StoreInfo;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\StoreIntegrationNotFoundException;
+use SeQura\Core\BusinessLogic\Webhook\Exceptions\InvalidSignatureException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationResponse;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
@@ -221,6 +222,55 @@ class StoreIntegrationServiceTest extends BaseTestCase
 
         $expected = HMAC::generateHMAC([StoreContext::getInstance()->getStoreId(), 'https://shop.example.com'], 'password');
         self::assertEquals($expected, $signature);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws StoreIntegrationNotFoundException
+     */
+    public function testValidateWebhookSignatureAcceptsNonFirstDeployment(): void
+    {
+        $this->connectionDataRepository->setConnectionData(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'deployment-1',
+            new AuthorizationCredentials('username', 'password1')
+        ));
+        $this->connectionDataRepository->setConnectionData(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'deployment-2',
+            new AuthorizationCredentials('username', 'password2')
+        ));
+
+        $secondSignature = HMAC::generateHMAC(
+            [StoreContext::getInstance()->getStoreId(), 'https://shop.example.com'],
+            'password2'
+        );
+
+        $this->service->validateWebhookSignature($secondSignature);
+        $this->addToAssertionCount(1);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testValidateWebhookSignatureRejectsUnknownSignature(): void
+    {
+        $this->expectException(InvalidSignatureException::class);
+
+        $this->connectionDataRepository->setConnectionData(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'deployment-1',
+            new AuthorizationCredentials('username', 'password1')
+        ));
+
+        $this->service->validateWebhookSignature('totally-invalid-signature');
     }
 
     /**
