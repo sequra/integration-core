@@ -17,7 +17,6 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMe
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
-use SeQura\Core\BusinessLogic\Domain\StoreIntegration\RepositoryContracts\StoreIntegrationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 
@@ -104,11 +103,6 @@ class DisconnectService
     protected $advancedSettingsRepository;
 
     /**
-     * @var StoreIntegrationRepositoryInterface
-     */
-    protected $storeIntegrationRepository;
-
-    /**
      * @param DisconnectServiceInterface $integrationDisconnectService
      * @param SendReportRepositoryInterface $sendReportRepository
      * @param ConnectionDataRepositoryInterface $connectionDataRepository
@@ -124,7 +118,6 @@ class DisconnectService
      * @param TransactionLogRepositoryInterface $transactionLogRepository
      * @param StoreIntegrationService $storeIntegrationService
      * @param AdvancedSettingsRepositoryInterface $advancedSettingsRepository
-     * @param StoreIntegrationRepositoryInterface $storeIntegrationRepository
      */
     public function __construct(
         DisconnectServiceInterface $integrationDisconnectService,
@@ -141,8 +134,7 @@ class DisconnectService
         StatisticalDataRepositoryInterface $statisticalDataRepository,
         TransactionLogRepositoryInterface $transactionLogRepository,
         StoreIntegrationService $storeIntegrationService,
-        AdvancedSettingsRepositoryInterface $advancedSettingsRepository,
-        StoreIntegrationRepositoryInterface $storeIntegrationRepository
+        AdvancedSettingsRepositoryInterface $advancedSettingsRepository
     ) {
         $this->integrationDisconnectService = $integrationDisconnectService;
         $this->sendReportRepository = $sendReportRepository;
@@ -159,7 +151,6 @@ class DisconnectService
         $this->transactionLogRepository = $transactionLogRepository;
         $this->storeIntegrationService = $storeIntegrationService;
         $this->advancedSettingsRepository = $advancedSettingsRepository;
-        $this->storeIntegrationRepository = $storeIntegrationRepository;
     }
 
     /**
@@ -177,18 +168,16 @@ class DisconnectService
         $connectionData = $this->connectionDataRepository
             ->getConnectionDataByDeploymentId($deploymentId);
 
-        $this->connectionDataRepository->deleteConnectionDataByDeploymentId($deploymentId);
+        if ($connectionData !== null) {
+            $this->storeIntegrationService->deleteStoreIntegration($connectionData);
+            $this->connectionDataRepository->deleteConnectionDataByDeploymentId($deploymentId);
+        }
 
         if (!$isFullDisconnect) {
             $this->removeAllDeploymentData($deploymentId);
             return;
         }
 
-        $storeIntegration = $this->storeIntegrationRepository->getStoreIntegration();
-        if ($storeIntegration !== null) {
-            $this->storeIntegrationService
-                ->deleteStoreIntegration($connectionData, $storeIntegration);
-        }
         $this->credentialsRepository->deleteCredentialsByDeploymentId($deploymentId);
         $this->countryConfigurationRepository->deleteCountryConfigurations();
         $this->deploymentsRepository->deleteDeployments();

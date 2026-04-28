@@ -5,20 +5,23 @@ namespace SeQura\Core\Tests\BusinessLogic\Domain\StoreIntegration\Services;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+use SeQura\Core\BusinessLogic\Domain\HMAC\HMAC;
+use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\Domain\Stores\Models\StoreInfo;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\StoreIntegrationNotFoundException;
+use SeQura\Core\BusinessLogic\Webhook\Exceptions\InvalidSignatureException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationResponse;
-use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationResponse;
-use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\StoreIntegration;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreInfoService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationRepository;
 
 /**
  * Class StoreIntegrationServiceTest.
@@ -43,9 +46,14 @@ class StoreIntegrationServiceTest extends BaseTestCase
     private $storeIntegrationService;
 
     /**
-     * @var MockStoreIntegrationRepository
+     * @var MockConnectionDataRepository $connectionDataRepository
      */
-    private $storeIntegrationRepository;
+    private $connectionDataRepository;
+
+    /**
+     * @var MockStoreInfoService $storeInfoService
+     */
+    private $storeInfoService;
 
     /**
      * @return void
@@ -58,12 +66,17 @@ class StoreIntegrationServiceTest extends BaseTestCase
 
         $this->storeIntegrationProxy = new MockStoreIntegrationProxy();
         $this->storeIntegrationService = new MockIntegrationStoreIntegrationService();
-        $this->storeIntegrationRepository = new MockStoreIntegrationRepository();
+        $this->connectionDataRepository = new MockConnectionDataRepository();
+        $this->storeInfoService = new MockStoreInfoService();
+        $this->storeInfoService->setMockStoreInfo(
+            new StoreInfo('Test Shop', 'https://shop.example.com', '', '', '', '', '', '')
+        );
 
         $this->service = new StoreIntegrationService(
             $this->storeIntegrationService,
             $this->storeIntegrationProxy,
-            $this->storeIntegrationRepository
+            $this->connectionDataRepository,
+            $this->storeInfoService
         );
     }
 
@@ -75,19 +88,14 @@ class StoreIntegrationServiceTest extends BaseTestCase
      */
     public function testEmptyCapabilitiesException(): void
     {
-        // arrange
-        $this->storeIntegrationRepository->setStoreIntegration(null);
         $this->expectException(CapabilitiesEmptyException::class);
 
-        //act
         $this->service->createStoreIntegration(new ConnectionData(
             'sandbox',
             'merchant',
             'svea',
             new AuthorizationCredentials('username', 'password')
         ));
-
-        //assert
     }
 
     /**
@@ -96,13 +104,11 @@ class StoreIntegrationServiceTest extends BaseTestCase
      * @throws CapabilitiesEmptyException
      * @throws InvalidEnvironmentException
      */
-    public function testCreateStoreIntegrationId(): void
+    public function testCreateStoreIntegrationInvokesProxyOnce(): void
     {
-        // arrange
         $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
         $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('123456789'));
 
-        //act
         $this->service->createStoreIntegration(new ConnectionData(
             'sandbox',
             'merchant',
@@ -110,10 +116,7 @@ class StoreIntegrationServiceTest extends BaseTestCase
             new AuthorizationCredentials('username', 'password')
         ));
 
-        //assert
-        $savedIntegration = $this->storeIntegrationRepository->getStoreIntegration();
-        self::assertEquals('123456789', $savedIntegration->getIntegrationId());
-        self::assertNotEmpty($savedIntegration->getSignature());
+        self::assertEquals(1, $this->storeIntegrationProxy->getCreateCallCount());
     }
 
     /**
@@ -125,12 +128,10 @@ class StoreIntegrationServiceTest extends BaseTestCase
      */
     public function testCreateStoreQueries(): void
     {
-        // arrange
         $this->storeIntegrationService->setMockWebhookUrl(new URL('https://test.com/webhook', []));
         $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
         $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('123456789'));
 
-        //act
         $this->service->createStoreIntegration(new ConnectionData(
             'sandbox',
             'merchant',
@@ -140,7 +141,6 @@ class StoreIntegrationServiceTest extends BaseTestCase
 
         $url = $this->storeIntegrationProxy->getWebhookUrl();
 
-        //assert
         self::assertEquals('https://test.com/webhook', $url->getPath());
         self::assertNotNull($url->getQueryByKey('signature'));
         self::assertNotNull($url->getQueryByKey('storeId'));
@@ -149,125 +149,47 @@ class StoreIntegrationServiceTest extends BaseTestCase
     /**
      * @return void
      *
+     * @throws CapabilitiesEmptyException
      * @throws InvalidEnvironmentException
+     * @throws InvalidUrlException
+     */
+    public function testCreateStoreIntegrationSignatureIsHMAC(): void
+    {
+        $this->storeIntegrationService->setMockWebhookUrl(new URL('https://test.com/webhook', []));
+        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
+        $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('123456789'));
+
+        $this->service->createStoreIntegration(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'svea',
+            new AuthorizationCredentials('username', 'password')
+        ));
+
+        $url = $this->storeIntegrationProxy->getWebhookUrl();
+        $expected = HMAC::generateHMAC([StoreContext::getInstance()->getStoreId(), 'https://shop.example.com'], 'password');
+
+        self::assertEquals($expected, $url->getQueryByKey('signature')->getValue());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws InvalidUrlException
      */
     public function testDeleteStoreIntegration(): void
     {
-        // arrange
-        $this->storeIntegrationProxy->setMockDeleteResponse(new DeleteStoreIntegrationResponse());
+        $this->storeIntegrationService->setMockWebhookUrl(new URL('https://test.com/webhook', []));
 
-        //act
-        $this->service->deleteStoreIntegration(
-            new ConnectionData(
-                'sandbox',
-                'merchant',
-                'svea',
-                new AuthorizationCredentials('username', 'password')
-            ),
-            new StoreIntegration(
-                '1',
-                'signature',
-                '4',
-                'https://test.com'
-            )
-        );
+        $this->service->deleteStoreIntegration(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'svea',
+            new AuthorizationCredentials('username', 'password')
+        ));
 
-        //assert
         self::assertTrue($this->storeIntegrationProxy->isDeleted());
-    }
-
-    /**
-     * @return void
-     *
-     * @throws CapabilitiesEmptyException
-     * @throws InvalidEnvironmentException
-     */
-    public function testCreateStoreIntegrationSkippedWhenExistingAndSkipIfExistsTrue(): void
-    {
-        // arrange
-        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
-        $this->storeIntegrationRepository->setStoreIntegration(
-            new StoreIntegration('1', 'signature', 'integrationId', 'https://test.com')
-        );
-
-        // act
-        $this->service->createStoreIntegration(
-            new ConnectionData('sandbox', 'merchant', 'svea', new AuthorizationCredentials('username', 'password')),
-            true
-        );
-
-        // assert
-        self::assertEquals(0, $this->storeIntegrationProxy->getCreateCallCount());
-    }
-
-    /**
-     * @return void
-     *
-     * @throws CapabilitiesEmptyException
-     * @throws InvalidEnvironmentException
-     */
-    public function testCreateStoreIntegrationCalledWhenExistingAndSkipIfExistsFalse(): void
-    {
-        // arrange
-        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
-        $this->storeIntegrationRepository->setStoreIntegration(
-            new StoreIntegration('1', 'signature', 'integrationId', 'https://test.com')
-        );
-
-        // act
-        $this->service->createStoreIntegration(
-            new ConnectionData('sandbox', 'merchant', 'svea', new AuthorizationCredentials('username', 'password')),
-            false
-        );
-
-        // assert
-        self::assertEquals(1, $this->storeIntegrationProxy->getCreateCallCount());
-    }
-
-    /**
-     * @return void
-     *
-     * @throws CapabilitiesEmptyException
-     * @throws InvalidEnvironmentException
-     */
-    public function testCreateStoreIntegrationCalledAndPersistedWhenNoExistingAndSkipIfExistsTrue(): void
-    {
-        // arrange
-        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
-        $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('newId'));
-
-        // act
-        $this->service->createStoreIntegration(
-            new ConnectionData('sandbox', 'merchant', 'svea', new AuthorizationCredentials('username', 'password')),
-            true
-        );
-
-        // assert
-        self::assertEquals(1, $this->storeIntegrationProxy->getCreateCallCount());
-        self::assertEquals('newId', $this->storeIntegrationRepository->getStoreIntegration()->getIntegrationId());
-    }
-
-    /**
-     * @return void
-     *
-     * @throws CapabilitiesEmptyException
-     * @throws InvalidEnvironmentException
-     */
-    public function testCreateStoreIntegrationCalledAndPersistedWhenNoExistingAndSkipIfExistsFalse(): void
-    {
-        // arrange
-        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
-        $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('newId'));
-
-        // act
-        $this->service->createStoreIntegration(
-            new ConnectionData('sandbox', 'merchant', 'svea', new AuthorizationCredentials('username', 'password')),
-            false
-        );
-
-        // assert
-        self::assertEquals(1, $this->storeIntegrationProxy->getCreateCallCount());
-        self::assertEquals('newId', $this->storeIntegrationRepository->getStoreIntegration()->getIntegrationId());
     }
 
     /**
@@ -275,36 +197,101 @@ class StoreIntegrationServiceTest extends BaseTestCase
      */
     public function testGetWebhookSignatureNoSignature(): void
     {
-        // arrange
         $this->expectException(StoreIntegrationNotFoundException::class);
 
-        //act
         $this->service->getWebhookSignature();
-
-        //assert
     }
 
     /**
      * @return void
      *
+     * @throws InvalidEnvironmentException
      * @throws StoreIntegrationNotFoundException
      */
     public function testGetWebhookSignature(): void
     {
-        // arrange
-        $this->storeIntegrationRepository->setStoreIntegration(
-            new StoreIntegration(
-                '1',
-                'signature',
-                '4',
-                'https://test.com'
-            )
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant',
+            'svea',
+            new AuthorizationCredentials('username', 'password')
         );
+        $this->connectionDataRepository->setConnectionData($connectionData);
 
-        //act
         $signature = $this->service->getWebhookSignature();
 
-        //assert
-        self::assertEquals('signature', $signature);
+        $expected = HMAC::generateHMAC([StoreContext::getInstance()->getStoreId(), 'https://shop.example.com'], 'password');
+        self::assertEquals($expected, $signature);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws StoreIntegrationNotFoundException
+     */
+    public function testValidateWebhookSignatureAcceptsNonFirstDeployment(): void
+    {
+        $this->connectionDataRepository->setConnectionData(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'deployment-1',
+            new AuthorizationCredentials('username', 'password1')
+        ));
+        $this->connectionDataRepository->setConnectionData(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'deployment-2',
+            new AuthorizationCredentials('username', 'password2')
+        ));
+
+        $secondSignature = HMAC::generateHMAC(
+            [StoreContext::getInstance()->getStoreId(), 'https://shop.example.com'],
+            'password2'
+        );
+
+        $this->service->validateWebhookSignature($secondSignature);
+        $this->addToAssertionCount(1);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testValidateWebhookSignatureRejectsUnknownSignature(): void
+    {
+        $this->expectException(InvalidSignatureException::class);
+
+        $this->connectionDataRepository->setConnectionData(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'deployment-1',
+            new AuthorizationCredentials('username', 'password1')
+        ));
+
+        $this->service->validateWebhookSignature('totally-invalid-signature');
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws StoreIntegrationNotFoundException
+     */
+    public function testGetWebhookSignatureIsDeterministic(): void
+    {
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant',
+            'svea',
+            new AuthorizationCredentials('username', 'password')
+        );
+        $this->connectionDataRepository->setConnectionData($connectionData);
+
+        $first = $this->service->getWebhookSignature();
+        $second = $this->service->getWebhookSignature();
+
+        self::assertEquals($first, $second);
     }
 }

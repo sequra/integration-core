@@ -12,23 +12,23 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 class DeleteStoreIntegrationRequest
 {
     /**
-     * @var ConnectionData $connectionData
+     * @var ConnectionData
      */
     private $connectionData;
 
     /**
-     * @var StoreIntegration
+     * @var string
      */
-    private $storeIntegration;
+    private $webhookUrl;
 
     /**
      * @param ConnectionData $connectionData
-     * @param StoreIntegration $storeIntegration
+     * @param string $webhookUrl
      */
-    public function __construct(ConnectionData $connectionData, StoreIntegration $storeIntegration)
+    public function __construct(ConnectionData $connectionData, string $webhookUrl)
     {
         $this->connectionData = $connectionData;
-        $this->storeIntegration = $storeIntegration;
+        $this->webhookUrl = $webhookUrl;
     }
 
     /**
@@ -40,10 +40,10 @@ class DeleteStoreIntegrationRequest
     }
 
     /**
-     * @return StoreIntegration
+     * @return string
      */
-    public function getStoreIntegration(): StoreIntegration
+    public function getWebhookUrl(): string
     {
-        return $this->storeIntegration;
+        return $this->webhookUrl;
     }
 }

@@ -11,7 +11,6 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationResponse;
-use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\StoreIntegration;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\ProxyContracts\StoreIntegrationsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
@@ -366,14 +365,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
             'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
-        $storeIntegration = new StoreIntegration(
-            '1',
-            'signature',
-            '4',
-            'https://test.com'
-        );
-
-        $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
+        $request = new DeleteStoreIntegrationRequest($connectionData, 'https://test.com');
         // act
         $this->proxy->deleteStoreIntegration($request);
 
@@ -402,14 +394,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
             'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
         );
-        $storeIntegration = new StoreIntegration(
-            '1',
-            'signature',
-            '4',
-            'https://test.com'
-        );
-
-        $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
+        $request = new DeleteStoreIntegrationRequest($connectionData, 'https://test.com');
         // act
         $this->proxy->deleteStoreIntegration($request);
 
@@ -439,14 +424,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $storeIntegration = new StoreIntegration(
-            '1',
-            'signature',
-            '4',
-            'https://test.com'
-        );
-
-        $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
+        $request = new DeleteStoreIntegrationRequest($connectionData, 'https://test.com');
         // act
         $this->proxy->deleteStoreIntegration($request);
 
@@ -476,14 +454,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $storeIntegration = new StoreIntegration(
-            '1',
-            'signature',
-            '4',
-            'https://test.com'
-        );
-
-        $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
+        $request = new DeleteStoreIntegrationRequest($connectionData, 'https://test.com');
         // act
         $this->proxy->deleteStoreIntegration($request);
 
@@ -514,14 +485,7 @@ class StoreIntegrationProxyTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        $storeIntegration = new StoreIntegration(
-            '1',
-            'signature',
-            '4',
-            'https://test.com'
-        );
-
-        $request = new DeleteStoreIntegrationRequest($connectionData, $storeIntegration);
+        $request = new DeleteStoreIntegrationRequest($connectionData, 'https://test.com');
         // act
         $response = $this->proxy->deleteStoreIntegration($request);
 

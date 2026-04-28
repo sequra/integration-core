@@ -22,8 +22,8 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsService
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDomainStoreService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreInfoService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -74,7 +74,8 @@ class StoreIntegrationMigrateTaskTest extends BaseTestCase
         $this->storeIntegrationService = new MockStoreIntegrationService(
             new MockIntegrationStoreIntegrationService(),
             new MockStoreIntegrationProxy(),
-            new MockStoreIntegrationRepository()
+            new MockConnectionDataRepository(),
+            new MockStoreInfoService()
         );
 
         TestServiceRegister::registerService(StoreService::class, function () {
