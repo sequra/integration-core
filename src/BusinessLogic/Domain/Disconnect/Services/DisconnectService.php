@@ -168,16 +168,16 @@ class DisconnectService
         $connectionData = $this->connectionDataRepository
             ->getConnectionDataByDeploymentId($deploymentId);
 
-        $this->connectionDataRepository->deleteConnectionDataByDeploymentId($deploymentId);
+        if ($connectionData !== null) {
+            $this->storeIntegrationService->deleteStoreIntegration($connectionData);
+            $this->connectionDataRepository->deleteConnectionDataByDeploymentId($deploymentId);
+        }
 
         if (!$isFullDisconnect) {
             $this->removeAllDeploymentData($deploymentId);
             return;
         }
 
-        if ($connectionData !== null) {
-            $this->storeIntegrationService->deleteStoreIntegration($connectionData);
-        }
         $this->credentialsRepository->deleteCredentialsByDeploymentId($deploymentId);
         $this->countryConfigurationRepository->deleteCountryConfigurations();
         $this->deploymentsRepository->deleteDeployments();
