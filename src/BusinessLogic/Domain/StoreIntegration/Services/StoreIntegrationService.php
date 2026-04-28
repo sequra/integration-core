@@ -67,13 +67,23 @@ class StoreIntegrationService
      * Creates store integration.
      *
      * @param ConnectionData $connectionData
+     * @param bool $skipIfExists When true, skips the HTTP call if connection data for the
+     *                           same deployment is already persisted (proxy for "integration
+     *                           already created remotely").
      *
      * @return void
      *
      * @throws CapabilitiesEmptyException
      */
-    public function createStoreIntegration(ConnectionData $connectionData): void
+    public function createStoreIntegration(ConnectionData $connectionData, bool $skipIfExists = false): void
     {
+        if (
+            $skipIfExists
+            && $this->connectionDataRepository->getConnectionDataByDeploymentId($connectionData->getDeployment()) !== null
+        ) {
+            return;
+        }
+
         $signature = $this->computeSignature($connectionData);
         $webhookUrl = $this->buildWebhookUrl($this->integrationService->getWebhookUrl(), $signature);
         $capabilities = $this->getSupportedCapabilities();

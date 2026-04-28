@@ -124,6 +124,89 @@ class StoreIntegrationServiceTest extends BaseTestCase
      *
      * @throws CapabilitiesEmptyException
      * @throws InvalidEnvironmentException
+     */
+    public function testCreateStoreIntegrationSkippedWhenExistingAndSkipIfExistsTrue(): void
+    {
+        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant',
+            'svea',
+            new AuthorizationCredentials('username', 'password')
+        );
+        $this->connectionDataRepository->setConnectionData($connectionData);
+
+        $this->service->createStoreIntegration($connectionData, true);
+
+        self::assertEquals(0, $this->storeIntegrationProxy->getCreateCallCount());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
+     */
+    public function testCreateStoreIntegrationCalledWhenExistingAndSkipIfExistsFalse(): void
+    {
+        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
+        $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('newId'));
+        $connectionData = new ConnectionData(
+            'sandbox',
+            'merchant',
+            'svea',
+            new AuthorizationCredentials('username', 'password')
+        );
+        $this->connectionDataRepository->setConnectionData($connectionData);
+
+        $this->service->createStoreIntegration($connectionData, false);
+
+        self::assertEquals(1, $this->storeIntegrationProxy->getCreateCallCount());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
+     */
+    public function testCreateStoreIntegrationCalledWhenNoExistingAndSkipIfExistsTrue(): void
+    {
+        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
+        $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('newId'));
+
+        $this->service->createStoreIntegration(
+            new ConnectionData('sandbox', 'merchant', 'svea', new AuthorizationCredentials('username', 'password')),
+            true
+        );
+
+        self::assertEquals(1, $this->storeIntegrationProxy->getCreateCallCount());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
+     */
+    public function testCreateStoreIntegrationCalledWhenNoExistingAndSkipIfExistsFalse(): void
+    {
+        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
+        $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('newId'));
+
+        $this->service->createStoreIntegration(
+            new ConnectionData('sandbox', 'merchant', 'svea', new AuthorizationCredentials('username', 'password')),
+            false
+        );
+
+        self::assertEquals(1, $this->storeIntegrationProxy->getCreateCallCount());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
      * @throws InvalidUrlException
      */
     public function testCreateStoreQueries(): void
