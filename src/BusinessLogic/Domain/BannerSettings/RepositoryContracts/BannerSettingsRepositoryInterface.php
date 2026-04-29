@@ -36,6 +36,8 @@ interface BannerSettingsRepositoryInterface
      * Deletes banner settings.
      *
      * @return void
+     *
+     * @throws Exception
      */
     public function deleteBannerSettings(): void;
 }

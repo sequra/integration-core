@@ -2,10 +2,10 @@
 
 namespace SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Repositories;
 
-use SeQura\Core\BusinessLogic\DataAccess\PromotionalWidgets\Entities\WidgetSettings as WidgetSettingsEntity;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Entities\BannerSettings as BannerSettingsEntity;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
@@ -16,10 +16,10 @@ use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
  *
  * @package SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Repositories
  */
-class BannerSettingsRepository implements WidgetSettingsRepositoryInterface
+class BannerSettingsRepository implements BannerSettingsRepositoryInterface
 {
     /**
-     * @var RepositoryInterface Widget settings repository.
+     * @var RepositoryInterface Banner settings repository.
      */
     protected $repository;
 
@@ -41,63 +41,61 @@ class BannerSettingsRepository implements WidgetSettingsRepositoryInterface
     /**
      * @inheritDoc
      */
-    public function setWidgetSettings(WidgetSettings $settings): void
+    public function setBannerSettings(BannerSettings $settings): void
     {
-        $existingWidgetSettings = $this->getWidgetSettingsEntity();
+        $bannerSettingsEntity = $this->getBannerSettingsEntity();
 
-        if ($existingWidgetSettings) {
-            $existingWidgetSettings->setWidgetSettings($settings);
-            $existingWidgetSettings->setStoreId($this->storeContext->getStoreId());
-            $this->repository->update($existingWidgetSettings);
+        if ($bannerSettingsEntity) {
+            $bannerSettingsEntity->setBannerSettings($settings);
+            $bannerSettingsEntity->setStoreId($this->storeContext->getStoreId());
+            $this->repository->update($bannerSettingsEntity);
 
             return;
         }
 
-        $entity = new WidgetSettingsEntity();
+        $entity = new BannerSettingsEntity();
         $entity->setStoreId($this->storeContext->getStoreId());
-        $entity->setWidgetSettings($settings);
+        $entity->setBannerSettings($settings);
         $this->repository->save($entity);
     }
 
     /**
      * @inheritDoc
      */
-    public function getWidgetSettings(): ?WidgetSettings
+    public function getBannerSettings(): ?BannerSettings
     {
-        $entity = $this->getWidgetSettingsEntity();
+        $entity = $this->getBannerSettingsEntity();
 
-        return $entity ? $entity->getWidgetSettings() : null;
+        return $entity ? $entity->getBannerSettings() : null;
     }
 
     /**
-     * @return void
-     *
-     * @throws QueryFilterInvalidParamException
+     * @inheritDoc
      */
-    public function deleteWidgetSettings(): void
+    public function deleteBannerSettings(): void
     {
-        $entity = $this->getWidgetSettingsEntity();
+        $entity = $this->getBannerSettingsEntity();
 
         $entity && $this->repository->delete($entity);
     }
 
     /**
-     * Gets the widget settings entity from the database.
+     * Gets the banner settings entity from the database.
      *
-     * @return WidgetSettingsEntity|null
+     * @return BannerSettingsEntity|null
      *
      * @throws QueryFilterInvalidParamException
      */
-    protected function getWidgetSettingsEntity(): ?WidgetSettingsEntity
+    protected function getBannerSettingsEntity(): ?BannerSettingsEntity
     {
         $queryFilter = new QueryFilter();
         $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
 
         /**
-         * @var WidgetSettingsEntity $widgetSettings
+         * @var BannerSettingsEntity $bannerSettings
          */
-        $widgetSettings = $this->repository->selectOne($queryFilter);
+        $bannerSettings = $this->repository->selectOne($queryFilter);
 
-        return $widgetSettings;
+        return $bannerSettings;
     }
 }

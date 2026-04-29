@@ -36,6 +36,8 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\Ge
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\SaveWidgetSettingsHandler;
 use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Entities\AdvancedSettings;
 use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Repositories\AdvancedSettingsRepository;
+use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Entities\BannerSettings;
+use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Repositories\BannerSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
@@ -61,6 +63,7 @@ use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\Transaction
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\RepositoryContracts\AdvancedSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedLoggerSettingsProvider;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
 use SeQura\Core\Infrastructure\Logger\Interfaces\LoggerSettingsProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
@@ -249,6 +252,16 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new WidgetSettingsRepository(
                     RepositoryRegistry::getRepository(WidgetSettings::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            BannerSettingsRepositoryInterface::class,
+            static function () {
+                return new BannerSettingsRepository(
+                    RepositoryRegistry::getRepository(BannerSettings::getClassName()),
                     ServiceRegister::getService(StoreContext::class)
                 );
             }
