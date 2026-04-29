@@ -28,7 +28,7 @@ class BannerSettingsService
      * @param BannerSettingsRepositoryInterface $bannerSettingsRepository
      */
     public function __construct(
-        BannerSettingsRepositoryInterface $bannerSettingsRepository,
+        BannerSettingsRepositoryInterface $bannerSettingsRepository
     ) {
         $this->bannerSettingsRepository = $bannerSettingsRepository;
     }
