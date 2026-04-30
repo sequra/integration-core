@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\AdminAPI;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Aspects\ErrorHandlingAspect;
 use SeQura\Core\BusinessLogic\AdminAPI\Aspects\StoreContextAspect;
+use SeQura\Core\BusinessLogic\AdminAPI\BannerSettings\BannerSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
 use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
@@ -96,6 +97,21 @@ class AdminAPI
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
             ->beforeEachMethodOfService(PromotionalWidgetsController::class);
+    }
+
+    /**
+     * Returns a BannerSettingsController instance.
+     *
+     * @param string $storeId
+     *
+     * @return Aspects
+     */
+    public function bannerSettings(string $storeId): Aspects
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(BannerSettingsController::class);
     }
 
     /**

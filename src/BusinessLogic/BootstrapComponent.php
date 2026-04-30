@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic;
 
+use SeQura\Core\BusinessLogic\AdminAPI\BannerSettings\BannerSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
 use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
@@ -64,6 +65,7 @@ use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\RepositoryContracts\Advanc
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedLoggerSettingsProvider;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 use SeQura\Core\Infrastructure\Logger\Interfaces\LoggerSettingsProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
@@ -581,6 +583,15 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            BannerSettingsService::class,
+            static function () {
+                return new BannerSettingsService(
+                    ServiceRegister::getService(BannerSettingsRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             TransactionLogService::class,
             static function () {
                 return new TransactionLogService(
@@ -741,6 +752,15 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new PromotionalWidgetsController(
                     ServiceRegister::getService(WidgetSettingsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            BannerSettingsController::class,
+            static function () {
+                return new BannerSettingsController(
+                    ServiceRegister::getService(BannerSettingsService::class)
                 );
             }
         );

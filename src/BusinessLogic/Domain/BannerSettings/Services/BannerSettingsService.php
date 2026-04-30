@@ -7,10 +7,6 @@ use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLExcepti
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
-use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
-use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
-use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
-use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 
 /**
  * Class BannerSettingsService

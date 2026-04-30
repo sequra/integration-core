@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\Common;
 
 use PHPUnit\Framework\TestCase;
+use SeQura\Core\BusinessLogic\AdminAPI\BannerSettings\BannerSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
 use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
@@ -35,6 +36,8 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerRegis
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\GetWidgetSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\SaveWidgetSettingsHandler;
 use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Entities\AdvancedSettings;
+use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Entities\BannerSettings;
+use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Repositories\BannerSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
@@ -57,6 +60,8 @@ use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\Statistica
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
@@ -139,8 +144,10 @@ use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\Logger\LoggerConfiguration;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
+use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\Serializer\Concrete\JsonSerializer;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
+use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStateTransitionEventBus;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\TaskRunnerWakeup;
 use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
@@ -445,6 +452,14 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(StoreContext::class)
                 );
             },
+
+            BannerSettingsRepositoryInterface::class => function () {
+                return new BannerSettingsRepository(
+                    TestRepositoryRegistry::getRepository(BannerSettings::getClassName()),
+                    TestServiceRegister::getService(StoreContext::class)
+                );
+            },
+
             PaymentMethodRepositoryInterface::class => function () {
                 return new PaymentMethodRepository(
                     TestRepositoryRegistry::getRepository(PaymentMethod::getClassName()),
@@ -481,6 +496,11 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(DeploymentsService::class)
                 );
             },
+            BannerSettingsService::class => function () {
+                return new BannerSettingsService(
+                    TestServiceRegister::getService(BannerSettingsRepositoryInterface::class)
+                );
+            },
             ProductServiceInterface::class => function () {
                 return new MockProductService();
             },
@@ -493,6 +513,11 @@ class BaseTestCase extends TestCase
             PromotionalWidgetsController::class => function () {
                 return new PromotionalWidgetsController(
                     TestServiceRegister::getService(WidgetSettingsService::class)
+                );
+            },
+            BannerSettingsController::class => function () {
+                return new BannerSettingsController(
+                    TestServiceRegister::getService(BannerSettingsService::class)
                 );
             },
             AbstractItemFactory::class => function () {
@@ -963,6 +988,7 @@ class BaseTestCase extends TestCase
             MemoryRepository::getClassName()
         );
         TestRepositoryRegistry::registerRepository(WidgetSettings::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(BannerSettings::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(
             TransactionLog::getClassName(),
             MemoryRepositoryWithConditionalDelete::getClassName()
