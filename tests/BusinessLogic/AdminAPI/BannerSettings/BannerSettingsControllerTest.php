@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\AdminAPI\BannerSettings;
 
+use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\BannerSettings\Requests\BannerSettingsRequest;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
@@ -25,7 +26,12 @@ class BannerSettingsControllerTest extends BaseTestCase
         $this->bannerSettingsRepository = TestServiceRegister::getService(BannerSettingsRepositoryInterface::class);
     }
 
-    public function testGetSettings()
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testGetSettings(): void
     {
         // arrange
         $settings = new BannerSettings(
@@ -71,7 +77,12 @@ class BannerSettingsControllerTest extends BaseTestCase
         );
     }
 
-    public function testSetSettings()
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSetSettings(): void
     {
         // arrange
         $settings = new BannerSettingsRequest(
@@ -99,7 +110,12 @@ class BannerSettingsControllerTest extends BaseTestCase
         self::assertEquals($settings->transformToDomainModel(), $savedSettings);
     }
 
-    public function testSetSettingsInvalidURL()
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSetSettingsInvalidURL(): void
     {
         // arrange
         $settings = new BannerSettingsRequest(
