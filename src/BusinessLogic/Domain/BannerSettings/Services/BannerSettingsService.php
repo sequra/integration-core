@@ -2,7 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\BannerSettings\Services;
 
-use Exception;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
@@ -33,8 +32,6 @@ class BannerSettingsService
      * Retrieves banner settings.
      *
      * @return BannerSettings|null
-     *
-     * @throws Exception
      */
     public function getBannerSettings(): ?BannerSettings
     {
@@ -48,12 +45,13 @@ class BannerSettingsService
      *
      * @return void
      *
-     * @throws Exception
+     * @throws InvalidURLException
      */
     public function setBannerSettings(BannerSettings $bannerSettings): void
     {
         foreach ($bannerSettings->getBannerConfigs() as $bannerConfig) {
             $this->assertValidUrl($bannerConfig->getLinkUrl());
+            $this->assertValidUrl($bannerConfig->getImageUrl());
         }
 
         $this->bannerSettingsRepository->setBannerSettings($bannerSettings);
@@ -65,8 +63,6 @@ class BannerSettingsService
      * @param string $country
      *
      * @return Banner|null
-     *
-     * @throws Exception
      */
     public function getBannerData(string $country): ?Banner
     {
@@ -90,7 +86,7 @@ class BannerSettingsService
      *
      * @throws InvalidURLException
      */
-    private function assertValidUrl(string $url): void
+    protected function assertValidUrl(string $url): void
     {
         if (mb_strlen($url) > 2048) {
             throw new InvalidURLException('URL is too long (max 2048 characters)');

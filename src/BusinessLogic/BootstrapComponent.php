@@ -20,6 +20,9 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationCo
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Controller\ConfigurationWebhookController;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\GetAdvancedSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\SaveAdvancedSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\GetBannerDisplayLocationsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\GetBannerSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\SaveBannerSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Enums\Topics;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings\GetGeneralSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings\SaveGeneralSettingsHandler;
@@ -66,6 +69,7 @@ use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedLoggerSet
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
 use SeQura\Core\Infrastructure\Logger\Interfaces\LoggerSettingsProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
@@ -1040,6 +1044,21 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         TopicHandlerRegistry::register(
+            Topics::GET_BANNER_SETTINGS,
+            GetBannerSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::SAVE_BANNER_SETTINGS,
+            SaveBannerSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_BANNER_DISPLAY_LOCATIONS,
+            GetBannerDisplayLocationsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
             Topics::GET_LOG_CONTENT,
             GetLogContentHandler::class
         );
@@ -1158,6 +1177,33 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new SaveAdvancedSettingsHandler(
                     ServiceRegister::getService(AdvancedSettingsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            GetBannerSettingsHandler::class,
+            static function () {
+                return new GetBannerSettingsHandler(
+                    ServiceRegister::getService(BannerSettingsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            SaveBannerSettingsHandler::class,
+            static function () {
+                return new SaveBannerSettingsHandler(
+                    ServiceRegister::getService(BannerSettingsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            GetBannerDisplayLocationsHandler::class,
+            static function () {
+                return new GetBannerDisplayLocationsHandler(
+                    ServiceRegister::getService(BannerServiceInterface::class)
                 );
             }
         );

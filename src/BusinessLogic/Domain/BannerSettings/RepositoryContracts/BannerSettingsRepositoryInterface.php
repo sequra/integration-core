@@ -2,7 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts;
 
-use Exception;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 
 /**
@@ -18,8 +17,6 @@ interface BannerSettingsRepositoryInterface
      * @param BannerSettings $settings
      *
      * @return void
-     *
-     * @throws Exception
      */
     public function setBannerSettings(BannerSettings $settings): void;
 
@@ -27,8 +24,6 @@ interface BannerSettingsRepositoryInterface
      * Retrieves banner settings.
      *
      * @return BannerSettings|null
-     *
-     * @throws Exception
      */
     public function getBannerSettings(): ?BannerSettings;
 
@@ -36,8 +31,6 @@ interface BannerSettingsRepositoryInterface
      * Deletes banner settings.
      *
      * @return void
-     *
-     * @throws Exception
      */
     public function deleteBannerSettings(): void;
 }

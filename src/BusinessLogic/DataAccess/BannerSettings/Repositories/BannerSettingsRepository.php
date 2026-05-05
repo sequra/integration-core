@@ -40,6 +40,8 @@ class BannerSettingsRepository implements BannerSettingsRepositoryInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
      */
     public function setBannerSettings(BannerSettings $settings): void
     {
@@ -61,6 +63,8 @@ class BannerSettingsRepository implements BannerSettingsRepositoryInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
      */
     public function getBannerSettings(): ?BannerSettings
     {
@@ -71,6 +75,8 @@ class BannerSettingsRepository implements BannerSettingsRepositoryInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
      */
     public function deleteBannerSettings(): void
     {
