@@ -3,8 +3,14 @@
 namespace SeQura\Core\Tests\BusinessLogic\ConfigurationWebhookAPI;
 
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\ConfigurationWebhookAPI;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\BannerDisplayLocationsResponse;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\BannerSettingsResponse;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Models\AdvancedSettings;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
@@ -24,6 +30,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Log\LogServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
@@ -55,6 +62,9 @@ use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerSettingsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerSettingsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCategoryService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
@@ -176,6 +186,16 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      * @var AdvancedSettingsService $advancedSettingsService
      */
     private $advancedSettingsService;
+
+    /**
+     * @var MockBannerService $bannerService
+     */
+    private $bannerService;
+
+    /**
+     * @var MockBannerSettingsService $bannerSettingsService
+     */
+    private $bannerSettingsService;
 
     /**
      * @var MockCredentialsService
@@ -344,6 +364,18 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         TestServiceRegister::registerService(AdvancedSettingsService::class, function () {
             return $this->advancedSettingsService;
+        });
+
+        $this->bannerService = new MockBannerService();
+
+        TestServiceRegister::registerService(BannerServiceInterface::class, function () {
+            return $this->bannerService;
+        });
+
+        $this->bannerSettingsService = new MockBannerSettingsService(new MockBannerSettingsRepository());
+
+        TestServiceRegister::registerService(BannerSettingsService::class, function () {
+            return $this->bannerSettingsService;
         });
 
         $this->credentialsService = new MockCredentialsService(
@@ -1745,5 +1777,189 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         //Assert
         self::assertTrue($response->isSuccessful());
         self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidURLException
+     */
+    public function testSaveBannerSettingsResponse(): void
+    {
+        //Arrange
+        $this->bannerSettingsService->setBannerSettings(
+            new BannerSettings(
+                [
+                    new Banner(
+                        'ES',
+                        'displayOnHomePage',
+                        'https://www.sequra.es/es/faq#shoppers',
+                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png'
+                    )
+                ]
+            )
+        );
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-banner-settings",
+                "bannerConfigs" => [
+                    [
+                        'country' => 'ES',
+                        'imageUrl' => 'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png',
+                        'linkUrl' => 'https://www.sequra.es/es/faq#shoppers',
+                        'displayLocation' => 'displayOnHomePage'
+                    ],
+                    [
+                        'country' => 'PT',
+                        'imageUrl' => 'https://shop/img/sequra/pt/banner/Flag_of_Spain.svg.png',
+                        'linkUrl' => 'https://www.sequra.pt/pt/faq#shoppers',
+                        'displayLocation' => 'displayOnCartPage'
+                    ],
+                ]
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+        self::assertCount(2, $this->bannerSettingsService->getBannerSettings()->getBannerConfigs());
+    }
+
+
+    /**
+     * @return void
+     *
+     * @throws InvalidURLException
+     */
+    public function testSaveBannerSettingsInvalidURLResponse(): void
+    {
+        //Arrange
+        $this->bannerSettingsService->setBannerSettings(
+            new BannerSettings(
+                [
+                    new Banner(
+                        'ES',
+                        'displayOnHomePage',
+                        'https://www.sequra.es/es/faq#shoppers',
+                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png'
+                    )
+                ]
+            )
+        );
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-banner-settings",
+                "bannerConfigs" => [
+                    [
+                        'country' => 'ES',
+                        'imageUrl' => 'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png',
+                        'linkUrl' => 'string',
+                        'displayLocation' => 'displayOnHomePage'
+                    ],
+                    [
+                        'country' => 'PT',
+                        'imageUrl' => 'https://shop/img/sequra/pt/banner/Flag_of_Spain.svg.png',
+                        'linkUrl' => 'https://www.sequra.pt/pt/faq#shoppers',
+                        'displayLocation' => 'displayOnCartPage'
+                    ],
+                ]
+            ]
+        );
+
+        //Assert
+        self::assertFalse($response->isSuccessful());
+        self::assertEquals('INVALID_URL', $response->toArray()['errorCode']);
+        self::assertCount(1, $this->bannerSettingsService->getBannerSettings()->getBannerConfigs());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidURLException
+     */
+    public function testGetBannerSettingsResponse(): void
+    {
+        //Arrange
+        $this->bannerSettingsService->setBannerSettings(
+            new BannerSettings(
+                [
+                    new Banner(
+                        'ES',
+                        'displayOnHomePage',
+                        'https://www.sequra.es/es/faq#shoppers',
+                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png'
+                    )
+                ]
+            )
+        );
+
+        //Act
+        /** @var BannerSettingsResponse $response */
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-banner-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertCount(1, $response->toArray()['bannerConfigs']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidURLException
+     */
+    public function testGetBannerSettingsEmptyResponse(): void
+    {
+        //Arrange
+
+        //Act
+        /** @var BannerSettingsResponse $response */
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-banner-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetBannerDisplayLocations(): void
+    {
+        //Arrange
+        $this->bannerService->setBannerDisplayLocations([
+            'displayOnHomePage',
+            'displayOnProductPage',
+            'displayOnCartPage',
+            'displayOnProductListingPage'
+        ]);
+
+        //Act
+        /** @var BannerDisplayLocationsResponse $response */
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-banner-display-locations"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertCount(4, $response->toArray());
     }
 }

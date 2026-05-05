@@ -20,6 +20,9 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsC
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Controller\ConfigurationWebhookController;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\GetAdvancedSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\SaveAdvancedSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\GetBannerDisplayLocationsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\GetBannerSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\SaveBannerSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Enums\Topics;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings\GetGeneralSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings\SaveGeneralSettingsHandler;
@@ -77,6 +80,7 @@ use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Log\LogServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
@@ -841,6 +845,33 @@ class BaseTestCase extends TestCase
         );
 
         TestServiceRegister::registerService(
+            GetBannerSettingsHandler::class,
+            static function () {
+                return new GetBannerSettingsHandler(
+                    TestServiceRegister::getService(BannerSettingsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            SaveBannerSettingsHandler::class,
+            static function () {
+                return new SaveBannerSettingsHandler(
+                    TestServiceRegister::getService(BannerSettingsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            GetBannerDisplayLocationsHandler::class,
+            static function () {
+                return new GetBannerDisplayLocationsHandler(
+                    TestServiceRegister::getService(BannerServiceInterface::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
             GetLogContentHandler::class,
             static function () {
                 return new GetLogContentHandler(
@@ -937,6 +968,21 @@ class BaseTestCase extends TestCase
         TopicHandlerRegistry::register(
             Topics::SAVE_ADVANCED_SETTINGS,
             SaveAdvancedSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_BANNER_SETTINGS,
+            GetBannerSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::SAVE_BANNER_SETTINGS,
+            SaveBannerSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::GET_BANNER_DISPLAY_LOCATIONS,
+            GetBannerDisplayLocationsHandler::class
         );
 
         TopicHandlerRegistry::register(

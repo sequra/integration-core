@@ -5,6 +5,8 @@ namespace SeQura\Core\Tests\BusinessLogic\AdminAPI\BannerSettings;
 use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\BannerSettings\Requests\BannerSettingsRequest;
+use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
@@ -12,6 +14,11 @@ use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
+/**+
+ * Class BannerSettingsControllerTest
+ *
+ * @package SeQura\Core\Tests\BusinessLogic\AdminAPI\BannerSettings
+ */
 class BannerSettingsControllerTest extends BaseTestCase
 {
     /**
@@ -19,11 +26,16 @@ class BannerSettingsControllerTest extends BaseTestCase
      */
     private $bannerSettingsRepository;
 
+    /**
+     * @inheritDoc
+     */
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->bannerSettingsRepository = TestServiceRegister::getService(BannerSettingsRepositoryInterface::class);
+        $this->bannerSettingsRepository = TestServiceRegister::getService(
+            BannerSettingsRepositoryInterface::class
+        );
     }
 
     /**
@@ -106,7 +118,13 @@ class BannerSettingsControllerTest extends BaseTestCase
         AdminAPI::get()->bannerSettings('store1')->setBannerSettings($settings);
 
         // assert
-        $savedSettings = StoreContext::doWithStore('store1', [$this->bannerSettingsRepository, 'getBannerSettings']);
+        $savedSettings = StoreContext::doWithStore(
+            'store1',
+            [
+                $this->bannerSettingsRepository,
+                'getBannerSettings'
+            ]
+        );
         self::assertEquals($settings->transformToDomainModel(), $savedSettings);
     }
 
@@ -136,10 +154,18 @@ class BannerSettingsControllerTest extends BaseTestCase
         );
 
         // act
-        AdminAPI::get()->bannerSettings('store1')->setBannerSettings($settings);
+        $result = AdminAPI::get()->bannerSettings('store1')->setBannerSettings($settings);
 
         // assert
-        $savedSettings = StoreContext::doWithStore('store1', [$this->bannerSettingsRepository, 'getBannerSettings']);
+        self::assertFalse($result->isSuccessful());
+        self::assertEquals('INVALID_URL', $result->toArray()['errorCode']);
+        $savedSettings = StoreContext::doWithStore(
+            'store1',
+            [
+                $this->bannerSettingsRepository,
+                'getBannerSettings'
+            ]
+        );
         self::assertNull($savedSettings);
     }
 }
