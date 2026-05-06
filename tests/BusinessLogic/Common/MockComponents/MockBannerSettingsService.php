@@ -27,15 +27,15 @@ class MockBannerSettingsService extends BannerSettingsService
     /**
      * @inheritDoc
      */
-    public function getBannerData(string $country): ?Banner
+    public function getBannerData(string $country, string $displayLocation): ?Banner
     {
-        return
-            new Banner(
-                $country,
-                'displayOnHomePage',
-                'https://www.sequra.com/es/faq#shoppers',
-                'https://shop/sequra/es/image.jpg'
-            );
+        foreach ($this->bannerSettings->getBannerConfigs() as $bannerConfig) {
+            if ($bannerConfig->getCountry() === $country && $bannerConfig->getDisplayLocation() === $displayLocation) {
+                return $bannerConfig;
+            }
+        }
+
+        return null;
     }
 
     /**

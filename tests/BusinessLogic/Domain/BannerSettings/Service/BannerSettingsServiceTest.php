@@ -214,7 +214,7 @@ class BannerSettingsServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testGetBannerDataByCountry(): void
+    public function testGetBannerDataByCountryAndDisplayLocation(): void
     {
         //Arrange
         $bannerSettings = new BannerSettings(
@@ -243,19 +243,62 @@ class BannerSettingsServiceTest extends BaseTestCase
         $this->bannerSettingsRepository->setBannerSettings($bannerSettings);
 
         $country = 'FR';
+        $displayLocation = 'displayOnHomePage';
 
         //Act
-        $result = $this->bannerSettingsService->getBannerData($country);
+        $result = $this->bannerSettingsService->getBannerData($country, $displayLocation);
 
         //Assert
         self::assertNotNull($result);
         self::assertEquals($country, $result->getCountry());
+        self::assertEquals($displayLocation, $result->getDisplayLocation());
     }
 
     /**
      * @throws Exception
      */
-    public function testGetBannerDataByCountryNoData(): void
+    public function testGetBannerNoDataForDisplayLocation(): void
+    {
+        //Arrange
+        $bannerSettings = new BannerSettings(
+            [
+                new Banner(
+                    'ES',
+                    'displayOnHomePage',
+                    'https://www.sequra.com/es/faq#shoppers',
+                    'https://shop/sequra/es/image.jpg'
+                ),
+                new Banner(
+                    'PT',
+                    'displayOnCartPage',
+                    'https://www.sequra.com/it/faq#shoppers',
+                    'https://shop/sequra/pt/image.jpg'
+                ),
+                new Banner(
+                    'FR',
+                    'displayOnHomePage',
+                    'https://www.sequra.com/fr/faq#shoppers',
+                    'https://shop/sequra/fr/image.jpg'
+                ),
+
+            ]
+        );
+        $this->bannerSettingsRepository->setBannerSettings($bannerSettings);
+
+        $country = 'FR';
+        $displayLocation = 'displayOnCartPage';
+
+        //Act
+        $result = $this->bannerSettingsService->getBannerData($country, $displayLocation);
+
+        //Assert
+        self::assertNull($result);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetBannerNoDataForCountry(): void
     {
         //Arrange
         $bannerSettings = new BannerSettings(
@@ -278,9 +321,10 @@ class BannerSettingsServiceTest extends BaseTestCase
         $this->bannerSettingsRepository->setBannerSettings($bannerSettings);
 
         $country = 'PT';
+        $displayLocation = 'displayOnCartPage';
 
         //Act
-        $result = $this->bannerSettingsService->getBannerData($country);
+        $result = $this->bannerSettingsService->getBannerData($country, $displayLocation);
 
         //Assert
         self::assertNull($result);

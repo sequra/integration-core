@@ -61,10 +61,11 @@ class BannerSettingsService
      * Returns banner data
      *
      * @param string $country
+     * @param string $displayLocation
      *
      * @return Banner|null
      */
-    public function getBannerData(string $country): ?Banner
+    public function getBannerData(string $country, string $displayLocation): ?Banner
     {
         $bannerSettings = $this->getBannerSettings();
 
@@ -73,7 +74,7 @@ class BannerSettingsService
         }
 
         foreach ($bannerSettings->getBannerConfigs() as $bannerConfig) {
-            if ($bannerConfig->getCountry() === $country) {
+            if ($bannerConfig->getCountry() === $country && $bannerConfig->getDisplayLocation() === $displayLocation) {
                 return $bannerConfig;
             }
         }
