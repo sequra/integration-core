@@ -11,4 +11,8 @@ use SeQura\Core\Infrastructure\Exceptions\BaseException;
  */
 class InvalidURLException extends BaseException
 {
+    /**
+     * @var int
+     */
+    protected $code = 400;
 }

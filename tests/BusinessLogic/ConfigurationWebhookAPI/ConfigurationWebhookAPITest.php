@@ -421,8 +421,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         //Assert
         self::assertFalse($response->isSuccessful());
         self::assertEquals([
-            'success' => false,
-            'error' => 'Topic field is required in the webhook payload.',
+            'errorMessage' => 'Topic field is required in the webhook payload.',
             'errorCode' => 'TOPIC_MISSING'
         ], $response->toArray());
     }
@@ -497,8 +496,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         //Assert
         self::assertFalse($response->isSuccessful());
         self::assertEquals([
-            'success' => false,
-            'error' => 'Unknown or unsupported topic: get-payment-data',
+            'errorMessage' => 'Unknown or unsupported topic: get-payment-data',
             'errorCode' => 'UNKNOWN_TOPIC'
         ], $response->toArray());
     }
@@ -1874,7 +1872,10 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Assert
         self::assertFalse($response->isSuccessful());
-        self::assertEquals('INVALID_URL', $response->toArray()['errorCode']);
+        self::assertEquals([
+            'errorMessage' => 'URL format is invalid',
+            'errorCode' => 'INVALID_URL'
+        ], $response->toArray());
         self::assertCount(1, $this->bannerSettingsService->getBannerSettings()->getBannerConfigs());
     }
 

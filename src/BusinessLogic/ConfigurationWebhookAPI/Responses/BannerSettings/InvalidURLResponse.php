@@ -35,8 +35,7 @@ class InvalidURLResponse extends Response
     public function toArray(): array
     {
         return [
-            'success' => false,
-            'error' => $this->message,
+            'errorMessage' => $this->message,
             'errorCode' => 'INVALID_URL'
         ];
     }

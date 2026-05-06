@@ -35,8 +35,7 @@ class UnknownTopicErrorResponse extends Response
     public function toArray(): array
     {
         return [
-            'success' => false,
-            'error' => "Unknown or unsupported topic: {$this->topic}",
+            'errorMessage' => "Unknown or unsupported topic: {$this->topic}",
             'errorCode' => 'UNKNOWN_TOPIC'
         ];
     }

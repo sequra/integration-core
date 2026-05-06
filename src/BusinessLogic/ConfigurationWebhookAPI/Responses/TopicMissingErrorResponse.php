@@ -22,8 +22,7 @@ class TopicMissingErrorResponse extends Response
     public function toArray(): array
     {
         return [
-            'success' => false,
-            'error' => 'Topic field is required in the webhook payload.',
+            'errorMessage' => 'Topic field is required in the webhook payload.',
             'errorCode' => 'TOPIC_MISSING'
         ];
     }

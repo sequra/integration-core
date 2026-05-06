@@ -158,7 +158,11 @@ class BannerSettingsControllerTest extends BaseTestCase
 
         // assert
         self::assertFalse($result->isSuccessful());
-        self::assertEquals('INVALID_URL', $result->toArray()['errorCode']);
+        self::assertEquals([
+            'errorMessage' => 'URL format is invalid',
+            'errorCode' => '400'
+        ], $result->toArray());
+
         $savedSettings = StoreContext::doWithStore(
             'store1',
             [
