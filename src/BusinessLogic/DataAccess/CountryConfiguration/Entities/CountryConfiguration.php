@@ -3,7 +3,6 @@
 namespace SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities;
 
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration as DomainCountryConfiguration;
 use SeQura\Core\Infrastructure\ORM\Configuration\EntityConfiguration;
 use SeQura\Core\Infrastructure\ORM\Configuration\IndexMap;
@@ -34,7 +33,6 @@ class CountryConfiguration extends Entity
     /**
      * @inheritDoc
      *
-     * @throws InvalidCountryCodeForConfigurationException
      * @throws EmptyCountryConfigurationParameterException
      */
     public function inflate(array $data): void
