@@ -11,7 +11,6 @@ use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\Successful
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
@@ -246,7 +245,6 @@ class CountryConfigurationControllerTest extends BaseTestCase
 
     /**
      * @throws EmptyCountryConfigurationParameterException
-     * @throws InvalidCountryCodeForConfigurationException
      */
     public function testIsSaveResponseSuccessful(): void
     {
@@ -275,7 +273,6 @@ class CountryConfigurationControllerTest extends BaseTestCase
 
     /**
      * @throws EmptyCountryConfigurationParameterException
-     * @throws InvalidCountryCodeForConfigurationException
      */
     public function testSaveResponse(): void
     {
@@ -305,7 +302,6 @@ class CountryConfigurationControllerTest extends BaseTestCase
 
     /**
      * @throws EmptyCountryConfigurationParameterException
-     * @throws InvalidCountryCodeForConfigurationException
      */
     public function testSaveResponseToArray(): void
     {
