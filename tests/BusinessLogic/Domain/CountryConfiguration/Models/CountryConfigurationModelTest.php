@@ -27,12 +27,12 @@ class CountryConfigurationModelTest extends BaseTestCase
         new CountryConfiguration('', 'test');
     }
 
-    public function testUnsupportedCountryCodeIsAccepted(): void
+    public function testUnsupportedCountryCode(): void
     {
-        $countryConfiguration = new CountryConfiguration('MX', 'merchant');
+        $countryConfiguration = new CountryConfiguration('MX', 'logeecom');
 
         self::assertEquals('MX', $countryConfiguration->getCountryCode());
-        self::assertEquals('merchant', $countryConfiguration->getMerchantId());
+        self::assertEquals('logeecom', $countryConfiguration->getMerchantId());
     }
 
     public function testSettersAndGetters(): void
