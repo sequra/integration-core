@@ -329,6 +329,26 @@ class CountryConfigurationControllerTest extends BaseTestCase
     }
 
     /**
+     * @throws EmptyCountryConfigurationParameterException
+     */
+    public function testSaveResponseAcceptsUnsupportedCountryCode(): void
+    {
+        // Arrange
+        $countryConfigurationRequest = new CountryConfigurationRequest([
+            [
+                'countryCode' => 'MX',
+                'merchantId' => 'logeecom',
+            ]
+        ]);
+
+        // Act
+        $response = AdminAPI::get()->countryConfiguration('1')->saveCountryConfigurations($countryConfigurationRequest);
+
+        // Assert
+        self::assertTrue($response->isSuccessful());
+    }
+
+    /**
      * @throws Exception
      */
     public function testIsUpdateResponseSuccessful(): void
