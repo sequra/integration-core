@@ -9,7 +9,6 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\GeneralSettings\S
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\GeneralSettings\SaveGeneralSettingsResponse;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 
@@ -49,7 +48,6 @@ class SaveGeneralSettingsHandler implements TopicHandlerInterface
      *
      * @throws EmptyCountryConfigurationParameterException
      * @throws FailedToRetrieveSellingCountriesException
-     * @throws InvalidCountryCodeForConfigurationException
      */
     public function handle(array $payload): Response
     {

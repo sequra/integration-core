@@ -4,7 +4,6 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Requests;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Request\Request;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 
 /**
@@ -32,7 +31,6 @@ class CountryConfigurationRequest extends Request
      *
      * @return CountryConfiguration[]
      *
-     * @throws InvalidCountryCodeForConfigurationException
      * @throws EmptyCountryConfigurationParameterException
      */
     public function transformToDomainModel(): array

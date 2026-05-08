@@ -2,9 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models;
 
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Enum\SellingCountries;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 
 /**
@@ -28,7 +26,6 @@ class CountryConfiguration
      * @param string $countryCode
      * @param string $merchantId
      *
-     * @throws InvalidCountryCodeForConfigurationException
      * @throws EmptyCountryConfigurationParameterException
      */
     public function __construct(string $countryCode, string $merchantId)
@@ -36,12 +33,6 @@ class CountryConfiguration
         if (empty($countryCode) || empty($merchantId)) {
             throw new EmptyCountryConfigurationParameterException(
                 new TranslatableLabel('Country configuration parameter cannot be an empty string.', 'general.errors.countries.empty')
-            );
-        }
-
-        if (!array_key_exists($countryCode, SellingCountries::SELLING_COUNTRIES)) {
-            throw new InvalidCountryCodeForConfigurationException(
-                new TranslatableLabel('Invalid country code in the country configuration.', 'general.errors.countries.countryCode')
             );
         }
 

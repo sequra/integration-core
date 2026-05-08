@@ -3,7 +3,6 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\CountryConfiguration\Models;
 
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 
@@ -28,11 +27,12 @@ class CountryConfigurationModelTest extends BaseTestCase
         new CountryConfiguration('', 'test');
     }
 
-    public function testInvalidCountryCode(): void
+    public function testUnsupportedCountryCode(): void
     {
-        $this->expectException(InvalidCountryCodeForConfigurationException::class);
+        $countryConfiguration = new CountryConfiguration('MX', 'logeecom');
 
-        new CountryConfiguration('test', 'test');
+        self::assertEquals('MX', $countryConfiguration->getCountryCode());
+        self::assertEquals('logeecom', $countryConfiguration->getMerchantId());
     }
 
     public function testSettersAndGetters(): void
