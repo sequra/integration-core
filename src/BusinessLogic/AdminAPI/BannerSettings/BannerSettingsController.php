@@ -5,9 +5,7 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\BannerSettings;
 use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\BannerSettings\Requests\BannerSettingsRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\BannerSettings\Responses\BannerSettingsResponse;
-use SeQura\Core\BusinessLogic\AdminAPI\BannerSettings\Responses\SuccessfulBannerResponse;
-use SeQura\Core\BusinessLogic\AdminAPI\Response\ErrorResponse;
-use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\BannerImageRequiredException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 
@@ -46,18 +44,15 @@ class BannerSettingsController
      *
      * @param BannerSettingsRequest $settingsRequest
      *
-     * @return Response
+     * @return BannerSettingsResponse
      *
-     * @throws Exception
+     * @throws BannerImageRequiredException
+     * @throws InvalidURLException
      */
-    public function setBannerSettings(BannerSettingsRequest $settingsRequest): Response
+    public function setBannerSettings(BannerSettingsRequest $settingsRequest): BannerSettingsResponse
     {
-        try {
-            $this->bannerSettingsService->setBannerSettings($settingsRequest->transformToDomainModel());
-        } catch (InvalidURLException $e) {
-            return new ErrorResponse($e);
-        }
-
-        return new SuccessfulBannerResponse();
+        return new BannerSettingsResponse(
+            $this->bannerSettingsService->setBannerSettings($settingsRequest->transformToDomainModel())
+        );
     }
 }

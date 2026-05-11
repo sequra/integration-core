@@ -2,12 +2,14 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\BannerSettings\Models;
 
+use SeQura\Core\Infrastructure\Data\DataTransferObject;
+
 /**
  * Class Banner
  *
  * @package SeQura\Core\BusinessLogic\Domain\BannerSettings\Models
  */
-class Banner
+class Banner extends DataTransferObject
 {
     /**
      * @var string $country
@@ -27,21 +29,29 @@ class Banner
     protected $displayLocation;
 
     /**
+     * @var string|null
+     */
+    protected $imageBase64;
+
+    /**
      * @param string $country
-     * @param string $displayLocation
      * @param string $linkUrl
      * @param string $imageUrl
+     * @param string $displayLocation
+     * @param string|null $imageBase64
      */
     public function __construct(
         string $country,
+        string $linkUrl,
+        string $imageUrl,
         string $displayLocation,
-        string $linkUrl = '',
-        string $imageUrl = ''
+        ?string $imageBase64 = null
     ) {
         $this->country = $country;
-        $this->displayLocation = $displayLocation;
         $this->linkUrl = $linkUrl;
         $this->imageUrl = $imageUrl;
+        $this->displayLocation = $displayLocation;
+        $this->imageBase64 = $imageBase64;
     }
 
     /**
@@ -106,5 +116,34 @@ class Banner
     public function setDisplayLocation(string $displayLocation): void
     {
         $this->displayLocation = $displayLocation;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getImageBase64(): ?string
+    {
+        return $this->imageBase64;
+    }
+
+    /**
+     * @param string|null $imageBase64
+     */
+    public function setImageBase64(?string $imageBase64): void
+    {
+        $this->imageBase64 = $imageBase64;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toArray(): array
+    {
+        return [
+            'country' => $this->country,
+            'linkUrl' => $this->linkUrl,
+            'imageUrl' => $this->imageUrl,
+            'displayLocation' => $this->displayLocation,
+        ];
     }
 }

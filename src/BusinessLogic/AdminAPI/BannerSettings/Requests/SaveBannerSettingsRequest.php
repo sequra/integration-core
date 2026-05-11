@@ -13,12 +13,12 @@ use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 trait SaveBannerSettingsRequest
 {
     /**
-     * @var array<int,array<string>>
+     * @var array<int,array<string,string>>
      */
     protected $bannerConfigs;
 
     /**
-     * @param array<int,array<string>> $bannerConfigs
+     * @param array<int,array<string,string>> $bannerConfigs
      */
     public function __construct(
         array $bannerConfigs = []
@@ -37,9 +37,12 @@ trait SaveBannerSettingsRequest
         foreach ($this->bannerConfigs as $bannerConfig) {
             $arrayOfBannerConfigs[] = new Banner(
                 $bannerConfig['country'] ?? '',
-                $bannerConfig['displayLocation'] ?? '',
                 $bannerConfig['linkUrl'] ?? '',
-                $bannerConfig['imageUrl'] ?? ''
+                '',
+                $bannerConfig['displayLocation'] ?? '',
+                isset($bannerConfig['imageBase64']) && $bannerConfig['imageBase64'] !== ''
+                    ? $bannerConfig['imageBase64']
+                    : null
             );
         }
 

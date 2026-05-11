@@ -5,7 +5,7 @@ namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSetti
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\BannerSettingsResponse;
-use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\SuccessResponse;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 
 /**
@@ -35,11 +35,7 @@ class GetBannerSettingsHandler implements TopicHandlerInterface
      */
     public function handle(array $payload): Response
     {
-        $bannerSettings = $this->bannerSettingsService->getBannerSettings();
-
-        if (!$bannerSettings) {
-            return new SuccessResponse();
-        }
+        $bannerSettings = $this->bannerSettingsService->getBannerSettings() ?? new BannerSettings([]);
 
         return new BannerSettingsResponse($bannerSettings);
     }

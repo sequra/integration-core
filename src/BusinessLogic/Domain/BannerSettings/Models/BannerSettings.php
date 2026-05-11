@@ -45,17 +45,12 @@ class BannerSettings extends DataTransferObject
      */
     public function toArray(): array
     {
-        $bannerSettingsArray = [];
-
-        foreach ($this->bannerConfigs as $bannerConfig) {
-            $bannerSettingsArray['bannerConfigs'][] = [
-                'country' => $bannerConfig->getCountry(),
-                'linkUrl' => $bannerConfig->getLinkUrl(),
-                'imageUrl' => $bannerConfig->getImageUrl(),
-                'displayLocation' => $bannerConfig->getDisplayLocation()
-            ];
+        if (empty($this->bannerConfigs)) {
+            return [];
         }
 
-        return $bannerSettingsArray;
+        return [
+            'bannerConfigs' => Banner::toBatchArray($this->bannerConfigs),
+        ];
     }
 }

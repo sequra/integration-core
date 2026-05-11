@@ -167,6 +167,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
@@ -508,8 +509,12 @@ class BaseTestCase extends TestCase
             },
             BannerSettingsService::class => function () {
                 return new BannerSettingsService(
-                    TestServiceRegister::getService(BannerSettingsRepositoryInterface::class)
+                    TestServiceRegister::getService(BannerSettingsRepositoryInterface::class),
+                    TestServiceRegister::getService(BannerServiceInterface::class)
                 );
+            },
+            BannerServiceInterface::class => function () {
+                return new MockBannerService();
             },
             ProductServiceInterface::class => function () {
                 return new MockProductService();

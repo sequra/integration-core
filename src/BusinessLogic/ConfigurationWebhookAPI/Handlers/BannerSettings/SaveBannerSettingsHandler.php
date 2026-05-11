@@ -5,8 +5,8 @@ namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSetti
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\BannerSettings\SaveBannerSettingsRequest;
-use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\InvalidURLResponse;
-use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\WidgetSettings\SaveWidgetSettingsResponse;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\BannerSettingsResponse;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\BannerImageRequiredException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 
@@ -32,16 +32,15 @@ class SaveBannerSettingsHandler implements TopicHandlerInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws BannerImageRequiredException
+     * @throws InvalidURLException
      */
     public function handle(array $payload): Response
     {
         $request = SaveBannerSettingsRequest::fromPayload($payload);
-        try {
-            $this->bannerSettingsService->setBannerSettings($request->transformToDomainModel());
-        } catch (InvalidURLException $e) {
-            return new InvalidURLResponse($e->getMessage());
-        }
+        $saved = $this->bannerSettingsService->setBannerSettings($request->transformToDomainModel());
 
-        return new SaveWidgetSettingsResponse();
+        return new BannerSettingsResponse($saved);
     }
 }

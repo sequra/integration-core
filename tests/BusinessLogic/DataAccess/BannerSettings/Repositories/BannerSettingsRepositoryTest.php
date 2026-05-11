@@ -62,15 +62,15 @@ class BannerSettingsRepositoryTest extends BaseTestCase
             [
                 new Banner(
                     'ES',
-                    'displayOnHomePage',
                     'https://www.sequra.com/es/faq#shoppers',
-                    'https://shop/sequra/es/image.jpg'
+                    'https://shop/sequra/es/image.jpg',
+                    'displayOnHomePage'
                 ),
                 new Banner(
                     'PT',
-                    'displayOnCartPage',
                     'https://www.sequra.com/it/faq#shoppers',
-                    'https://shop/sequra/pt/image.jpg'
+                    'https://shop/sequra/pt/image.jpg',
+                    'displayOnCartPage'
                 )
             ]
         );
@@ -106,15 +106,15 @@ class BannerSettingsRepositoryTest extends BaseTestCase
             [
                 new Banner(
                     'ES',
-                    'displayOnHomePage',
                     'https://www.sequra.com/es/faq#shoppers',
-                    ''
+                    '',
+                    'displayOnHomePage'
                 ),
                 new Banner(
                     'PT',
-                    'displayOnCartPage',
                     '',
-                    'https://shop/sequra/pt/image.jpg'
+                    'https://shop/sequra/pt/image.jpg',
+                    'displayOnCartPage'
                 )
             ]
         );
@@ -144,15 +144,15 @@ class BannerSettingsRepositoryTest extends BaseTestCase
             [
                 new Banner(
                     'ES',
-                    'displayOnHomePage',
                     'https://www.sequra.com/es/faq#shoppers',
-                    'https://shop/sequra/es/image.jpg'
+                    'https://shop/sequra/es/image.jpg',
+                    'displayOnHomePage'
                 ),
                 new Banner(
                     'PT',
-                    'displayOnCartPage',
                     'https://www.sequra.com/it/faq#shoppers',
-                    'https://shop/sequra/pt/image.jpg'
+                    'https://shop/sequra/pt/image.jpg',
+                    'displayOnCartPage'
                 )
             ]
         );

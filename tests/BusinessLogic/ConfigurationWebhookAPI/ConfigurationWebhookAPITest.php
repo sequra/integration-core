@@ -1790,9 +1790,9 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 [
                     new Banner(
                         'ES',
-                        'displayOnHomePage',
                         'https://www.sequra.es/es/faq#shoppers',
-                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png'
+                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png',
+                        'displayOnHomePage'
                     )
                 ]
             )
@@ -1806,13 +1806,13 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 "bannerConfigs" => [
                     [
                         'country' => 'ES',
-                        'imageUrl' => 'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png',
+                        'imageBase64' => 'ES-base64',
                         'linkUrl' => 'https://www.sequra.es/es/faq#shoppers',
                         'displayLocation' => 'displayOnHomePage'
                     ],
                     [
                         'country' => 'PT',
-                        'imageUrl' => 'https://shop/img/sequra/pt/banner/Flag_of_Spain.svg.png',
+                        'imageBase64' => 'PT-base64',
                         'linkUrl' => 'https://www.sequra.pt/pt/faq#shoppers',
                         'displayLocation' => 'displayOnCartPage'
                     ],
@@ -1822,7 +1822,10 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Assert
         self::assertTrue($response->isSuccessful());
-        self::assertEmpty($response->toArray());
+        $payload = $response->toArray();
+        self::assertCount(2, $payload['bannerConfigs']);
+        self::assertEquals('ES', $payload['bannerConfigs'][0]['country']);
+        self::assertEquals('PT', $payload['bannerConfigs'][1]['country']);
         self::assertCount(2, $this->bannerSettingsService->getBannerSettings()->getBannerConfigs());
     }
 
@@ -1840,9 +1843,9 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 [
                     new Banner(
                         'ES',
-                        'displayOnHomePage',
                         'https://www.sequra.es/es/faq#shoppers',
-                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png'
+                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png',
+                        'displayOnHomePage'
                     )
                 ]
             )
@@ -1856,13 +1859,13 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 "bannerConfigs" => [
                     [
                         'country' => 'ES',
-                        'imageUrl' => 'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png',
+                        'imageBase64' => 'ES-base64',
                         'linkUrl' => 'string',
                         'displayLocation' => 'displayOnHomePage'
                     ],
                     [
                         'country' => 'PT',
-                        'imageUrl' => 'https://shop/img/sequra/pt/banner/Flag_of_Spain.svg.png',
+                        'imageBase64' => 'PT-base64',
                         'linkUrl' => 'https://www.sequra.pt/pt/faq#shoppers',
                         'displayLocation' => 'displayOnCartPage'
                     ],
@@ -1873,8 +1876,10 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         //Assert
         self::assertFalse($response->isSuccessful());
         self::assertEquals([
+            'statusCode' => 0,
+            'errorCode' => 'general.errors.bannerSettings.invalidUrlFormat',
             'errorMessage' => 'URL format is invalid',
-            'errorCode' => 'INVALID_URL'
+            'errorParameters' => [],
         ], $response->toArray());
         self::assertCount(1, $this->bannerSettingsService->getBannerSettings()->getBannerConfigs());
     }
@@ -1892,9 +1897,9 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 [
                     new Banner(
                         'ES',
-                        'displayOnHomePage',
                         'https://www.sequra.es/es/faq#shoppers',
-                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png'
+                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png',
+                        'displayOnHomePage'
                     )
                 ]
             )

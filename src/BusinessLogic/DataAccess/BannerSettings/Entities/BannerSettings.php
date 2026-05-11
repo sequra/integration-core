@@ -110,9 +110,9 @@ class BannerSettings extends Entity
         foreach ($bannerConfigs as $bannerConfig) {
             $arrayOffBannerConfigs [] = new Banner(
                 $bannerConfig['country'],
-                $bannerConfig['displayLocation'],
                 $bannerConfig['linkUrl'],
-                $bannerConfig['imageUrl']
+                $bannerConfig['imageUrl'],
+                $bannerConfig['displayLocation']
             );
         }
 

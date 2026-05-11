@@ -60,9 +60,9 @@ class BannersApiTest extends BaseTestCase
                 [
                     new Banner(
                         'ES',
-                        'displayOnHomePage',
                         'https://www.sequra.es/es/faq#shoppers',
-                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png'
+                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png',
+                        'displayOnHomePage'
                     )
                 ]
             )
@@ -90,9 +90,9 @@ class BannersApiTest extends BaseTestCase
                 [
                     new Banner(
                         'ES',
-                        'displayOnHomePage',
                         'https://www.sequra.es/es/faq#shoppers',
-                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png'
+                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png',
+                        'displayOnHomePage'
                     )
                 ]
             )

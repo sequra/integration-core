@@ -2,10 +2,13 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\BannerSettings\Services;
 
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\BannerImageRequiredException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 
 /**
  * Class BannerSettingsService
@@ -20,12 +23,20 @@ class BannerSettingsService
     protected $bannerSettingsRepository;
 
     /**
+     * @var BannerServiceInterface
+     */
+    protected $bannerService;
+
+    /**
      * @param BannerSettingsRepositoryInterface $bannerSettingsRepository
+     * @param BannerServiceInterface $bannerService
      */
     public function __construct(
-        BannerSettingsRepositoryInterface $bannerSettingsRepository
+        BannerSettingsRepositoryInterface $bannerSettingsRepository,
+        BannerServiceInterface $bannerService
     ) {
         $this->bannerSettingsRepository = $bannerSettingsRepository;
+        $this->bannerService = $bannerService;
     }
 
     /**
@@ -43,18 +54,42 @@ class BannerSettingsService
      *
      * @param BannerSettings $bannerSettings
      *
-     * @return void
+     * @return BannerSettings
      *
+     * @throws BannerImageRequiredException
      * @throws InvalidURLException
      */
-    public function setBannerSettings(BannerSettings $bannerSettings): void
+    public function setBannerSettings(BannerSettings $bannerSettings): BannerSettings
     {
-        foreach ($bannerSettings->getBannerConfigs() as $bannerConfig) {
-            $this->assertValidUrl($bannerConfig->getLinkUrl());
-            $this->assertValidUrl($bannerConfig->getImageUrl());
+        $incomingBanners = $bannerSettings->getBannerConfigs();
+        $existingBannerSettings = $this->getBannerSettings();
+        $existingBanners = $existingBannerSettings
+            ? $existingBannerSettings->getBannerConfigs()
+            : [];
+
+        $existingBannersByKey = $this->indexByKey($existingBanners);
+        $incomingBannersByKey = $this->indexByKey($incomingBanners);
+
+        $resolvedBanners = [];
+
+        foreach ($incomingBanners as $banner) {
+            $this->assertValidUrl($banner->getLinkUrl());
+            $this->assertBannerHasImageSource($banner, $existingBannersByKey);
+
+            $resolvedBanners[] = $this->resolveBannerImage($banner, $existingBannersByKey);
         }
 
-        $this->bannerSettingsRepository->setBannerSettings($bannerSettings);
+        foreach (array_diff_key($existingBannersByKey, $incomingBannersByKey) as $bannerToRemove) {
+            $this->bannerService->deleteBannerImage(
+                $bannerToRemove->getCountry(),
+                $bannerToRemove->getDisplayLocation()
+            );
+        }
+
+        $persisted = new BannerSettings($resolvedBanners);
+        $this->bannerSettingsRepository->setBannerSettings($persisted);
+
+        return $persisted;
     }
 
     /**
@@ -83,6 +118,100 @@ class BannerSettingsService
     }
 
     /**
+     * Verifies whether the banner contains an imageBase64 payload
+     * or already has a persisted image in storage.
+     *
+     * @param Banner $banner
+     * @param array<string, Banner> $existingByKey
+     *
+     * @throws BannerImageRequiredException
+     */
+    protected function assertBannerHasImageSource(Banner $banner, array $existingByKey): void
+    {
+        if ($this->hasImageBase64($banner) || isset($existingByKey[$this->keyFor($banner)])) {
+            return;
+        }
+
+        throw new BannerImageRequiredException(
+            new TranslatableLabel(
+                'A new banner must include an imageBase64.',
+                'general.errors.bannerSettings.imageRequired'
+            )
+        );
+    }
+
+    /**
+     * Uploads a new image when a base64 payload is present, otherwise reuses
+     * the URL of the previously stored banner
+     *
+     * @param Banner $banner
+     * @param array<string, Banner> $existingByKey
+     *
+     * @return Banner
+     *
+     * @throws InvalidURLException
+     */
+    protected function resolveBannerImage(Banner $banner, array $existingByKey): Banner
+    {
+        $key = $this->keyFor($banner);
+
+        if ($this->hasImageBase64($banner)) {
+            $banner->setImageUrl(
+                $this->bannerService->saveBannerImage(
+                    $banner->getCountry(),
+                    $banner->getDisplayLocation(),
+                    $banner->getImageBase64()
+                )
+            );
+        } elseif (isset($existingByKey[$key])) {
+            $banner->setImageUrl($existingByKey[$key]->getImageUrl());
+        }
+
+        $banner->setImageBase64(null);
+
+        $this->assertValidUrl($banner->getImageUrl());
+
+        return $banner;
+    }
+
+    /**
+     * @param Banner $banner
+     *
+     * @return bool
+     */
+    protected function hasImageBase64(Banner $banner): bool
+    {
+        $base64 = $banner->getImageBase64();
+
+        return $base64 !== null && $base64 !== '';
+    }
+
+    /**
+     * @param Banner[] $banners
+     *
+     * @return array<string, Banner>
+     */
+    protected function indexByKey(array $banners): array
+    {
+        $indexed = [];
+        foreach ($banners as $banner) {
+            $indexed[$this->keyFor($banner)] = $banner;
+        }
+
+        return $indexed;
+    }
+
+    /**
+     * @param Banner $banner
+     *
+     * @return string
+     */
+    protected function keyFor(Banner $banner): string
+    {
+        return $banner->getCountry() . '|' . $banner->getDisplayLocation();
+    }
+
+    /**
      * Validates the URL
      *
      * @throws InvalidURLException
@@ -90,16 +219,31 @@ class BannerSettingsService
     protected function assertValidUrl(string $url): void
     {
         if (mb_strlen($url) > 2048) {
-            throw new InvalidURLException('URL is too long (max 2048 characters)');
+            throw new InvalidURLException(
+                new TranslatableLabel(
+                    'URL is too long (max 2048 characters)',
+                    'general.errors.bannerSettings.urlTooLong'
+                )
+            );
         }
 
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new InvalidURLException('URL format is invalid');
+            throw new InvalidURLException(
+                new TranslatableLabel(
+                    'URL format is invalid',
+                    'general.errors.bannerSettings.invalidUrlFormat'
+                )
+            );
         }
 
         $scheme = parse_url($url, PHP_URL_SCHEME);
         if (!in_array($scheme, ['http', 'https'], true)) {
-            throw new InvalidURLException('URL must use http or https');
+            throw new InvalidURLException(
+                new TranslatableLabel(
+                    'URL must use http or https',
+                    'general.errors.bannerSettings.invalidUrlScheme'
+                )
+            );
         }
     }
 }

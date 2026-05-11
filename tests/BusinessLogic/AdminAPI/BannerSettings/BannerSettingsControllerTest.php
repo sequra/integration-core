@@ -5,8 +5,6 @@ namespace SeQura\Core\Tests\BusinessLogic\AdminAPI\BannerSettings;
 use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\BannerSettings\Requests\BannerSettingsRequest;
-use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
-use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
@@ -50,15 +48,15 @@ class BannerSettingsControllerTest extends BaseTestCase
             [
                 new Banner(
                     'ES',
-                    'displayOnHomePage',
                     'https://www.sequra.com/es/faq#shoppers',
-                    'https://shop/sequra/es/image.jpg'
+                    'https://shop/sequra/es/image.jpg',
+                    'displayOnHomePage'
                 ),
                 new Banner(
                     'PT',
-                    'displayOnCartPage',
                     'https://www.sequra.com/it/faq#shoppers',
-                    'https://shop/sequra/pt/image.jpg'
+                    'https://shop/sequra/pt/image.jpg',
+                    'displayOnCartPage'
                 )
             ]
         );
@@ -103,21 +101,22 @@ class BannerSettingsControllerTest extends BaseTestCase
                     'country' => 'ES',
                     'displayLocation' => 'displayOnHomePage',
                     'linkUrl' => 'https://www.sequra.com/es/faq#shoppers',
-                    'imageUrl' => 'https://shop/sequra/es/image.jpg'
+                    'imageBase64' => 'ES-base64'
                 ],
                 [
                     'country' => 'PT',
                     'displayLocation' => 'displayOnCartPage',
                     'linkUrl' => 'https://www.sequra.com/it/faq#shoppers',
-                    'imageUrl' => 'https://shop/sequra/pt/image.jpg'
+                    'imageBase64' => 'PT-base64'
                 ],
             ]
         );
 
         // act
-        AdminAPI::get()->bannerSettings('store1')->setBannerSettings($settings);
+        $result = AdminAPI::get()->bannerSettings('store1')->setBannerSettings($settings);
 
         // assert
+        self::assertTrue($result->isSuccessful());
         $savedSettings = StoreContext::doWithStore(
             'store1',
             [
@@ -125,7 +124,11 @@ class BannerSettingsControllerTest extends BaseTestCase
                 'getBannerSettings'
             ]
         );
-        self::assertEquals($settings->transformToDomainModel(), $savedSettings);
+        self::assertNotNull($savedSettings);
+        self::assertCount(2, $savedSettings->getBannerConfigs());
+        self::assertNotSame('', $savedSettings->getBannerConfigs()[0]->getImageUrl());
+        self::assertNotSame('', $savedSettings->getBannerConfigs()[1]->getImageUrl());
+        self::assertEquals($savedSettings->toArray(), $result->toArray());
     }
 
     /**
@@ -142,13 +145,13 @@ class BannerSettingsControllerTest extends BaseTestCase
                     'country' => 'ES',
                     'displayLocation' => 'displayOnHomePage',
                     'linkUrl' => 'https://www.sequra.com/es/faq#shoppers',
-                    'imageUrl' => 'https://shop/sequra/es/image.jpg'
+                    'imageBase64' => 'ES-base64'
                 ],
                 [
                     'country' => 'PT',
                     'displayLocation' => 'displayOnCartPage',
                     'linkUrl' => 'string',
-                    'imageUrl' => 'https://shop/sequra/pt/image.jpg'
+                    'imageBase64' => 'PT-base64'
                 ],
             ]
         );
@@ -159,8 +162,10 @@ class BannerSettingsControllerTest extends BaseTestCase
         // assert
         self::assertFalse($result->isSuccessful());
         self::assertEquals([
+            'statusCode' => 0,
+            'errorCode' => 'general.errors.bannerSettings.invalidUrlFormat',
             'errorMessage' => 'URL format is invalid',
-            'errorCode' => '400'
+            'errorParameters' => [],
         ], $result->toArray());
 
         $savedSettings = StoreContext::doWithStore(
