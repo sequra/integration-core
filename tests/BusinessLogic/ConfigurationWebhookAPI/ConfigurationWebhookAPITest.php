@@ -3,7 +3,6 @@
 namespace SeQura\Core\Tests\BusinessLogic\ConfigurationWebhookAPI;
 
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\ConfigurationWebhookAPI;
-use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\BannerDisplayLocationsResponse;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\BannerSettingsResponse;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Models\AdvancedSettings;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
@@ -1785,6 +1784,12 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testSaveBannerSettingsResponse(): void
     {
         //Arrange
+        $this->bannerService->setBannerDisplayLocations([
+            'displayOnHomePage',
+            'displayOnProductPage',
+            'displayOnCartPage',
+            'displayOnProductListingPage',
+        ]);
         $this->bannerSettingsService->setBannerSettings(
             new BannerSettings(
                 [
@@ -1823,6 +1828,15 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         //Assert
         self::assertTrue($response->isSuccessful());
         $payload = $response->toArray();
+        self::assertEquals(
+            [
+                'displayOnHomePage',
+                'displayOnProductPage',
+                'displayOnCartPage',
+                'displayOnProductListingPage',
+            ],
+            $payload['displayLocations']
+        );
         self::assertCount(2, $payload['bannerConfigs']);
         self::assertEquals('ES', $payload['bannerConfigs'][0]['country']);
         self::assertEquals('PT', $payload['bannerConfigs'][1]['country']);
@@ -1892,6 +1906,12 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testGetBannerSettingsResponse(): void
     {
         //Arrange
+        $this->bannerService->setBannerDisplayLocations([
+            'displayOnHomePage',
+            'displayOnProductPage',
+            'displayOnCartPage',
+            'displayOnProductListingPage',
+        ]);
         $this->bannerSettingsService->setBannerSettings(
             new BannerSettings(
                 [
@@ -1916,7 +1936,17 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Assert
         self::assertTrue($response->isSuccessful());
-        self::assertCount(1, $response->toArray()['bannerConfigs']);
+        $payload = $response->toArray();
+        self::assertEquals(
+            [
+                'displayOnHomePage',
+                'displayOnProductPage',
+                'displayOnCartPage',
+                'displayOnProductListingPage',
+            ],
+            $payload['displayLocations']
+        );
+        self::assertCount(1, $payload['bannerConfigs']);
     }
 
     /**
@@ -1927,6 +1957,12 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     public function testGetBannerSettingsEmptyResponse(): void
     {
         //Arrange
+        $this->bannerService->setBannerDisplayLocations([
+            'displayOnHomePage',
+            'displayOnProductPage',
+            'displayOnCartPage',
+            'displayOnProductListingPage',
+        ]);
 
         //Act
         /** @var BannerSettingsResponse $response */
@@ -1939,33 +1975,17 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         //Assert
         self::assertTrue($response->isSuccessful());
-        self::assertEmpty($response->toArray());
-    }
-
-    /**
-     * @return void
-     */
-    public function testGetBannerDisplayLocations(): void
-    {
-        //Arrange
-        $this->bannerService->setBannerDisplayLocations([
-            'displayOnHomePage',
-            'displayOnProductPage',
-            'displayOnCartPage',
-            'displayOnProductListingPage'
-        ]);
-
-        //Act
-        /** @var BannerDisplayLocationsResponse $response */
-        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
-            $this->signature,
+        self::assertEquals(
             [
-                "topic" => "get-banner-display-locations"
-            ]
+                'displayLocations' => [
+                    'displayOnHomePage',
+                    'displayOnProductPage',
+                    'displayOnCartPage',
+                    'displayOnProductListingPage',
+                ],
+                'bannerConfigs' => [],
+            ],
+            $response->toArray()
         );
-
-        //Assert
-        self::assertTrue($response->isSuccessful());
-        self::assertCount(4, $response->toArray());
     }
 }

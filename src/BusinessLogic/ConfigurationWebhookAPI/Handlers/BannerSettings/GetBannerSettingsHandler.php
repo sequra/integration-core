@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInter
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\BannerSettingsResponse;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
 
 /**
  * Class GetBannerSettingsHandler
@@ -21,11 +22,20 @@ class GetBannerSettingsHandler implements TopicHandlerInterface
     protected $bannerSettingsService;
 
     /**
-     * @param BannerSettingsService $bannerSettingsService
+     * @var BannerServiceInterface
      */
-    public function __construct(BannerSettingsService $bannerSettingsService)
-    {
+    protected $bannerService;
+
+    /**
+     * @param BannerSettingsService $bannerSettingsService
+     * @param BannerServiceInterface $bannerService
+     */
+    public function __construct(
+        BannerSettingsService $bannerSettingsService,
+        BannerServiceInterface $bannerService
+    ) {
         $this->bannerSettingsService = $bannerSettingsService;
+        $this->bannerService = $bannerService;
     }
 
     /**
@@ -37,6 +47,9 @@ class GetBannerSettingsHandler implements TopicHandlerInterface
     {
         $bannerSettings = $this->bannerSettingsService->getBannerSettings() ?? new BannerSettings([]);
 
-        return new BannerSettingsResponse($bannerSettings);
+        return new BannerSettingsResponse(
+            $bannerSettings,
+            $this->bannerService->getBannerDisplayLocations()
+        );
     }
 }

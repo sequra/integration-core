@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\BannerSettings\Responses\BannerSettingsRe
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\BannerImageRequiredException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
 
 /**
  * Class BannerSettingsController
@@ -22,11 +23,20 @@ class BannerSettingsController
     protected $bannerSettingsService;
 
     /**
-     * @param BannerSettingsService $bannerSettingsService
+     * @var BannerServiceInterface
      */
-    public function __construct(BannerSettingsService $bannerSettingsService)
-    {
+    protected $bannerService;
+
+    /**
+     * @param BannerSettingsService $bannerSettingsService
+     * @param BannerServiceInterface $bannerService
+     */
+    public function __construct(
+        BannerSettingsService $bannerSettingsService,
+        BannerServiceInterface $bannerService
+    ) {
         $this->bannerSettingsService = $bannerSettingsService;
+        $this->bannerService = $bannerService;
     }
 
     /**
@@ -36,7 +46,10 @@ class BannerSettingsController
      */
     public function getBannerSettings(): BannerSettingsResponse
     {
-        return new BannerSettingsResponse($this->bannerSettingsService->getBannerSettings());
+        return new BannerSettingsResponse(
+            $this->bannerSettingsService->getBannerSettings(),
+            $this->bannerService->getBannerDisplayLocations()
+        );
     }
 
     /**
@@ -52,7 +65,8 @@ class BannerSettingsController
     public function setBannerSettings(BannerSettingsRequest $settingsRequest): BannerSettingsResponse
     {
         return new BannerSettingsResponse(
-            $this->bannerSettingsService->setBannerSettings($settingsRequest->transformToDomainModel())
+            $this->bannerSettingsService->setBannerSettings($settingsRequest->transformToDomainModel()),
+            $this->bannerService->getBannerDisplayLocations()
         );
     }
 }

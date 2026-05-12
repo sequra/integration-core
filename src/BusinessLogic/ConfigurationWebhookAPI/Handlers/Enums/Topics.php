@@ -56,10 +56,6 @@ interface Topics
     /**
      * @var string
      */
-    public const GET_BANNER_DISPLAY_LOCATIONS = 'get-banner-display-locations';
-    /**
-     * @var string
-     */
     public const GET_LOG_CONTENT = 'get-log-content';
     /**
      * @var string
@@ -96,7 +92,6 @@ interface Topics
         self::SAVE_ADVANCED_SETTINGS,
         self::GET_BANNER_SETTINGS,
         self::SAVE_BANNER_SETTINGS,
-        self::GET_BANNER_DISPLAY_LOCATIONS,
         self::GET_LOG_CONTENT,
         self::REMOVE_LOG_CONTENT,
         self::GET_SHOP_CATEGORIES,

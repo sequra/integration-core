@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\B
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\BannerImageRequiredException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
 
 /**
  * Class SaveBannerSettingsHandler
@@ -23,11 +24,20 @@ class SaveBannerSettingsHandler implements TopicHandlerInterface
     protected $bannerSettingsService;
 
     /**
-     * @param BannerSettingsService $bannerSettingsService
+     * @var BannerServiceInterface
      */
-    public function __construct(BannerSettingsService $bannerSettingsService)
-    {
+    protected $bannerService;
+
+    /**
+     * @param BannerSettingsService $bannerSettingsService
+     * @param BannerServiceInterface $bannerService
+     */
+    public function __construct(
+        BannerSettingsService $bannerSettingsService,
+        BannerServiceInterface $bannerService
+    ) {
         $this->bannerSettingsService = $bannerSettingsService;
+        $this->bannerService = $bannerService;
     }
 
     /**
@@ -41,6 +51,9 @@ class SaveBannerSettingsHandler implements TopicHandlerInterface
         $request = SaveBannerSettingsRequest::fromPayload($payload);
         $saved = $this->bannerSettingsService->setBannerSettings($request->transformToDomainModel());
 
-        return new BannerSettingsResponse($saved);
+        return new BannerSettingsResponse(
+            $saved,
+            $this->bannerService->getBannerDisplayLocations()
+        );
     }
 }

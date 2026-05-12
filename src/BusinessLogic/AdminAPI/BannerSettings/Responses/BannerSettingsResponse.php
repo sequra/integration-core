@@ -13,16 +13,23 @@ use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 class BannerSettingsResponse extends Response
 {
     /**
-     * @var BannerSettings
+     * @var BannerSettings|null
      */
     protected $bannerSettings;
 
     /**
-     * @param BannerSettings|null $bannerSettings
+     * @var string[]
      */
-    public function __construct(?BannerSettings $bannerSettings)
+    protected $displayLocations;
+
+    /**
+     * @param BannerSettings|null $bannerSettings
+     * @param string[] $displayLocations
+     */
+    public function __construct(?BannerSettings $bannerSettings, array $displayLocations)
     {
         $this->bannerSettings = $bannerSettings;
+        $this->displayLocations = $displayLocations;
     }
 
     /**
@@ -30,6 +37,11 @@ class BannerSettingsResponse extends Response
      */
     public function toArray(): array
     {
-        return !$this->bannerSettings ? [] : $this->bannerSettings->toArray();
+        $settingsArray = $this->bannerSettings ? $this->bannerSettings->toArray() : [];
+
+        return [
+            'displayLocations' => $this->displayLocations,
+            'bannerConfigs' => $settingsArray['bannerConfigs'] ?? [],
+        ];
     }
 }

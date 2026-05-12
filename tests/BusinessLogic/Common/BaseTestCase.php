@@ -21,7 +21,6 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsC
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Controller\ConfigurationWebhookController;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\GetAdvancedSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\SaveAdvancedSettingsHandler;
-use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\GetBannerDisplayLocationsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\GetBannerSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\SaveBannerSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Enums\Topics;
@@ -532,7 +531,8 @@ class BaseTestCase extends TestCase
             },
             BannerSettingsController::class => function () {
                 return new BannerSettingsController(
-                    TestServiceRegister::getService(BannerSettingsService::class)
+                    TestServiceRegister::getService(BannerSettingsService::class),
+                    TestServiceRegister::getService(BannerServiceInterface::class)
                 );
             },
             AbstractItemFactory::class => function () {
@@ -859,7 +859,8 @@ class BaseTestCase extends TestCase
             GetBannerSettingsHandler::class,
             static function () {
                 return new GetBannerSettingsHandler(
-                    TestServiceRegister::getService(BannerSettingsService::class)
+                    TestServiceRegister::getService(BannerSettingsService::class),
+                    TestServiceRegister::getService(BannerServiceInterface::class)
                 );
             }
         );
@@ -868,15 +869,7 @@ class BaseTestCase extends TestCase
             SaveBannerSettingsHandler::class,
             static function () {
                 return new SaveBannerSettingsHandler(
-                    TestServiceRegister::getService(BannerSettingsService::class)
-                );
-            }
-        );
-
-        TestServiceRegister::registerService(
-            GetBannerDisplayLocationsHandler::class,
-            static function () {
-                return new GetBannerDisplayLocationsHandler(
+                    TestServiceRegister::getService(BannerSettingsService::class),
                     TestServiceRegister::getService(BannerServiceInterface::class)
                 );
             }
@@ -989,11 +982,6 @@ class BaseTestCase extends TestCase
         TopicHandlerRegistry::register(
             Topics::SAVE_BANNER_SETTINGS,
             SaveBannerSettingsHandler::class
-        );
-
-        TopicHandlerRegistry::register(
-            Topics::GET_BANNER_DISPLAY_LOCATIONS,
-            GetBannerDisplayLocationsHandler::class
         );
 
         TopicHandlerRegistry::register(

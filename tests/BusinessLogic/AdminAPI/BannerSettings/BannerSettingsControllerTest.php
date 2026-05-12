@@ -8,8 +8,10 @@ use SeQura\Core\BusinessLogic\AdminAPI\BannerSettings\Requests\BannerSettingsReq
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**+
@@ -25,6 +27,11 @@ class BannerSettingsControllerTest extends BaseTestCase
     private $bannerSettingsRepository;
 
     /**
+     * @var MockBannerService
+     */
+    private $bannerService;
+
+    /**
      * @inheritDoc
      */
     protected function setUp(): void
@@ -34,6 +41,17 @@ class BannerSettingsControllerTest extends BaseTestCase
         $this->bannerSettingsRepository = TestServiceRegister::getService(
             BannerSettingsRepositoryInterface::class
         );
+
+        $this->bannerService = new MockBannerService();
+        $this->bannerService->setBannerDisplayLocations([
+            'displayOnHomePage',
+            'displayOnProductPage',
+            'displayOnCartPage',
+            'displayOnProductListingPage',
+        ]);
+        TestServiceRegister::registerService(BannerServiceInterface::class, function () {
+            return $this->bannerService;
+        });
     }
 
     /**
@@ -68,6 +86,12 @@ class BannerSettingsControllerTest extends BaseTestCase
         // assert
         self::assertEquals(
             [
+                'displayLocations' => [
+                    'displayOnHomePage',
+                    'displayOnProductPage',
+                    'displayOnCartPage',
+                    'displayOnProductListingPage',
+                ],
                 'bannerConfigs' => [
                     [
                         'country' => $settings->getBannerConfigs()[0]->getCountry(),
@@ -82,6 +106,31 @@ class BannerSettingsControllerTest extends BaseTestCase
                         'displayLocation' => $settings->getBannerConfigs()[1]->getDisplayLocation()
                     ]
                 ]
+            ],
+            $result->toArray()
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testGetSettingsEmpty(): void
+    {
+        // act
+        $result = AdminAPI::get()->bannerSettings('store1')->getBannerSettings();
+
+        // assert
+        self::assertEquals(
+            [
+                'displayLocations' => [
+                    'displayOnHomePage',
+                    'displayOnProductPage',
+                    'displayOnCartPage',
+                    'displayOnProductListingPage',
+                ],
+                'bannerConfigs' => [],
             ],
             $result->toArray()
         );
@@ -117,6 +166,20 @@ class BannerSettingsControllerTest extends BaseTestCase
 
         // assert
         self::assertTrue($result->isSuccessful());
+        $payload = $result->toArray();
+        self::assertEquals(
+            [
+                'displayOnHomePage',
+                'displayOnProductPage',
+                'displayOnCartPage',
+                'displayOnProductListingPage',
+            ],
+            $payload['displayLocations']
+        );
+        self::assertCount(2, $payload['bannerConfigs']);
+        self::assertNotSame('', $payload['bannerConfigs'][0]['imageUrl']);
+        self::assertNotSame('', $payload['bannerConfigs'][1]['imageUrl']);
+
         $savedSettings = StoreContext::doWithStore(
             'store1',
             [
@@ -126,9 +189,6 @@ class BannerSettingsControllerTest extends BaseTestCase
         );
         self::assertNotNull($savedSettings);
         self::assertCount(2, $savedSettings->getBannerConfigs());
-        self::assertNotSame('', $savedSettings->getBannerConfigs()[0]->getImageUrl());
-        self::assertNotSame('', $savedSettings->getBannerConfigs()[1]->getImageUrl());
-        self::assertEquals($savedSettings->toArray(), $result->toArray());
     }
 
     /**

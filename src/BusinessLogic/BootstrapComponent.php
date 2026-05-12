@@ -21,7 +21,6 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationCo
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Controller\ConfigurationWebhookController;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\GetAdvancedSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\SaveAdvancedSettingsHandler;
-use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\GetBannerDisplayLocationsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\GetBannerSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\SaveBannerSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Enums\Topics;
@@ -766,7 +765,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             BannerSettingsController::class,
             static function () {
                 return new BannerSettingsController(
-                    ServiceRegister::getService(BannerSettingsService::class)
+                    ServiceRegister::getService(BannerSettingsService::class),
+                    ServiceRegister::getService(BannerServiceInterface::class)
                 );
             }
         );
@@ -1065,11 +1065,6 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         TopicHandlerRegistry::register(
-            Topics::GET_BANNER_DISPLAY_LOCATIONS,
-            GetBannerDisplayLocationsHandler::class
-        );
-
-        TopicHandlerRegistry::register(
             Topics::GET_LOG_CONTENT,
             GetLogContentHandler::class
         );
@@ -1196,7 +1191,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             GetBannerSettingsHandler::class,
             static function () {
                 return new GetBannerSettingsHandler(
-                    ServiceRegister::getService(BannerSettingsService::class)
+                    ServiceRegister::getService(BannerSettingsService::class),
+                    ServiceRegister::getService(BannerServiceInterface::class)
                 );
             }
         );
@@ -1205,15 +1201,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             SaveBannerSettingsHandler::class,
             static function () {
                 return new SaveBannerSettingsHandler(
-                    ServiceRegister::getService(BannerSettingsService::class)
-                );
-            }
-        );
-
-        ServiceRegister::registerService(
-            GetBannerDisplayLocationsHandler::class,
-            static function () {
-                return new GetBannerDisplayLocationsHandler(
+                    ServiceRegister::getService(BannerSettingsService::class),
                     ServiceRegister::getService(BannerServiceInterface::class)
                 );
             }
