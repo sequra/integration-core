@@ -22,6 +22,11 @@ class Capability
     private const WIDGET = 'widget';
 
     /**
+     * Banner capability string constant.
+     */
+    private const BANNER = 'banner';
+
+    /**
      * Order status capability string constant.
      */
     private const ORDER_STATUS = 'order-status';
@@ -82,6 +87,16 @@ class Capability
     public static function widget(): self
     {
         return new self(self::WIDGET);
+    }
+
+    /**
+     * Called for banner capability.
+     *
+     * @return Capability
+     */
+    public static function banner(): self
+    {
+        return new self(self::BANNER);
     }
 
     /**
@@ -169,6 +184,10 @@ class Capability
 
         if ($capability === self::WIDGET) {
             return self::widget();
+        }
+
+        if ($capability === self::BANNER) {
+            return self::banner();
         }
 
         if ($capability === self::ORDER_STATUS) {
