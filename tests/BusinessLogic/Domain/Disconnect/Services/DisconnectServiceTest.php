@@ -6,6 +6,9 @@ use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Models\AdvancedSettings;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
@@ -25,6 +28,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusMapping;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
@@ -37,6 +41,8 @@ use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\Statist
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
@@ -138,6 +144,21 @@ class DisconnectServiceTest extends BaseTestCase
     private $advancedSettingsRepository;
 
     /**
+     * @var MockBannerSettingsRepository $bannerSettingsRepository
+     */
+    private $bannerSettingsRepository;
+
+    /**
+     * @var MockBannerService $bannerService
+     */
+    private $bannerService;
+
+    /**
+     * @var BannerSettingsService $bannerSettingsService
+     */
+    private $bannerSettingsService;
+
+    /**
      * @var DisconnectService $service
      */
     private $service;
@@ -166,6 +187,12 @@ class DisconnectServiceTest extends BaseTestCase
             new MockStoreInfoService()
         );
         $this->advancedSettingsRepository = new MockAdvancedSettingsRepository();
+        $this->bannerSettingsRepository = new MockBannerSettingsRepository();
+        $this->bannerService = new MockBannerService();
+        $this->bannerSettingsService = new BannerSettingsService(
+            $this->bannerSettingsRepository,
+            $this->bannerService
+        );
 
         $this->service = new DisconnectService(
             $this->integrationDisconnectService,
@@ -182,7 +209,8 @@ class DisconnectServiceTest extends BaseTestCase
             $this->statisticalDataRepository,
             $this->transactionLogRepository,
             $this->storeIntegrationService,
-            $this->advancedSettingsRepository
+            $this->advancedSettingsRepository,
+            $this->bannerSettingsService
         );
     }
 
@@ -508,5 +536,65 @@ class DisconnectServiceTest extends BaseTestCase
 
         //Assert
         self::assertTrue($this->storeIntegrationService->isDeleted());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws PaymentMethodNotFoundException
+     */
+    public function testDisconnectFullClearsBannerSettingsAndImages(): void
+    {
+        //Arrange
+        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings([
+            new Banner(
+                'ES',
+                'https://www.sequra.es/es/faq#shoppers',
+                'https://shop.test/banners/ES_displayOnHomePage.png',
+                'displayOnHomePage'
+            ),
+            new Banner(
+                'PT',
+                'https://www.sequra.pt/pt/faq#shoppers',
+                'https://shop.test/banners/PT_displayOnCartPage.png',
+                'displayOnCartPage'
+            ),
+        ]));
+
+        //Act
+        $this->service->disconnect('sequra', true);
+
+        //Assert
+        self::assertNull($this->bannerSettingsRepository->getBannerSettings());
+        self::assertEquals(
+            ['ES|displayOnHomePage', 'PT|displayOnCartPage'],
+            $this->bannerService->getDeletedImageKeys()
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws PaymentMethodNotFoundException
+     */
+    public function testDisconnectNotFullPreservesBannerSettings(): void
+    {
+        //Arrange
+        $existing = new BannerSettings([
+            new Banner(
+                'ES',
+                'https://www.sequra.es/es/faq#shoppers',
+                'https://shop.test/banners/ES_displayOnHomePage.png',
+                'displayOnHomePage'
+            ),
+        ]);
+        $this->bannerSettingsRepository->setBannerSettings($existing);
+
+        //Act
+        $this->service->disconnect('sequra', false);
+
+        //Assert
+        self::assertNotNull($this->bannerSettingsRepository->getBannerSettings());
+        self::assertEmpty($this->bannerService->getDeletedImageKeys());
     }
 }

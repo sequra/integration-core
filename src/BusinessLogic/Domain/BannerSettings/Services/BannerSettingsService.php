@@ -93,6 +93,47 @@ class BannerSettingsService
     }
 
     /**
+     * Removes banner images currently uploaded to the integration server
+     *
+     * @return void
+     */
+    public function deleteUploadedBannerImages(): void
+    {
+        $bannerSettings = $this->getBannerSettings();
+        if ($bannerSettings === null) {
+            return;
+        }
+
+        foreach ($bannerSettings->getBannerConfigs() as $banner) {
+            $this->bannerService->deleteBannerImage(
+                $banner->getCountry(),
+                $banner->getDisplayLocation()
+            );
+        }
+    }
+
+    /**
+     * Deletes the banner settings
+     *
+     * @return void
+     */
+    public function deleteBannerSettings(): void
+    {
+        $this->bannerSettingsRepository->deleteBannerSettings();
+    }
+
+    /**
+     * Removes both the uploaded banner images and banner settings.
+     *
+     * @return void
+     */
+    public function clearBannerSettings(): void
+    {
+        $this->deleteUploadedBannerImages();
+        $this->deleteBannerSettings();
+    }
+
+    /**
      * Returns banner data
      *
      * @param string $country

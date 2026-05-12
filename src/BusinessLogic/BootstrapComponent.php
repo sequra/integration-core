@@ -509,7 +509,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
                     ServiceRegister::getService(TransactionLogRepositoryInterface::class),
                     ServiceRegister::getService(StoreIntegrationService::class),
-                    ServiceRegister::getService(AdvancedSettingsRepositoryInterface::class)
+                    ServiceRegister::getService(AdvancedSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(BannerSettingsService::class)
                 );
             }
         );
