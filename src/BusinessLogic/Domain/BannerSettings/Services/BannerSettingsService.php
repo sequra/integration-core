@@ -9,6 +9,9 @@ use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
+use SeQura\Core\Infrastructure\Logger\Logger;
+use Throwable;
 
 /**
  * Class BannerSettingsService
@@ -93,7 +96,7 @@ class BannerSettingsService
     }
 
     /**
-     * Removes banner images currently uploaded to the integration server
+     * Removes banner images currently uploaded to the integration server.
      *
      * @return void
      */
@@ -105,10 +108,23 @@ class BannerSettingsService
         }
 
         foreach ($bannerSettings->getBannerConfigs() as $banner) {
-            $this->bannerService->deleteBannerImage(
-                $banner->getCountry(),
-                $banner->getDisplayLocation()
-            );
+            try {
+                $this->bannerService->deleteBannerImage(
+                    $banner->getCountry(),
+                    $banner->getDisplayLocation()
+                );
+            } catch (Throwable $e) {
+                Logger::logError(
+                    'Failed to delete uploaded banner image.',
+                    'Core',
+                    [
+                        new LogContextData('country', $banner->getCountry()),
+                        new LogContextData('displayLocation', $banner->getDisplayLocation()),
+                        new LogContextData('message', $e->getMessage()),
+                        new LogContextData('type', get_class($e)),
+                    ]
+                );
+            }
         }
     }
 
