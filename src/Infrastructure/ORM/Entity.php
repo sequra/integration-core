@@ -153,6 +153,6 @@ abstract class Entity extends DataTransferObject
      */
     protected static function getArrayValue($search, $key, $default = null)
     {
-        return array_key_exists($key, $search) ? $search[$key] : $default;
+        return \array_key_exists($key, $search) ? $search[$key] : $default;
     }
 }

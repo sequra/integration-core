@@ -64,7 +64,7 @@ class OrderStatusSettingsService implements OrderStatusProvider
         }, $this->integrationShopOrderStatusesService->getShopOrderStatuses());
 
         foreach ($orderStatusMappings as $mapping) {
-            if (!in_array($mapping->getShopStatus(), $shopStatusIds, true)) {
+            if (!\in_array($mapping->getShopStatus(), $shopStatusIds, true)) {
                 $mapping->setShopStatus('');
             }
         }

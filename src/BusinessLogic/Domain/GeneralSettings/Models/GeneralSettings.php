@@ -199,7 +199,7 @@ class GeneralSettings
     {
         $normalized = [];
         foreach ($countryCodes as $value) {
-            if (is_string($value) && !empty(trim($value))) {
+            if (\is_string($value) && !empty(trim($value))) {
                 $normalized[] = strtoupper(trim($value));
             }
         }

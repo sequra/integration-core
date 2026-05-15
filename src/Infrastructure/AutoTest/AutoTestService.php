@@ -121,7 +121,7 @@ class AutoTestService
 
         return new AutoTestStatus(
             $status,
-            in_array($status, array('timeout', QueueItem::COMPLETED, QueueItem::FAILED), true),
+            \in_array($status, array('timeout', QueueItem::COMPLETED, QueueItem::FAILED), true),
             $status === 'timeout' ? 'Task could not be started.' : '',
             AutoTestLogger::getInstance()->getLogs()
         );

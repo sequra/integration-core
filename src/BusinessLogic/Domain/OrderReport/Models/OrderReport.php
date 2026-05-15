@@ -100,7 +100,7 @@ class OrderReport extends OrderRequestDTO
         ?Address $deliveryAddress = null,
         ?Address $invoiceAddress = null
     ) {
-        if (!in_array($state, OrderDeliveryStates::toArray(), true)) {
+        if (!\in_array($state, OrderDeliveryStates::toArray(), true)) {
             throw new InvalidOrderDeliveryStateException('Invalid order delivery state: ' . $state);
         }
 

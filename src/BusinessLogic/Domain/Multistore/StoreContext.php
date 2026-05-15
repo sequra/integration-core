@@ -57,7 +57,7 @@ class StoreContext
         try {
             self::getInstance()->storeId = $storeId;
 
-            $result = call_user_func_array($callback, $params);
+            $result = \call_user_func_array($callback, $params);
         } finally {
             self::getInstance()->storeId = $previousStoreId;
         }

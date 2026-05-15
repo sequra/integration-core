@@ -61,7 +61,7 @@ class IndexHelper
      */
     public static function castFieldValue($value, string $type)
     {
-        if ($value === null || is_string($value)) {
+        if ($value === null || \is_string($value)) {
             return $value;
         }
 
@@ -69,20 +69,20 @@ class IndexHelper
             return (string)$value->getTimestamp();
         }
 
-        if ($type === 'integer' && is_int($value)) {
-            return sprintf('%011d', $value);
+        if ($type === 'integer' && \is_int($value)) {
+            return \sprintf('%011d', $value);
         }
 
-        if ($type === 'double' && is_float($value)) {
+        if ($type === 'double' && \is_float($value)) {
             // 123.15 => 00000000123.15000, padding to 11 numbers before and padding to 5 behind decimal point
-            return sprintf('%017.5f', $value);
+            return \sprintf('%017.5f', $value);
         }
 
-        if ($type === 'boolean' && is_bool($value)) {
+        if ($type === 'boolean' && \is_bool($value)) {
             return $value ? '1' : '0';
         }
 
-        if ($type === 'array' && is_array($value)) {
+        if ($type === 'array' && \is_array($value)) {
             return array_values($value);
         }
 

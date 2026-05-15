@@ -359,7 +359,7 @@ class OrderService
         } catch (HttpApiNotFoundException $exception) {
             // Ignore not found errors for cancellation actions because SeQura returns
             // not found response for on-hold to cancel transitions (immediate cancelations from checkout)
-            if (!in_array($order->getState(), [OrderRequestStates::CANCELLED, OrderRequestStates::ON_HOLD])) {
+            if (!\in_array($order->getState(), [OrderRequestStates::CANCELLED, OrderRequestStates::ON_HOLD])) {
                 throw $exception;
             }
         }
@@ -473,7 +473,7 @@ class OrderService
         foreach ($methodCategories as $category) {
             foreach ($category->getMethods() as $method) {
                 if ($method->getProduct() === $paymentMethodId) {
-                    $name = in_array($paymentMethodId, self::INSTALLMENT_METHOD_CODES) ?
+                    $name = \in_array($paymentMethodId, self::INSTALLMENT_METHOD_CODES) ?
                         $category->getTitle() :
                         $method->getTitle();
                     $icon = $method->getIcon() ?? '';

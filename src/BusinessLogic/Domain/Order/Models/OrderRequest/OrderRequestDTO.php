@@ -31,7 +31,7 @@ abstract class OrderRequestDTO extends DataTransferObject
                     lcfirst(preg_replace('/\d+/', '_$0', $propertyName))
                 ));
 
-                if (is_array($propertyValue)) {
+                if (\is_array($propertyValue)) {
                     $snakeCaseProperties = $this->handleArrayProperty(
                         $snakeCaseProperties,
                         $snakeCasePropertyName,
@@ -41,7 +41,7 @@ abstract class OrderRequestDTO extends DataTransferObject
                     continue;
                 }
 
-                is_object($propertyValue) && method_exists($propertyValue, 'toArray') ?
+                \is_object($propertyValue) && method_exists($propertyValue, 'toArray') ?
                     $snakeCaseProperties[$snakeCasePropertyName] = $propertyValue->toArray() :
                     $snakeCaseProperties[$snakeCasePropertyName] = $propertyValue;
             }
@@ -63,7 +63,7 @@ abstract class OrderRequestDTO extends DataTransferObject
     {
         $arrayData[$name] = [];
         foreach ($value as $key => $item) {
-            is_object($item) && method_exists($item, 'toArray') ?
+            \is_object($item) && method_exists($item, 'toArray') ?
                 $arrayData[$name][] = $item->toArray() :
                 $arrayData[$name][$key] = $item;
         }

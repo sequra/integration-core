@@ -41,4 +41,12 @@
 		<exclude-pattern>tests/</exclude-pattern>
 		<exclude-pattern>src/</exclude-pattern>
 	</rule>
+	<!-- Require opcache-specialized functions (is_*, count, in_array, sprintf, ...)
+	     to be called with a leading `\` so the compiler can specialize the call site. -->
+	<rule ref="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalFunctions">
+		<properties>
+			<property name="includeSpecialFunctions" value="true"/>
+		</properties>
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
 </ruleset>

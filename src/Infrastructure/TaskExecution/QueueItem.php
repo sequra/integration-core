@@ -292,7 +292,7 @@ class QueueItem extends Entity
     public function setStatus(string $status): void
     {
         if (
-            !in_array(
+            !\in_array(
                 $status,
                 array(
                     self::CREATED,
@@ -306,7 +306,7 @@ class QueueItem extends Entity
             )
         ) {
             throw new InvalidArgumentException(
-                sprintf(
+                \sprintf(
                     'Invalid QueueItem status: "%s". '
                     . 'Status must be one of "%s", "%s", "%s", "%s", "%s" or "%s" values.',
                     $status,
@@ -367,7 +367,7 @@ class QueueItem extends Entity
     public function setLastExecutionProgressBasePoints(int $lastExecutionProgressBasePoints): void
     {
         if (
-            !is_int($lastExecutionProgressBasePoints) ||
+            !\is_int($lastExecutionProgressBasePoints) ||
             $lastExecutionProgressBasePoints < 0 ||
             10000 < $lastExecutionProgressBasePoints
         ) {
@@ -410,7 +410,7 @@ class QueueItem extends Entity
      */
     public function setProgressBasePoints($progressBasePoints): void
     {
-        if (!is_int($progressBasePoints) || $progressBasePoints < 0 || 10000 < $progressBasePoints) {
+        if (!\is_int($progressBasePoints) || $progressBasePoints < 0 || 10000 < $progressBasePoints) {
             throw new InvalidArgumentException('Progress percentage must be value between 0 and 100.');
         }
 
@@ -746,7 +746,7 @@ class QueueItem extends Entity
      */
     public function setPriority(int $priority): void
     {
-        if (!in_array($priority, static::getAvailablePriorities(), true)) {
+        if (!\in_array($priority, static::getAvailablePriorities(), true)) {
             throw new InvalidArgumentException("Priority {$priority} is not supported.");
         }
 

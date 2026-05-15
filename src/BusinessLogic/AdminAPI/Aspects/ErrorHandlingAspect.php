@@ -28,14 +28,14 @@ class ErrorHandlingAspect implements Aspect
     public function applyOn(callable $callee, array $params = [])
     {
         try {
-            $response = call_user_func_array($callee, $params);
+            $response = \call_user_func_array($callee, $params);
         } catch (BaseTranslatableException $e) {
             Logger::logError(
                 $e->getMessage(),
                 'Core',
                 [
                     new LogContextData('message', $e->getMessage()),
-                    new LogContextData('type', get_class($e)),
+                    new LogContextData('type', \get_class($e)),
                     new LogContextData('trace', $e->getTraceAsString()),
                 ]
             );
@@ -47,7 +47,7 @@ class ErrorHandlingAspect implements Aspect
                 'Core',
                 [
                     new LogContextData('message', $e->getMessage()),
-                    new LogContextData('type', get_class($e)),
+                    new LogContextData('type', \get_class($e)),
                     new LogContextData('trace', $e->getTraceAsString()),
                 ]
             );
@@ -59,7 +59,7 @@ class ErrorHandlingAspect implements Aspect
                 'Core',
                 [
                     new LogContextData('message', $e->getMessage()),
-                    new LogContextData('type', get_class($e)),
+                    new LogContextData('type', \get_class($e)),
                     new LogContextData('trace', $e->getTraceAsString()),
                 ]
             );
@@ -71,7 +71,7 @@ class ErrorHandlingAspect implements Aspect
                 'Core',
                 [
                     new LogContextData('message', $e->getMessage()),
-                    new LogContextData('type', get_class($e)),
+                    new LogContextData('type', \get_class($e)),
                     new LogContextData('trace', $e->getTraceAsString()),
                 ]
             );

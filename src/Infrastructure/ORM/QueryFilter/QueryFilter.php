@@ -5,8 +5,6 @@ namespace SeQura\Core\Infrastructure\ORM\QueryFilter;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use DateTime;
 
-use function in_array;
-
 /**
  * Class QueryFilter.
  *
@@ -107,7 +105,7 @@ class QueryFilter
      */
     public function orderBy($column, string $direction = self::ORDER_ASC): QueryFilter
     {
-        if (!is_string($column) || !in_array($direction, array(self::ORDER_ASC, self::ORDER_DESC), false)) {
+        if (!\is_string($column) || !\in_array($direction, array(self::ORDER_ASC, self::ORDER_DESC), false)) {
             throw new QueryFilterInvalidParamException(
                 'Column value must be string type and direction must be ASC or DESC'
             );
@@ -200,25 +198,25 @@ class QueryFilter
      */
     protected function validateConditionParameters($column, $operator, $value): void
     {
-        if (!is_string($column) || !is_string($operator)) {
+        if (!\is_string($column) || !\is_string($operator)) {
             throw new QueryFilterInvalidParamException('Column and operator values must be string types');
         }
 
         $operator = strtoupper($operator);
-        if (!in_array($operator, Operators::$AVAILABLE_OPERATORS, true)) {
+        if (!\in_array($operator, Operators::$AVAILABLE_OPERATORS, true)) {
             throw new QueryFilterInvalidParamException("Operator $operator is not supported");
         }
 
-        $valueType = gettype($value);
+        $valueType = \gettype($value);
         if ($valueType === 'object' && $value instanceof DateTime) {
             $valueType = 'dateTime';
         }
 
-        if (!array_key_exists($valueType, Operators::$TYPE_OPERATORS)) {
+        if (!\array_key_exists($valueType, Operators::$TYPE_OPERATORS)) {
             throw new QueryFilterInvalidParamException('Value type is not supported');
         }
 
-        if (!in_array($operator, Operators::$TYPE_OPERATORS[$valueType], true)) {
+        if (!\in_array($operator, Operators::$TYPE_OPERATORS[$valueType], true)) {
             throw new QueryFilterInvalidParamException("Operator $operator is not supported for $valueType type");
         }
     }

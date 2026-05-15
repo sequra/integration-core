@@ -231,7 +231,7 @@ class AsyncBatchStarter implements Runnable
         }
 
         $subBatchWaitTime = $this->batchSize * $this->getMaxNestingLevels() * $requestDuration;
-        $runnersStartupTime = count($this->runners) * $requestDuration;
+        $runnersStartupTime = \count($this->runners) * $requestDuration;
 
         return $subBatchWaitTime - $runnersStartupTime;
     }
@@ -242,7 +242,7 @@ class AsyncBatchStarter implements Runnable
     public function __toString()
     {
         $out = implode(', ', $this->subBatches);
-        $countOfRunners = count($this->runners);
+        $countOfRunners = \count($this->runners);
         for ($i = 0; $i < $countOfRunners; $i++) {
             $out .= empty($out) ? 'R' : ', R';
         }
@@ -265,7 +265,7 @@ class AsyncBatchStarter implements Runnable
      */
     protected function isSubBatchCapacityFull(): bool
     {
-        return count($this->subBatches) >= $this->batchSize;
+        return \count($this->subBatches) >= $this->batchSize;
     }
 
     /**
@@ -274,7 +274,7 @@ class AsyncBatchStarter implements Runnable
      */
     protected function isRunnersCapacityFull(): bool
     {
-        return count($this->runners) >= $this->batchSize;
+        return \count($this->runners) >= $this->batchSize;
     }
 
     /**
