@@ -23,7 +23,7 @@
   },
   "require-dev": {
     "phpunit/phpunit": "8.5.14",
-    "phpcompatibility/php-compatibility": "*",
+    "phpcompatibility/php-compatibility": "^9.3",
     "phpstan/phpstan": "^1.12 || ^2.1"
   },
   "prefer-stable": true,
