@@ -54,6 +54,9 @@ jobs:
     - name: PHP 8.4 Syntax check
       run: docker run --rm -v "$(pwd)":/app -w /app php:8.4-cli-alpine sh -c "! (find . -type f -name \"*.php\" ! -path \"./tests/*\" ! -path \"./vendor/*\" -exec php -l -n {} \; | grep -v \"No syntax errors detected\")"
 
+    - name: PHP 8.5 Syntax check
+      run: docker run --rm -v "$(pwd)":/app -w /app php:8.5-cli-alpine sh -c "! (find . -type f -name \"*.php\" ! -path \"./tests/*\" ! -path \"./vendor/*\" -exec php -l -n {} \; | grep -v \"No syntax errors detected\")"
+
     - name: PHP_CodeSniffer
       run: docker run --rm -v "$(pwd)":/app -w /app php:7.2-cli-alpine php vendor/bin/phpcs --standard=.phpcs.xml.dist --warning-severity=0 . # Ignore Warnings for now...
 
