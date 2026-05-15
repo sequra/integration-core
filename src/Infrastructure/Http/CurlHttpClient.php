@@ -137,7 +137,7 @@ class CurlHttpClient extends HttpClient
 
         // 0 status code is set when timeout is reached
         if (
-            !in_array($statusCode, array(0, 200), true)
+            !\in_array($statusCode, array(0, 200), true)
             && curl_errno($this->curlSession) !== CURLE_OPERATION_TIMEOUTED
         ) {
             $curlError = '';
@@ -182,7 +182,7 @@ class CurlHttpClient extends HttpClient
     protected function initializeCurlSession(): void
     {
         // this constant is not defined prior to php 7.0.7
-        if (!defined('CURL_REDIR_POST_ALL')) {
+        if (!\defined('CURL_REDIR_POST_ALL')) {
             define('CURL_REDIR_POST_ALL', 7);
         }
 
@@ -223,7 +223,7 @@ class CurlHttpClient extends HttpClient
         $this->curlOptions[CURLOPT_HTTPHEADER] = $headers;
 
         $methodsWithBody = array(static::HTTP_METHOD_POST, static::HTTP_METHOD_PUT, static::HTTP_METHOD_PATCH);
-        if (in_array($method, $methodsWithBody, true)) {
+        if (\in_array($method, $methodsWithBody, true)) {
             $this->curlOptions[CURLOPT_POSTFIELDS] = $body;
         }
     }
@@ -321,12 +321,12 @@ class CurlHttpClient extends HttpClient
             static function ($curl, $header) use (&$headers) {
                 // Set only valid headers
                 $headerArray = explode(':', $header, 2);
-                if (count($headerArray) >= 2) {
+                if (\count($headerArray) >= 2) {
                     $headers[trim($headerArray[0])] = trim($headerArray[1]);
                 }
 
                 // Do not use mb_strlen here because curl expects number of bytes to be returned not number of chars
-                return strlen($header);
+                return \strlen($header);
             }
         );
 

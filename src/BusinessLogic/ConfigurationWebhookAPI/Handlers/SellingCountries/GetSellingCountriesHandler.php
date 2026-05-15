@@ -49,7 +49,7 @@ class GetSellingCountriesHandler implements TopicHandlerInterface
             });
         }
         $items = array_values($items);
-        $paginatedItems = array_slice($items, ($page - 1) * $limit, $limit);
+        $paginatedItems = \array_slice($items, ($page - 1) * $limit, $limit);
 
         $data = array_map(function ($item) {
             return $item->getCode();

@@ -35,7 +35,7 @@ class TaskProgressEvent extends Event
     public function __construct($progressPercentBasePoints)
     {
         if (
-            !is_int($progressPercentBasePoints)
+            !\is_int($progressPercentBasePoints)
             || $progressPercentBasePoints < 0
             || 10000 < $progressPercentBasePoints
         ) {

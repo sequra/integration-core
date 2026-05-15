@@ -180,9 +180,9 @@ class Credentials extends DataTransferObject
      */
     private function hasContractOption(string $option): bool
     {
-        if (!isset($this->payload['contract_options']) || !is_array($this->payload['contract_options'])) {
+        if (!isset($this->payload['contract_options']) || !\is_array($this->payload['contract_options'])) {
             return false;
         }
-        return in_array($option, $this->payload['contract_options'], true);
+        return \in_array($option, $this->payload['contract_options'], true);
     }
 }

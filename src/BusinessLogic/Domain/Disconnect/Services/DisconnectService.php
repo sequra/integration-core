@@ -211,7 +211,7 @@ class DisconnectService
         $countryConfigurations = $this->countryConfigurationRepository->getCountryConfiguration();
         $newCountyConfigurations = [];
         foreach ($countryConfigurations as $countryConfiguration) {
-            if (!in_array($countryConfiguration->getMerchantId(), $merchantIds, true)) {
+            if (!\in_array($countryConfiguration->getMerchantId(), $merchantIds, true)) {
                 $newCountyConfigurations[] = $countryConfiguration;
             }
         }

@@ -48,7 +48,7 @@ class WebhookValidator
             throw new InvalidSignatureException('Signature mismatch.', 400);
         }
 
-        if (!in_array($webhook->sqState, self::ALLOWED_STATES)) {
+        if (!\in_array($webhook->sqState, self::ALLOWED_STATES)) {
             throw new InvalidStateException("Unknown event '{$webhook->sqState}'", 400);
         }
     }

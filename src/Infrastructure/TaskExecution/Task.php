@@ -120,7 +120,7 @@ abstract class Task extends EventEmitter implements Serializable
      */
     public function reportProgress($progressPercent): void
     {
-        if (!is_int($progressPercent) && !is_float($progressPercent)) {
+        if (!\is_int($progressPercent) && !\is_float($progressPercent)) {
             throw new InvalidArgumentException('Progress percentage must be value integer or float value');
         }
 
@@ -186,11 +186,11 @@ abstract class Task extends EventEmitter implements Serializable
      */
     public static function getClassName(): string
     {
-        $namespaceParts = explode('\\', get_called_class());
+        $namespaceParts = explode('\\', \get_called_class());
         $name = end($namespaceParts);
 
         if ($name === 'Task') {
-            throw new RuntimeException('Constant CLASS_NAME not defined in class ' . get_called_class());
+            throw new RuntimeException('Constant CLASS_NAME not defined in class ' . \get_called_class());
         }
 
         return $name;

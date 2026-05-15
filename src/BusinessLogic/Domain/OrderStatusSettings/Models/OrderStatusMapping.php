@@ -39,7 +39,7 @@ class OrderStatusMapping
             );
         }
 
-        if (!in_array($seQuraStatus, OrderStates::toArray(), true)) {
+        if (!\in_array($seQuraStatus, OrderStates::toArray(), true)) {
             throw new InvalidSeQuraOrderStatusException(
                 new TranslatableLabel('Invalid SeQura order status.', 'general.errors.orderStatusMapping.invalidStatus')
             );

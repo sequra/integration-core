@@ -53,7 +53,7 @@ class CountryConfigurationService
         }
 
         foreach ($configuredCountries as $key => $configuredCountry) {
-            if (!in_array($configuredCountry->getCountryCode(), $sellingCountries)) {
+            if (!\in_array($configuredCountry->getCountryCode(), $sellingCountries)) {
                 unset($configuredCountries[$key]);
             }
         }

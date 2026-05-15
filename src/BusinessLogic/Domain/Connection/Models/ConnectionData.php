@@ -47,7 +47,7 @@ class ConnectionData extends DataTransferObject
         string $deployment,
         AuthorizationCredentials $authorizationCredentials
     ) {
-        if (!in_array($environment, [BaseProxy::LIVE_MODE, BaseProxy::TEST_MODE], true)) {
+        if (!\in_array($environment, [BaseProxy::LIVE_MODE, BaseProxy::TEST_MODE], true)) {
             throw new InvalidEnvironmentException();
         }
 

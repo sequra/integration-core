@@ -39,7 +39,7 @@ class RepositoryRegistry
             throw new RepositoryNotRegisteredException("Repository for entity $entityClass not found or registered.");
         }
 
-        if (!array_key_exists($entityClass, static::$instantiated)) {
+        if (!\array_key_exists($entityClass, static::$instantiated)) {
             $repositoryClass = static::$repositories[$entityClass];
             /**
              * @var RepositoryInterface $repository

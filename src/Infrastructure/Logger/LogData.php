@@ -218,7 +218,7 @@ class LogData extends Entity
     {
         $dateTime = TimeProvider::getInstance()->getDateTime((int)($this->getTimestamp() / 1000));
 
-        return sprintf(
+        return \sprintf(
             "%s\t%s\t%s\t%s\r\n",
             $this->getLevelName(),
             TimeProvider::getInstance()->serializeDate($dateTime, 'Y-m-d H:i:s'),
@@ -239,7 +239,7 @@ class LogData extends Entity
         $ctx = [];
         foreach ($this->getContext() as $logContextData) {
             $arr = $logContextData->toArray();
-            if (isset($arr['value']) && is_string($arr['value'])) {
+            if (isset($arr['value']) && \is_string($arr['value'])) {
                 $decoded = json_decode($arr['value'], true);
                 if ($decoded !== null) {
                     $arr['value'] = $decoded;

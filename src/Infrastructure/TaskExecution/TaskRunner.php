@@ -165,7 +165,7 @@ class TaskRunner
                 // If task can't be deserialized we should fail it immediately since there is nothing we can dao to recover
                 $this->getQueue()->fail(
                     $runningItem,
-                    sprintf(
+                    \sprintf(
                         'Task %s is invalid or corrupted. Task deserialization failed.',
                         $runningItem->getId()
                     ),
@@ -200,7 +200,7 @@ class TaskRunner
             $item->reconfigureTask();
             $this->getQueue()->fail(
                 $item,
-                sprintf(
+                \sprintf(
                     'Task %s failed due to extended inactivity period.',
                     $this->getItemDescription($item)
                 )
@@ -227,7 +227,7 @@ class TaskRunner
         // Calculate how many queue items can be started
         $maxRunningTasks = $this->getConfigurationService()->getMaxStartedTasksLimit();
         $alreadyRunningItems = $this->getQueue()->findRunningItems();
-        $numberOfAvailableSlots = $maxRunningTasks - count($alreadyRunningItems);
+        $numberOfAvailableSlots = $maxRunningTasks - \count($alreadyRunningItems);
         if ($numberOfAvailableSlots <= 0) {
             $this->logDebug(array('Message' => 'Task runner: max number of active tasks reached.'));
 
@@ -272,7 +272,7 @@ class TaskRunner
                 'Message' => 'Task runner: Batch starter execution finished.',
                 'ExecutionTime' => ($endTime - $startTime) . 's',
                 'AverageRequestTime' => $averageRequestTime . 's',
-                'StartedItems' => count($items),
+                'StartedItems' => \count($items),
             )
         );
     }

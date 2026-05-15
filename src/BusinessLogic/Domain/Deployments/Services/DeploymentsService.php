@@ -114,7 +114,7 @@ class DeploymentsService
         );
 
         return array_values(array_filter($deployments, function ($deployment) use ($connectedDeploymentIds) {
-            return !in_array($deployment->getId(), $connectedDeploymentIds);
+            return !\in_array($deployment->getId(), $connectedDeploymentIds);
         }));
     }
 }
