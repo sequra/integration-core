@@ -36,4 +36,22 @@ interface BannerServiceInterface
      * @return void
      */
     public function deleteBannerImage(string $country, string $displayLocation): void;
+
+    /**
+     * Notifies the integration that the banner image for the given country
+     * is moving from one display location to another.
+     * The integration is responsible for relocating the underlying image
+     * and returning the public URL at the new location.
+     *
+     * @param string $country
+     * @param string $oldDisplayLocation
+     * @param string $newDisplayLocation
+     *
+     * @return string Public URL of the image at the new display location.
+     */
+    public function changeBannerImageDisplayLocation(
+        string $country,
+        string $oldDisplayLocation,
+        string $newDisplayLocation
+    ): string;
 }

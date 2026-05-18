@@ -269,6 +269,148 @@ class BannerSettingsServiceTest extends BaseTestCase
      *
      * @throws Exception
      */
+    public function testSetBannerSettingsRelocatesImageWhenDisplayLocationChangesWithoutBase64(): void
+    {
+        //Arrange
+        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings(
+            [
+                new Banner(
+                    'ES',
+                    'https://www.sequra.com/es/faq#shoppers',
+                    'https://shop/sequra/es/existing.jpg',
+                    'displayOnHomePage'
+                )
+            ]
+        ));
+
+        $update = new BannerSettings(
+            [
+                new Banner(
+                    'ES',
+                    'https://www.sequra.com/es/faq#shoppers',
+                    '',
+                    'displayOnCartPage'
+                ),
+            ]
+        );
+
+        //Act
+        $this->bannerSettingsService->setBannerSettings($update);
+
+        //Assert
+        $result = $this->bannerSettingsRepository->getBannerSettings();
+        self::assertNotNull($result);
+        self::assertCount(1, $result->getBannerConfigs());
+        self::assertEquals('displayOnCartPage', $result->getBannerConfigs()[0]->getDisplayLocation());
+        self::assertEquals(
+            'https://shop.test/banners/ES_displayOnCartPage.png',
+            $result->getBannerConfigs()[0]->getImageUrl()
+        );
+        self::assertEquals(
+            [
+                'ES|displayOnCartPage' => [
+                    'country' => 'ES',
+                    'from' => 'displayOnHomePage',
+                    'to' => 'displayOnCartPage',
+                ],
+            ],
+            $this->bannerService->getMovedImages()
+        );
+        self::assertEmpty($this->bannerService->getDeletedImageKeys());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSetBannerSettingsKeepsImageUrlWhenDisplayLocationUnchanged(): void
+    {
+        //Arrange
+        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings(
+            [
+                new Banner(
+                    'ES',
+                    'https://www.sequra.com/es/faq#shoppers',
+                    'https://shop/sequra/es/existing.jpg',
+                    'displayOnHomePage'
+                )
+            ]
+        ));
+
+        $update = new BannerSettings(
+            [
+                new Banner(
+                    'ES',
+                    'https://www.sequra.com/es/updated-link',
+                    '',
+                    'displayOnHomePage'
+                ),
+            ]
+        );
+
+        //Act
+        $this->bannerSettingsService->setBannerSettings($update);
+
+        //Assert
+        $result = $this->bannerSettingsRepository->getBannerSettings();
+        self::assertEquals(
+            'https://shop/sequra/es/existing.jpg',
+            $result->getBannerConfigs()[0]->getImageUrl()
+        );
+        self::assertEmpty($this->bannerService->getMovedImages());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSetBannerSettingsDisplayLocationChangeWithBase64DeletesOldImage(): void
+    {
+        //Arrange
+        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings(
+            [
+                new Banner(
+                    'ES',
+                    'https://www.sequra.com/es/faq#shoppers',
+                    'https://shop/sequra/es/old.jpg',
+                    'displayOnHomePage'
+                )
+            ]
+        ));
+
+        $update = new BannerSettings(
+            [
+                new Banner(
+                    'ES',
+                    'https://www.sequra.com/es/faq#shoppers',
+                    '',
+                    'displayOnCartPage',
+                    'ES-new-base64'
+                ),
+            ]
+        );
+
+        //Act
+        $this->bannerSettingsService->setBannerSettings($update);
+
+        //Assert
+        $result = $this->bannerSettingsRepository->getBannerSettings();
+        self::assertEquals('displayOnCartPage', $result->getBannerConfigs()[0]->getDisplayLocation());
+        self::assertEquals(
+            'https://shop.test/banners/ES_displayOnCartPage.png',
+            $result->getBannerConfigs()[0]->getImageUrl()
+        );
+        self::assertEquals(['ES|displayOnCartPage' => 'ES-new-base64'], $this->bannerService->getStoredImages());
+        self::assertEquals(['ES|displayOnHomePage'], $this->bannerService->getDeletedImageKeys());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
     public function testSetBannerSettingsDeletesOmittedBanners(): void
     {
         //Arrange

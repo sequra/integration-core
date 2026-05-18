@@ -27,6 +27,11 @@ class MockBannerService implements BannerServiceInterface
     protected $deletedImages = [];
 
     /**
+     * @var array<string, array{country: string, from: string, to: string}>
+     */
+    protected $movedImages = [];
+
+    /**
      * @inheritDoc
      */
     public function getBannerDisplayLocations(): array
@@ -62,6 +67,39 @@ class MockBannerService implements BannerServiceInterface
         $key = $this->key($country, $displayLocation);
         unset($this->storedImages[$key]);
         $this->deletedImages[$key] = true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function changeBannerImageDisplayLocation(
+        string $country,
+        string $oldDisplayLocation,
+        string $newDisplayLocation
+    ): string {
+        $oldKey = $this->key($country, $oldDisplayLocation);
+        $newKey = $this->key($country, $newDisplayLocation);
+
+        if (isset($this->storedImages[$oldKey])) {
+            $this->storedImages[$newKey] = $this->storedImages[$oldKey];
+            unset($this->storedImages[$oldKey]);
+        }
+
+        $this->movedImages[$newKey] = [
+            'country' => $country,
+            'from' => $oldDisplayLocation,
+            'to' => $newDisplayLocation,
+        ];
+
+        return 'https://shop.test/banners/' . $country . '_' . $newDisplayLocation . '.png';
+    }
+
+    /**
+     * @return array<string, array{country: string, from: string, to: string}>
+     */
+    public function getMovedImages(): array
+    {
+        return $this->movedImages;
     }
 
     /**

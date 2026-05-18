@@ -64,30 +64,12 @@ class BannerSettingsService
      */
     public function setBannerSettings(BannerSettings $bannerSettings): BannerSettings
     {
+        $existingBanners = $this->getExistingBanners();
+        $existingByCountry = $this->indexByCountry($existingBanners);
         $incomingBanners = $bannerSettings->getBannerConfigs();
-        $existingBannerSettings = $this->getBannerSettings();
-        $existingBanners = $existingBannerSettings
-            ? $existingBannerSettings->getBannerConfigs()
-            : [];
 
-        $existingBannersByKey = $this->indexByKey($existingBanners);
-        $incomingBannersByKey = $this->indexByKey($incomingBanners);
-
-        $resolvedBanners = [];
-
-        foreach ($incomingBanners as $banner) {
-            $this->assertValidUrl($banner->getLinkUrl());
-            $this->assertBannerHasImageSource($banner, $existingBannersByKey);
-
-            $resolvedBanners[] = $this->resolveBannerImage($banner, $existingBannersByKey);
-        }
-
-        foreach (array_diff_key($existingBannersByKey, $incomingBannersByKey) as $bannerToRemove) {
-            $this->bannerService->deleteBannerImage(
-                $bannerToRemove->getCountry(),
-                $bannerToRemove->getDisplayLocation()
-            );
-        }
+        $resolvedBanners = $this->resolveIncomingBanners($incomingBanners, $existingByCountry);
+        $this->deleteRemovedBanners($existingBanners, $this->indexByCountry($incomingBanners));
 
         $persisted = new BannerSettings($resolvedBanners);
         $this->bannerSettingsRepository->setBannerSettings($persisted);
@@ -175,17 +157,67 @@ class BannerSettingsService
     }
 
     /**
+     * @return Banner[]
+     */
+    protected function getExistingBanners(): array
+    {
+        $existingBannerSettings = $this->getBannerSettings();
+
+        return $existingBannerSettings ? $existingBannerSettings->getBannerConfigs() : [];
+    }
+
+    /**
+     * @param Banner[] $incomingBanners
+     * @param array<string, Banner> $existingByCountry
+     *
+     * @return Banner[]
+     *
+     * @throws BannerImageRequiredException
+     * @throws InvalidURLException
+     */
+    protected function resolveIncomingBanners(array $incomingBanners, array $existingByCountry): array
+    {
+        $resolved = [];
+        foreach ($incomingBanners as $banner) {
+            $this->assertValidUrl($banner->getLinkUrl());
+            $this->assertBannerHasImageSource($banner, $existingByCountry);
+
+            $resolved[] = $this->resolveBannerImage($banner, $existingByCountry);
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * Deletes images for countries that are no longer present in the incoming set.
+     *
+     * @param Banner[] $existingBanners
+     * @param array<string, Banner> $incomingByCountry
+     */
+    protected function deleteRemovedBanners(array $existingBanners, array $incomingByCountry): void
+    {
+        foreach ($existingBanners as $banner) {
+            if (!isset($incomingByCountry[$banner->getCountry()])) {
+                $this->bannerService->deleteBannerImage(
+                    $banner->getCountry(),
+                    $banner->getDisplayLocation()
+                );
+            }
+        }
+    }
+
+    /**
      * Verifies whether the banner contains an imageBase64 payload
-     * or already has a persisted image in storage.
+     * or already has a persisted image in storage for the country.
      *
      * @param Banner $banner
-     * @param array<string, Banner> $existingByKey
+     * @param array<string, Banner> $existingByCountry
      *
      * @throws BannerImageRequiredException
      */
-    protected function assertBannerHasImageSource(Banner $banner, array $existingByKey): void
+    protected function assertBannerHasImageSource(Banner $banner, array $existingByCountry): void
     {
-        if ($this->hasImageBase64($banner) || isset($existingByKey[$this->keyFor($banner)])) {
+        if ($this->hasImageBase64($banner) || isset($existingByCountry[$banner->getCountry()])) {
             return;
         }
 
@@ -198,37 +230,93 @@ class BannerSettingsService
     }
 
     /**
-     * Uploads a new image when a base64 payload is present, otherwise reuses
-     * the URL of the previously stored banner
+     * Resolves the image URL for an incoming banner:
+     * - If a new imageBase64 is supplied, uploads it (deleting the previous
+     *   image first when the display location has changed).
+     * - Otherwise reuses the previous URL if the display location is
+     *   unchanged, or asks the integration to relocate the image when the
+     *   display location has changed.
      *
      * @param Banner $banner
-     * @param array<string, Banner> $existingByKey
+     * @param array<string, Banner> $existingByCountry
      *
      * @return Banner
      *
      * @throws InvalidURLException
      */
-    protected function resolveBannerImage(Banner $banner, array $existingByKey): Banner
+    protected function resolveBannerImage(Banner $banner, array $existingByCountry): Banner
     {
-        $key = $this->keyFor($banner);
+        $existing = $existingByCountry[$banner->getCountry()] ?? null;
 
         if ($this->hasImageBase64($banner)) {
-            $banner->setImageUrl(
-                $this->bannerService->saveBannerImage(
-                    $banner->getCountry(),
-                    $banner->getDisplayLocation(),
-                    $banner->getImageBase64()
-                )
-            );
-        } elseif (isset($existingByKey[$key])) {
-            $banner->setImageUrl($existingByKey[$key]->getImageUrl());
+            $this->uploadBannerImage($banner, $existing);
+        } elseif ($existing !== null) {
+            $banner->setImageUrl($this->reuseOrRelocateImageUrl($banner, $existing));
         }
 
         $banner->setImageBase64(null);
-
         $this->assertValidUrl($banner->getImageUrl());
 
         return $banner;
+    }
+
+    /**
+     * Uploads the banner image, deleting the previously stored one when the
+     * display location has changed.
+     *
+     * @param Banner $banner
+     * @param Banner|null $existing
+     */
+    protected function uploadBannerImage(Banner $banner, ?Banner $existing): void
+    {
+        $this->deleteImageIfLocationChanged($banner, $existing);
+
+        $banner->setImageUrl(
+            $this->bannerService->saveBannerImage(
+                $banner->getCountry(),
+                $banner->getDisplayLocation(),
+                $banner->getImageBase64()
+            )
+        );
+    }
+
+    /**
+     * Returns the existing image URL when the display location is unchanged,
+     * otherwise asks the integration to relocate the image and returns the
+     * new URL.
+     *
+     * @param Banner $banner
+     * @param Banner $existing
+     *
+     * @return string
+     */
+    protected function reuseOrRelocateImageUrl(Banner $banner, Banner $existing): string
+    {
+        if ($existing->getDisplayLocation() === $banner->getDisplayLocation()) {
+            return $existing->getImageUrl();
+        }
+
+        return $this->bannerService->changeBannerImageDisplayLocation(
+            $banner->getCountry(),
+            $existing->getDisplayLocation(),
+            $banner->getDisplayLocation()
+        );
+    }
+
+    /**
+     * @param Banner $banner
+     * @param Banner|null $existing
+     */
+    protected function deleteImageIfLocationChanged(Banner $banner, ?Banner $existing): void
+    {
+        if ($existing === null || $existing->getDisplayLocation() === $banner->getDisplayLocation()) {
+            return;
+        }
+
+        $this->bannerService->deleteBannerImage(
+            $existing->getCountry(),
+            $existing->getDisplayLocation()
+        );
     }
 
     /**
@@ -248,24 +336,14 @@ class BannerSettingsService
      *
      * @return array<string, Banner>
      */
-    protected function indexByKey(array $banners): array
+    protected function indexByCountry(array $banners): array
     {
         $indexed = [];
         foreach ($banners as $banner) {
-            $indexed[$this->keyFor($banner)] = $banner;
+            $indexed[$banner->getCountry()] = $banner;
         }
 
         return $indexed;
-    }
-
-    /**
-     * @param Banner $banner
-     *
-     * @return string
-     */
-    protected function keyFor(Banner $banner): string
-    {
-        return $banner->getCountry() . '|' . $banner->getDisplayLocation();
     }
 
     /**
