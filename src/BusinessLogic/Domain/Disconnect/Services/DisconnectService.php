@@ -19,6 +19,8 @@ use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRe
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
+use SeQura\Core\Infrastructure\Logger\Logger;
 use Throwable;
 
 /**
@@ -173,10 +175,20 @@ class DisconnectService
             try {
                 $this->storeIntegrationService->deleteStoreIntegration($connectionData);
             } catch (Throwable $e) {
-                // Remote deregistration is best-effort: keep going with the
-                // local cleanup so the host does not end up with stale
-                // ConnectionData when the integration was never registered
-                // (or has already been removed) on the seQura platform.
+                Logger::logWarning(
+                    'Remote store integration deregistration failed during disconnect; continuing with local cleanup.',
+                    'Core',
+                    [
+                        new LogContextData('deploymentId', $deploymentId),
+                        new LogContextData('environment', $connectionData->getEnvironment()),
+                        new LogContextData('merchantId', $connectionData->getMerchantId()),
+                        new LogContextData('message', $e->getMessage()),
+                        new LogContextData('code', $e->getCode()),
+                        new LogContextData('file', $e->getFile()),
+                        new LogContextData('line', $e->getLine()),
+                        new LogContextData('trace', $e->getTraceAsString()),
+                    ]
+                );
             }
             $this->connectionDataRepository->deleteConnectionDataByDeploymentId($deploymentId);
         }
