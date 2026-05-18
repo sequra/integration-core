@@ -23,13 +23,20 @@ class BannerSettingsResponse extends Response
     protected $displayLocations;
 
     /**
+     * @var string[]
+     */
+    protected $sellingCountries;
+
+    /**
      * @param BannerSettings $settings
      * @param string[] $displayLocations
+     * @param string[] $sellingCountries
      */
-    public function __construct(BannerSettings $settings, array $displayLocations)
+    public function __construct(BannerSettings $settings, array $displayLocations, array $sellingCountries = [])
     {
         $this->settings = $settings;
         $this->displayLocations = $displayLocations;
+        $this->sellingCountries = $sellingCountries;
     }
 
     /**
@@ -41,6 +48,7 @@ class BannerSettingsResponse extends Response
 
         return [
             'displayLocations' => $this->displayLocations,
+            'sellingCountries' => $this->sellingCountries,
             'bannerConfigs' => $settingsArray['bannerConfigs'] ?? [],
         ];
     }

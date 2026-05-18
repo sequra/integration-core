@@ -860,7 +860,8 @@ class BaseTestCase extends TestCase
             static function () {
                 return new GetBannerSettingsHandler(
                     TestServiceRegister::getService(BannerSettingsService::class),
-                    TestServiceRegister::getService(BannerServiceInterface::class)
+                    TestServiceRegister::getService(BannerServiceInterface::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class)
                 );
             }
         );

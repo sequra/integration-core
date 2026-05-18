@@ -1924,6 +1924,12 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 ]
             )
         );
+        $this->countryConfigurationService->saveCountryConfiguration([
+            new CountryConfiguration('ES', 'merchant1'),
+            new CountryConfiguration('FR', 'merchant2'),
+            new CountryConfiguration('IT', 'merchant3'),
+            new CountryConfiguration('PT', 'merchant4'),
+        ]);
 
         //Act
         /** @var BannerSettingsResponse $response */
@@ -1946,6 +1952,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             ],
             $payload['displayLocations']
         );
+        self::assertEquals(['ES', 'FR', 'IT', 'PT'], $payload['sellingCountries']);
         self::assertCount(1, $payload['bannerConfigs']);
     }
 
@@ -1983,6 +1990,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                     'displayOnCartPage',
                     'displayOnProductListingPage',
                 ],
+                'sellingCountries' => [],
                 'bannerConfigs' => [],
             ],
             $response->toArray()
