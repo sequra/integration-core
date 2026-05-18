@@ -1802,6 +1802,12 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 ]
             )
         );
+        $this->countryConfigurationService->saveCountryConfiguration([
+            new CountryConfiguration('ES', 'merchant1'),
+            new CountryConfiguration('FR', 'merchant2'),
+            new CountryConfiguration('IT', 'merchant3'),
+            new CountryConfiguration('PT', 'merchant4'),
+        ]);
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
@@ -1837,6 +1843,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             ],
             $payload['displayLocations']
         );
+        self::assertEquals(['ES', 'FR', 'IT', 'PT'], $payload['sellingCountries']);
         self::assertCount(2, $payload['bannerConfigs']);
         self::assertEquals('ES', $payload['bannerConfigs'][0]['country']);
         self::assertEquals('PT', $payload['bannerConfigs'][1]['country']);

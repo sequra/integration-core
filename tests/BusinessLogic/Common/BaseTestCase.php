@@ -871,7 +871,8 @@ class BaseTestCase extends TestCase
             static function () {
                 return new SaveBannerSettingsHandler(
                     TestServiceRegister::getService(BannerSettingsService::class),
-                    TestServiceRegister::getService(BannerServiceInterface::class)
+                    TestServiceRegister::getService(BannerServiceInterface::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class)
                 );
             }
         );
