@@ -5,6 +5,7 @@ namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Webhook\Exceptions\InvalidSignatureException;
+use Throwable;
 
 /**
  * Class StoreIntegrationService.
@@ -29,6 +30,11 @@ class MockStoreIntegrationService extends StoreIntegrationService
     private $createdIntegrationIds = [];
 
     /**
+     * @var Throwable|null $deleteException
+     */
+    private $deleteException;
+
+    /**
      * @param ConnectionData $connectionData
      *
      * @return void
@@ -42,10 +48,27 @@ class MockStoreIntegrationService extends StoreIntegrationService
      * @param ConnectionData $connectionData
      *
      * @return void
+     *
+     * @throws Throwable When configured via setDeleteException().
      */
     public function deleteStoreIntegration(ConnectionData $connectionData): void
     {
+        if ($this->deleteException !== null) {
+            throw $this->deleteException;
+        }
         $this->deleted = true;
+    }
+
+    /**
+     * Configure the mock to throw on the next deleteStoreIntegration() call.
+     *
+     * @param Throwable $exception
+     *
+     * @return void
+     */
+    public function setDeleteException(Throwable $exception): void
+    {
+        $this->deleteException = $exception;
     }
 
     /**

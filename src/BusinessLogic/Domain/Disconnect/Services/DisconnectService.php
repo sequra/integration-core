@@ -19,6 +19,7 @@ use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRe
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
+use Throwable;
 
 /**
  * Class DisconnectService
@@ -169,7 +170,14 @@ class DisconnectService
             ->getConnectionDataByDeploymentId($deploymentId);
 
         if ($connectionData !== null) {
-            $this->storeIntegrationService->deleteStoreIntegration($connectionData);
+            try {
+                $this->storeIntegrationService->deleteStoreIntegration($connectionData);
+            } catch (Throwable $e) {
+                // Remote deregistration is best-effort: keep going with the
+                // local cleanup so the host does not end up with stale
+                // ConnectionData when the integration was never registered
+                // (or has already been removed) on the seQura platform.
+            }
             $this->connectionDataRepository->deleteConnectionDataByDeploymentId($deploymentId);
         }
 
