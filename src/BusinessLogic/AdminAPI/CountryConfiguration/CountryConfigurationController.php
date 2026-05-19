@@ -8,7 +8,6 @@ use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\SellingCou
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\SuccessfulCountryConfigurationResponse;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
 
@@ -73,7 +72,6 @@ class CountryConfigurationController
      * @return SuccessfulCountryConfigurationResponse
      *
      * @throws EmptyCountryConfigurationParameterException
-     * @throws InvalidCountryCodeForConfigurationException
      */
     public function saveCountryConfigurations(CountryConfigurationRequest $request): SuccessfulCountryConfigurationResponse
     {

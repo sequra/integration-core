@@ -4,7 +4,6 @@ namespace SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services;
 
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\InvalidCountryCodeForConfigurationException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
@@ -54,7 +53,7 @@ class CountryConfigurationService
         }
 
         foreach ($configuredCountries as $key => $configuredCountry) {
-            if (!in_array($configuredCountry->getCountryCode(), $sellingCountries)) {
+            if (!\in_array($configuredCountry->getCountryCode(), $sellingCountries)) {
                 unset($configuredCountries[$key]);
             }
         }
@@ -81,7 +80,6 @@ class CountryConfigurationService
      *
      * @throws FailedToRetrieveSellingCountriesException
      * @throws EmptyCountryConfigurationParameterException
-     * @throws InvalidCountryCodeForConfigurationException
      */
     public function saveCountryConfigurationForCountriesCodes(array $countriesCodes): void
     {

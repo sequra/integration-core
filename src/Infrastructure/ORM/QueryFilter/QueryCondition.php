@@ -47,7 +47,7 @@ class QueryCondition
         $this->operator = $operator;
         $this->value = $value;
 
-        $this->valueType = gettype($value);
+        $this->valueType = \gettype($value);
         if ($this->valueType === 'object' && $value instanceof DateTime) {
             $this->valueType = 'dateTime';
         }

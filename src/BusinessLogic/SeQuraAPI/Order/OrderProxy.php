@@ -158,7 +158,7 @@ class OrderProxy implements OrderProxyInterface
     protected function getOrderUUID(array $headers): string
     {
         $headers = array_change_key_case($headers);
-        $location = array_key_exists('location', $headers) ? $headers['location'] : '';
+        $location = \array_key_exists('location', $headers) ? $headers['location'] : '';
 
         return !empty($location) ? basename(parse_url($location, PHP_URL_PATH)) : '';
     }

@@ -111,7 +111,7 @@ class CredentialsService
         }
 
         foreach ($countryConfigurations as $configuration) {
-            if (array_key_exists($configuration->getCountryCode(), $newMerchantIds)) {
+            if (\array_key_exists($configuration->getCountryCode(), $newMerchantIds)) {
                 $this->paymentMethodRepository->deletePaymentMethods($configuration->getMerchantId());
                 $configuration->setMerchantId($newMerchantIds[$configuration->getCountryCode()]);
             }

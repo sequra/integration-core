@@ -48,7 +48,7 @@ class GeneralSettings extends Entity
             self::getDataValue($generalSettings, 'enabledForServices', []),
             self::getDataValue($generalSettings, 'allowFirstServicePaymentDelay', []),
             self::getDataValue($generalSettings, 'allowServiceRegistrationItems', []),
-            is_string($defaultServicesEndDate) ? $defaultServicesEndDate : null
+            \is_string($defaultServicesEndDate) ? $defaultServicesEndDate : null
         );
     }
 

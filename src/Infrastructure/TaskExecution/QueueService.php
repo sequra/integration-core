@@ -322,7 +322,7 @@ class QueueService
      */
     public function abort(QueueItem $queueItem, string $abortDescription): void
     {
-        if (!in_array($queueItem->getStatus(), [QueueItem::CREATED, QueueItem::QUEUED, QueueItem::IN_PROGRESS])) {
+        if (!\in_array($queueItem->getStatus(), [QueueItem::CREATED, QueueItem::QUEUED, QueueItem::IN_PROGRESS])) {
             $this->throwIllegalTransitionException($queueItem->getStatus(), QueueItem::ABORTED);
         }
 
@@ -507,14 +507,14 @@ class QueueService
             $batch = $this->getStorage()->findOldestQueuedItems($priority, $currentLimit);
             $result[] = $batch;
 
-            if (($currentLimit -= count($batch)) <= 0) {
+            if (($currentLimit -= \count($batch)) <= 0) {
                 break;
             }
         }
 
         $result = !empty($result) ? array_merge(...$result) : $result;
 
-        return array_slice($result, 0, $limit);
+        return \array_slice($result, 0, $limit);
     }
 
     /**
@@ -665,7 +665,7 @@ class QueueService
     protected function throwIllegalTransitionException(string $fromStatus, string $toStatus): void
     {
         throw new BadMethodCallException(
-            sprintf(
+            \sprintf(
                 'Illegal queue item state transition from "%s" to "%s"',
                 $fromStatus,
                 $toStatus

@@ -40,7 +40,7 @@ class FormattedPaymentMethodsResponse extends Response
             ));
 
             $category = $paymentMethod->getCategory();
-            if (!in_array($category, $supportedCategories, true)) {
+            if (!\in_array($category, $supportedCategories, true)) {
                 continue;
             }
 

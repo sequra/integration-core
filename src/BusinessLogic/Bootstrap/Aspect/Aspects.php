@@ -90,7 +90,7 @@ class Aspects
         return $this->aspect->applyOn(function () use ($methodName, $arguments) {
             $subject = ServiceRegister::getService($this->subjectClassName);
 
-            return call_user_func_array([$subject, $methodName], $arguments);
+            return \call_user_func_array([$subject, $methodName], $arguments);
         });
     }
 }

@@ -52,7 +52,7 @@ class Index
      */
     public function __construct($type, $property)
     {
-        if (!in_array($type, array(self::BOOLEAN, self::DATETIME, self::DOUBLE, self::INTEGER, self::STRING), true)) {
+        if (!\in_array($type, array(self::BOOLEAN, self::DATETIME, self::DOUBLE, self::INTEGER, self::STRING), true)) {
             throw new InvalidArgumentException("Invalid index type given: $type.");
         }
 

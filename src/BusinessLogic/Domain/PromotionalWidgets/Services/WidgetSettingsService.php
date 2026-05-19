@@ -346,7 +346,7 @@ class WidgetSettingsService
         );
 
         return array_filter($paymentMethods, static function ($method) {
-            return in_array($method->getCategory(), self::WIDGET_SUPPORTED_CATEGORIES_ON_PRODUCT_PAGE);
+            return \in_array($method->getCategory(), self::WIDGET_SUPPORTED_CATEGORIES_ON_PRODUCT_PAGE);
         });
     }
 
@@ -380,7 +380,7 @@ class WidgetSettingsService
         foreach ($paymentMethods as $method) {
             if (
                 $method->getProduct() === $selectedProduct &&
-                in_array($method->getCategory(), $categories, true)
+                \in_array($method->getCategory(), $categories, true)
             ) {
                 return $method;
             }
@@ -433,7 +433,7 @@ class WidgetSettingsService
         $widgetSupportedProducts = [];
 
         foreach ($paymentMethods as $paymentMethod) {
-            if (in_array($paymentMethod->getCategory(), $supportedCategories, true)) {
+            if (\in_array($paymentMethod->getCategory(), $supportedCategories, true)) {
                 $widgetSupportedProducts [] = $paymentMethod->getProduct();
             }
         }

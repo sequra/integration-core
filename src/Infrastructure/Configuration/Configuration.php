@@ -522,7 +522,7 @@ abstract class Configuration extends Singleton
      */
     protected function isContextSpecific($name)
     {
-        return !in_array($name, static::$globalConfigValues, true);
+        return !\in_array($name, static::$globalConfigValues, true);
     }
 
     /**

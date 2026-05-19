@@ -68,7 +68,7 @@ class AuthorizedProxy extends BaseProxy
      */
     protected function getHeaders(): array
     {
-        $token = base64_encode(sprintf(
+        $token = base64_encode(\sprintf(
             '%s:%s',
             $this->connectionData->getAuthorizationCredentials()->getUsername(),
             $this->connectionData->getAuthorizationCredentials()->getPassword()

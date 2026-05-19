@@ -597,4 +597,37 @@ class DisconnectServiceTest extends BaseTestCase
         self::assertNotNull($this->bannerSettingsRepository->getBannerSettings());
         self::assertEmpty($this->bannerService->getDeletedImageKeys());
     }
+
+    /**
+     * When the remote store-integration DELETE fails (e.g. the integration was
+     * never registered on the seQura platform, or was already removed), the
+     * surrounding disconnect flow must still perform the local cleanup so the
+     * host doesn't end up with stale ConnectionData rows.
+     *
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws Exception
+     */
+    public function testDisconnectContinuesWhenRemoteDeregistrationFails(): void
+    {
+        //Arrange
+        $this->connectionDataRepository->setConnectionData(
+            new ConnectionData(
+                'sandbox',
+                'merchant',
+                'sequra',
+                new AuthorizationCredentials('username', 'password')
+            )
+        );
+        $this->storeIntegrationService->setDeleteException(
+            new Exception('Simulated remote DELETE failure (e.g. HTTP 404)')
+        );
+
+        //Act
+        $this->service->disconnect('sequra', false);
+
+        //Assert: local ConnectionData row was deleted even though the remote DELETE threw.
+        self::assertNull($this->connectionDataRepository->getConnectionDataByDeploymentId('sequra'));
+    }
 }

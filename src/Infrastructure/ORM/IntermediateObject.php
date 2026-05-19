@@ -162,7 +162,7 @@ class IntermediateObject
      */
     public function setIndexValue($index, $value): void
     {
-        if (!is_int($index) || $index < 1 || !is_string($value)) {
+        if (!\is_int($index) || $index < 1 || !\is_string($value)) {
             return;
         }
 
@@ -184,14 +184,14 @@ class IntermediateObject
     public function getIndexValue($index): ?string
     {
         $value = null;
-        if (!is_int($index) || $index < 1) {
+        if (!\is_int($index) || $index < 1) {
             return $value;
         }
 
         if ($index <= 6) {
             $methodName = 'getIndex' . $index;
             $value = $this->$methodName();
-        } elseif (array_key_exists('index_' . $index, $this->otherIndexes)) {
+        } elseif (\array_key_exists('index_' . $index, $this->otherIndexes)) {
             $value = $this->otherIndexes['index_' . $index];
         }
 

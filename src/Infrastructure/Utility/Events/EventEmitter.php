@@ -36,10 +36,10 @@ abstract class EventEmitter
      */
     protected function fire(Event $event): void
     {
-        $eventClass = get_class($event);
+        $eventClass = \get_class($event);
         if (!empty($this->handlers[$eventClass])) {
             foreach ($this->handlers[$eventClass] as $handler) {
-                call_user_func($handler, $event);
+                \call_user_func($handler, $event);
             }
         }
     }

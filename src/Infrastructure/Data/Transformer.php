@@ -32,7 +32,7 @@ class Transformer
     {
         $result = array();
 
-        if (!is_array($batch)) {
+        if (!\is_array($batch)) {
             return $result;
         }
 
@@ -51,11 +51,11 @@ class Transformer
     protected static function trim(array &$data): void
     {
         foreach ($data as $key => $value) {
-            if (is_array($value)) {
+            if (\is_array($value)) {
                 static::trim($data[$key]);
             }
 
-            if ($value === null || (is_array($value) && empty($value))) {
+            if ($value === null || (\is_array($value) && empty($value))) {
                 unset($data[$key]);
             }
         }

@@ -97,7 +97,7 @@ class ServiceRegister
      */
     protected function register(string $type, callable $delegate): void
     {
-        if (!is_callable($delegate)) {
+        if (!\is_callable($delegate)) {
             throw new InvalidArgumentException("$type delegate is not callable.");
         }
 
@@ -119,6 +119,6 @@ class ServiceRegister
             throw new ServiceNotRegisteredException($type);
         }
 
-        return call_user_func($this->services[$type]);
+        return \call_user_func($this->services[$type]);
     }
 }

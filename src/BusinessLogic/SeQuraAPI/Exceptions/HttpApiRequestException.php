@@ -61,13 +61,13 @@ class HttpApiRequestException extends HttpRequestException
         if (json_last_error() !== JSON_ERROR_NONE) {
             return $errors; // Return empty array if JSON decoding fails
         }
-        if (!is_array($responseBody) || !isset($responseBody['errors'])) {
+        if (!\is_array($responseBody) || !isset($responseBody['errors'])) {
             return $errors;
         }
         foreach ($responseBody['errors'] as $error) {
-            if (is_string($error)) {
+            if (\is_string($error)) {
                 $errors[] = $error;
-            } elseif (is_array($error) && isset($error['title'])) {
+            } elseif (\is_array($error) && isset($error['title'])) {
                 $errors[] = $error['title'];
             }
         }

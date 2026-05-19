@@ -437,7 +437,7 @@ class SeQuraPaymentMethod
      */
     public function shouldShowMoreInfo(): bool
     {
-        return !in_array($this->product, self::NOT_ALLOWED_MORE_PRODUCT_INFO, true);
+        return !\in_array($this->product, self::NOT_ALLOWED_MORE_PRODUCT_INFO, true);
     }
 
     /**
@@ -471,7 +471,7 @@ class SeQuraPaymentMethod
 
         $data = json_decode($data, true);
 
-        if (!is_array($data)) {
+        if (!\is_array($data)) {
             return null;
         }
         return self::fromArray($data);

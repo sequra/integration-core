@@ -21,15 +21,15 @@ class JsonSerializer extends Serializer
      */
     protected function doSerialize($data)
     {
-        if (is_object($data) && method_exists($data, 'toArray')) {
+        if (\is_object($data) && method_exists($data, 'toArray')) {
             $preparedArray = $data->toArray();
-            $preparedArray['class_name'] = get_class($data);
+            $preparedArray['class_name'] = \get_class($data);
 
             return json_encode($preparedArray);
         }
 
         if ($data instanceof stdClass) {
-            $data->className = get_class($data);
+            $data->className = \get_class($data);
         }
 
         return json_encode($data);
@@ -46,7 +46,7 @@ class JsonSerializer extends Serializer
     {
         $unserialized = json_decode($serialized, true);
 
-        if (!is_array($unserialized) || !array_key_exists('class_name', $unserialized)) {
+        if (!\is_array($unserialized) || !\array_key_exists('class_name', $unserialized)) {
             return $unserialized;
         }
 

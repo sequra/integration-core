@@ -58,7 +58,7 @@ class StringValidator
      */
     public static function isStringLengthBetween(string $string, int $minLength, int $maxLength): bool
     {
-        return strlen($string) >= $minLength && strlen($string) <= $maxLength;
+        return \strlen($string) >= $minLength && \strlen($string) <= $maxLength;
     }
 
     /**

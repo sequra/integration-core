@@ -144,7 +144,7 @@ class AsyncSocketHttpClient extends CurlHttpClient
             $payload .= $header . (!empty($value) ? ": $value" : '') . "\r\n";
         }
 
-        $payload .= "Content-Length: " . strlen($body) . "\r\n";
+        $payload .= "Content-Length: " . \strlen($body) . "\r\n";
         $payload .= "Connection: close\r\n\r\n";
 
         $payload .= $body . "\r\n\r\n";

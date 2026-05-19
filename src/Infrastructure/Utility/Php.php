@@ -11,8 +11,8 @@ class Php
      */
     public static function classUsesRecursive($class): array
     {
-        if (is_object($class)) {
-            $class = get_class($class);
+        if (\is_object($class)) {
+            $class = \get_class($class);
         }
 
         $results = [];

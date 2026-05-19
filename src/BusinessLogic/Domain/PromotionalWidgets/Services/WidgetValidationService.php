@@ -61,7 +61,7 @@ class WidgetValidationService
 
         $allowedIPAddresses = $generalSettings->getAllowedIPAddresses() ?? [];
 
-        return !(!empty($allowedIPAddresses) && !in_array($currentIpAddress, $allowedIPAddresses, true));
+        return !(!empty($allowedIPAddresses) && !\in_array($currentIpAddress, $allowedIPAddresses, true));
     }
 
     /**
@@ -73,7 +73,7 @@ class WidgetValidationService
      */
     public function isCurrencySupported(string $currentCurrency): bool
     {
-        return in_array($currentCurrency, self::SUPPORTED_CURRENCIES, true);
+        return \in_array($currentCurrency, self::SUPPORTED_CURRENCIES, true);
     }
 
     /**
@@ -107,7 +107,7 @@ class WidgetValidationService
 
             if (
                 $excludedProducts &&
-                in_array($productSku, $excludedProducts, true)
+                \in_array($productSku, $excludedProducts, true)
             ) {
                 return false;
             }

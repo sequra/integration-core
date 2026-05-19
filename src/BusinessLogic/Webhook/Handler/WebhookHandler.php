@@ -78,7 +78,7 @@ class WebhookHandler
         $task = new OrderUpdateTask($webhook);
         $task->execute();
 
-        if (in_array($webhook->getSqState(), [OrderStates::STATE_APPROVED, OrderStates::STATE_NEEDS_REVIEW], true)) {
+        if (\in_array($webhook->getSqState(), [OrderStates::STATE_APPROVED, OrderStates::STATE_NEEDS_REVIEW], true)) {
             $this->acknowledgeOrder($webhook->getOrderRef(), $webhook->getSqState());
         }
     }

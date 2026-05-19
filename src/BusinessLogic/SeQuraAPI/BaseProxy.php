@@ -73,7 +73,7 @@ class BaseProxy
     public static function getSandboxApiBaseUrlOverride(): ?string
     {
         $apiBaseUrl = getenv(self::SANDBOX_API_BASE_URL_ENV);
-        if (!is_string($apiBaseUrl)) {
+        if (!\is_string($apiBaseUrl)) {
             return null;
         }
 
@@ -221,7 +221,7 @@ class BaseProxy
         $sanitizedEndpoint = ltrim($request->getEndpoint(), '/');
         $queryString = $this->getQueryString($request);
 
-        return sprintf('%s%s%s', $this->baseUrl, $sanitizedEndpoint, !empty($queryString) ? "?$queryString" : '');
+        return \sprintf('%s%s%s', $this->baseUrl, $sanitizedEndpoint, !empty($queryString) ? "?$queryString" : '');
     }
 
     /**
