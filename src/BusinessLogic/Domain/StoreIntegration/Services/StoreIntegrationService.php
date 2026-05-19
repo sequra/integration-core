@@ -14,6 +14,7 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\ProxyContracts\StoreIntegrationsProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\URL\Model\Query;
 use SeQura\Core\BusinessLogic\Domain\URL\Model\URL;
 use SeQura\Core\BusinessLogic\Webhook\Exceptions\InvalidSignatureException;
@@ -71,6 +72,7 @@ class StoreIntegrationService
      * @return void
      *
      * @throws CapabilitiesEmptyException
+     * @throws InvalidUrlException
      */
     public function createStoreIntegration(ConnectionData $connectionData): void
     {
@@ -87,6 +89,8 @@ class StoreIntegrationService
      * @param ConnectionData $connectionData
      *
      * @return void
+     *
+     * @throws InvalidUrlException
      */
     public function deleteStoreIntegration(ConnectionData $connectionData): void
     {
@@ -119,6 +123,8 @@ class StoreIntegrationService
      * @param string $signature
      *
      * @return URL
+     *
+     * @throws InvalidUrlException
      */
     protected function buildWebhookUrl(URL $webhookUrl, string $signature): URL
     {

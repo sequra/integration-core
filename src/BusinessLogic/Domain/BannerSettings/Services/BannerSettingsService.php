@@ -103,7 +103,7 @@ class BannerSettingsService
                         new LogContextData('country', $banner->getCountry()),
                         new LogContextData('displayLocation', $banner->getDisplayLocation()),
                         new LogContextData('message', $e->getMessage()),
-                        new LogContextData('type', get_class($e)),
+                        new LogContextData('type', \get_class($e)),
                     ]
                 );
             }
@@ -372,7 +372,7 @@ class BannerSettingsService
         }
 
         $scheme = parse_url($url, PHP_URL_SCHEME);
-        if (!in_array($scheme, ['http', 'https'], true)) {
+        if (!\in_array($scheme, ['http', 'https'], true)) {
             throw new InvalidURLException(
                 new TranslatableLabel(
                     'URL must use http or https',
