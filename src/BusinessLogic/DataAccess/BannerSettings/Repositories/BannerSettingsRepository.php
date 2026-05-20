@@ -49,7 +49,6 @@ class BannerSettingsRepository implements BannerSettingsRepositoryInterface
 
         if ($bannerSettingsEntity) {
             $bannerSettingsEntity->setBannerSettings($settings);
-            $bannerSettingsEntity->setStoreId($this->storeContext->getStoreId());
             $this->repository->update($bannerSettingsEntity);
 
             return;

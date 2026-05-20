@@ -106,16 +106,16 @@ class BannerSettings extends Entity
      */
     protected function inflateBannerConfigs(array $bannerConfigs): array
     {
-        $arrayOffBannerConfigs = [];
+        $arrayOfBannerConfigs = [];
         foreach ($bannerConfigs as $bannerConfig) {
-            $arrayOffBannerConfigs [] = new Banner(
-                $bannerConfig['country'],
-                $bannerConfig['linkUrl'],
-                $bannerConfig['imageUrl'],
-                $bannerConfig['displayLocation']
+            $arrayOfBannerConfigs[] = new Banner(
+                $bannerConfig['country'] ?? '',
+                $bannerConfig['linkUrl'] ?? '',
+                $bannerConfig['imageUrl'] ?? '',
+                $bannerConfig['displayLocation'] ?? ''
             );
         }
 
-        return $arrayOffBannerConfigs;
+        return $arrayOfBannerConfigs;
     }
 }

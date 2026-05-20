@@ -2,28 +2,24 @@
 
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses;
 
-use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\AdminAPI\Response\TranslatableErrorResponse;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 
 /**
  * Class TopicMissingErrorResponse
  *
  * @package SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses
  */
-class TopicMissingErrorResponse extends Response
+class TopicMissingErrorResponse extends TranslatableErrorResponse
 {
-    /**
-     * @var bool
-     */
-    protected $successful = false;
-
-    /**
-     * @inheritDoc
-     */
-    public function toArray(): array
+    public function __construct()
     {
-        return [
-            'errorMessage' => 'Topic field is required in the webhook payload.',
-            'errorCode' => 'TOPIC_MISSING'
-        ];
+        parent::__construct(new BaseTranslatableException(
+            new TranslatableLabel(
+                'Topic field is required in the webhook payload.',
+                'TOPIC_MISSING'
+            )
+        ));
     }
 }

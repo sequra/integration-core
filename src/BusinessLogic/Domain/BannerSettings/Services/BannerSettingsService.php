@@ -68,6 +68,8 @@ class BannerSettingsService
         $existingByCountry = $this->indexByCountry($existingBanners);
         $incomingBanners = $bannerSettings->getBannerConfigs();
 
+        $this->validateIncomingBanners($incomingBanners, $existingByCountry);
+
         $resolvedBanners = $this->resolveIncomingBanners($incomingBanners, $existingByCountry);
         $this->deleteRemovedBanners($existingBanners, $this->indexByCountry($incomingBanners));
 
@@ -75,6 +77,25 @@ class BannerSettingsService
         $this->bannerSettingsRepository->setBannerSettings($persisted);
 
         return $persisted;
+    }
+
+    /**
+     * Validates every incoming banner before any image side-effects are
+     * performed, so that an invalid input does not leave partially-uploaded
+     * or partially-deleted images behind.
+     *
+     * @param Banner[] $incomingBanners
+     * @param array<string, Banner> $existingByCountry
+     *
+     * @throws BannerImageRequiredException
+     * @throws InvalidURLException
+     */
+    protected function validateIncomingBanners(array $incomingBanners, array $existingByCountry): void
+    {
+        foreach ($incomingBanners as $banner) {
+            $this->assertValidUrl($banner->getLinkUrl());
+            $this->assertBannerHasImageSource($banner, $existingByCountry);
+        }
     }
 
     /**
@@ -90,23 +111,7 @@ class BannerSettingsService
         }
 
         foreach ($bannerSettings->getBannerConfigs() as $banner) {
-            try {
-                $this->bannerService->deleteBannerImage(
-                    $banner->getCountry(),
-                    $banner->getDisplayLocation()
-                );
-            } catch (Throwable $e) {
-                Logger::logError(
-                    'Failed to delete uploaded banner image.',
-                    'Core',
-                    [
-                        new LogContextData('country', $banner->getCountry()),
-                        new LogContextData('displayLocation', $banner->getDisplayLocation()),
-                        new LogContextData('message', $e->getMessage()),
-                        new LogContextData('type', \get_class($e)),
-                    ]
-                );
-            }
+            $this->deleteBannerImage($banner->getCountry(), $banner->getDisplayLocation());
         }
     }
 
@@ -172,16 +177,12 @@ class BannerSettingsService
      *
      * @return Banner[]
      *
-     * @throws BannerImageRequiredException
      * @throws InvalidURLException
      */
     protected function resolveIncomingBanners(array $incomingBanners, array $existingByCountry): array
     {
         $resolved = [];
         foreach ($incomingBanners as $banner) {
-            $this->assertValidUrl($banner->getLinkUrl());
-            $this->assertBannerHasImageSource($banner, $existingByCountry);
-
             $resolved[] = $this->resolveBannerImage($banner, $existingByCountry);
         }
 
@@ -198,11 +199,32 @@ class BannerSettingsService
     {
         foreach ($existingBanners as $banner) {
             if (!isset($incomingByCountry[$banner->getCountry()])) {
-                $this->bannerService->deleteBannerImage(
-                    $banner->getCountry(),
-                    $banner->getDisplayLocation()
-                );
+                $this->deleteBannerImage($banner->getCountry(), $banner->getDisplayLocation());
             }
+        }
+    }
+
+    /**
+     * Deletes a banner image, logging failures instead of propagating them.
+     *
+     * @param string $country
+     * @param string $displayLocation
+     */
+    protected function deleteBannerImage(string $country, string $displayLocation): void
+    {
+        try {
+            $this->bannerService->deleteBannerImage($country, $displayLocation);
+        } catch (Throwable $e) {
+            Logger::logError(
+                'Failed to delete banner image.',
+                'Core',
+                [
+                    new LogContextData('country', $country),
+                    new LogContextData('displayLocation', $displayLocation),
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', \get_class($e)),
+                ]
+            );
         }
     }
 

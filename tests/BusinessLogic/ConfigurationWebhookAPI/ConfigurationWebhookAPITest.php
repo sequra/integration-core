@@ -420,8 +420,10 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         //Assert
         self::assertFalse($response->isSuccessful());
         self::assertEquals([
+            'statusCode' => 0,
+            'errorCode' => 'TOPIC_MISSING',
             'errorMessage' => 'Topic field is required in the webhook payload.',
-            'errorCode' => 'TOPIC_MISSING'
+            'errorParameters' => [],
         ], $response->toArray());
     }
 
@@ -495,8 +497,10 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         //Assert
         self::assertFalse($response->isSuccessful());
         self::assertEquals([
+            'statusCode' => 0,
+            'errorCode' => 'UNKNOWN_TOPIC',
             'errorMessage' => 'Unknown or unsupported topic: get-payment-data',
-            'errorCode' => 'UNKNOWN_TOPIC'
+            'errorParameters' => [],
         ], $response->toArray());
     }
 

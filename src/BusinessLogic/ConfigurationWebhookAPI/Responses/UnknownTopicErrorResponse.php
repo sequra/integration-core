@@ -2,41 +2,29 @@
 
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses;
 
-use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\AdminAPI\Response\TranslatableErrorResponse;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 
 /**
  * Class UnknownTopicErrorResponse
  *
  * @package SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses
  */
-class UnknownTopicErrorResponse extends Response
+class UnknownTopicErrorResponse extends TranslatableErrorResponse
 {
-    /**
-     * @var bool
-     */
-    protected $successful = false;
-
-    /**
-     * @var string
-     */
-    protected $topic;
-
     /**
      * @param string $topic
      */
     public function __construct(string $topic)
     {
-        $this->topic = htmlspecialchars($topic, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-    }
+        $safeTopic = htmlspecialchars($topic, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-    /**
-     * @inheritDoc
-     */
-    public function toArray(): array
-    {
-        return [
-            'errorMessage' => "Unknown or unsupported topic: {$this->topic}",
-            'errorCode' => 'UNKNOWN_TOPIC'
-        ];
+        parent::__construct(new BaseTranslatableException(
+            new TranslatableLabel(
+                "Unknown or unsupported topic: {$safeTopic}",
+                'UNKNOWN_TOPIC'
+            )
+        ));
     }
 }
