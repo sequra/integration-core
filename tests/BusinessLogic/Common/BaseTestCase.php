@@ -20,6 +20,8 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Controller\ConfigurationWe
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\GetAdvancedSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\SaveAdvancedSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Enums\Topics;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\ExpressCheckout\GetExpressCheckoutSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\ExpressCheckout\SaveExpressCheckoutSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings\GetGeneralSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings\SaveGeneralSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Log\GetLogContentHandler;
@@ -41,6 +43,8 @@ use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryCo
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Repositories\CountryConfigurationRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Credentials\Entities\Credentials;
 use SeQura\Core\BusinessLogic\DataAccess\Deployments\Entities\Deployment;
+use SeQura\Core\BusinessLogic\DataAccess\ExpressCheckout\Entities\ExpressCheckoutSettings as ExpressCheckoutSettingsEntity;
+use SeQura\Core\BusinessLogic\DataAccess\ExpressCheckout\Repositories\ExpressCheckoutSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
@@ -69,10 +73,13 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxy
 use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutSettingsService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutIntegrationInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Log\LogServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
@@ -154,6 +161,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsReposit
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockExpressCheckoutIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMiniWidgetMessagesProvider;
@@ -247,6 +255,20 @@ class BaseTestCase extends TestCase
                     TestRepositoryRegistry::getRepository(GeneralSettings::getClassName()),
                     StoreContext::getInstance()
                 );
+            },
+            ExpressCheckoutSettingsRepositoryInterface::class => function () {
+                return new ExpressCheckoutSettingsRepository(
+                    TestRepositoryRegistry::getRepository(ExpressCheckoutSettingsEntity::getClassName()),
+                    StoreContext::getInstance()
+                );
+            },
+            ExpressCheckoutSettingsService::class => static function () {
+                return new ExpressCheckoutSettingsService(
+                    TestServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class)
+                );
+            },
+            ExpressCheckoutIntegrationInterface::class => static function () {
+                return new MockExpressCheckoutIntegrationService();
             },
             ConnectionDataRepositoryInterface::class => function () {
                 return new ConnectionDataRepository(
@@ -869,6 +891,25 @@ class BaseTestCase extends TestCase
             }
         );
 
+        TestServiceRegister::registerService(
+            GetExpressCheckoutSettingsHandler::class,
+            static function () {
+                return new GetExpressCheckoutSettingsHandler(
+                    TestServiceRegister::getService(ExpressCheckoutSettingsService::class),
+                    TestServiceRegister::getService(ExpressCheckoutIntegrationInterface::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            SaveExpressCheckoutSettingsHandler::class,
+            static function () {
+                return new SaveExpressCheckoutSettingsHandler(
+                    TestServiceRegister::getService(ExpressCheckoutSettingsService::class)
+                );
+            }
+        );
+
         TopicHandlerRegistry::register(
             Topics::GET_GENERAL_SETTINGS,
             GetGeneralSettingsHandler::class
@@ -944,6 +985,16 @@ class BaseTestCase extends TestCase
             GetStoreInfoHandler::class
         );
 
+        TopicHandlerRegistry::register(
+            Topics::GET_EXPRESS_CHECKOUT_SETTINGS,
+            GetExpressCheckoutSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::SAVE_EXPRESS_CHECKOUT_SETTINGS,
+            SaveExpressCheckoutSettingsHandler::class
+        );
+
         TestRepositoryRegistry::registerRepository(ConfigEntity::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(
             QueueItem::getClassName(),
@@ -971,6 +1022,10 @@ class BaseTestCase extends TestCase
         TestRepositoryRegistry::registerRepository(Credentials::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(Deployment::getClassName(), MemoryRepository::getClassName());
         TestRepositoryRegistry::registerRepository(AdvancedSettings::getClassName(), MemoryRepository::getClassName());
+        TestRepositoryRegistry::registerRepository(
+            ExpressCheckoutSettingsEntity::getClassName(),
+            MemoryRepository::getClassName()
+        );
     }
 
     /**
