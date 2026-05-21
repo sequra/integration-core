@@ -24,7 +24,8 @@ use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPage;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPageConfig;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutSettings;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
-use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\EmptyCategoryParameterException;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\Category;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
@@ -71,7 +72,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurati
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDomainShopOrderStatusesService;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockExpressCheckoutSettingsService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockExpressCheckoutService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockGeneralSettingsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockLogService;
@@ -161,7 +162,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     private $generalSettingsService;
 
     /**
-     * @var MockExpressCheckoutSettingsService $expressCheckoutSettingsService
+     * @var MockExpressCheckoutService $expressCheckoutSettingsService
      */
     private $expressCheckoutSettingsService;
 
@@ -284,10 +285,9 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
             TestServiceRegister::getService(PaymentMethodsService::class),
             TestServiceRegister::getService(CredentialsService::class),
-            TestServiceRegister::getService(ConnectionService::class),
             TestServiceRegister::getService(WidgetConfiguratorInterface::class),
             TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
-            TestServiceRegister::getService(DeploymentsService::class)
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         TestServiceRegister::registerService(WidgetSettingsService::class, function () {
@@ -314,11 +314,14 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             return $this->generalSettingsService;
         });
 
-        $this->expressCheckoutSettingsService = new MockExpressCheckoutSettingsService(
-            TestServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class)
+        $this->expressCheckoutSettingsService = new MockExpressCheckoutService(
+            TestServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class),
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(CountryConfigurationService::class),
+            TestServiceRegister::getService(PaymentMethodsService::class)
         );
 
-        TestServiceRegister::registerService(ExpressCheckoutSettingsService::class, function () {
+        TestServiceRegister::registerService(ExpressCheckoutService::class, function () {
             return $this->expressCheckoutSettingsService;
         });
 

@@ -15,6 +15,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsCont
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Controller\ExpressCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Controller\ConfigurationWebhookController;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\GetAdvancedSettingsHandler;
@@ -74,7 +75,7 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\Deployments
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
-use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutSettingsService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
@@ -111,7 +112,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMe
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
@@ -260,11 +261,6 @@ class BaseTestCase extends TestCase
                 return new ExpressCheckoutSettingsRepository(
                     TestRepositoryRegistry::getRepository(ExpressCheckoutSettingsEntity::getClassName()),
                     StoreContext::getInstance()
-                );
-            },
-            ExpressCheckoutSettingsService::class => static function () {
-                return new ExpressCheckoutSettingsService(
-                    TestServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class)
                 );
             },
             ExpressCheckoutIntegrationInterface::class => static function () {
@@ -458,7 +454,20 @@ class BaseTestCase extends TestCase
             PromotionalWidgetsCheckoutController::class => function () {
                 return new PromotionalWidgetsCheckoutController(
                     TestServiceRegister::getService(WidgetSettingsService::class),
-                    TestServiceRegister::getService(WidgetValidationService::class)
+                    TestServiceRegister::getService(CheckoutService::class)
+                );
+            },
+            ExpressCheckoutService::class => function () {
+                return new ExpressCheckoutService(
+                    TestServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class),
+                    TestServiceRegister::getService(CheckoutService::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class),
+                    TestServiceRegister::getService(PaymentMethodsService::class)
+                );
+            },
+            ExpressCheckoutController::class => function () {
+                return new ExpressCheckoutController(
+                    TestServiceRegister::getService(ExpressCheckoutService::class)
                 );
             },
             WidgetSettingsRepositoryInterface::class => function () {
@@ -492,24 +501,25 @@ class BaseTestCase extends TestCase
             TopicHandlerRegistry::class => function () {
                 return TopicHandlerRegistry::getInstance();
             },
+            ProductServiceInterface::class => function () {
+                return new MockProductService();
+            },
+            CheckoutService::class => function () {
+                return new CheckoutService(
+                    TestServiceRegister::getService(GeneralSettingsService::class),
+                    TestServiceRegister::getService(ProductServiceInterface::class),
+                    TestServiceRegister::getService(ConnectionService::class),
+                    TestServiceRegister::getService(DeploymentsService::class)
+                );
+            },
             WidgetSettingsService::class => function () {
                 return new WidgetSettingsService(
                     TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
                     TestServiceRegister::getService(PaymentMethodsService::class),
                     TestServiceRegister::getService(CredentialsService::class),
-                    TestServiceRegister::getService(ConnectionService::class),
                     TestServiceRegister::getService(WidgetConfiguratorInterface::class),
                     TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
-                    TestServiceRegister::getService(DeploymentsService::class)
-                );
-            },
-            ProductServiceInterface::class => function () {
-                return new MockProductService();
-            },
-            WidgetValidationService::class => function () {
-                return new WidgetValidationService(
-                    TestServiceRegister::getService(GeneralSettingsService::class),
-                    TestServiceRegister::getService(ProductServiceInterface::class)
+                    TestServiceRegister::getService(CheckoutService::class)
                 );
             },
             PromotionalWidgetsController::class => function () {
@@ -895,7 +905,7 @@ class BaseTestCase extends TestCase
             GetExpressCheckoutSettingsHandler::class,
             static function () {
                 return new GetExpressCheckoutSettingsHandler(
-                    TestServiceRegister::getService(ExpressCheckoutSettingsService::class),
+                    TestServiceRegister::getService(ExpressCheckoutService::class),
                     TestServiceRegister::getService(ExpressCheckoutIntegrationInterface::class)
                 );
             }
@@ -905,7 +915,7 @@ class BaseTestCase extends TestCase
             SaveExpressCheckoutSettingsHandler::class,
             static function () {
                 return new SaveExpressCheckoutSettingsHandler(
-                    TestServiceRegister::getService(ExpressCheckoutSettingsService::class)
+                    TestServiceRegister::getService(ExpressCheckoutService::class)
                 );
             }
         );

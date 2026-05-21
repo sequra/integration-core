@@ -5,7 +5,7 @@ namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\ExpressChec
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInterface;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\ExpressCheckout\GetExpressCheckoutSettingsResponse;
-use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutSettingsService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
 use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutIntegrationInterface;
 
 /**
@@ -16,9 +16,9 @@ use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckout
 class GetExpressCheckoutSettingsHandler implements TopicHandlerInterface
 {
     /**
-     * @var ExpressCheckoutSettingsService
+     * @var ExpressCheckoutService
      */
-    protected $expressCheckoutSettingsService;
+    protected $expressCheckoutService;
 
     /**
      * @var ExpressCheckoutIntegrationInterface
@@ -26,14 +26,14 @@ class GetExpressCheckoutSettingsHandler implements TopicHandlerInterface
     protected $expressCheckoutIntegration;
 
     /**
-     * @param ExpressCheckoutSettingsService $expressCheckoutSettingsService
+     * @param ExpressCheckoutService $expressCheckoutService
      * @param ExpressCheckoutIntegrationInterface $expressCheckoutIntegration
      */
     public function __construct(
-        ExpressCheckoutSettingsService $expressCheckoutSettingsService,
+        ExpressCheckoutService $expressCheckoutService,
         ExpressCheckoutIntegrationInterface $expressCheckoutIntegration
     ) {
-        $this->expressCheckoutSettingsService = $expressCheckoutSettingsService;
+        $this->expressCheckoutService = $expressCheckoutService;
         $this->expressCheckoutIntegration = $expressCheckoutIntegration;
     }
 
@@ -45,7 +45,7 @@ class GetExpressCheckoutSettingsHandler implements TopicHandlerInterface
     public function handle(array $payload): Response
     {
         $availablePages = $this->expressCheckoutIntegration->getAvailablePages();
-        $settings = $this->expressCheckoutSettingsService->getExpressCheckoutSettings();
+        $settings = $this->expressCheckoutService->getExpressCheckoutSettings();
 
         return new GetExpressCheckoutSettingsResponse($availablePages, $settings);
     }

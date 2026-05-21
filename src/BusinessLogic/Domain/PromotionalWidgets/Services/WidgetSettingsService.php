@@ -3,12 +3,10 @@
 namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
-use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
-use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
-use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\MiniWidgetMessagesProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
@@ -44,10 +42,6 @@ class WidgetSettingsService
      */
     protected $credentialsService;
     /**
-     * @var ConnectionService
-     */
-    protected $connectionService;
-    /**
      * @var WidgetConfiguratorInterface
      */
     protected $widgetConfigurator;
@@ -56,35 +50,32 @@ class WidgetSettingsService
      */
     protected $miniWidgetMessagesProvider;
     /**
-     * @var DeploymentsService
+     * @var CheckoutService
      */
-    protected $deploymentsService;
+    protected $checkoutService;
 
     /**
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
      * @param PaymentMethodsService $paymentMethodsService
      * @param CredentialsService $credentialsService
-     * @param ConnectionService $connectionService
      * @param WidgetConfiguratorInterface $widgetConfigurator
      * @param MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider
-     * @param DeploymentsService $deploymentsService
+     * @param CheckoutService $checkoutService
      */
     public function __construct(
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
         PaymentMethodsService $paymentMethodsService,
         CredentialsService $credentialsService,
-        ConnectionService $connectionService,
         WidgetConfiguratorInterface $widgetConfigurator,
         MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider,
-        DeploymentsService $deploymentsService
+        CheckoutService $checkoutService
     ) {
         $this->widgetSettingsRepository = $widgetSettingsRepository;
         $this->paymentMethodsService = $paymentMethodsService;
         $this->credentialsService = $credentialsService;
-        $this->connectionService = $connectionService;
         $this->widgetConfigurator = $widgetConfigurator;
         $this->miniWidgetMessagesProvider = $miniWidgetMessagesProvider;
-        $this->deploymentsService = $deploymentsService;
+        $this->checkoutService = $checkoutService;
     }
 
     /**
@@ -136,7 +127,7 @@ class WidgetSettingsService
                 $credentials ? $credentials->getAssetsKey() : '',
                 $merchantId,
                 $this->getWidgetSupportedProducts($merchantId),
-                $this->getScriptUri($credentials ? $credentials->getDeployment() : ''),
+                $this->checkoutService->getScriptUri($credentials ? $credentials->getDeployment() : ''),
                 $this->widgetConfigurator->getLocale() ?? 'es-ES',
                 $this->widgetConfigurator->getCurrency() ?? 'EUR',
                 $this->widgetConfigurator->getDecimalSeparator() ?? ',',
@@ -387,29 +378,6 @@ class WidgetSettingsService
         }
 
         return null;
-    }
-
-    /**
-     * Returns script uri
-     *
-     * @param string $deployment
-     *
-     * @return string
-     *
-     * @throws DeploymentNotFoundException
-     */
-    protected function getScriptUri(string $deployment): string
-    {
-        $settings = $this->connectionService->getConnectionDataByDeployment($deployment);
-        if (!$settings || !$settings->getEnvironment()) {
-            return '';
-        }
-
-        $deployment = $this->deploymentsService->getDeploymentById($deployment);
-
-        return $settings->getEnvironment() === 'live' ?
-            $deployment->getLiveDeploymentURL()->getAssetsBaseUrl() . 'sequra-checkout.min.js' :
-            $deployment->getSandboxDeploymentURL()->getAssetsBaseUrl() . 'sequra-checkout.min.js';
     }
 
     /**

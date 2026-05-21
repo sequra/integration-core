@@ -13,6 +13,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Controller\ExpressCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
@@ -79,7 +80,7 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\Deployments
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
-use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutSettingsService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
@@ -119,7 +120,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMe
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
@@ -443,15 +444,6 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
-            ExpressCheckoutSettingsService::class,
-            static function () {
-                return new ExpressCheckoutSettingsService(
-                    ServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class)
-                );
-            }
-        );
-
-        ServiceRegister::registerService(
             SellingCountriesService::class,
             static function () {
                 return new SellingCountriesService(
@@ -570,26 +562,27 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
-            WidgetSettingsService::class,
+            CheckoutService::class,
             static function () {
-                return new WidgetSettingsService(
-                    ServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
-                    ServiceRegister::getService(PaymentMethodsService::class),
-                    ServiceRegister::getService(CredentialsService::class),
+                return new CheckoutService(
+                    ServiceRegister::getService(GeneralSettingsService::class),
+                    ServiceRegister::getService(ProductServiceInterface::class),
                     ServiceRegister::getService(ConnectionService::class),
-                    ServiceRegister::getService(WidgetConfiguratorInterface::class),
-                    ServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
                     ServiceRegister::getService(DeploymentsService::class)
                 );
             }
         );
 
         ServiceRegister::registerService(
-            WidgetValidationService::class,
+            WidgetSettingsService::class,
             static function () {
-                return new WidgetValidationService(
-                    ServiceRegister::getService(GeneralSettingsService::class),
-                    ServiceRegister::getService(ProductServiceInterface::class)
+                return new WidgetSettingsService(
+                    ServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(PaymentMethodsService::class),
+                    ServiceRegister::getService(CredentialsService::class),
+                    ServiceRegister::getService(WidgetConfiguratorInterface::class),
+                    ServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
+                    ServiceRegister::getService(CheckoutService::class)
                 );
             }
         );
@@ -809,7 +802,28 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new PromotionalWidgetsCheckoutController(
                     ServiceRegister::getService(WidgetSettingsService::class),
-                    ServiceRegister::getService(WidgetValidationService::class)
+                    ServiceRegister::getService(CheckoutService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            ExpressCheckoutService::class,
+            static function () {
+                return new ExpressCheckoutService(
+                    ServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(CheckoutService::class),
+                    ServiceRegister::getService(CountryConfigurationService::class),
+                    ServiceRegister::getService(PaymentMethodsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            ExpressCheckoutController::class,
+            static function () {
+                return new ExpressCheckoutController(
+                    ServiceRegister::getService(ExpressCheckoutService::class)
                 );
             }
         );
@@ -1224,7 +1238,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             GetExpressCheckoutSettingsHandler::class,
             static function () {
                 return new GetExpressCheckoutSettingsHandler(
-                    ServiceRegister::getService(ExpressCheckoutSettingsService::class),
+                    ServiceRegister::getService(ExpressCheckoutService::class),
                     ServiceRegister::getService(ExpressCheckoutIntegrationInterface::class)
                 );
             }
@@ -1234,7 +1248,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             SaveExpressCheckoutSettingsHandler::class,
             static function () {
                 return new SaveExpressCheckoutSettingsHandler(
-                    ServiceRegister::getService(ExpressCheckoutSettingsService::class)
+                    ServiceRegister::getService(ExpressCheckoutService::class)
                 );
             }
         );

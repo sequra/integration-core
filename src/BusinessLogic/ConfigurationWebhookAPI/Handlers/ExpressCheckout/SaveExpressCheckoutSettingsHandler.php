@@ -9,7 +9,7 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\ExpressCheckout\
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\DuplicatedExpressCheckoutPageException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageConfigException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageException;
-use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutSettingsService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
 
 /**
  * Class SaveExpressCheckoutSettingsHandler
@@ -19,16 +19,16 @@ use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutSet
 class SaveExpressCheckoutSettingsHandler implements TopicHandlerInterface
 {
     /**
-     * @var ExpressCheckoutSettingsService
+     * @var ExpressCheckoutService
      */
-    protected $expressCheckoutSettingsService;
+    protected $expressCheckoutService;
 
     /**
-     * @param ExpressCheckoutSettingsService $expressCheckoutSettingsService
+     * @param ExpressCheckoutService $expressCheckoutService
      */
-    public function __construct(ExpressCheckoutSettingsService $expressCheckoutSettingsService)
+    public function __construct(ExpressCheckoutService $expressCheckoutService)
     {
-        $this->expressCheckoutSettingsService = $expressCheckoutSettingsService;
+        $this->expressCheckoutService = $expressCheckoutService;
     }
 
     /**
@@ -43,7 +43,7 @@ class SaveExpressCheckoutSettingsHandler implements TopicHandlerInterface
     public function handle(array $payload): Response
     {
         $request = SaveExpressCheckoutSettingsRequest::fromPayload($payload);
-        $this->expressCheckoutSettingsService->saveExpressCheckoutSettings($request->transformToDomainModel());
+        $this->expressCheckoutService->saveExpressCheckoutSettings($request->transformToDomainModel());
 
         return new SaveExpressCheckoutSettingsResponse();
     }
