@@ -18,6 +18,13 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\Co
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\DuplicatedExpressCheckoutPageException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageConfigException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPage;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPageConfig;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutSettings;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutSettingsService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\EmptyCategoryParameterException;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\Category;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
@@ -64,6 +71,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurati
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDomainShopOrderStatusesService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockExpressCheckoutSettingsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockGeneralSettingsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockLogService;
@@ -153,6 +161,11 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     private $generalSettingsService;
 
     /**
+     * @var MockExpressCheckoutSettingsService $expressCheckoutSettingsService
+     */
+    private $expressCheckoutSettingsService;
+
+    /**
      * @var MockDomainShopOrderStatusesService $shopOrderStatusService
      */
     private $shopOrderStatusService;
@@ -191,6 +204,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      * @return void
      *
      * @throws RepositoryClassException
+     * @throws InvalidEnvironmentException
      */
     protected function setUp(): void
     {
@@ -298,6 +312,14 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         TestServiceRegister::registerService(GeneralSettingsService::class, function () {
             return $this->generalSettingsService;
+        });
+
+        $this->expressCheckoutSettingsService = new MockExpressCheckoutSettingsService(
+            TestServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class)
+        );
+
+        TestServiceRegister::registerService(ExpressCheckoutSettingsService::class, function () {
+            return $this->expressCheckoutSettingsService;
         });
 
         $this->shopOrderStatusService = new MockDomainShopOrderStatusesService(
@@ -1745,5 +1767,129 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         //Assert
         self::assertTrue($response->isSuccessful());
         self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetExpressCheckoutSettingsResponseNoSettings(): void
+    {
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-express-checkout-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals([
+            'availablePages' => ['product', 'cart', 'mini-cart'],
+            'expressCheckoutConfigs' => [],
+        ], $response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws InvalidExpressCheckoutPageConfigException
+     */
+    public function testGetExpressCheckoutSettingsResponseWithPersistedConfigs(): void
+    {
+        //Arrange — seed via the mock service
+        $this->expressCheckoutSettingsService->saveExpressCheckoutSettings(new ExpressCheckoutSettings([
+            new ExpressCheckoutPageConfig(ExpressCheckoutPage::product(), true),
+            new ExpressCheckoutPageConfig(ExpressCheckoutPage::cart(), false),
+            new ExpressCheckoutPageConfig(ExpressCheckoutPage::miniCart(), true),
+        ]));
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-express-checkout-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals([
+            'availablePages' => ['product', 'cart', 'mini-cart'],
+            'expressCheckoutConfigs' => [
+                ['page' => 'product', 'enabled' => true],
+                ['page' => 'cart', 'enabled' => false],
+                ['page' => 'mini-cart', 'enabled' => true],
+            ],
+        ], $response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testSaveExpressCheckoutSettingsResponse(): void
+    {
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-express-checkout-settings",
+                "expressCheckoutConfigs" => [
+                    ['page' => 'product', 'enabled' => true],
+                    ['page' => 'cart', 'enabled' => false],
+                ],
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+        $persisted = $this->expressCheckoutSettingsService->getExpressCheckoutSettings();
+        self::assertNotNull($persisted);
+        self::assertCount(2, $persisted->getExpressCheckoutConfigs());
+        self::assertTrue($persisted->isPageEnabled(ExpressCheckoutPage::product()->getPage()));
+        self::assertFalse($persisted->isPageEnabled(ExpressCheckoutPage::cart()->getPage()));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException|DuplicatedExpressCheckoutPageException
+     * @throws InvalidExpressCheckoutPageConfigException
+     */
+    public function testSaveExpressCheckoutSettingsOverwritesPreviousValues(): void
+    {
+        //Arrange
+        $this->expressCheckoutSettingsService->saveExpressCheckoutSettings(new ExpressCheckoutSettings([
+            new ExpressCheckoutPageConfig(ExpressCheckoutPage::product(), true),
+            new ExpressCheckoutPageConfig(ExpressCheckoutPage::cart(), true),
+        ]));
+
+        //Act
+        ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-express-checkout-settings",
+                "expressCheckoutConfigs" => [
+                    ['page' => 'product', 'enabled' => false],
+                    ['page' => 'cart', 'enabled' => false],
+                    ['page' => 'mini-cart', 'enabled' => true],
+                ],
+            ]
+        );
+
+        //Assert
+        $persisted = $this->expressCheckoutSettingsService->getExpressCheckoutSettings();
+        self::assertNotNull($persisted);
+        self::assertCount(3, $persisted->getExpressCheckoutConfigs());
+        self::assertFalse($persisted->isPageEnabled(ExpressCheckoutPage::product()->getPage()));
+        self::assertFalse($persisted->isPageEnabled(ExpressCheckoutPage::cart()->getPage()));
+        self::assertTrue($persisted->isPageEnabled(ExpressCheckoutPage::miniCart()->getPage()));
     }
 }
