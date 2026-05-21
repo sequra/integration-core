@@ -114,6 +114,54 @@ class StoreIntegrationProxyTest extends BaseTestCase
     }
 
     /**
+     * Regression test for PAR-778: `Sequra-Merchant-Id` was being placed in the
+     * outgoing headers array as the raw merchant ref (`'merchantId'`), while every
+     * other header value is the full `'Name: Value'` wire-form string (because
+     * `CurlHttpClient` passes the array to `CURLOPT_HTTPHEADER` as-is and libcurl
+     * sends one line per value).
+     *
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
+     */
+    public function testCreateStoreIntegrationSendsMerchantIdHeaderInProperWireFormat(): void
+    {
+        // arrange
+        $this->httpClient->setMockResponses([
+            new HttpResponse(204, [
+                'location' => 'https://sandbox.sequrapi.com/store_integrations/4'
+            ], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/StoreIntegration/CreateStoreIntegrationResponse.json'
+            ))
+        ]);
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+
+        $request = new CreateStoreIntegrationRequest(
+            $connectionData,
+            new URL('https://test.com'),
+            [Capability::general()]
+        );
+
+        // act
+        $this->proxy->createStoreIntegration($request);
+
+        // assert
+        $headers = $this->httpClient->getLastRequestHeaders();
+        self::assertArrayHasKey('Sequra-Merchant-Id', $headers);
+        self::assertSame('Sequra-Merchant-Id: logeecom', $headers['Sequra-Merchant-Id']);
+
+        // Sanity-check: Authorization follows the same wire-form convention.
+        self::assertArrayHasKey('Authorization', $headers);
+        self::assertStringStartsWith('Authorization: Basic ', $headers['Authorization']);
+    }
+
+    /**
      * @return void
      *
      * @throws CapabilitiesEmptyException
