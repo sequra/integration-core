@@ -6,6 +6,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\HMAC\HMAC;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo\StoreInfoServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo\StoreUrlProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreIntegration\StoreIntegrationServiceInterface as IntegrationsStoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
@@ -194,7 +195,27 @@ class StoreIntegrationService
     {
         return [
             StoreContext::getInstance()->getStoreId(),
-            $this->storeInfoService->getStoreInfo()->getStoreUrl(),
+            $this->resolveStoreUrl(),
         ];
+    }
+
+    /**
+     * Resolves the storeUrl used in the HMAC payload.
+     *
+     * Prefers {@see StoreUrlProviderInterface::getStoreUrl()} when the injected
+     * StoreInfo service implements it — that path is cheap and avoids building
+     * the full StoreInfo payload on every register / delete / webhook
+     * validation. Falls back to {@see StoreInfoServiceInterface::getStoreInfo()}
+     * for plugins that have not opted in, preserving backwards compatibility.
+     *
+     * @return string
+     */
+    private function resolveStoreUrl(): string
+    {
+        if ($this->storeInfoService instanceof StoreUrlProviderInterface) {
+            return $this->storeInfoService->getStoreUrl();
+        }
+
+        return $this->storeInfoService->getStoreInfo()->getStoreUrl();
     }
 }
