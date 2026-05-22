@@ -55,6 +55,11 @@ class StoreInfo
     private $plugins;
 
     /**
+     * @var string|null
+     */
+    private $activeTheme;
+
+    /**
      * @param string $storeName
      * @param string $storeUrl
      * @param string $platform
@@ -64,6 +69,7 @@ class StoreInfo
      * @param string $db
      * @param string $os
      * @param string[] $plugins
+     * @param string|null $activeTheme
      */
     public function __construct(
         string $storeName,
@@ -74,7 +80,8 @@ class StoreInfo
         string $phpVersion,
         string $db,
         string $os,
-        array $plugins = []
+        array $plugins = [],
+        ?string $activeTheme = null
     ) {
         $this->storeName = $storeName;
         $this->storeUrl = $storeUrl;
@@ -85,6 +92,7 @@ class StoreInfo
         $this->db = $db;
         $this->os = $os;
         $this->plugins = $plugins;
+        $this->activeTheme = $activeTheme;
     }
 
     /**
@@ -170,6 +178,14 @@ class StoreInfo
     }
 
     /**
+     * @return string|null
+     */
+    public function getActiveTheme(): ?string
+    {
+        return $this->activeTheme;
+    }
+
+    /**
      * Converts the model to an array.
      *
      * @return array<string, mixed>
@@ -186,6 +202,7 @@ class StoreInfo
             'db' => $this->db,
             'os' => $this->os,
             'plugins' => $this->plugins,
+            'active_theme' => $this->activeTheme,
         ];
     }
 
@@ -207,7 +224,8 @@ class StoreInfo
             $data['php_version'] ?? '',
             $data['db'] ?? '',
             $data['os'] ?? '',
-            $data['plugins'] ?? []
+            $data['plugins'] ?? [],
+            $data['active_theme'] ?? null
         );
     }
 }
