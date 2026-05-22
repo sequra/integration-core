@@ -18,10 +18,17 @@ class MockStoreInfoService implements StoreInfoServiceInterface
     private $storeInfo;
 
     /**
+     * @var int
+     */
+    private $getStoreInfoCallCount = 0;
+
+    /**
      * @inheritDoc
      */
     public function getStoreInfo(): StoreInfo
     {
+        $this->getStoreInfoCallCount++;
+
         if ($this->storeInfo) {
             return $this->storeInfo;
         }
@@ -46,5 +53,13 @@ class MockStoreInfoService implements StoreInfoServiceInterface
     public function setMockStoreInfo(StoreInfo $storeInfo): void
     {
         $this->storeInfo = $storeInfo;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStoreInfoCallCount(): int
+    {
+        return $this->getStoreInfoCallCount;
     }
 }
