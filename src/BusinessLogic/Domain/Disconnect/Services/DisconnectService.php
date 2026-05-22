@@ -225,7 +225,10 @@ class DisconnectService
     }
 
     /**
-     * Removes all data connected to given deployment
+     * Removes deployment-scoped data only (credentials, country configs by merchantId,
+     * payment methods by merchantId). Store-scoped settings — general, widget, order
+     * status, advanced, statistical data, transaction logs, and banner settings/images
+     * — are intentionally untouched; they are wiped only on full disconnect.
      *
      * @param string $deploymentId
      *

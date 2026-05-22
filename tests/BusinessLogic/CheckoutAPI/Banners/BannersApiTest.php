@@ -4,7 +4,7 @@ namespace BusinessLogic\CheckoutAPI\Banners;
 
 use SeQura\Core\BusinessLogic\CheckoutAPI\Banners\Requests\GetBannerForLocationRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
-use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidBannerUrlException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
@@ -50,12 +50,12 @@ class BannersApiTest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidURLException
+     * @throws InvalidBannerUrlException
      */
     public function testGetBannersDataSuccess(): void
     {
         //Arrange
-        $this->mockBannerSettingsService->setBannerSettings(
+        $this->mockBannerSettingsService->seedBannerSettings(
             new BannerSettings(
                 [
                     new Banner(
@@ -80,12 +80,12 @@ class BannersApiTest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidURLException
+     * @throws InvalidBannerUrlException
      */
     public function testGetBannersNoDataSuccess(): void
     {
         //Arrange
-        $this->mockBannerSettingsService->setBannerSettings(
+        $this->mockBannerSettingsService->seedBannerSettings(
             new BannerSettings(
                 [
                     new Banner(

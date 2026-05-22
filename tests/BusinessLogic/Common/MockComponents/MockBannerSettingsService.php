@@ -2,7 +2,9 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidBannerUrlException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerInput;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
@@ -52,16 +54,37 @@ class MockBannerSettingsService extends BannerSettingsService
     }
 
     /**
-     * @inheritDoc
+     * @param BannerInput[] $bannerInputs
+     *
+     * @return BannerSettings
+     *
+     * @throws InvalidBannerUrlException
      */
-    public function setBannerSettings(BannerSettings $bannerSettings): BannerSettings
+    public function setBannerSettings(array $bannerInputs): BannerSettings
     {
-        foreach ($bannerSettings->getBannerConfigs() as $bannerConfig) {
-            $this->assertValidUrl($bannerConfig->getLinkUrl());
+        $banners = [];
+        foreach ($bannerInputs as $input) {
+            $this->assertValidUrl($input->getLinkUrl());
+            $banners[] = new Banner(
+                $input->getCountry(),
+                $input->getLinkUrl(),
+                'https://shop.test/banners/' . $input->getCountry() . '_' . $input->getDisplayLocation() . '.png',
+                $input->getDisplayLocation()
+            );
         }
 
-        $this->bannerSettings = $bannerSettings;
+        $this->bannerSettings = new BannerSettings($banners);
 
-        return $bannerSettings;
+        return $this->bannerSettings;
+    }
+
+    /**
+     * @param BannerSettings $bannerSettings
+     *
+     * @return void
+     */
+    public function seedBannerSettings(BannerSettings $bannerSettings): void
+    {
+        $this->bannerSettings = $bannerSettings;
     }
 }

@@ -2,14 +2,12 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\BannerSettings\Models;
 
-use SeQura\Core\Infrastructure\Data\DataTransferObject;
-
 /**
- * Class Banner
+ * Class BannerInput
  *
  * @package SeQura\Core\BusinessLogic\Domain\BannerSettings\Models
  */
-class Banner extends DataTransferObject
+class BannerInput
 {
     /**
      * @var string
@@ -24,29 +22,29 @@ class Banner extends DataTransferObject
     /**
      * @var string
      */
-    protected $imageUrl;
+    protected $displayLocation;
 
     /**
-     * @var string
+     * @var string|null
      */
-    protected $displayLocation;
+    protected $imageBase64;
 
     /**
      * @param string $country
      * @param string $linkUrl
-     * @param string $imageUrl
      * @param string $displayLocation
+     * @param string|null $imageBase64
      */
     public function __construct(
         string $country,
         string $linkUrl,
-        string $imageUrl,
-        string $displayLocation
+        string $displayLocation,
+        ?string $imageBase64 = null
     ) {
         $this->country = $country;
         $this->linkUrl = $linkUrl;
-        $this->imageUrl = $imageUrl;
         $this->displayLocation = $displayLocation;
+        $this->imageBase64 = $imageBase64;
     }
 
     /**
@@ -68,29 +66,16 @@ class Banner extends DataTransferObject
     /**
      * @return string
      */
-    public function getImageUrl(): string
-    {
-        return $this->imageUrl;
-    }
-
-    /**
-     * @return string
-     */
     public function getDisplayLocation(): string
     {
         return $this->displayLocation;
     }
 
     /**
-     * @inheritDoc
+     * @return string|null
      */
-    public function toArray(): array
+    public function getImageBase64(): ?string
     {
-        return [
-            'country' => $this->country,
-            'linkUrl' => $this->linkUrl,
-            'imageUrl' => $this->imageUrl,
-            'displayLocation' => $this->displayLocation,
-        ];
+        return $this->imageBase64;
     }
 }

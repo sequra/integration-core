@@ -33,22 +33,10 @@ class BannerSettings extends DataTransferObject
     }
 
     /**
-     * @param Banner[] $bannerConfigs
-     */
-    public function setBannerConfigs(array $bannerConfigs): void
-    {
-        $this->bannerConfigs = $bannerConfigs;
-    }
-
-    /**
      * @inheritDoc
      */
     public function toArray(): array
     {
-        if (empty($this->bannerConfigs)) {
-            return [];
-        }
-
         return [
             'bannerConfigs' => Banner::toBatchArray($this->bannerConfigs),
         ];

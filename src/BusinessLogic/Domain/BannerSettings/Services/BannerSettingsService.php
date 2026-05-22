@@ -3,8 +3,9 @@
 namespace SeQura\Core\BusinessLogic\Domain\BannerSettings\Services;
 
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\BannerImageRequiredException;
-use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidBannerUrlException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerInput;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
@@ -53,53 +54,73 @@ class BannerSettingsService
     }
 
     /**
-     * Sets banner settings.
+     * Persists the given banner list.
      *
-     * @param BannerSettings $bannerSettings
+     * Inputs are fully validated before any upload, so a bad input can't leave
+     * partially uploaded images on the integration. Then images get uploaded or
+     * relocated, the DB write follows, and the images of removed banners are
+     * cleaned up last.
+     *
+     * If the DB write fails after one or more uploads already succeeded, fresh
+     * uploads are rolled back on a best-effort basis; overwrites and relocations
+     * are not reversed.
+     *
+     * @param BannerInput[] $bannerInputs
      *
      * @return BannerSettings
      *
      * @throws BannerImageRequiredException
-     * @throws InvalidURLException
+     * @throws InvalidBannerUrlException
+     * @throws Throwable
      */
-    public function setBannerSettings(BannerSettings $bannerSettings): BannerSettings
+    public function setBannerSettings(array $bannerInputs): BannerSettings
     {
         $existingBanners = $this->getExistingBanners();
-        $existingByCountry = $this->indexByCountry($existingBanners);
-        $incomingBanners = $bannerSettings->getBannerConfigs();
+        $existingByCountry = $this->indexBannersByCountry($existingBanners);
 
-        $this->validateIncomingBanners($incomingBanners, $existingByCountry);
+        $this->validateIncomingBanners($bannerInputs, $existingByCountry);
 
-        $resolvedBanners = $this->resolveIncomingBanners($incomingBanners, $existingByCountry);
-        $this->deleteRemovedBanners($existingBanners, $this->indexByCountry($incomingBanners));
+        $freshUploads = new FreshUploadTracker();
+        try {
+            $resolvedBanners = $this->resolveIncomingBanners($bannerInputs, $existingByCountry, $freshUploads);
+            $persisted = new BannerSettings($resolvedBanners);
+            $this->bannerSettingsRepository->setBannerSettings($persisted);
+        } catch (Throwable $e) {
+            $this->rollbackFreshUploads($freshUploads->all());
 
-        $persisted = new BannerSettings($resolvedBanners);
-        $this->bannerSettingsRepository->setBannerSettings($persisted);
+            throw $e;
+        }
+
+        $this->deleteRemovedBanners($existingBanners, $this->indexInputsByCountry($bannerInputs));
 
         return $persisted;
     }
 
     /**
-     * Validates every incoming banner before any image side-effects are
+     * Validates every incoming banner input before any image side effects are
      * performed, so that an invalid input does not leave partially-uploaded
      * or partially-deleted images behind.
      *
-     * @param Banner[] $incomingBanners
+     * @param BannerInput[] $bannerInputs
      * @param array<string, Banner> $existingByCountry
      *
      * @throws BannerImageRequiredException
-     * @throws InvalidURLException
+     * @throws InvalidBannerUrlException
      */
-    protected function validateIncomingBanners(array $incomingBanners, array $existingByCountry): void
+    protected function validateIncomingBanners(array $bannerInputs, array $existingByCountry): void
     {
-        foreach ($incomingBanners as $banner) {
-            $this->assertValidUrl($banner->getLinkUrl());
-            $this->assertBannerHasImageSource($banner, $existingByCountry);
+        foreach ($bannerInputs as $input) {
+            $this->assertValidUrl($input->getLinkUrl());
+            $this->assertBannerHasImageSource($input, $existingByCountry);
         }
     }
 
     /**
      * Removes banner images currently uploaded to the integration server.
+     *
+     * Best-effort: a failure to remove an individual image is logged and the
+     * loop continues so that a partial failure cannot abort the surrounding
+     * flow (e.g. disconnect).
      *
      * @return void
      */
@@ -116,7 +137,7 @@ class BannerSettingsService
     }
 
     /**
-     * Deletes the banner settings
+     * Deletes the banner settings.
      *
      * @return void
      */
@@ -137,7 +158,7 @@ class BannerSettingsService
     }
 
     /**
-     * Returns banner data
+     * Returns banner data.
      *
      * @param string $country
      * @param string $displayLocation
@@ -172,28 +193,51 @@ class BannerSettingsService
     }
 
     /**
-     * @param Banner[] $incomingBanners
+     * Produces the persistable Banner for each input by running it through the
+     * upload/reuse/relocate flow. New uploads are recorded on $freshUploads so
+     * the caller can roll them back if a later step fails.
+     *
+     * @param BannerInput[] $bannerInputs
      * @param array<string, Banner> $existingByCountry
+     * @param FreshUploadTracker $freshUploads
      *
      * @return Banner[]
      *
-     * @throws InvalidURLException
+     * @throws InvalidBannerUrlException
      */
-    protected function resolveIncomingBanners(array $incomingBanners, array $existingByCountry): array
-    {
+    protected function resolveIncomingBanners(
+        array $bannerInputs,
+        array $existingByCountry,
+        FreshUploadTracker $freshUploads
+    ): array {
         $resolved = [];
-        foreach ($incomingBanners as $banner) {
-            $resolved[] = $this->resolveBannerImage($banner, $existingByCountry);
+        foreach ($bannerInputs as $input) {
+            $resolved[] = $this->resolveBannerImage($input, $existingByCountry, $freshUploads);
         }
 
         return $resolved;
     }
 
     /**
+     * Best-effort rollback for uploads of new banners (countries that
+     * had no prior record). Used when the persist step or a later upload in
+     * the same batch fails, so not to leave orphan images on the integration
+     * server. Overwrites and relocations are not rolled back here.
+     *
+     * @param array<int, array{country: string, displayLocation: string}> $freshUploadKeys
+     */
+    protected function rollbackFreshUploads(array $freshUploadKeys): void
+    {
+        foreach ($freshUploadKeys as $key) {
+            $this->deleteBannerImage($key['country'], $key['displayLocation']);
+        }
+    }
+
+    /**
      * Deletes images for countries that are no longer present in the incoming set.
      *
      * @param Banner[] $existingBanners
-     * @param array<string, Banner> $incomingByCountry
+     * @param array<string, BannerInput> $incomingByCountry
      */
     protected function deleteRemovedBanners(array $existingBanners, array $incomingByCountry): void
     {
@@ -229,17 +273,17 @@ class BannerSettingsService
     }
 
     /**
-     * Verifies whether the banner contains an imageBase64 payload
-     * or already has a persisted image in storage for the country.
+     * Verifies whether the input carries an imageBase64 payload or already
+     * has a persisted image for the country.
      *
-     * @param Banner $banner
+     * @param BannerInput $input
      * @param array<string, Banner> $existingByCountry
      *
      * @throws BannerImageRequiredException
      */
-    protected function assertBannerHasImageSource(Banner $banner, array $existingByCountry): void
+    protected function assertBannerHasImageSource(BannerInput $input, array $existingByCountry): void
     {
-        if ($this->hasImageBase64($banner) || isset($existingByCountry[$banner->getCountry()])) {
+        if ($this->hasImageBase64($input) || isset($existingByCountry[$input->getCountry()])) {
             return;
         }
 
@@ -259,24 +303,35 @@ class BannerSettingsService
      *   unchanged, or asks the integration to relocate the image when the
      *   display location has changed.
      *
-     * @param Banner $banner
+     * @param BannerInput $input
      * @param array<string, Banner> $existingByCountry
+     * @param FreshUploadTracker $freshUploads
      *
      * @return Banner
      *
-     * @throws InvalidURLException
+     * @throws InvalidBannerUrlException
      */
-    protected function resolveBannerImage(Banner $banner, array $existingByCountry): Banner
-    {
-        $existing = $existingByCountry[$banner->getCountry()] ?? null;
+    protected function resolveBannerImage(
+        BannerInput $input,
+        array $existingByCountry,
+        FreshUploadTracker $freshUploads
+    ): Banner {
+        $existing = $existingByCountry[$input->getCountry()] ?? null;
 
-        if ($this->hasImageBase64($banner)) {
-            $this->uploadBannerImage($banner, $existing);
+        $imageUrl = '';
+        if ($this->hasImageBase64($input)) {
+            $imageUrl = $this->uploadBannerImage($input, $existing, $freshUploads);
         } elseif ($existing !== null) {
-            $banner->setImageUrl($this->reuseOrRelocateImageUrl($banner, $existing));
+            $imageUrl = $this->reuseOrRelocateImageUrl($input, $existing);
         }
 
-        $banner->setImageBase64(null);
+        $banner = new Banner(
+            $input->getCountry(),
+            $input->getLinkUrl(),
+            $imageUrl,
+            $input->getDisplayLocation()
+        );
+
         $this->assertValidUrl($banner->getImageUrl());
 
         return $banner;
@@ -284,22 +339,34 @@ class BannerSettingsService
 
     /**
      * Uploads the banner image, deleting the previously stored one when the
-     * display location has changed.
+     * display location has changed. Records the upload in $freshUploads only
+     * when no prior record existed for the country, since that is the only
+     * cleanly reversible case.
      *
-     * @param Banner $banner
+     * @param BannerInput $input
      * @param Banner|null $existing
+     * @param FreshUploadTracker $freshUploads
+     *
+     * @return string Public URL of the uploaded image.
      */
-    protected function uploadBannerImage(Banner $banner, ?Banner $existing): void
-    {
-        $this->deleteImageIfLocationChanged($banner, $existing);
+    protected function uploadBannerImage(
+        BannerInput $input,
+        ?Banner $existing,
+        FreshUploadTracker $freshUploads
+    ): string {
+        $this->deleteImageIfLocationChanged($input, $existing);
 
-        $banner->setImageUrl(
-            $this->bannerService->saveBannerImage(
-                $banner->getCountry(),
-                $banner->getDisplayLocation(),
-                $banner->getImageBase64()
-            )
+        $url = $this->bannerService->saveBannerImage(
+            $input->getCountry(),
+            $input->getDisplayLocation(),
+            $input->getImageBase64()
         );
+
+        if ($existing === null) {
+            $freshUploads->record($input->getCountry(), $input->getDisplayLocation());
+        }
+
+        return $url;
     }
 
     /**
@@ -307,58 +374,66 @@ class BannerSettingsService
      * otherwise asks the integration to relocate the image and returns the
      * new URL.
      *
-     * @param Banner $banner
+     * @param BannerInput $input
      * @param Banner $existing
      *
      * @return string
      */
-    protected function reuseOrRelocateImageUrl(Banner $banner, Banner $existing): string
+    protected function reuseOrRelocateImageUrl(BannerInput $input, Banner $existing): string
     {
-        if ($existing->getDisplayLocation() === $banner->getDisplayLocation()) {
+        if ($existing->getDisplayLocation() === $input->getDisplayLocation()) {
             return $existing->getImageUrl();
         }
 
         return $this->bannerService->changeBannerImageDisplayLocation(
-            $banner->getCountry(),
+            $input->getCountry(),
             $existing->getDisplayLocation(),
-            $banner->getDisplayLocation()
+            $input->getDisplayLocation()
         );
     }
 
     /**
-     * @param Banner $banner
+     * Best-effort cleanup of the previously stored image when the input's
+     * displayLocation has changed. Routed through the swallowing helper so a
+     * failure to remove a stale file at the old location does not abort the
+     * save — the new upload that follows is the load-bearing step.
+     *
+     * @param BannerInput $input
      * @param Banner|null $existing
+     *
+     * @return void
      */
-    protected function deleteImageIfLocationChanged(Banner $banner, ?Banner $existing): void
+    protected function deleteImageIfLocationChanged(BannerInput $input, ?Banner $existing): void
     {
-        if ($existing === null || $existing->getDisplayLocation() === $banner->getDisplayLocation()) {
+        if ($existing === null || $existing->getDisplayLocation() === $input->getDisplayLocation()) {
             return;
         }
 
-        $this->bannerService->deleteBannerImage(
-            $existing->getCountry(),
-            $existing->getDisplayLocation()
-        );
+        $this->deleteBannerImage($existing->getCountry(), $existing->getDisplayLocation());
     }
 
     /**
-     * @param Banner $banner
+     * Verifies whether the input came with an imageBase64 payload to upload.
+     *
+     * @param BannerInput $input
      *
      * @return bool
      */
-    protected function hasImageBase64(Banner $banner): bool
+    protected function hasImageBase64(BannerInput $input): bool
     {
-        $base64 = $banner->getImageBase64();
+        $base64 = $input->getImageBase64();
 
         return $base64 !== null && $base64 !== '';
     }
 
     /**
+     * Builds a country-keyed map of the given persisted banners for quick lookup.
+     *
      * @param Banner[] $banners
      *
      * @return array<string, Banner>
      */
-    protected function indexByCountry(array $banners): array
+    protected function indexBannersByCountry(array $banners): array
     {
         $indexed = [];
         foreach ($banners as $banner) {
@@ -369,14 +444,31 @@ class BannerSettingsService
     }
 
     /**
-     * Validates the URL
+     * Builds a country-keyed map of the given inputs for quick lookup.
      *
-     * @throws InvalidURLException
+     * @param BannerInput[] $inputs
+     *
+     * @return array<string, BannerInput>
+     */
+    protected function indexInputsByCountry(array $inputs): array
+    {
+        $indexed = [];
+        foreach ($inputs as $input) {
+            $indexed[$input->getCountry()] = $input;
+        }
+
+        return $indexed;
+    }
+
+    /**
+     * Validates the URL.
+     *
+     * @throws InvalidBannerUrlException
      */
     protected function assertValidUrl(string $url): void
     {
         if (mb_strlen($url) > 2048) {
-            throw new InvalidURLException(
+            throw new InvalidBannerUrlException(
                 new TranslatableLabel(
                     'URL is too long (max 2048 characters)',
                     'general.errors.bannerSettings.urlTooLong'
@@ -385,7 +477,7 @@ class BannerSettingsService
         }
 
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new InvalidURLException(
+            throw new InvalidBannerUrlException(
                 new TranslatableLabel(
                     'URL format is invalid',
                     'general.errors.bannerSettings.invalidUrlFormat'
@@ -395,7 +487,7 @@ class BannerSettingsService
 
         $scheme = parse_url($url, PHP_URL_SCHEME);
         if (!\in_array($scheme, ['http', 'https'], true)) {
-            throw new InvalidURLException(
+            throw new InvalidBannerUrlException(
                 new TranslatableLabel(
                     'URL must use http or https',
                     'general.errors.bannerSettings.invalidUrlScheme'

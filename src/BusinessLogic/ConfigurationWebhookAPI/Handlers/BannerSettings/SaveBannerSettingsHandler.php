@@ -7,12 +7,14 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInter
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\BannerSettings\SaveBannerSettingsRequest;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\BannerSettingsResponse;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\BannerImageRequiredException;
-use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\BannerImageTooLargeException;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\EmptyBannerParameterException;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidBannerUrlException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
+use Throwable;
 
 /**
  * Class SaveBannerSettingsHandler
@@ -52,26 +54,28 @@ class SaveBannerSettingsHandler implements TopicHandlerInterface
     }
 
     /**
-     * @inheritDoc
+     * Handles the webhook request for get-banner-settings topic.
+     *
+     * @param mixed[] $payload
+     *
+     * @return Response
      *
      * @throws BannerImageRequiredException
-     * @throws InvalidURLException
+     * @throws BannerImageTooLargeException
+     * @throws EmptyBannerParameterException
      * @throws FailedToRetrieveSellingCountriesException
+     * @throws InvalidBannerUrlException
+     * @throws Throwable
      */
     public function handle(array $payload): Response
     {
         $request = SaveBannerSettingsRequest::fromPayload($payload);
         $saved = $this->bannerSettingsService->setBannerSettings($request->transformToDomainModel());
 
-        $countryConfigurations = $this->countryConfigurationService->getCountryConfiguration() ?? [];
-        $sellingCountries = array_map(function (CountryConfiguration $countryConfiguration) {
-            return $countryConfiguration->getCountryCode();
-        }, $countryConfigurations);
-
         return new BannerSettingsResponse(
             $saved,
             $this->bannerService->getBannerDisplayLocations(),
-            $sellingCountries
+            $this->countryConfigurationService->getCountryCodes()
         );
     }
 }

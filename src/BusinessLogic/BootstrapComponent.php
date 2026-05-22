@@ -767,7 +767,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new BannerSettingsController(
                     ServiceRegister::getService(BannerSettingsService::class),
-                    ServiceRegister::getService(BannerServiceInterface::class)
+                    ServiceRegister::getService(BannerServiceInterface::class),
+                    ServiceRegister::getService(CountryConfigurationService::class)
                 );
             }
         );

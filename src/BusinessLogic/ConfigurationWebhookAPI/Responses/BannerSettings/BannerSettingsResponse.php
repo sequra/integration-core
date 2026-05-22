@@ -44,12 +44,10 @@ class BannerSettingsResponse extends Response
      */
     public function toArray(): array
     {
-        $settingsArray = $this->settings->toArray();
-
         return [
             'displayLocations' => $this->displayLocations,
             'sellingCountries' => $this->sellingCountries,
-            'bannerConfigs' => $settingsArray['bannerConfigs'] ?? [],
+            'bannerConfigs' => $this->settings->toArray()['bannerConfigs'],
         ];
     }
 }

@@ -8,7 +8,6 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\B
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
 
@@ -50,6 +49,8 @@ class GetBannerSettingsHandler implements TopicHandlerInterface
     }
 
     /**
+     * Handles the webhook request for save-banner-settings topic.
+     *
      * @param mixed[] $payload
      *
      * @return Response
@@ -60,15 +61,10 @@ class GetBannerSettingsHandler implements TopicHandlerInterface
     {
         $bannerSettings = $this->bannerSettingsService->getBannerSettings() ?? new BannerSettings([]);
 
-        $countryConfigurations = $this->countryConfigurationService->getCountryConfiguration() ?? [];
-        $sellingCountries = array_map(function (CountryConfiguration $countyConfiguration) {
-            return $countyConfiguration->getCountryCode();
-        }, $countryConfigurations);
-
         return new BannerSettingsResponse(
             $bannerSettings,
             $this->bannerService->getBannerDisplayLocations(),
-            $sellingCountries
+            $this->countryConfigurationService->getCountryCodes()
         );
     }
 }

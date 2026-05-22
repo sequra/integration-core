@@ -3,15 +3,19 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\BannerSettings\Service;
 
 use Exception;
+use RuntimeException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\BannerImageRequiredException;
-use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidBannerUrlException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerInput;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerSettingsRepository;
+use Throwable;
 
 /**
  * Class BannerSettingsServiceTest.
@@ -21,23 +25,21 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerSettingsRepo
 class BannerSettingsServiceTest extends BaseTestCase
 {
     /**
-     * @var BannerSettingsService $bannerSettingsService
+     * @var BannerSettingsService
      */
     private $bannerSettingsService;
 
     /**
-     * @var MockBannerSettingsRepository $bannerSettingsRepository
+     * @var MockBannerSettingsRepository
      */
     private $bannerSettingsRepository;
 
     /**
-     * @var MockBannerService $bannerService
+     * @var MockBannerService
      */
     private $bannerService;
 
     /**
-     * @return void
-     *
      * @throws RepositoryClassException
      */
     public function setUp(): void
@@ -53,18 +55,12 @@ class BannerSettingsServiceTest extends BaseTestCase
     }
 
     /**
-     * @return void
-     *
      * @throws Exception
      */
     public function testGetBannerSettingsNoSettings(): void
     {
-        //Arrange
-
-        //Act
         $result = $this->bannerSettingsService->getBannerSettings();
 
-        //Assert
         self::assertNull($result);
     }
 
@@ -73,65 +69,41 @@ class BannerSettingsServiceTest extends BaseTestCase
      */
     public function testGetBannerSettings(): void
     {
-        //Arrange
-        $bannerSettings = new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    'https://shop/sequra/es/image.jpg',
-                    'displayOnHomePage'
-                ),
-                new Banner(
-                    'PT',
-                    'https://www.sequra.com/it/faq#shoppers',
-                    'https://shop/sequra/pt/image.jpg',
-                    'displayOnCartPage'
-                )
-            ]
-        );
+        $bannerSettings = new BannerSettings([
+            new Banner(
+                'ES',
+                'https://www.sequra.com/es/faq#shoppers',
+                'https://shop/sequra/es/image.jpg',
+                'displayOnHomePage'
+            ),
+            new Banner(
+                'PT',
+                'https://www.sequra.com/it/faq#shoppers',
+                'https://shop/sequra/pt/image.jpg',
+                'displayOnCartPage'
+            ),
+        ]);
         $this->bannerSettingsRepository->setBannerSettings($bannerSettings);
 
-        //Act
         $result = $this->bannerSettingsService->getBannerSettings();
 
-        //Assert
         self::assertNotNull($result);
         self::assertCount(2, $result->getBannerConfigs());
         self::assertEquals('PT', $result->getBannerConfigs()[1]->getCountry());
     }
 
     /**
-     * @return void
-     *
      * @throws Exception
      */
     public function testSetBannerSettingsNoSettingsInDB(): void
     {
-        //Arrange
-        $bannerSettings = new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    '',
-                    'displayOnHomePage',
-                    'ES-base64'
-                ),
-                new Banner(
-                    'PT',
-                    'https://www.sequra.com/it/faq#shoppers',
-                    '',
-                    'displayOnCartPage',
-                    'PT-base64'
-                )
-            ]
-        );
+        $inputs = [
+            new BannerInput('ES', 'https://www.sequra.com/es/faq#shoppers', 'displayOnHomePage', 'ES-base64'),
+            new BannerInput('PT', 'https://www.sequra.com/it/faq#shoppers', 'displayOnCartPage', 'PT-base64'),
+        ];
 
-        //Act
-        $this->bannerSettingsService->setBannerSettings($bannerSettings);
+        $this->bannerSettingsService->setBannerSettings($inputs);
 
-        //Assert
         $result = $this->bannerSettingsRepository->getBannerSettings();
         self::assertNotNull($result);
         self::assertCount(2, $result->getBannerConfigs());
@@ -144,69 +116,42 @@ class BannerSettingsServiceTest extends BaseTestCase
             'https://shop.test/banners/PT_displayOnCartPage.png',
             $result->getBannerConfigs()[1]->getImageUrl()
         );
-        self::assertNull($result->getBannerConfigs()[0]->getImageBase64());
     }
 
     /**
-     * @return void
-     *
      * @throws Exception
      */
     public function testSetBannerSettingsNewBannerWithoutImageBase64Throws(): void
     {
-        //Arrange
-        $bannerSettings = new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    '',
-                    'displayOnHomePage'
-                ),
-            ]
-        );
+        $inputs = [
+            new BannerInput('ES', 'https://www.sequra.com/es/faq#shoppers', 'displayOnHomePage'),
+        ];
 
-        //Assert
         $this->expectException(BannerImageRequiredException::class);
 
-        //Act
-        $this->bannerSettingsService->setBannerSettings($bannerSettings);
+        $this->bannerSettingsService->setBannerSettings($inputs);
     }
 
     /**
-     * @return void
-     *
      * @throws Exception
      */
     public function testSetBannerSettingsPreservesImageUrlWhenNoBase64Provided(): void
     {
-        //Arrange
-        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings(
-            [
-                new Banner(
-                    'FR',
-                    'https://www.sequra.com/fr/faq#shoppers',
-                    'https://shop/sequra/fr/existing.jpg',
-                    'displayOnHomePage'
-                )
-            ]
-        ));
+        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings([
+            new Banner(
+                'FR',
+                'https://www.sequra.com/fr/faq#shoppers',
+                'https://shop/sequra/fr/existing.jpg',
+                'displayOnHomePage'
+            ),
+        ]));
 
-        $update = new BannerSettings(
-            [
-                new Banner(
-                    'FR',
-                    'https://www.sequra.com/fr/updated-link',
-                    '',
-                    'displayOnHomePage'
-                ),
-            ]
-        );
+        $update = [
+            new BannerInput('FR', 'https://www.sequra.com/fr/updated-link', 'displayOnHomePage'),
+        ];
 
-        //Act
         $this->bannerSettingsService->setBannerSettings($update);
 
-        //Assert
         $result = $this->bannerSettingsRepository->getBannerSettings();
         self::assertNotNull($result);
         self::assertCount(1, $result->getBannerConfigs());
@@ -222,40 +167,30 @@ class BannerSettingsServiceTest extends BaseTestCase
     }
 
     /**
-     * @return void
-     *
      * @throws Exception
      */
     public function testSetBannerSettingsReplacesImageWhenBase64Provided(): void
     {
-        //Arrange
-        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings(
-            [
-                new Banner(
-                    'FR',
-                    'https://www.sequra.com/fr/faq#shoppers',
-                    'https://shop/sequra/fr/old.jpg',
-                    'displayOnHomePage'
-                )
-            ]
-        ));
+        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings([
+            new Banner(
+                'FR',
+                'https://www.sequra.com/fr/faq#shoppers',
+                'https://shop/sequra/fr/old.jpg',
+                'displayOnHomePage'
+            ),
+        ]));
 
-        $update = new BannerSettings(
-            [
-                new Banner(
-                    'FR',
-                    'https://www.sequra.com/fr/faq#shoppers',
-                    '',
-                    'displayOnHomePage',
-                    'FR-new-base64'
-                ),
-            ]
-        );
+        $update = [
+            new BannerInput(
+                'FR',
+                'https://www.sequra.com/fr/faq#shoppers',
+                'displayOnHomePage',
+                'FR-new-base64'
+            ),
+        ];
 
-        //Act
         $this->bannerSettingsService->setBannerSettings($update);
 
-        //Assert
         $result = $this->bannerSettingsRepository->getBannerSettings();
         self::assertEquals(
             'https://shop.test/banners/FR_displayOnHomePage.png',
@@ -265,39 +200,25 @@ class BannerSettingsServiceTest extends BaseTestCase
     }
 
     /**
-     * @return void
-     *
      * @throws Exception
      */
     public function testSetBannerSettingsRelocatesImageWhenDisplayLocationChangesWithoutBase64(): void
     {
-        //Arrange
-        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    'https://shop/sequra/es/existing.jpg',
-                    'displayOnHomePage'
-                )
-            ]
-        ));
+        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings([
+            new Banner(
+                'ES',
+                'https://www.sequra.com/es/faq#shoppers',
+                'https://shop/sequra/es/existing.jpg',
+                'displayOnHomePage'
+            ),
+        ]));
 
-        $update = new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    '',
-                    'displayOnCartPage'
-                ),
-            ]
-        );
+        $update = [
+            new BannerInput('ES', 'https://www.sequra.com/es/faq#shoppers', 'displayOnCartPage'),
+        ];
 
-        //Act
         $this->bannerSettingsService->setBannerSettings($update);
 
-        //Assert
         $result = $this->bannerSettingsRepository->getBannerSettings();
         self::assertNotNull($result);
         self::assertCount(1, $result->getBannerConfigs());
@@ -320,39 +241,25 @@ class BannerSettingsServiceTest extends BaseTestCase
     }
 
     /**
-     * @return void
-     *
      * @throws Exception
      */
     public function testSetBannerSettingsKeepsImageUrlWhenDisplayLocationUnchanged(): void
     {
-        //Arrange
-        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    'https://shop/sequra/es/existing.jpg',
-                    'displayOnHomePage'
-                )
-            ]
-        ));
+        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings([
+            new Banner(
+                'ES',
+                'https://www.sequra.com/es/faq#shoppers',
+                'https://shop/sequra/es/existing.jpg',
+                'displayOnHomePage'
+            ),
+        ]));
 
-        $update = new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/updated-link',
-                    '',
-                    'displayOnHomePage'
-                ),
-            ]
-        );
+        $update = [
+            new BannerInput('ES', 'https://www.sequra.com/es/updated-link', 'displayOnHomePage'),
+        ];
 
-        //Act
         $this->bannerSettingsService->setBannerSettings($update);
 
-        //Assert
         $result = $this->bannerSettingsRepository->getBannerSettings();
         self::assertEquals(
             'https://shop/sequra/es/existing.jpg',
@@ -362,40 +269,30 @@ class BannerSettingsServiceTest extends BaseTestCase
     }
 
     /**
-     * @return void
-     *
      * @throws Exception
      */
     public function testSetBannerSettingsDisplayLocationChangeWithBase64DeletesOldImage(): void
     {
-        //Arrange
-        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    'https://shop/sequra/es/old.jpg',
-                    'displayOnHomePage'
-                )
-            ]
-        ));
+        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings([
+            new Banner(
+                'ES',
+                'https://www.sequra.com/es/faq#shoppers',
+                'https://shop/sequra/es/old.jpg',
+                'displayOnHomePage'
+            ),
+        ]));
 
-        $update = new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    '',
-                    'displayOnCartPage',
-                    'ES-new-base64'
-                ),
-            ]
-        );
+        $update = [
+            new BannerInput(
+                'ES',
+                'https://www.sequra.com/es/faq#shoppers',
+                'displayOnCartPage',
+                'ES-new-base64'
+            ),
+        ];
 
-        //Act
         $this->bannerSettingsService->setBannerSettings($update);
 
-        //Assert
         $result = $this->bannerSettingsRepository->getBannerSettings();
         self::assertEquals('displayOnCartPage', $result->getBannerConfigs()[0]->getDisplayLocation());
         self::assertEquals(
@@ -407,45 +304,31 @@ class BannerSettingsServiceTest extends BaseTestCase
     }
 
     /**
-     * @return void
-     *
      * @throws Exception
      */
     public function testSetBannerSettingsDeletesOmittedBanners(): void
     {
-        //Arrange
-        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    'https://shop/sequra/es/image.jpg',
-                    'displayOnHomePage'
-                ),
-                new Banner(
-                    'PT',
-                    'https://www.sequra.com/pt/faq#shoppers',
-                    'https://shop/sequra/pt/image.jpg',
-                    'displayOnCartPage'
-                ),
-            ]
-        ));
+        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings([
+            new Banner(
+                'ES',
+                'https://www.sequra.com/es/faq#shoppers',
+                'https://shop/sequra/es/image.jpg',
+                'displayOnHomePage'
+            ),
+            new Banner(
+                'PT',
+                'https://www.sequra.com/pt/faq#shoppers',
+                'https://shop/sequra/pt/image.jpg',
+                'displayOnCartPage'
+            ),
+        ]));
 
-        $update = new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    '',
-                    'displayOnHomePage'
-                ),
-            ]
-        );
+        $update = [
+            new BannerInput('ES', 'https://www.sequra.com/es/faq#shoppers', 'displayOnHomePage'),
+        ];
 
-        //Act
         $this->bannerSettingsService->setBannerSettings($update);
 
-        //Assert
         $result = $this->bannerSettingsRepository->getBannerSettings();
         self::assertCount(1, $result->getBannerConfigs());
         self::assertEquals('ES', $result->getBannerConfigs()[0]->getCountry());
@@ -453,53 +336,27 @@ class BannerSettingsServiceTest extends BaseTestCase
     }
 
     /**
-     * @return void
-     *
      * @throws Exception
      */
     public function testSetBannerSettingsSettingsChanged(): void
     {
-        //Arrange
-        $bannerSettings = new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    '',
-                    'displayOnHomePage',
-                    'ES-base64'
-                ),
-                new Banner(
-                    'PT',
-                    'https://www.sequra.com/it/faq#shoppers',
-                    '',
-                    'displayOnCartPage',
-                    'PT-base64'
-                ),
-                new Banner(
-                    'FR',
-                    'https://www.sequra.com/fr/faq#shoppers',
-                    '',
-                    'displayOnHomePage'
-                ),
+        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings([
+            new Banner(
+                'FR',
+                'https://www.sequra.com/fr/faq#shoppers',
+                'https://shop/sequra/fr/image.jpg',
+                'displayOnHomePage'
+            ),
+        ]));
 
-            ]
-        );
-        $this->bannerSettingsRepository->setBannerSettings(new BannerSettings(
-            [
-                new Banner(
-                    'FR',
-                    'https://www.sequra.com/fr/faq#shoppers',
-                    'https://shop/sequra/fr/image.jpg',
-                    'displayOnHomePage'
-                )
-            ]
-        ));
+        $inputs = [
+            new BannerInput('ES', 'https://www.sequra.com/es/faq#shoppers', 'displayOnHomePage', 'ES-base64'),
+            new BannerInput('PT', 'https://www.sequra.com/it/faq#shoppers', 'displayOnCartPage', 'PT-base64'),
+            new BannerInput('FR', 'https://www.sequra.com/fr/faq#shoppers', 'displayOnHomePage'),
+        ];
 
-        //Act
-        $this->bannerSettingsService->setBannerSettings($bannerSettings);
+        $this->bannerSettingsService->setBannerSettings($inputs);
 
-        //Assert
         $result = $this->bannerSettingsRepository->getBannerSettings();
 
         self::assertNotNull($result);
@@ -514,37 +371,18 @@ class BannerSettingsServiceTest extends BaseTestCase
     }
 
     /**
-     * @return void
-     *
      * @throws Exception
      */
     public function testSetBannerSettingsInvalidURL(): void
     {
-        //Arrange
-        $bannerSettings = new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'link',
-                    '',
-                    'displayOnHomePage',
-                    'ES-base64'
-                ),
-                new Banner(
-                    'PT',
-                    'https://www.sequra.com/it/faq#shoppers',
-                    '',
-                    'displayOnCartPage',
-                    'PT-base64'
-                )
-            ]
-        );
+        $inputs = [
+            new BannerInput('ES', 'link', 'displayOnHomePage', 'ES-base64'),
+            new BannerInput('PT', 'https://www.sequra.com/it/faq#shoppers', 'displayOnCartPage', 'PT-base64'),
+        ];
 
-        //Assert
-        $this->expectException(InvalidURLException::class);
+        $this->expectException(InvalidBannerUrlException::class);
 
-        //Act
-        $this->bannerSettingsService->setBannerSettings($bannerSettings);
+        $this->bannerSettingsService->setBannerSettings($inputs);
     }
 
     /**
@@ -552,42 +390,33 @@ class BannerSettingsServiceTest extends BaseTestCase
      */
     public function testGetBannerDataByCountryAndDisplayLocation(): void
     {
-        //Arrange
-        $bannerSettings = new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    'https://shop/sequra/es/image.jpg',
-                    'displayOnHomePage'
-                ),
-                new Banner(
-                    'PT',
-                    'https://www.sequra.com/it/faq#shoppers',
-                    'https://shop/sequra/pt/image.jpg',
-                    'displayOnCartPage'
-                ),
-                new Banner(
-                    'FR',
-                    'https://www.sequra.com/fr/faq#shoppers',
-                    'https://shop/sequra/fr/image.jpg',
-                    'displayOnHomePage'
-                ),
-
-            ]
-        );
+        $bannerSettings = new BannerSettings([
+            new Banner(
+                'ES',
+                'https://www.sequra.com/es/faq#shoppers',
+                'https://shop/sequra/es/image.jpg',
+                'displayOnHomePage'
+            ),
+            new Banner(
+                'PT',
+                'https://www.sequra.com/it/faq#shoppers',
+                'https://shop/sequra/pt/image.jpg',
+                'displayOnCartPage'
+            ),
+            new Banner(
+                'FR',
+                'https://www.sequra.com/fr/faq#shoppers',
+                'https://shop/sequra/fr/image.jpg',
+                'displayOnHomePage'
+            ),
+        ]);
         $this->bannerSettingsRepository->setBannerSettings($bannerSettings);
 
-        $country = 'FR';
-        $displayLocation = 'displayOnHomePage';
+        $result = $this->bannerSettingsService->getBannerData('FR', 'displayOnHomePage');
 
-        //Act
-        $result = $this->bannerSettingsService->getBannerData($country, $displayLocation);
-
-        //Assert
         self::assertNotNull($result);
-        self::assertEquals($country, $result->getCountry());
-        self::assertEquals($displayLocation, $result->getDisplayLocation());
+        self::assertEquals('FR', $result->getCountry());
+        self::assertEquals('displayOnHomePage', $result->getDisplayLocation());
     }
 
     /**
@@ -595,39 +424,24 @@ class BannerSettingsServiceTest extends BaseTestCase
      */
     public function testGetBannerNoDataForDisplayLocation(): void
     {
-        //Arrange
-        $bannerSettings = new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    'https://shop/sequra/es/image.jpg',
-                    'displayOnHomePage'
-                ),
-                new Banner(
-                    'PT',
-                    'https://www.sequra.com/it/faq#shoppers',
-                    'https://shop/sequra/pt/image.jpg',
-                    'displayOnCartPage'
-                ),
-                new Banner(
-                    'FR',
-                    'https://www.sequra.com/fr/faq#shoppers',
-                    'https://shop/sequra/fr/image.jpg',
-                    'displayOnHomePage'
-                ),
-
-            ]
-        );
+        $bannerSettings = new BannerSettings([
+            new Banner(
+                'ES',
+                'https://www.sequra.com/es/faq#shoppers',
+                'https://shop/sequra/es/image.jpg',
+                'displayOnHomePage'
+            ),
+            new Banner(
+                'FR',
+                'https://www.sequra.com/fr/faq#shoppers',
+                'https://shop/sequra/fr/image.jpg',
+                'displayOnHomePage'
+            ),
+        ]);
         $this->bannerSettingsRepository->setBannerSettings($bannerSettings);
 
-        $country = 'FR';
-        $displayLocation = 'displayOnCartPage';
+        $result = $this->bannerSettingsService->getBannerData('FR', 'displayOnCartPage');
 
-        //Act
-        $result = $this->bannerSettingsService->getBannerData($country, $displayLocation);
-
-        //Assert
         self::assertNull($result);
     }
 
@@ -636,33 +450,57 @@ class BannerSettingsServiceTest extends BaseTestCase
      */
     public function testGetBannerNoDataForCountry(): void
     {
-        //Arrange
-        $bannerSettings = new BannerSettings(
-            [
-                new Banner(
-                    'ES',
-                    'https://www.sequra.com/es/faq#shoppers',
-                    'https://shop/sequra/es/image.jpg',
-                    'displayOnHomePage'
-                ),
-                new Banner(
-                    'FR',
-                    'https://www.sequra.com/fr/faq#shoppers',
-                    'https://shop/sequra/fr/image.jpg',
-                    'displayOnHomePage'
-                ),
-
-            ]
-        );
+        $bannerSettings = new BannerSettings([
+            new Banner(
+                'ES',
+                'https://www.sequra.com/es/faq#shoppers',
+                'https://shop/sequra/es/image.jpg',
+                'displayOnHomePage'
+            ),
+            new Banner(
+                'FR',
+                'https://www.sequra.com/fr/faq#shoppers',
+                'https://shop/sequra/fr/image.jpg',
+                'displayOnHomePage'
+            ),
+        ]);
         $this->bannerSettingsRepository->setBannerSettings($bannerSettings);
 
-        $country = 'PT';
-        $displayLocation = 'displayOnCartPage';
+        $result = $this->bannerSettingsService->getBannerData('PT', 'displayOnCartPage');
 
-        //Act
-        $result = $this->bannerSettingsService->getBannerData($country, $displayLocation);
-
-        //Assert
         self::assertNull($result);
+    }
+
+    /**
+     * @throws Exception|Throwable
+     */
+    public function testSetBannerSettingsRollsBackFreshUploadsWhenPersistFails(): void
+    {
+        $failingRepository = $this->createMock(BannerSettingsRepositoryInterface::class);
+        $failingRepository->method('getBannerSettings')->willReturn(null);
+        $failingRepository->method('setBannerSettings')->willThrowException(new RuntimeException('db down'));
+
+        $bannerService = new MockBannerService();
+        $service = new BannerSettingsService($failingRepository, $bannerService);
+
+        $incoming = [
+            new BannerInput('ES', 'https://www.sequra.es/es/faq#shoppers', 'displayOnHomePage', 'ES-base64'),
+            new BannerInput('PT', 'https://www.sequra.pt/pt/faq#shoppers', 'displayOnCartPage', 'PT-base64'),
+        ];
+
+        $thrown = null;
+        try {
+            $service->setBannerSettings($incoming);
+        } catch (RuntimeException $e) {
+            $thrown = $e;
+        }
+
+        self::assertNotNull($thrown);
+        self::assertEquals('db down', $thrown->getMessage());
+
+        $deleted = $bannerService->getDeletedImageKeys();
+        sort($deleted);
+        self::assertEquals(['ES|displayOnHomePage', 'PT|displayOnCartPage'], $deleted);
+        self::assertEmpty($bannerService->getStoredImages());
     }
 }

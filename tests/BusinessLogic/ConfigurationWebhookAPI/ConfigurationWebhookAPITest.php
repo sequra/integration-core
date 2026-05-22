@@ -6,7 +6,7 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\ConfigurationWebhookAPI;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\BannerSettingsResponse;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Models\AdvancedSettings;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
-use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidURLException;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidBannerUrlException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
@@ -1783,7 +1783,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidURLException
+     * @throws InvalidBannerUrlException
      */
     public function testSaveBannerSettingsResponse(): void
     {
@@ -1794,7 +1794,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'displayOnCartPage',
             'displayOnProductListingPage',
         ]);
-        $this->bannerSettingsService->setBannerSettings(
+        $this->bannerSettingsService->seedBannerSettings(
             new BannerSettings(
                 [
                     new Banner(
@@ -1858,12 +1858,12 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidURLException
+     * @throws InvalidBannerUrlException
      */
     public function testSaveBannerSettingsInvalidURLResponse(): void
     {
         //Arrange
-        $this->bannerSettingsService->setBannerSettings(
+        $this->bannerSettingsService->seedBannerSettings(
             new BannerSettings(
                 [
                     new Banner(
@@ -1912,7 +1912,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidURLException
+     * @throws InvalidBannerUrlException
      */
     public function testGetBannerSettingsResponse(): void
     {
@@ -1923,7 +1923,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'displayOnCartPage',
             'displayOnProductListingPage',
         ]);
-        $this->bannerSettingsService->setBannerSettings(
+        $this->bannerSettingsService->seedBannerSettings(
             new BannerSettings(
                 [
                     new Banner(
@@ -1970,7 +1970,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidURLException
+     * @throws InvalidBannerUrlException
      */
     public function testGetBannerSettingsEmptyResponse(): void
     {

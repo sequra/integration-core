@@ -532,7 +532,8 @@ class BaseTestCase extends TestCase
             BannerSettingsController::class => function () {
                 return new BannerSettingsController(
                     TestServiceRegister::getService(BannerSettingsService::class),
-                    TestServiceRegister::getService(BannerServiceInterface::class)
+                    TestServiceRegister::getService(BannerServiceInterface::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class)
                 );
             },
             AbstractItemFactory::class => function () {
