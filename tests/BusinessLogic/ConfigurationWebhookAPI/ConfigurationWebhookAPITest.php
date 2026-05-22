@@ -517,7 +517,56 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'php_version' => '8.4',
             'db' => 'mysql',
             'os' => 'linux',
-            'plugins' => ['plugin1', 'plugin2', 'plugin3']
+            'plugins' => ['plugin1', 'plugin2', 'plugin3'],
+            'active_theme' => null
+        ], $response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testStoreInfoResponseWithActiveTheme(): void
+    {
+        //Arrange
+
+        $this->storeInfoService->setMockStoreInfo(
+            new StoreInfo(
+                'Test Store',
+                'https://test.com',
+                'Test Platform',
+                'v1.0.0',
+                'v2.1',
+                '8.4',
+                'mysql',
+                'linux',
+                ['plugin1'],
+                'Storefront v3.2'
+            )
+        );
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                'topic' => 'get-store-info'
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals([
+            'store_name' => 'Test Store',
+            'store_url' => 'https://test.com',
+            'platform' => 'Test Platform',
+            'platform_version' => 'v1.0.0',
+            'plugin_version' => 'v2.1',
+            'php_version' => '8.4',
+            'db' => 'mysql',
+            'os' => 'linux',
+            'plugins' => ['plugin1'],
+            'active_theme' => 'Storefront v3.2'
         ], $response->toArray());
     }
 
