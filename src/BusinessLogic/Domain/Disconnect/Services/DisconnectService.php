@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\Disconnect\Services;
 
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\RepositoryContracts\AdvancedSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
@@ -106,6 +107,11 @@ class DisconnectService
     protected $advancedSettingsRepository;
 
     /**
+     * @var BannerSettingsService $bannerSettingsService
+     */
+    protected $bannerSettingsService;
+
+    /**
      * @param DisconnectServiceInterface $integrationDisconnectService
      * @param SendReportRepositoryInterface $sendReportRepository
      * @param ConnectionDataRepositoryInterface $connectionDataRepository
@@ -121,6 +127,7 @@ class DisconnectService
      * @param TransactionLogRepositoryInterface $transactionLogRepository
      * @param StoreIntegrationService $storeIntegrationService
      * @param AdvancedSettingsRepositoryInterface $advancedSettingsRepository
+     * @param BannerSettingsService $bannerSettingsService
      */
     public function __construct(
         DisconnectServiceInterface $integrationDisconnectService,
@@ -137,7 +144,8 @@ class DisconnectService
         StatisticalDataRepositoryInterface $statisticalDataRepository,
         TransactionLogRepositoryInterface $transactionLogRepository,
         StoreIntegrationService $storeIntegrationService,
-        AdvancedSettingsRepositoryInterface $advancedSettingsRepository
+        AdvancedSettingsRepositoryInterface $advancedSettingsRepository,
+        BannerSettingsService $bannerSettingsService
     ) {
         $this->integrationDisconnectService = $integrationDisconnectService;
         $this->sendReportRepository = $sendReportRepository;
@@ -154,6 +162,7 @@ class DisconnectService
         $this->transactionLogRepository = $transactionLogRepository;
         $this->storeIntegrationService = $storeIntegrationService;
         $this->advancedSettingsRepository = $advancedSettingsRepository;
+        $this->bannerSettingsService = $bannerSettingsService;
     }
 
     /**
@@ -206,6 +215,7 @@ class DisconnectService
         $this->orderStatusSettingsRepository->deleteOrderStatusMapping();
         $this->paymentMethodRepository->deleteAllPaymentMethods();
         $this->widgetSettingsRepository->deleteWidgetSettings();
+        $this->bannerSettingsService->clearBannerSettings();
         $this->sendReportRepository->deleteSendReportForContext(StoreContext::getInstance()->getStoreId());
         $this->statisticalDataRepository->deleteStatisticalData();
         $this->transactionLogRepository->deleteAllTransactionLogs();
@@ -215,7 +225,10 @@ class DisconnectService
     }
 
     /**
-     * Removes all data connected to given deployment
+     * Removes deployment-scoped data only (credentials, country configs by merchantId,
+     * payment methods by merchantId). Store-scoped settings — general, widget, order
+     * status, advanced, statistical data, transaction logs, and banner settings/images
+     * — are intentionally untouched; they are wiped only on full disconnect.
      *
      * @param string $deploymentId
      *

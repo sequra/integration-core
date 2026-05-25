@@ -67,6 +67,23 @@ class CapabilityModelTest extends BaseTestCase
      *
      * @throws InvalidCapabilityException
      */
+    public function testBannerCapability(): void
+    {
+        // arrange
+
+        // act
+        $capability = Capability::parse('banner');
+
+        // assert
+        self::assertEquals('banner', $capability->getCapability());
+        self::assertEquals(Capability::banner(), $capability);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidCapabilityException
+     */
     public function testOrderStatusCapability(): void
     {
         // arrange

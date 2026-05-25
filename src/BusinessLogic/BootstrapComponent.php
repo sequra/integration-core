@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic;
 
+use SeQura\Core\BusinessLogic\AdminAPI\BannerSettings\BannerSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\ConnectionController;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\CountryConfigurationController;
 use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
@@ -13,12 +14,15 @@ use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\Banners\BannerCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Controller\ConfigurationWebhookController;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\GetAdvancedSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\SaveAdvancedSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\GetBannerSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\SaveBannerSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Enums\Topics;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings\GetGeneralSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\GeneralSettings\SaveGeneralSettingsHandler;
@@ -36,6 +40,8 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\Ge
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\SaveWidgetSettingsHandler;
 use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Entities\AdvancedSettings;
 use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Repositories\AdvancedSettingsRepository;
+use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Entities\BannerSettings;
+use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Repositories\BannerSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\CountryConfiguration\Entities\CountryConfiguration;
@@ -61,6 +67,9 @@ use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\Transaction
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\RepositoryContracts\AdvancedSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedLoggerSettingsProvider;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
 use SeQura\Core\Infrastructure\Logger\Interfaces\LoggerSettingsProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
@@ -249,6 +258,16 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new WidgetSettingsRepository(
                     RepositoryRegistry::getRepository(WidgetSettings::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            BannerSettingsRepositoryInterface::class,
+            static function () {
+                return new BannerSettingsRepository(
+                    RepositoryRegistry::getRepository(BannerSettings::getClassName()),
                     ServiceRegister::getService(StoreContext::class)
                 );
             }
@@ -490,7 +509,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
                     ServiceRegister::getService(TransactionLogRepositoryInterface::class),
                     ServiceRegister::getService(StoreIntegrationService::class),
-                    ServiceRegister::getService(AdvancedSettingsRepositoryInterface::class)
+                    ServiceRegister::getService(AdvancedSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(BannerSettingsService::class)
                 );
             }
         );
@@ -563,6 +583,16 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new WidgetValidationService(
                     ServiceRegister::getService(GeneralSettingsService::class),
                     ServiceRegister::getService(ProductServiceInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            BannerSettingsService::class,
+            static function () {
+                return new BannerSettingsService(
+                    ServiceRegister::getService(BannerSettingsRepositoryInterface::class),
+                    ServiceRegister::getService(BannerServiceInterface::class)
                 );
             }
         );
@@ -733,6 +763,17 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            BannerSettingsController::class,
+            static function () {
+                return new BannerSettingsController(
+                    ServiceRegister::getService(BannerSettingsService::class),
+                    ServiceRegister::getService(BannerServiceInterface::class),
+                    ServiceRegister::getService(CountryConfigurationService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             TransactionLogsController::class,
             static function () {
                 return new TransactionLogsController(
@@ -783,6 +824,15 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new PromotionalWidgetsCheckoutController(
                     ServiceRegister::getService(WidgetSettingsService::class),
                     ServiceRegister::getService(WidgetValidationService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            BannerCheckoutController::class,
+            static function () {
+                return new BannerCheckoutController(
+                    ServiceRegister::getService(BannerSettingsService::class)
                 );
             }
         );
@@ -1007,6 +1057,16 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         TopicHandlerRegistry::register(
+            Topics::GET_BANNER_SETTINGS,
+            GetBannerSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::SAVE_BANNER_SETTINGS,
+            SaveBannerSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
             Topics::GET_LOG_CONTENT,
             GetLogContentHandler::class
         );
@@ -1125,6 +1185,28 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new SaveAdvancedSettingsHandler(
                     ServiceRegister::getService(AdvancedSettingsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            GetBannerSettingsHandler::class,
+            static function () {
+                return new GetBannerSettingsHandler(
+                    ServiceRegister::getService(BannerSettingsService::class),
+                    ServiceRegister::getService(BannerServiceInterface::class),
+                    ServiceRegister::getService(CountryConfigurationService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            SaveBannerSettingsHandler::class,
+            static function () {
+                return new SaveBannerSettingsHandler(
+                    ServiceRegister::getService(BannerSettingsService::class),
+                    ServiceRegister::getService(BannerServiceInterface::class),
+                    ServiceRegister::getService(CountryConfigurationService::class)
                 );
             }
         );

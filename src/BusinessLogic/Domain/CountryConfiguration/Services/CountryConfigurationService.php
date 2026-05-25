@@ -62,6 +62,22 @@ class CountryConfigurationService
     }
 
     /**
+     * Returns ISO country codes for the configurations currently saved for the store.
+     *
+     * @return string[]
+     *
+     * @throws FailedToRetrieveSellingCountriesException
+     */
+    public function getCountryCodes(): array
+    {
+        $configurations = $this->getCountryConfiguration() ?? [];
+
+        return array_map(static function (CountryConfiguration $configuration) {
+            return $configuration->getCountryCode();
+        }, $configurations);
+    }
+
+    /**
      * Calls the repository to save the country configuration to the database.
      *
      * @param CountryConfiguration[] $countryConfiguration
