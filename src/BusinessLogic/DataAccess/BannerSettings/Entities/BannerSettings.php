@@ -50,6 +50,7 @@ class BannerSettings extends Entity
     {
         $data = parent::toArray();
 
+        $data['storeId'] = $this->storeId;
         $data['bannerSettings'] = $this->bannerSettings->toArray();
 
         return $data;
