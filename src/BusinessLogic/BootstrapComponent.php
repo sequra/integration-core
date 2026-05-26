@@ -814,7 +814,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class),
                     ServiceRegister::getService(CheckoutService::class),
                     ServiceRegister::getService(CountryConfigurationService::class),
-                    ServiceRegister::getService(PaymentMethodsService::class)
+                    ServiceRegister::getService(PaymentMethodsService::class),
+                    ServiceRegister::getService(OrderService::class)
                 );
             }
         );

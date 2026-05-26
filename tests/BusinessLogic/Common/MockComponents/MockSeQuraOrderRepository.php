@@ -38,6 +38,12 @@ class MockSeQuraOrderRepository implements SeQuraOrderRepositoryInterface
      */
     public function getByCartId(string $cartId): ?SeQuraOrder
     {
+        foreach ($this->orders as $order) {
+            if ($order->getCartId() === $cartId) {
+                return $order;
+            }
+        }
+
         return null;
     }
 

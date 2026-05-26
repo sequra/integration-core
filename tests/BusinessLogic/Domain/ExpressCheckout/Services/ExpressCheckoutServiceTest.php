@@ -7,6 +7,9 @@ use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
@@ -23,17 +26,23 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\General
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
+use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockCreateOrderRequestBuilder;
+use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockOrderProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockGeneralSettingsService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantOrderBuilder;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSeQuraOrderRepository;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -249,6 +258,51 @@ class ExpressCheckoutServiceTest extends BaseTestCase
         $this->seedHappyState();
 
         self::assertTrue($this->callIsAvailable());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSolicitDelegatesToOrderService(): void
+    {
+        // Arrange
+        $solicitedOrder = (new MockCreateOrderRequestBuilder())->build()->toSequraOrderInstance('ref-ec');
+        $solicitedOrder->setCartId('cart-ec');
+        $expectedForm = new SeQuraForm('<html>delegated-form</html>');
+
+        $orderProxy = new MockOrderProxy();
+        $orderProxy->setMockResult($solicitedOrder, [], $expectedForm);
+
+        $merchantOrderBuilder = new MockMerchantOrderBuilder(
+            TestServiceRegister::getService(ConnectionService::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            TestServiceRegister::getService(MerchantDataProviderInterface::class)
+        );
+
+        $orderService = new OrderService(
+            $orderProxy,
+            new MockSeQuraOrderRepository(),
+            $merchantOrderBuilder,
+            TestServiceRegister::getService(OrderCreationInterface::class)
+        );
+
+        TestServiceRegister::registerService(OrderService::class, static function () use ($orderService) {
+            return $orderService;
+        });
+
+        $service = TestServiceRegister::getService(ExpressCheckoutService::class);
+        $builder = new MockCreateOrderRequestBuilder();
+
+        // Act
+        $form = $service->solicit($builder);
+
+        // Assert
+        self::assertSame($expectedForm, $form);
+        $formRequest = $orderProxy->getLastGetFormRequest();
+        self::assertNull($formRequest->getProduct());
+        self::assertNull($formRequest->getCampaign());
     }
 
     /**

@@ -4,6 +4,8 @@ namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutSettings;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 
 /**
  * Class MockExpressCheckoutService.
@@ -24,6 +26,16 @@ class MockExpressCheckoutService extends ExpressCheckoutService
      * @var bool
      */
     private $availabilityResult = false;
+
+    /**
+     * @var ?SeQuraForm
+     */
+    private $nextFormResult = null;
+
+    /**
+     * @var ?CreateOrderRequestBuilder
+     */
+    private $lastSolicitBuilder = null;
 
     /**
      * @inheritDoc
@@ -54,6 +66,16 @@ class MockExpressCheckoutService extends ExpressCheckoutService
     }
 
     /**
+     * @inheritDoc
+     */
+    public function solicit(CreateOrderRequestBuilder $builder): SeQuraForm
+    {
+        $this->lastSolicitBuilder = $builder;
+
+        return $this->nextFormResult ?? new SeQuraForm('');
+    }
+
+    /**
      * @param bool $available
      *
      * @return void
@@ -61,5 +83,23 @@ class MockExpressCheckoutService extends ExpressCheckoutService
     public function setAvailability(bool $available): void
     {
         $this->availabilityResult = $available;
+    }
+
+    /**
+     * @param SeQuraForm $form Canned form value returned by the next solicit() call.
+     *
+     * @return void
+     */
+    public function setNextFormResult(SeQuraForm $form): void
+    {
+        $this->nextFormResult = $form;
+    }
+
+    /**
+     * @return ?CreateOrderRequestBuilder Builder recorded by the most recent solicit() call.
+     */
+    public function getLastSolicitBuilder(): ?CreateOrderRequestBuilder
+    {
+        return $this->lastSolicitBuilder;
     }
 }

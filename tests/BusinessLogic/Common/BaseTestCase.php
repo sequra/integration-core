@@ -462,7 +462,8 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class),
                     TestServiceRegister::getService(CheckoutService::class),
                     TestServiceRegister::getService(CountryConfigurationService::class),
-                    TestServiceRegister::getService(PaymentMethodsService::class)
+                    TestServiceRegister::getService(PaymentMethodsService::class),
+                    TestServiceRegister::getService(OrderService::class)
                 );
             },
             ExpressCheckoutController::class => function () {

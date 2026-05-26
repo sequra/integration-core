@@ -10,7 +10,6 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInter
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
@@ -26,7 +25,9 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Merchant;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Platform;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
@@ -472,12 +473,135 @@ class OrderServiceTest extends BaseTestCase
     }
 
     /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSolicitExpressCheckoutFormReturnsFormForSolicitedOrder(): void
+    {
+        // Arrange
+        $solicitedOrder = (new MockCreateOrderRequestBuilder())->build()->toSequraOrderInstance('ref-1');
+        $solicitedOrder->setCartId('cart-1');
+        $expectedForm = new SeQuraForm('<html>express-checkout-form</html>');
+
+        $this->orderProxy = new MockOrderProxy();
+        $this->orderProxy->setMockResult($solicitedOrder, [], $expectedForm);
+
+        $this->orderRepository = new MockSeQuraOrderRepository();
+        $this->orderService = new OrderService(
+            $this->orderProxy,
+            $this->orderRepository,
+            $this->merchantOrderBuilder,
+            TestServiceRegister::getService(OrderCreationInterface::class)
+        );
+
+        $builder = new MockCreateOrderRequestBuilder();
+
+        // Act
+        $form = $this->orderService->solicitExpressCheckoutForm($builder);
+
+        // Assert
+        self::assertSame($expectedForm, $form);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSolicitExpressCheckoutFormCallsFormWithNullProductAndCampaign(): void
+    {
+        // Arrange
+        $solicitedOrder = (new MockCreateOrderRequestBuilder())->build()->toSequraOrderInstance('ref-2');
+        $solicitedOrder->setCartId('cart-xyz');
+
+        $this->orderProxy = new MockOrderProxy();
+        $this->orderProxy->setMockResult($solicitedOrder, [], new SeQuraForm(''));
+
+        $this->orderRepository = new MockSeQuraOrderRepository();
+        $this->orderService = new OrderService(
+            $this->orderProxy,
+            $this->orderRepository,
+            $this->merchantOrderBuilder,
+            TestServiceRegister::getService(OrderCreationInterface::class)
+        );
+
+        // Act
+        $this->orderService->solicitExpressCheckoutForm(new MockCreateOrderRequestBuilder());
+
+        // Assert
+        $formRequest = $this->orderProxy->getLastGetFormRequest();
+        self::assertNull($formRequest->getProduct());
+        self::assertNull($formRequest->getCampaign());
+        self::assertTrue($formRequest->getAjax());
+        self::assertEquals('ref-2', $formRequest->getOrderId());
+        self::assertEquals('testMerchantId', $formRequest->getMerchantId());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSolicitExpressCheckoutFormPropagatesHttpExceptionFromSolicit(): void
+    {
+        // Arrange
+        $this->orderProxy = new MockOrderProxy();
+        $this->orderProxy->setCreateOrderException(new HttpRequestException('solicit failed', 502));
+
+        $this->orderService = new OrderService(
+            $this->orderProxy,
+            new MockSeQuraOrderRepository(),
+            $this->merchantOrderBuilder,
+            TestServiceRegister::getService(OrderCreationInterface::class)
+        );
+
+        // Assert
+        $this->expectException(HttpRequestException::class);
+
+        // Act
+        try {
+            $this->orderService->solicitExpressCheckoutForm(new MockCreateOrderRequestBuilder());
+        } finally {
+            self::assertSame(0, $this->orderProxy->getFormCallCount());
+        }
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSolicitExpressCheckoutFormPropagatesHttpExceptionFromForm(): void
+    {
+        // Arrange
+        $solicitedOrder = (new MockCreateOrderRequestBuilder())->build()->toSequraOrderInstance('ref-3');
+        $solicitedOrder->setCartId('cart-3');
+
+        $this->orderProxy = new MockOrderProxy();
+        $this->orderProxy->setMockResult($solicitedOrder, [], new SeQuraForm(''));
+        $this->orderProxy->setGetFormException(new HttpRequestException('form fetch failed', 500));
+
+        $this->orderService = new OrderService(
+            $this->orderProxy,
+            new MockSeQuraOrderRepository(),
+            $this->merchantOrderBuilder,
+            TestServiceRegister::getService(OrderCreationInterface::class)
+        );
+
+        // Assert
+        $this->expectException(HttpRequestException::class);
+
+        // Act
+        $this->orderService->solicitExpressCheckoutForm(new MockCreateOrderRequestBuilder());
+    }
+
+    /**
      * Returns OrderUpdateData example.
      *
      * @return OrderUpdateData
      *
      * @throws InvalidCartItemsException
-     * @throws InvalidQuantityException
      */
     private function getOrderUpdateData(): OrderUpdateData
     {

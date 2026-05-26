@@ -10,6 +10,12 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfigur
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutSettings;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
+use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
@@ -48,21 +54,29 @@ class ExpressCheckoutService
     protected $paymentMethodsService;
 
     /**
+     * @var OrderService
+     */
+    protected $orderService;
+
+    /**
      * @param ExpressCheckoutSettingsRepositoryInterface $expressCheckoutSettingsRepository
      * @param CheckoutService $checkoutService
      * @param CountryConfigurationService $countryConfigurationService
      * @param PaymentMethodsService $paymentMethodsService
+     * @param OrderService $orderService
      */
     public function __construct(
         ExpressCheckoutSettingsRepositoryInterface $expressCheckoutSettingsRepository,
         CheckoutService $checkoutService,
         CountryConfigurationService $countryConfigurationService,
-        PaymentMethodsService $paymentMethodsService
+        PaymentMethodsService $paymentMethodsService,
+        OrderService $orderService
     ) {
         $this->expressCheckoutSettingsRepository = $expressCheckoutSettingsRepository;
         $this->checkoutService = $checkoutService;
         $this->countryConfigurationService = $countryConfigurationService;
         $this->paymentMethodsService = $paymentMethodsService;
+        $this->orderService = $orderService;
     }
 
     /**
@@ -128,6 +142,23 @@ class ExpressCheckoutService
         }
 
         return true;
+    }
+
+    /**
+     * Solicits the order and returns the identification form for the Express Checkout flow.
+     *
+     * @param CreateOrderRequestBuilder $builder
+     *
+     * @return SeQuraForm
+     *
+     * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws InvalidUrlException
+     */
+    public function solicit(CreateOrderRequestBuilder $builder): SeQuraForm
+    {
+        return $this->orderService->solicitExpressCheckoutForm($builder);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\ConfigurationWebhookAPI;
 
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\ConfigurationWebhookAPI;
+use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Models\AdvancedSettings;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
@@ -318,7 +319,8 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             TestServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class),
             TestServiceRegister::getService(CheckoutService::class),
             TestServiceRegister::getService(CountryConfigurationService::class),
-            TestServiceRegister::getService(PaymentMethodsService::class)
+            TestServiceRegister::getService(PaymentMethodsService::class),
+            TestServiceRegister::getService(OrderService::class)
         );
 
         TestServiceRegister::registerService(ExpressCheckoutService::class, function () {
