@@ -545,7 +545,7 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(CredentialsService::class),
                     TestServiceRegister::getService(WidgetConfiguratorInterface::class),
                     TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
-                    TestServiceRegister::getService(DeploymentsService::class)
+                    TestServiceRegister::getService(CheckoutService::class)
                 );
             },
             BannerSettingsService::class => function () {
@@ -559,13 +559,6 @@ class BaseTestCase extends TestCase
             },
             ProductServiceInterface::class => function () {
                 return new MockProductService();
-            },
-            WidgetValidationService::class => function () {
-                return new WidgetValidationService(
-                    TestServiceRegister::getService(GeneralSettingsService::class),
-                    TestServiceRegister::getService(ProductServiceInterface::class)
-                    TestServiceRegister::getService(CheckoutService::class)
-                );
             },
             PromotionalWidgetsController::class => function () {
                 return new PromotionalWidgetsController(
