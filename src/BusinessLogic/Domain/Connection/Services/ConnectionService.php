@@ -12,6 +12,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDa
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
+use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -192,6 +193,7 @@ class ConnectionService
      * @return void
      *
      * @throws CapabilitiesEmptyException
+     * @throws InvalidUrlException
      */
     public function reRegisterWebhooks(ConnectionData $connectionData): void
     {
@@ -205,6 +207,7 @@ class ConnectionService
      * @return void
      *
      * @throws CapabilitiesEmptyException
+     * @throws InvalidUrlException
      */
     protected function registerWebhooks(ConnectionData $connectionData): void
     {

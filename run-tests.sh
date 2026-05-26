@@ -20,6 +20,9 @@ echo -e "\e[32mUnit tests: PHP 8.3\e[39m"
 echo -e "\e[32mUnit tests: PHP 8.4\e[39m"
 /usr/bin/php8.4 ./vendor/bin/phpunit --configuration ./phpunit.xml
 
+echo -e "\e[32mUnit tests: PHP 8.5\e[39m"
+/usr/bin/php8.5 ./vendor/bin/phpunit --configuration ./phpunit.xml
+
 echo -e "\e[32mPHP_CodeSniffer\e[39m"
 vendor/bin/phpcs --standard=.phpcs.xml.dist --warning-severity=0 .
 

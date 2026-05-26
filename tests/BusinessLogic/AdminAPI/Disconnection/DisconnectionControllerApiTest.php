@@ -5,6 +5,7 @@ namespace SeQura\Core\Tests\BusinessLogic\AdminAPI\Disconnection;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\Requests\DisconnectRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\Responses\DisconnectResponse;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
@@ -60,6 +61,8 @@ class DisconnectionControllerApiTest extends BaseTestCase
             ServiceRegister::getService(StoreIntegrationService::class),
             new MockAdvancedSettingsRepository(),
             new MockExpressCheckoutSettingsRepository()
+            new MockAdvancedSettingsRepository(),
+            ServiceRegister::getService(BannerSettingsService::class)
         );
 
         TestServiceRegister::registerService(DisconnectService::class, function () {

@@ -4,8 +4,13 @@ namespace SeQura\Core\Tests\BusinessLogic\ConfigurationWebhookAPI;
 
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\ConfigurationWebhookAPI;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\BannerSettingsResponse;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Models\AdvancedSettings;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidBannerUrlException;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
+use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
@@ -33,6 +38,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Log\LogServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
@@ -64,6 +70,9 @@ use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerSettingsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerSettingsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCategoryService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
@@ -191,6 +200,16 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      * @var AdvancedSettingsService $advancedSettingsService
      */
     private $advancedSettingsService;
+
+    /**
+     * @var MockBannerService $bannerService
+     */
+    private $bannerService;
+
+    /**
+     * @var MockBannerSettingsService $bannerSettingsService
+     */
+    private $bannerSettingsService;
 
     /**
      * @var MockCredentialsService
@@ -373,6 +392,18 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             return $this->advancedSettingsService;
         });
 
+        $this->bannerService = new MockBannerService();
+
+        TestServiceRegister::registerService(BannerServiceInterface::class, function () {
+            return $this->bannerService;
+        });
+
+        $this->bannerSettingsService = new MockBannerSettingsService(new MockBannerSettingsRepository());
+
+        TestServiceRegister::registerService(BannerSettingsService::class, function () {
+            return $this->bannerSettingsService;
+        });
+
         $this->credentialsService = new MockCredentialsService(
             new MockConnectionProxy(),
             new MockCredentialsRepository(),
@@ -416,9 +447,10 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         //Assert
         self::assertFalse($response->isSuccessful());
         self::assertEquals([
-            'success' => false,
-            'error' => 'Topic field is required in the webhook payload.',
-            'errorCode' => 'TOPIC_MISSING'
+            'statusCode' => 0,
+            'errorCode' => 'TOPIC_MISSING',
+            'errorMessage' => 'Topic field is required in the webhook payload.',
+            'errorParameters' => [],
         ], $response->toArray());
     }
 
@@ -492,9 +524,10 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         //Assert
         self::assertFalse($response->isSuccessful());
         self::assertEquals([
-            'success' => false,
-            'error' => 'Unknown or unsupported topic: get-payment-data',
-            'errorCode' => 'UNKNOWN_TOPIC'
+            'statusCode' => 0,
+            'errorCode' => 'UNKNOWN_TOPIC',
+            'errorMessage' => 'Unknown or unsupported topic: get-payment-data',
+            'errorParameters' => [],
         ], $response->toArray());
     }
 
@@ -544,7 +577,56 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'php_version' => '8.4',
             'db' => 'mysql',
             'os' => 'linux',
-            'plugins' => ['plugin1', 'plugin2', 'plugin3']
+            'plugins' => ['plugin1', 'plugin2', 'plugin3'],
+            'active_theme' => null
+        ], $response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testStoreInfoResponseWithActiveTheme(): void
+    {
+        //Arrange
+
+        $this->storeInfoService->setMockStoreInfo(
+            new StoreInfo(
+                'Test Store',
+                'https://test.com',
+                'Test Platform',
+                'v1.0.0',
+                'v2.1',
+                '8.4',
+                'mysql',
+                'linux',
+                ['plugin1'],
+                'Storefront v3.2'
+            )
+        );
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                'topic' => 'get-store-info'
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals([
+            'store_name' => 'Test Store',
+            'store_url' => 'https://test.com',
+            'platform' => 'Test Platform',
+            'platform_version' => 'v1.0.0',
+            'plugin_version' => 'v2.1',
+            'php_version' => '8.4',
+            'db' => 'mysql',
+            'os' => 'linux',
+            'plugins' => ['plugin1'],
+            'active_theme' => 'Storefront v3.2'
         ], $response->toArray());
     }
 
@@ -1772,6 +1854,234 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         //Assert
         self::assertTrue($response->isSuccessful());
         self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidBannerUrlException
+     */
+    public function testSaveBannerSettingsResponse(): void
+    {
+        //Arrange
+        $this->bannerService->setBannerDisplayLocations([
+            'displayOnHomePage',
+            'displayOnProductPage',
+            'displayOnCartPage',
+            'displayOnProductListingPage',
+        ]);
+        $this->bannerSettingsService->seedBannerSettings(
+            new BannerSettings(
+                [
+                    new Banner(
+                        'ES',
+                        'https://www.sequra.es/es/faq#shoppers',
+                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png',
+                        'displayOnHomePage'
+                    )
+                ]
+            )
+        );
+        $this->countryConfigurationService->saveCountryConfiguration([
+            new CountryConfiguration('ES', 'merchant1'),
+            new CountryConfiguration('FR', 'merchant2'),
+            new CountryConfiguration('IT', 'merchant3'),
+            new CountryConfiguration('PT', 'merchant4'),
+        ]);
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-banner-settings",
+                "bannerConfigs" => [
+                    [
+                        'country' => 'ES',
+                        'imageBase64' => 'ES-base64',
+                        'linkUrl' => 'https://www.sequra.es/es/faq#shoppers',
+                        'displayLocation' => 'displayOnHomePage'
+                    ],
+                    [
+                        'country' => 'PT',
+                        'imageBase64' => 'PT-base64',
+                        'linkUrl' => 'https://www.sequra.pt/pt/faq#shoppers',
+                        'displayLocation' => 'displayOnCartPage'
+                    ],
+                ]
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        $payload = $response->toArray();
+        self::assertEquals(
+            [
+                'displayOnHomePage',
+                'displayOnProductPage',
+                'displayOnCartPage',
+                'displayOnProductListingPage',
+            ],
+            $payload['displayLocations']
+        );
+        self::assertEquals(['ES', 'FR', 'IT', 'PT'], $payload['sellingCountries']);
+        self::assertCount(2, $payload['bannerConfigs']);
+        self::assertEquals('ES', $payload['bannerConfigs'][0]['country']);
+        self::assertEquals('PT', $payload['bannerConfigs'][1]['country']);
+        self::assertCount(2, $this->bannerSettingsService->getBannerSettings()->getBannerConfigs());
+    }
+
+
+    /**
+     * @return void
+     *
+     * @throws InvalidBannerUrlException
+     */
+    public function testSaveBannerSettingsInvalidURLResponse(): void
+    {
+        //Arrange
+        $this->bannerSettingsService->seedBannerSettings(
+            new BannerSettings(
+                [
+                    new Banner(
+                        'ES',
+                        'https://www.sequra.es/es/faq#shoppers',
+                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png',
+                        'displayOnHomePage'
+                    )
+                ]
+            )
+        );
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-banner-settings",
+                "bannerConfigs" => [
+                    [
+                        'country' => 'ES',
+                        'imageBase64' => 'ES-base64',
+                        'linkUrl' => 'string',
+                        'displayLocation' => 'displayOnHomePage'
+                    ],
+                    [
+                        'country' => 'PT',
+                        'imageBase64' => 'PT-base64',
+                        'linkUrl' => 'https://www.sequra.pt/pt/faq#shoppers',
+                        'displayLocation' => 'displayOnCartPage'
+                    ],
+                ]
+            ]
+        );
+
+        //Assert
+        self::assertFalse($response->isSuccessful());
+        self::assertEquals([
+            'statusCode' => 0,
+            'errorCode' => 'general.errors.bannerSettings.invalidUrlFormat',
+            'errorMessage' => 'URL format is invalid',
+            'errorParameters' => [],
+        ], $response->toArray());
+        self::assertCount(1, $this->bannerSettingsService->getBannerSettings()->getBannerConfigs());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidBannerUrlException
+     */
+    public function testGetBannerSettingsResponse(): void
+    {
+        //Arrange
+        $this->bannerService->setBannerDisplayLocations([
+            'displayOnHomePage',
+            'displayOnProductPage',
+            'displayOnCartPage',
+            'displayOnProductListingPage',
+        ]);
+        $this->bannerSettingsService->seedBannerSettings(
+            new BannerSettings(
+                [
+                    new Banner(
+                        'ES',
+                        'https://www.sequra.es/es/faq#shoppers',
+                        'https://shop/img/sequra/es/banner/Flag_of_Spain.svg.png',
+                        'displayOnHomePage'
+                    )
+                ]
+            )
+        );
+        $this->countryConfigurationService->saveCountryConfiguration([
+            new CountryConfiguration('ES', 'merchant1'),
+            new CountryConfiguration('FR', 'merchant2'),
+            new CountryConfiguration('IT', 'merchant3'),
+            new CountryConfiguration('PT', 'merchant4'),
+        ]);
+
+        //Act
+        /** @var BannerSettingsResponse $response */
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-banner-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        $payload = $response->toArray();
+        self::assertEquals(
+            [
+                'displayOnHomePage',
+                'displayOnProductPage',
+                'displayOnCartPage',
+                'displayOnProductListingPage',
+            ],
+            $payload['displayLocations']
+        );
+        self::assertEquals(['ES', 'FR', 'IT', 'PT'], $payload['sellingCountries']);
+        self::assertCount(1, $payload['bannerConfigs']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidBannerUrlException
+     */
+    public function testGetBannerSettingsEmptyResponse(): void
+    {
+        //Arrange
+        $this->bannerService->setBannerDisplayLocations([
+            'displayOnHomePage',
+            'displayOnProductPage',
+            'displayOnCartPage',
+            'displayOnProductListingPage',
+        ]);
+
+        //Act
+        /** @var BannerSettingsResponse $response */
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-banner-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals(
+            [
+                'displayLocations' => [
+                    'displayOnHomePage',
+                    'displayOnProductPage',
+                    'displayOnCartPage',
+                    'displayOnProductListingPage',
+                ],
+                'sellingCountries' => [],
+                'bannerConfigs' => [],
+            ],
+            $response->toArray()
+        );
     }
 
     /**

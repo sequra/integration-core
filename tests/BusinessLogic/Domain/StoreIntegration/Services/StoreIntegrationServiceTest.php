@@ -20,6 +20,7 @@ use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreInfoAndUrlService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreInfoService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
 
@@ -293,5 +294,114 @@ class StoreIntegrationServiceTest extends BaseTestCase
         $second = $this->service->getWebhookSignature();
 
         self::assertEquals($first, $second);
+    }
+
+    /**
+     * When the injected StoreInfoService also implements
+     * {@see \SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo\StoreUrlProviderInterface},
+     * the HMAC computation should use the cheap getStoreUrl() path and never
+     * build a full StoreInfo. Integrations whose getStoreInfo() is expensive
+     * rely on this to keep webhook validation fast.
+     *
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
+     */
+    public function testSignaturePayloadPrefersStoreUrlProviderWhenAvailable(): void
+    {
+        $storeInfoService = new MockStoreInfoAndUrlService('https://shop.example.com');
+
+        $service = new StoreIntegrationService(
+            $this->storeIntegrationService,
+            $this->storeIntegrationProxy,
+            $this->connectionDataRepository,
+            $storeInfoService
+        );
+
+        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
+        $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('123'));
+
+        $service->createStoreIntegration(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'svea',
+            new AuthorizationCredentials('username', 'password')
+        ));
+
+        self::assertSame(1, $storeInfoService->getStoreUrlCallCount(), 'getStoreUrl() should be used for the HMAC payload.');
+        self::assertSame(0, $storeInfoService->getStoreInfoCallCount(), 'getStoreInfo() should not be called when StoreUrlProviderInterface is available.');
+    }
+
+    /**
+     * Signatures produced via the legacy getStoreInfo() path and via the new
+     * getStoreUrl() opt-in path must be byte-identical for the same shop, so a
+     * plugin can adopt the optimisation without invalidating any previously
+     * issued webhook URL.
+     *
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
+     * @throws InvalidUrlException
+     */
+    public function testStoreUrlProviderProducesTheSameSignatureAsGetStoreInfo(): void
+    {
+        $this->storeIntegrationService->setMockWebhookUrl(new URL('https://test.com/webhook', []));
+        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
+        $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('123'));
+
+        $this->service->createStoreIntegration(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'svea',
+            new AuthorizationCredentials('username', 'password')
+        ));
+        $legacySignature = $this->storeIntegrationProxy->getWebhookUrl()->getQueryByKey('signature')->getValue();
+
+        $proxy = new MockStoreIntegrationProxy();
+        $proxy->setMockCreateResponse(new CreateStoreIntegrationResponse('123'));
+
+        $optInService = new StoreIntegrationService(
+            $this->storeIntegrationService,
+            $proxy,
+            $this->connectionDataRepository,
+            new MockStoreInfoAndUrlService('https://shop.example.com')
+        );
+
+        $optInService->createStoreIntegration(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'svea',
+            new AuthorizationCredentials('username', 'password')
+        ));
+        $optInSignature = $proxy->getWebhookUrl()->getQueryByKey('signature')->getValue();
+
+        self::assertSame($legacySignature, $optInSignature);
+    }
+
+    /**
+     * A plugin that only implements the legacy StoreInfoServiceInterface keeps
+     * working — getStoreInfo() is called and its storeUrl flows into the
+     * signature. The new interface is a pure opt-in extension.
+     *
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
+     */
+    public function testSignaturePayloadFallsBackToGetStoreInfoWhenStoreUrlProviderIsNotImplemented(): void
+    {
+        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
+        $this->storeIntegrationProxy->setMockCreateResponse(new CreateStoreIntegrationResponse('123'));
+
+        $this->service->createStoreIntegration(new ConnectionData(
+            'sandbox',
+            'merchant',
+            'svea',
+            new AuthorizationCredentials('username', 'password')
+        ));
+
+        self::assertSame(1, $this->storeInfoService->getStoreInfoCallCount(), 'Legacy plugins must still go through getStoreInfo().');
     }
 }
