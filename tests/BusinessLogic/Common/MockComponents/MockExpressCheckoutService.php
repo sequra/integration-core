@@ -28,6 +28,11 @@ class MockExpressCheckoutService extends ExpressCheckoutService
     private $availabilityResult = false;
 
     /**
+     * @var bool
+     */
+    private $guestAvailabilityResult = false;
+
+    /**
      * @var ?SeQuraForm
      */
     private $nextFormResult = null;
@@ -60,9 +65,24 @@ class MockExpressCheckoutService extends ExpressCheckoutService
         string $page,
         string $shippingCountry,
         string $currency,
-        string $ipAddress
+        string $ipAddress,
+        array $productIds = [],
+        array $categoryIds = []
     ): bool {
         return $this->availabilityResult;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isAvailableForGuest(
+        string $page,
+        string $currency,
+        string $ipAddress,
+        array $productIds = [],
+        array $categoryIds = []
+    ): bool {
+        return $this->guestAvailabilityResult;
     }
 
     /**
@@ -83,6 +103,16 @@ class MockExpressCheckoutService extends ExpressCheckoutService
     public function setAvailability(bool $available): void
     {
         $this->availabilityResult = $available;
+    }
+
+    /**
+     * @param bool $available Canned value returned by isAvailableForGuest().
+     *
+     * @return void
+     */
+    public function setGuestAvailability(bool $available): void
+    {
+        $this->guestAvailabilityResult = $available;
     }
 
     /**

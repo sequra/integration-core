@@ -518,4 +518,102 @@ class CheckoutValidationServiceTest extends BaseTestCase
             $this->checkoutValidationService->isExpressCheckoutSupported('EUR', '1.2.3.4', ['ok', 'sku-excluded'])
         );
     }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsExpressCheckoutSupportedFailsOnExcludedCategoryInCart(): void
+    {
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, null, ['cat-excluded'])
+        );
+
+        self::assertFalse(
+            $this->checkoutValidationService->isExpressCheckoutSupported('EUR', '1.2.3.4', [], ['ok', 'cat-excluded'])
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsExpressCheckoutSupportedHappyPathWithCategories(): void
+    {
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, null, ['other-category'])
+        );
+
+        self::assertTrue(
+            $this->checkoutValidationService->isExpressCheckoutSupported('EUR', '1.2.3.4', [], ['cat1', 'cat2'])
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsCategorySupportedEmptyCategory(): void
+    {
+        self::assertTrue($this->checkoutValidationService->isCategorySupported(''));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsCategorySupportedNoGeneralSettings(): void
+    {
+        self::assertTrue($this->checkoutValidationService->isCategorySupported('cat1'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsCategoryUnsupportedWhenExcluded(): void
+    {
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, null, ['cat-excluded'])
+        );
+
+        self::assertFalse($this->checkoutValidationService->isCategorySupported('cat-excluded'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsCategorySupportedWhenNotExcluded(): void
+    {
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, null, ['cat-excluded'])
+        );
+
+        self::assertTrue($this->checkoutValidationService->isCategorySupported('cat1'));
+    }
 }

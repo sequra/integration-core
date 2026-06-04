@@ -4,13 +4,16 @@ namespace SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Controller;
 
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\ExpressCheckoutAvailabilityRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\ExpressCheckoutSolicitRequest;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\GuestExpressCheckoutAvailabilityRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutAvailabilityResponse;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\GuestExpressCheckoutAvailabilityResponse;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Response\IdentificationFormResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
@@ -29,11 +32,20 @@ class ExpressCheckoutController
     protected $expressCheckoutService;
 
     /**
-     * @param ExpressCheckoutService $expressCheckoutService
+     * @var CountryConfigurationService
      */
-    public function __construct(ExpressCheckoutService $expressCheckoutService)
-    {
+    protected $countryConfigurationService;
+
+    /**
+     * @param ExpressCheckoutService $expressCheckoutService
+     * @param CountryConfigurationService $countryConfigurationService
+     */
+    public function __construct(
+        ExpressCheckoutService $expressCheckoutService,
+        CountryConfigurationService $countryConfigurationService
+    ) {
         $this->expressCheckoutService = $expressCheckoutService;
+        $this->countryConfigurationService = $countryConfigurationService;
     }
 
     /**
@@ -54,11 +66,43 @@ class ExpressCheckoutController
         return new ExpressCheckoutAvailabilityResponse(
             $this->expressCheckoutService->isExpressCheckoutAvailable(
                 $request->getPage(),
-                $request->getShippingCountry(),
+                $request->getCountry(),
                 $request->getCurrency(),
-                $request->getIpAddress()
+                $request->getIpAddress(),
+                $request->getProductIds(),
+                $request->getCategoryIds()
             )
         );
+    }
+
+    /**
+     * Returns guest Express Checkout availability for the current context. The shipping country is
+     * unknown for guests, so the country guard is skipped; the response carries the availability
+     * flag plus the configured selling countries the storefront can offer once an address is known.
+     *
+     * @param GuestExpressCheckoutAvailabilityRequest $request
+     *
+     * @return GuestExpressCheckoutAvailabilityResponse
+     *
+     * @throws HttpRequestException
+     * @throws BadMerchantIdException
+     * @throws WrongCredentialsException
+     * @throws FailedToRetrieveSellingCountriesException
+     */
+    public function isAvailableForGuest(
+        GuestExpressCheckoutAvailabilityRequest $request
+    ): GuestExpressCheckoutAvailabilityResponse {
+        $available = $this->expressCheckoutService->isAvailableForGuest(
+            $request->getPage(),
+            $request->getCurrency(),
+            $request->getIpAddress(),
+            $request->getProductIds(),
+            $request->getCategoryIds()
+        );
+
+        $countries = $available ? $this->countryConfigurationService->getCountryCodes() : [];
+
+        return new GuestExpressCheckoutAvailabilityResponse(!empty($countries), $countries);
     }
 
     /**

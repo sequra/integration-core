@@ -263,6 +263,200 @@ class ExpressCheckoutServiceTest extends BaseTestCase
     /**
      * @return void
      *
+     * @throws BadMerchantIdException
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     */
+    public function testNotAvailableWhenProductIsExcluded(): void
+    {
+        $this->seedHappyState();
+        $this->generalSettingsService->saveGeneralSettings(
+            new GeneralSettings(false, null, null, ['excluded-sku'], null)
+        );
+        $this->productService->setMockProductSku('excluded-sku');
+
+        self::assertFalse($this->callIsAvailable([], ['product-1']));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     */
+    public function testNotAvailableWhenCategoryIsExcluded(): void
+    {
+        $this->seedHappyState();
+        $this->generalSettingsService->saveGeneralSettings(
+            new GeneralSettings(false, null, null, null, ['excluded-category'])
+        );
+
+        self::assertFalse($this->callIsAvailable([], [], ['excluded-category']));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     */
+    public function testIsAvailableHappyPathWithEligibleProduct(): void
+    {
+        $this->seedHappyState();
+        $this->productService->setMockProductSku('eligible-sku');
+        $this->productService->setMockProductCategories(['eligible-category']);
+
+        self::assertTrue($this->callIsAvailable([], ['product-1']));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws WrongCredentialsException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws PaymentMethodNotFoundException
+     * @throws HttpRequestException
+     */
+    public function testGuestNotAvailableWhenSettingsNotSaved(): void
+    {
+        $this->seedGeneralSettings();
+
+        self::assertFalse($this->callGuestAvailable());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws WrongCredentialsException
+     */
+    public function testGuestNotAvailableWhenPageIsDisabled(): void
+    {
+        $this->service->saveExpressCheckoutSettings(new ExpressCheckoutSettings([
+            new ExpressCheckoutPageConfig(ExpressCheckoutPage::product(), false),
+        ]));
+        $this->seedGeneralSettings();
+
+        self::assertFalse($this->callGuestAvailable());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws WrongCredentialsException
+     */
+    public function testGuestNotAvailableWhenCurrencyUnsupported(): void
+    {
+        $this->seedHappyState();
+
+        self::assertFalse($this->callGuestAvailable(['currency' => 'USD']));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws WrongCredentialsException
+     */
+    public function testGuestNotAvailableWhenIpAddressNotAllowed(): void
+    {
+        $this->seedHappyState();
+        $this->generalSettingsService->saveGeneralSettings(
+            new GeneralSettings(false, null, ['9.9.9.9'], null, null)
+        );
+
+        self::assertFalse($this->callGuestAvailable());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws WrongCredentialsException
+     */
+    public function testGuestNotAvailableWhenProductIsExcluded(): void
+    {
+        $this->seedHappyState();
+        $this->generalSettingsService->saveGeneralSettings(
+            new GeneralSettings(false, null, null, ['excluded-sku'], null)
+        );
+        $this->productService->setMockProductSku('excluded-sku');
+
+        self::assertFalse($this->callGuestAvailable([], ['product-1']));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws WrongCredentialsException
+     */
+    public function testGuestNotAvailableWhenCategoryIsExcluded(): void
+    {
+        $this->seedHappyState();
+        $this->generalSettingsService->saveGeneralSettings(
+            new GeneralSettings(false, null, null, null, ['excluded-category'])
+        );
+
+        self::assertFalse($this->callGuestAvailable([], [], ['excluded-category']));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws WrongCredentialsException
+     */
+    public function testGuestAvailableHappyPath(): void
+    {
+        $this->seedHappyState();
+
+        self::assertTrue($this->callGuestAvailable([], ['product-1'], ['category-1']));
+    }
+
+    /**
+     * @return void
+     *
      * @throws Exception
      */
     public function testSolicitDelegatesToOrderService(): void
@@ -368,6 +562,8 @@ class ExpressCheckoutServiceTest extends BaseTestCase
 
     /**
      * @param array<string, string> $overrides
+     * @param string[] $productIds
+     * @param string[] $categoryIds
      *
      * @return bool
      *
@@ -377,7 +573,7 @@ class ExpressCheckoutServiceTest extends BaseTestCase
      * @throws PaymentMethodNotFoundException
      * @throws HttpRequestException
      */
-    private function callIsAvailable(array $overrides = []): bool
+    private function callIsAvailable(array $overrides = [], array $productIds = [], array $categoryIds = []): bool
     {
         $defaults = [
             'page' => ExpressCheckoutPage::product()->getPage(),
@@ -391,7 +587,39 @@ class ExpressCheckoutServiceTest extends BaseTestCase
             $args['page'],
             $args['shippingCountry'],
             $args['currency'],
-            $args['ipAddress']
+            $args['ipAddress'],
+            $productIds,
+            $categoryIds
+        );
+    }
+
+    /**
+     * @param array<string, string> $overrides
+     * @param string[] $productIds
+     * @param string[] $categoryIds
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws WrongCredentialsException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     */
+    private function callGuestAvailable(array $overrides = [], array $productIds = [], array $categoryIds = []): bool
+    {
+        $defaults = [
+            'page' => ExpressCheckoutPage::product()->getPage(),
+            'currency' => 'EUR',
+            'ipAddress' => '1.2.3.4',
+        ];
+        $args = array_merge($defaults, $overrides);
+
+        return $this->service->isAvailableForGuest(
+            $args['page'],
+            $args['currency'],
+            $args['ipAddress'],
+            $productIds,
+            $categoryIds
         );
     }
 }

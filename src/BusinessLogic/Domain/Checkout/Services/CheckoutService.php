@@ -221,11 +221,9 @@ class CheckoutService
     }
 
     /**
-     * Composite eligibility check for the Express Checkout flow.
+     * Returns true if the category is not excluded in SeQura administration.
      *
-     * @param string $currency
-     * @param string $ipAddress
-     * @param string[] $productIds Product references in the cart (empty array = no per-product check).
+     * @param string $categoryId
      *
      * @return bool
      *
@@ -234,8 +232,45 @@ class CheckoutService
      * @throws HttpRequestException
      * @throws WrongCredentialsException
      */
-    public function isExpressCheckoutSupported(string $currency, string $ipAddress, array $productIds = []): bool
+    public function isCategorySupported(string $categoryId): bool
     {
+        if (empty($categoryId)) {
+            // Category ID was not provided, skip category validation.
+            return true;
+        }
+
+        $generalSettings = $this->getGeneralSettings();
+
+        if (!$generalSettings) {
+            return true;
+        }
+
+        $excludedCategories = $generalSettings->getExcludedCategories() ?? [];
+
+        return !($excludedCategories && \in_array($categoryId, $excludedCategories, true));
+    }
+
+    /**
+     * Composite eligibility check for the Express Checkout flow.
+     *
+     * @param string $currency
+     * @param string $ipAddress
+     * @param string[] $productIds Product references in the cart (empty array = no per-product check).
+     * @param string[] $categoryIds Category references in the cart (empty array = no per-category check).
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function isExpressCheckoutSupported(
+        string $currency,
+        string $ipAddress,
+        array $productIds = [],
+        array $categoryIds = []
+    ): bool {
         if (!$this->isCurrencySupported($currency)) {
             return false;
         }
@@ -246,6 +281,12 @@ class CheckoutService
 
         foreach ($productIds as $productId) {
             if (!$this->isProductSupported($productId)) {
+                return false;
+            }
+        }
+
+        foreach ($categoryIds as $categoryId) {
+            if (!$this->isCategorySupported($categoryId)) {
                 return false;
             }
         }

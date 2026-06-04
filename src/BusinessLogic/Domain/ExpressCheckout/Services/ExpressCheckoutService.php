@@ -102,12 +102,18 @@ class ExpressCheckoutService
     }
 
     /**
-     * Runs the availability guard chain for the given storefront context.
+     * Runs the availability guard chain for a known-customer storefront context.
+     *
+     * Reuses the guest guards (page enabled + currency/IP/product/category eligibility) and adds
+     * the country-specific checks: the shipping country must map to a configured merchant that has
+     * at least one cached payment method.
      *
      * @param string $page Page identifier (see ExpressCheckoutPage factories).
      * @param string $shippingCountry ISO country code of the cart's shipping address.
      * @param string $currency ISO currency code of the cart total.
      * @param string $ipAddress IP address of the storefront customer.
+     * @param string[] $productIds Product references in the cart (used for product eligibility).
+     * @param string[] $categoryIds Category references in the cart (used for category eligibility).
      *
      * @return bool
      *
@@ -121,10 +127,11 @@ class ExpressCheckoutService
         string $page,
         string $shippingCountry,
         string $currency,
-        string $ipAddress
+        string $ipAddress,
+        array $productIds = [],
+        array $categoryIds = []
     ): bool {
-        $settings = $this->getExpressCheckoutSettings();
-        if ($settings === null || !$settings->isPageEnabled($page)) {
+        if (!$this->isAvailableForGuest($page, $currency, $ipAddress, $productIds, $categoryIds)) {
             return false;
         }
 
@@ -133,15 +140,40 @@ class ExpressCheckoutService
             return false;
         }
 
-        if (!$this->checkoutService->isExpressCheckoutSupported($currency, $ipAddress)) {
+        return !empty($this->paymentMethodsService->getCachedPaymentMethods($merchantId));
+    }
+
+    /**
+     * Runs the availability guard chain for a GUEST storefront context, where the
+     * shipping/billing country is not yet known. The country-specific guards are skipped; every
+     * other condition is identical to the known-customer check.
+     *
+     * @param string $page Page identifier (see ExpressCheckoutPage factories).
+     * @param string $currency ISO currency code of the cart total.
+     * @param string $ipAddress IP address of the storefront customer.
+     * @param string[] $productIds Product references in the cart (used for product eligibility).
+     * @param string[] $categoryIds Category references in the cart (used for category eligibility).
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws WrongCredentialsException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     */
+    public function isAvailableForGuest(
+        string $page,
+        string $currency,
+        string $ipAddress,
+        array $productIds = [],
+        array $categoryIds = []
+    ): bool {
+        $settings = $this->getExpressCheckoutSettings();
+        if ($settings === null || !$settings->isPageEnabled($page)) {
             return false;
         }
 
-        if (empty($this->paymentMethodsService->getCachedPaymentMethods($merchantId))) {
-            return false;
-        }
-
-        return true;
+        return $this->checkoutService->isExpressCheckoutSupported($currency, $ipAddress, $productIds, $categoryIds);
     }
 
     /**

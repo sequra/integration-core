@@ -480,7 +480,8 @@ class BaseTestCase extends TestCase
             },
             ExpressCheckoutController::class => function () {
                 return new ExpressCheckoutController(
-                    TestServiceRegister::getService(ExpressCheckoutService::class)
+                    TestServiceRegister::getService(ExpressCheckoutService::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class)
                 );
             },
             BannerCheckoutController::class => function () {
