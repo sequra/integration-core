@@ -16,6 +16,8 @@
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(git add *)",
+      "Bash(git --version)",
+      "Bash(git check-attr *)",
       "Skill(sq-git:commit)",
       "Skill(sq-git:open-pr)",
       "Skill(sq-git:sync-branch)"
