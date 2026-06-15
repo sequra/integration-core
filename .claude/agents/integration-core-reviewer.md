@@ -24,7 +24,8 @@ concrete, file:line findings; do not rewrite the code.
 1. **PHP 7.2 syntax in `src/`.** `composer.json` pins the platform to 7.2. Flag anything
    newer: arrow functions (`fn() =>`), null-safe `?->`, named arguments, `match`, enums,
    constructor property promotion, typed properties, union/intersection types, `readonly`,
-   first-class callable syntax, trailing-comma-in-params (7.3+). Tests may run on newer PHP,
+   first-class callable syntax, trailing comma in calls (7.3+) / in parameter lists (8.0+).
+   Tests may run on newer PHP,
    but `src/` must stay 7.2-clean.
 
 2. **Onion-layer boundaries.** Dependencies point inward only:
