@@ -8,14 +8,15 @@
 #     git commit --no-verify
 #
 # Checks, in order:
-#   1. PHP syntax across every supported version (7.2 + 7.4–8.5), using
-#      throwaway php:<ver>-cli-alpine images (the FIRST run pulls them all).
+#   1. PHP 7.2 syntax (the language floor) on the staged files, reusing the
+#      already-running php:7.2 container — no image pulls, so this stays fast.
 #   2. phpcbf then phpcs on the staged files — phpcbf's fixes are re-staged
 #      so they become part of the commit.
 #   3. phpstan on staged files under src/ (the scope phpstan.neon targets).
 #
-# The full phpstan analysis and the PHPUnit suite run in the pre-push hook
-# (.githooks/pre-push), not here, to keep per-commit feedback fast.
+# The multi-version syntax sweep (7.2–8.5), the full phpstan analysis, and the
+# PHPUnit suite run in the pre-push hook (.githooks/pre-push), not here, to keep
+# per-commit feedback fast.
 #
 # The checks run inside / against the Docker "php" service. If it isn't
 # running the hook FAILS (so unverified code can't slip through); start it
@@ -25,8 +26,6 @@
 set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
-
-PHP_VERSIONS="7.2 7.4 8.0 8.1 8.2 8.3 8.4 8.5"
 
 # Staged PHP files (added/copied/modified), NUL-delimited to tolerate spaces.
 STAGED_PHP=()
@@ -39,9 +38,9 @@ if [ ${#STAGED_PHP[@]} -eq 0 ]; then
     exit 0
 fi
 
-# Precondition: the Docker "php" service must be reachable. It backs every
-# check here — the syntax images via `docker run` (needs the daemon) and
-# phpcbf/phpcs/phpstan via `docker compose exec`.
+# Precondition: the Docker "php" service must be reachable. Every check here
+# runs through it via `docker compose exec` — the 7.2 syntax lint, phpcbf,
+# phpcs, and phpstan.
 if ! docker compose exec -T php true >/dev/null 2>&1; then
     echo "✗ Docker 'php' service is not running — cannot run the pre-commit checks."
     echo "  Start it with ./setup.sh (or docker compose up -d),"
@@ -49,12 +48,8 @@ if ! docker compose exec -T php true >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "▶ PHP syntax check (${PHP_VERSIONS// /, }) on ${#STAGED_PHP[@]} staged file(s)..."
-for ver in $PHP_VERSIONS; do
-    echo "  php $ver..."
-    docker run --rm -v "$PWD":/app -w /app "php:${ver}-cli-alpine" \
-        sh -c 'rc=0; for f in "$@"; do php -l -n "$f" >/dev/null || rc=1; done; exit $rc' _ "${STAGED_PHP[@]}"
-done
+echo "▶ PHP 7.2 syntax check on ${#STAGED_PHP[@]} staged file(s)..."
+docker compose exec -T php sh -c 'rc=0; for f in "$@"; do php -l -n "$f" >/dev/null || rc=1; done; exit $rc' _ "${STAGED_PHP[@]}"
 
 echo "▶ PHP Code Beautifier (phpcbf)..."
 # phpcbf exits non-zero when it fixes things; phpcs below is the authority.

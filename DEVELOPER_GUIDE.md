@@ -490,11 +490,12 @@ git config core.hooksPath .githooks
 ```
 
 **`pre-commit`** — fast checks on the *staged* `.php` files:
-- PHP syntax across every supported version (7.2 + 7.4–8.5), via throwaway `php:<ver>-cli-alpine` images.
+- PHP 7.2 syntax lint, reusing the already-running `php` container (no image pulls).
 - `phpcbf` then `phpcs`; phpcbf's auto-fixes are re-staged so they land in the commit.
 - `phpstan` on staged files under `src/`.
 
 **`pre-push`** — the heavier checks that can't be scoped to staged files:
+- PHP syntax sweep across every supported version (7.2 + 7.4–8.5) over the pushed `.php` files, via throwaway `php:<ver>-cli-alpine` images.
 - Full `phpstan` analysis over `src/`.
 - The full PHPUnit suite.
 
