@@ -1,0 +1,75 @@
+#!/bin/bash
+#
+# integration-core pre-push quality gate.
+#
+# Shipped in the repo and enabled by ./setup.sh via:
+#     git config core.hooksPath .githooks
+# Bypass once with:
+#     git push --no-verify
+#
+# Runs the comprehensive checks that are too heavy (or can't be scoped to
+# staged files) for the pre-commit hook:
+#   1. Full PHPStan analysis over src/ (per phpstan.neon).
+#   2. The full PHPUnit suite.
+#
+# These only analyse src/ and run the PHP test suite, so the hook first
+# inspects the commits being pushed and SKIPS when none of them touch PHP code
+# or the tooling config that drives the checks (composer.json/lock,
+# phpunit.xml, phpstan.neon). A docs-only push therefore runs nothing.
+#
+# When the checks do run they execute inside the Docker "php" service; if it
+# isn't running the hook FAILS (so unverified code can't be pushed). Start it
+# with ./setup.sh or bypass with --no-verify. Git hooks have no TTY, so
+# `docker compose exec -T` is used.
+
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+# Files whose changes can affect phpstan/phpunit results.
+RELEVANT='\.php$|^composer\.(json|lock)$|^phpunit\.xml$|^phpstan\.neon$'
+
+EMPTY_TREE=$(git hash-object -t tree /dev/null)
+is_zero() { case "$1" in *[!0]*) return 1 ;; *) return 0 ;; esac; }
+
+# Inspect each ref being pushed (git pre-push feeds these on stdin as
+# "<local ref> <local sha> <remote ref> <remote sha>").
+relevant=0
+while read -r _local_ref local_sha _remote_ref remote_sha; do
+    is_zero "$local_sha" && continue            # branch deletion — nothing to check
+
+    if is_zero "$remote_sha"; then
+        # New branch on the remote: diff the commits not yet on any remote.
+        oldest=$(git rev-list "$local_sha" --not --remotes | tail -1)
+        [ -z "$oldest" ] && continue            # nothing new to push
+        if base=$(git rev-parse --quiet --verify "${oldest}^" 2>/dev/null); then :; else
+            base="$EMPTY_TREE"                  # oldest is a root commit
+        fi
+    else
+        base="$remote_sha"
+    fi
+
+    if git diff --name-only "$base" "$local_sha" | grep -qE "$RELEVANT"; then
+        relevant=1
+    fi
+done
+
+if [ "$relevant" -eq 0 ]; then
+    echo "No PHP-relevant changes in the pushed commits — skipping phpstan/phpunit."
+    exit 0
+fi
+
+if ! docker compose exec -T php true >/dev/null 2>&1; then
+    echo "✗ Docker 'php' service is not running — cannot run the pre-push checks."
+    echo "  Start it with ./setup.sh (or docker compose up -d),"
+    echo "  or bypass with: git push --no-verify"
+    exit 1
+fi
+
+echo "▶ PHPStan (full analysis over src/)..."
+docker compose exec -T php sh -c "vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=1G"
+
+echo "▶ PHPUnit (full suite)..."
+docker compose exec -T php sh -c "vendor/bin/phpunit --configuration phpunit.xml"
+
+echo "✓ Pre-push checks passed."

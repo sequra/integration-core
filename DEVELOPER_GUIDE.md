@@ -481,28 +481,26 @@ docker compose exec -it php bash
    git commit -m "feat: description of changes"
    ```
 
-### Git Pre-commit Hook (Optional)
+### Git Hooks
 
-Create `.git/hooks/pre-commit` to validate before commits:
+The repo ships quality-gate hooks in `.githooks/`. `./setup.sh` enables them automatically (it sets `core.hooksPath` and marks them executable). To enable them manually — after cloning without running setup, for example:
 
 ```bash
-#!/bin/bash
-echo "Running syntax check..."
-./bin/php-syntax-check --php=7.2 || exit 1
-
-echo "Running code style check..."
-./bin/phpcs || exit 1
-
-echo "Running static analysis..."
-docker compose exec php vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=512M || exit 1
-
-echo "All checks passed!"
+git config core.hooksPath .githooks
 ```
 
-Make it executable:
-```bash
-chmod +x .git/hooks/pre-commit
-```
+**`pre-commit`** — fast checks on the *staged* `.php` files:
+- PHP syntax across every supported version (7.2 + 7.4–8.5), via throwaway `php:<ver>-cli-alpine` images.
+- `phpcbf` then `phpcs`; phpcbf's auto-fixes are re-staged so they land in the commit.
+- `phpstan` on staged files under `src/`.
+
+**`pre-push`** — the heavier checks that can't be scoped to staged files:
+- Full `phpstan` analysis over `src/`.
+- The full PHPUnit suite.
+
+The pre-push hook first inspects the commits being pushed and **skips entirely** when none of them touch PHP code or the tooling config that drives the checks (`composer.json`/`composer.lock`, `phpunit.xml`, `phpstan.neon`) — so a docs-only push runs nothing.
+
+When their checks do run, both hooks execute inside / against the Docker `php` service. If it isn't running the hook **fails** rather than passing silently, so unverified code can't slip through — start it with `./setup.sh` (or `docker compose up -d`) first. Bypass a hook for one operation with `git commit --no-verify` / `git push --no-verify`.
 
 ---
 
