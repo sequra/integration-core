@@ -13,7 +13,7 @@ This guide provides comprehensive information for developers working with the Se
 
 ## Available Development Tools
 
-The `bin/` directory contains several essential scripts for development and code quality. These scripts are symlinked to their corresponding vendor packages.
+The `bin/` directory contains several essential scripts for development and code quality. **These are Docker wrappers, not symlinks to local binaries.** `bin/phpcs`, `bin/phpcbf`, `bin/phpstan`, and `bin/phpunit` run inside the `php` Compose service via `docker compose exec php …`, so the container **must be running first** (`./setup.sh` or `docker compose up -d`). `bin/composer` and `bin/php-syntax-check` instead launch their own throwaway Docker images and do not require the Compose service.
 
 ### 1. **bin/composer**
 Package dependency manager for PHP projects.
@@ -134,8 +134,15 @@ Unit testing framework for PHP.
 
 **Usage**:
 ```bash
-# Run all tests
+# Run all tests (the container must be running)
 ./bin/phpunit
+```
+
+**Note**: `bin/phpunit` ignores any arguments you pass it and always runs the full suite. To run a single test class or method, invoke PHPUnit inside the container directly:
+
+```bash
+docker compose exec php vendor/bin/phpunit --configuration phpunit.xml --filter testSomeMethod
+docker compose exec php vendor/bin/phpunit --configuration phpunit.xml tests/Infrastructure/ServiceRegisterTest.php
 ```
 
 **Configuration**: See `phpunit.xml`
@@ -323,8 +330,8 @@ Create or verify `.vscode/launch.json` in your project:
 docker compose up -d
 # VSCode: Press F5 to start listening
 
-# Terminal 2: Run specific test
-docker compose exec php php vendor/bin/phpunit tests/BusinessLogic/AdminAPI/AdminAPITest.php --filter testConnectionValidation
+# Terminal 2: Run a specific test
+docker compose exec php vendor/bin/phpunit --configuration phpunit.xml tests/Infrastructure/ServiceRegisterTest.php
 
 # In VSCode: Execution pauses at breakpoints
 # View variables in Debug panel
@@ -454,12 +461,14 @@ docker compose exec -it php bash
 
 4. **Run Tests**
    ```bash
-   # Run specific tests
-   docker compose exec php php vendor/bin/phpunit tests/BusinessLogic/
+   # Run a subset of tests in the PHP 7.2 container
+   docker compose exec php vendor/bin/phpunit --configuration phpunit.xml tests/BusinessLogic/
 
-   # Or full test suite
-   ./run-tests.sh
+   # Full suite in the container
+   ./bin/phpunit
    ```
+
+   `run-tests.sh` is the CI gate: it runs the suite against **local** `/usr/bin/php7.4`–`php8.5` (not Docker), then phpcs + phpstan. It only works on a machine that has all of those PHP versions installed.
 
 5. **Debug Issues** (if needed)
    - Set breakpoints in VS Code or PhpStorm
