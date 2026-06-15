@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./bin/phpunit)",
+      "Bash(docker compose *)",
+      "Bash(./bin/phpcs)",
+      "Bash(./bin/phpcbf)",
+      "Bash(./bin/phpstan)",
+      "Bash(./bin/phpstan *)",
+      "Bash(./bin/composer *)",
+      "Bash(./bin/php-syntax-check *)",
+      "Bash(./setup.sh)",
+      "Bash(./teardown.sh)",
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Skill(sq-git:commit)",
+      "Skill(sq-git:open-pr)",
+      "Skill(sq-git:sync-branch)"
+    ]
+  }
+}
