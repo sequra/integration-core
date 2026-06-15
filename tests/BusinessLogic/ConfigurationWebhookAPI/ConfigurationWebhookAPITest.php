@@ -31,6 +31,7 @@ use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPageC
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutSettings;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutInitializationService;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\EmptyCategoryParameterException;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\Category;
@@ -307,7 +308,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             TestServiceRegister::getService(CredentialsService::class),
             TestServiceRegister::getService(WidgetConfiguratorInterface::class),
             TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutInitializationService::class)
         );
 
         TestServiceRegister::registerService(WidgetSettingsService::class, function () {

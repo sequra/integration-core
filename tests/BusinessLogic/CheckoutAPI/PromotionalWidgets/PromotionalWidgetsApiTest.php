@@ -19,6 +19,7 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutInitializationService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
@@ -81,7 +82,7 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             TestServiceRegister::getService(CredentialsService::class),
             TestServiceRegister::getService(WidgetConfiguratorInterface::class),
             TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutInitializationService::class)
         );
 
         TestServiceRegister::registerService(

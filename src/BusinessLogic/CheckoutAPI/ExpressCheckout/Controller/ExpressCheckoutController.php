@@ -6,6 +6,7 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\ExpressChecko
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\ExpressCheckoutSolicitRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\GuestExpressCheckoutAvailabilityRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutAvailabilityResponse;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutUnavailableResponse;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\GuestExpressCheckoutAvailabilityResponse;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Response\IdentificationFormResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
@@ -111,17 +112,27 @@ class ExpressCheckoutController
      *
      * @param ExpressCheckoutSolicitRequest $request
      *
-     * @return IdentificationFormResponse
+     * @return IdentificationFormResponse Unsuccessful ({@see ExpressCheckoutUnavailableResponse})
+     * when the request enables the country check and no merchant is configured for the order's
+     * delivery country — an expected shopper state, resolved without an exception or a log entry.
      *
      * @throws HttpRequestException
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws InvalidUrlException
+     * @throws FailedToRetrieveSellingCountriesException
      */
     public function solicit(ExpressCheckoutSolicitRequest $request): IdentificationFormResponse
     {
-        return new IdentificationFormResponse(
-            $this->expressCheckoutService->solicit($request->getBuilder())
+        $form = $this->expressCheckoutService->solicit(
+            $request->getBuilder(),
+            $request->isCountryCheckEnabled()
         );
+
+        if ($form === null) {
+            return new ExpressCheckoutUnavailableResponse();
+        }
+
+        return new IdentificationFormResponse($form);
     }
 }

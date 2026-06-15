@@ -3,7 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services;
 
 use Exception;
-use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutInitializationService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
@@ -50,9 +50,9 @@ class WidgetSettingsService
      */
     protected $miniWidgetMessagesProvider;
     /**
-     * @var CheckoutService
+     * @var CheckoutInitializationService
      */
-    protected $checkoutService;
+    protected $checkoutInitializationService;
 
     /**
      * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
@@ -60,7 +60,7 @@ class WidgetSettingsService
      * @param CredentialsService $credentialsService
      * @param WidgetConfiguratorInterface $widgetConfigurator
      * @param MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider
-     * @param CheckoutService $checkoutService
+     * @param CheckoutInitializationService $checkoutInitializationService
      */
     public function __construct(
         WidgetSettingsRepositoryInterface $widgetSettingsRepository,
@@ -68,14 +68,14 @@ class WidgetSettingsService
         CredentialsService $credentialsService,
         WidgetConfiguratorInterface $widgetConfigurator,
         MiniWidgetMessagesProviderInterface $miniWidgetMessagesProvider,
-        CheckoutService $checkoutService
+        CheckoutInitializationService $checkoutInitializationService
     ) {
         $this->widgetSettingsRepository = $widgetSettingsRepository;
         $this->paymentMethodsService = $paymentMethodsService;
         $this->credentialsService = $credentialsService;
         $this->widgetConfigurator = $widgetConfigurator;
         $this->miniWidgetMessagesProvider = $miniWidgetMessagesProvider;
-        $this->checkoutService = $checkoutService;
+        $this->checkoutInitializationService = $checkoutInitializationService;
     }
 
     /**
@@ -119,19 +119,28 @@ class WidgetSettingsService
     public function getWidgetInitializeData(string $shippingCountry, string $currentCountry): ?WidgetInitializer
     {
         try {
+            // Shared library bootstrap (script, merchant identity, locale formatting, products)
+            // comes from the feature-neutral CheckoutInitializationService; this method only adds
+            // the widget-display settings on top.
+            $initializationData = $this->checkoutInitializationService->getInitializationData(
+                $shippingCountry,
+                $currentCountry
+            );
+            if (!$initializationData) {
+                return null;
+            }
+
             $widgetSettings = $this->getWidgetSettings();
-            $credentials = $this->getCredentialsByCountry($shippingCountry, $currentCountry);
-            $merchantId = $credentials ? $credentials->getMerchantId() : '';
 
             return new WidgetInitializer(
-                $credentials ? $credentials->getAssetsKey() : '',
-                $merchantId,
-                $this->getWidgetSupportedProducts($merchantId),
-                $this->checkoutService->getScriptUri($credentials ? $credentials->getDeployment() : ''),
-                $this->widgetConfigurator->getLocale() ?? 'es-ES',
-                $this->widgetConfigurator->getCurrency() ?? 'EUR',
-                $this->widgetConfigurator->getDecimalSeparator() ?? ',',
-                $this->widgetConfigurator->getThousandsSeparator() ?? '.',
+                $initializationData->getAssetKey(),
+                $initializationData->getMerchantId(),
+                $initializationData->getProducts(),
+                $initializationData->getScriptUri(),
+                $initializationData->getLocale(),
+                $initializationData->getCurrency(),
+                $initializationData->getDecimalSeparator(),
+                $initializationData->getThousandSeparator(),
                 $widgetSettings->isShowInstallmentsInProductListing(),
                 $widgetSettings->isDisplayOnProductPage(),
                 $widgetSettings->getWidgetConfig()
@@ -305,12 +314,7 @@ class WidgetSettingsService
      */
     protected function getCredentialsByCountry(string $shippingCountry, string $currentCountry): ?Credentials
     {
-        $credentials = $this->credentialsService->getCredentialsByCountryCode($shippingCountry);
-        if (!$credentials) {
-            $credentials = $this->credentialsService->getCredentialsByCountryCode($currentCountry);
-        }
-
-        return $credentials;
+        return $this->credentialsService->getCredentialsByCountry($shippingCountry, $currentCountry);
     }
 
     /**
@@ -378,34 +382,5 @@ class WidgetSettingsService
         }
 
         return null;
-    }
-
-    /**
-     * Returns available widget products for given merchant id
-     *
-     * @param string $merchantId
-     *
-     * @return array<string>
-     * @throws HttpRequestException
-     * @throws PaymentMethodNotFoundException
-     */
-    protected function getWidgetSupportedProducts(string $merchantId): array
-    {
-        $paymentMethods = $this->paymentMethodsService->getCachedPaymentMethods($merchantId);
-        $supportedCategories = array_unique(array_merge(
-            self::WIDGET_SUPPORTED_CATEGORIES_ON_PRODUCT_PAGE,
-            self::WIDGET_SUPPORTED_CATEGORIES_ON_CART_PAGE,
-            self::MINI_WIDGET_SUPPORTED_CATEGORIES_ON_PRODUCT_LISTING_PAGE
-        ));
-
-        $widgetSupportedProducts = [];
-
-        foreach ($paymentMethods as $paymentMethod) {
-            if (\in_array($paymentMethod->getCategory(), $supportedCategories, true)) {
-                $widgetSupportedProducts [] = $paymentMethod->getProduct();
-            }
-        }
-
-        return $widgetSupportedProducts;
     }
 }

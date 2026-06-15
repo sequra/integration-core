@@ -16,6 +16,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsCont
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Banners\BannerCheckoutController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\Checkout\Controller\CheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Controller\ExpressCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
@@ -122,6 +123,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsServic
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutInitializationService;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
@@ -469,6 +471,11 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(CheckoutService::class)
                 );
             },
+            CheckoutController::class => function () {
+                return new CheckoutController(
+                    TestServiceRegister::getService(CheckoutInitializationService::class)
+                );
+            },
             ExpressCheckoutService::class => function () {
                 return new ExpressCheckoutService(
                     TestServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class),
@@ -539,6 +546,14 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(DeploymentsService::class)
                 );
             },
+            CheckoutInitializationService::class => function () {
+                return new CheckoutInitializationService(
+                    TestServiceRegister::getService(CredentialsService::class),
+                    TestServiceRegister::getService(CheckoutService::class),
+                    TestServiceRegister::getService(WidgetConfiguratorInterface::class),
+                    TestServiceRegister::getService(PaymentMethodsService::class)
+                );
+            },
             WidgetSettingsService::class => function () {
                 return new WidgetSettingsService(
                     TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
@@ -546,7 +561,7 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(CredentialsService::class),
                     TestServiceRegister::getService(WidgetConfiguratorInterface::class),
                     TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
-                    TestServiceRegister::getService(CheckoutService::class)
+                    TestServiceRegister::getService(CheckoutInitializationService::class)
                 );
             },
             BannerSettingsService::class => function () {

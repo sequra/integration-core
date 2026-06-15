@@ -6,6 +6,7 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\ExpressCheckoutAvailabilityRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\ExpressCheckoutSolicitRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\GuestExpressCheckoutAvailabilityRequest;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutUnavailableResponse;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Response\IdentificationFormResponse;
 use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
@@ -168,6 +169,46 @@ class ExpressCheckoutControllerTest extends BaseTestCase
             ->solicit(new ExpressCheckoutSolicitRequest($builder));
 
         self::assertSame($builder, $this->expressCheckoutService->getLastSolicitBuilder());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSolicitReturnsUnavailableResponseWhenCountryCheckRejects(): void
+    {
+        $this->expressCheckoutService->setSolicitUnavailable();
+
+        $response = CheckoutAPI::get()
+            ->expressCheckout('1')
+            ->solicit(new ExpressCheckoutSolicitRequest(new MockCreateOrderRequestBuilder(), true));
+
+        self::assertInstanceOf(ExpressCheckoutUnavailableResponse::class, $response);
+        self::assertFalse($response->isSuccessful());
+        self::assertSame(['identificationForm' => ''], $response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSolicitForwardsCountryCheckFlag(): void
+    {
+        CheckoutAPI::get()
+            ->expressCheckout('1')
+            ->solicit(new ExpressCheckoutSolicitRequest(new MockCreateOrderRequestBuilder(), true));
+
+        self::assertTrue($this->expressCheckoutService->getLastSolicitCheckCountry());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSolicitCountryCheckDisabledByDefault(): void
+    {
+        CheckoutAPI::get()
+            ->expressCheckout('1')
+            ->solicit(new ExpressCheckoutSolicitRequest(new MockCreateOrderRequestBuilder()));
+
+        self::assertFalse($this->expressCheckoutService->getLastSolicitCheckCountry());
     }
 
     /**

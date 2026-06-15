@@ -152,6 +152,25 @@ class CredentialsService
         return $this->credentialsRepository->getCredentialsByMerchantId($merchantId);
     }
 
+    /**
+     * Returns credentials for the shopper's country, preferring the shipping country and falling
+     * back to the current (browsing) country.
+     *
+     * @param string $shippingCountry
+     * @param string $currentCountry
+     *
+     * @return Credentials|null
+     */
+    public function getCredentialsByCountry(string $shippingCountry, string $currentCountry): ?Credentials
+    {
+        $credentials = $this->getCredentialsByCountryCode($shippingCountry);
+        if (!$credentials) {
+            $credentials = $this->getCredentialsByCountryCode($currentCountry);
+        }
+
+        return $credentials;
+    }
+
      /**
      * Get the merchant ID by country code.
      *

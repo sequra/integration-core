@@ -38,6 +38,16 @@ class MockExpressCheckoutService extends ExpressCheckoutService
     private $nextFormResult = null;
 
     /**
+     * @var bool
+     */
+    private $solicitUnavailable = false;
+
+    /**
+     * @var ?bool
+     */
+    private $lastSolicitCheckCountry = null;
+
+    /**
      * @var ?CreateOrderRequestBuilder
      */
     private $lastSolicitBuilder = null;
@@ -88,9 +98,14 @@ class MockExpressCheckoutService extends ExpressCheckoutService
     /**
      * @inheritDoc
      */
-    public function solicit(CreateOrderRequestBuilder $builder): SeQuraForm
+    public function solicit(CreateOrderRequestBuilder $builder, bool $checkCountry = false): ?SeQuraForm
     {
         $this->lastSolicitBuilder = $builder;
+        $this->lastSolicitCheckCountry = $checkCountry;
+
+        if ($this->solicitUnavailable) {
+            return null;
+        }
 
         return $this->nextFormResult ?? new SeQuraForm('');
     }
@@ -113,6 +128,24 @@ class MockExpressCheckoutService extends ExpressCheckoutService
     public function setGuestAvailability(bool $available): void
     {
         $this->guestAvailabilityResult = $available;
+    }
+
+    /**
+     * Makes subsequent solicit() calls return null (country check rejected the order).
+     *
+     * @return void
+     */
+    public function setSolicitUnavailable(): void
+    {
+        $this->solicitUnavailable = true;
+    }
+
+    /**
+     * @return ?bool Country-check flag recorded by the most recent solicit() call.
+     */
+    public function getLastSolicitCheckCountry(): ?bool
+    {
+        return $this->lastSolicitCheckCountry;
     }
 
     /**

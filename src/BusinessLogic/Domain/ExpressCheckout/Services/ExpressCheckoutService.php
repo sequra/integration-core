@@ -180,17 +180,42 @@ class ExpressCheckoutService
      * Solicits the order and returns the identification form for the Express Checkout flow.
      *
      * @param CreateOrderRequestBuilder $builder
+     * @param bool $checkCountry When true, the order's delivery country is validated against the
+     * configured countries first. An unsupported country is an expected shopper state, not an
+     * error, so it returns null instead of the solicit failing on the missing merchant.
      *
-     * @return SeQuraForm
+     * @return SeQuraForm|null Null when the country check is enabled and the delivery country has
+     * no configured merchant.
      *
      * @throws HttpRequestException
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws InvalidUrlException
+     * @throws FailedToRetrieveSellingCountriesException
      */
-    public function solicit(CreateOrderRequestBuilder $builder): SeQuraForm
+    public function solicit(CreateOrderRequestBuilder $builder, bool $checkCountry = false): ?SeQuraForm
     {
+        if ($checkCountry && !$this->isCountrySupported($builder)) {
+            return null;
+        }
+
         return $this->orderService->solicitExpressCheckoutForm($builder);
+    }
+
+    /**
+     * Whether the order's delivery country resolves to a configured merchant.
+     *
+     * @param CreateOrderRequestBuilder $builder
+     *
+     * @return bool
+     *
+     * @throws FailedToRetrieveSellingCountriesException
+     */
+    private function isCountrySupported(CreateOrderRequestBuilder $builder): bool
+    {
+        $countryCode = $builder->build()->getDeliveryAddress()->getCountryCode();
+
+        return $this->resolveMerchantId($countryCode) !== null;
     }
 
     /**

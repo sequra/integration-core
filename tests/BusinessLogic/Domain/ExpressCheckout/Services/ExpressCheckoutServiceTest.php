@@ -502,6 +502,81 @@ class ExpressCheckoutServiceTest extends BaseTestCase
     /**
      * @return void
      *
+     * @throws Exception
+     */
+    public function testSolicitWithCountryCheckReturnsNullForUnsupportedCountry(): void
+    {
+        // Arrange: configured countries do not include the builder's delivery country (ES).
+        $this->countryConfigurationService->saveCountryConfiguration([
+            new CountryConfiguration('FR', 'merchantFR'),
+        ]);
+
+        $orderProxy = new MockOrderProxy();
+        $orderService = new OrderService(
+            $orderProxy,
+            new MockSeQuraOrderRepository(),
+            new MockMerchantOrderBuilder(
+                TestServiceRegister::getService(ConnectionService::class),
+                TestServiceRegister::getService(CredentialsService::class),
+                TestServiceRegister::getService(MerchantDataProviderInterface::class)
+            ),
+            TestServiceRegister::getService(OrderCreationInterface::class)
+        );
+        TestServiceRegister::registerService(OrderService::class, static function () use ($orderService) {
+            return $orderService;
+        });
+        $service = TestServiceRegister::getService(ExpressCheckoutService::class);
+
+        // Act
+        $form = $service->solicit(new MockCreateOrderRequestBuilder(), true);
+
+        // Assert: rejected before the order service was involved.
+        self::assertNull($form);
+        self::assertSame(0, $orderProxy->getFormCallCount());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSolicitWithCountryCheckDelegatesForSupportedCountry(): void
+    {
+        // Arrange: ES (the builder's delivery country) maps to a configured merchant.
+        $this->seedCountryConfiguration();
+
+        $solicitedOrder = (new MockCreateOrderRequestBuilder())->build()->toSequraOrderInstance('ref-ec-cc');
+        $solicitedOrder->setCartId('cart-ec-cc');
+        $expectedForm = new SeQuraForm('<html>country-checked-form</html>');
+
+        $orderProxy = new MockOrderProxy();
+        $orderProxy->setMockResult($solicitedOrder, [], $expectedForm);
+
+        $orderService = new OrderService(
+            $orderProxy,
+            new MockSeQuraOrderRepository(),
+            new MockMerchantOrderBuilder(
+                TestServiceRegister::getService(ConnectionService::class),
+                TestServiceRegister::getService(CredentialsService::class),
+                TestServiceRegister::getService(MerchantDataProviderInterface::class)
+            ),
+            TestServiceRegister::getService(OrderCreationInterface::class)
+        );
+        TestServiceRegister::registerService(OrderService::class, static function () use ($orderService) {
+            return $orderService;
+        });
+        $service = TestServiceRegister::getService(ExpressCheckoutService::class);
+
+        // Act
+        $form = $service->solicit(new MockCreateOrderRequestBuilder(), true);
+
+        // Assert
+        self::assertSame($expectedForm, $form);
+    }
+
+    /**
+     * @return void
+     *
      * @throws DuplicatedExpressCheckoutPageException
      * @throws InvalidExpressCheckoutPageConfigException
      */

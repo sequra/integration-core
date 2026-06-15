@@ -19,6 +19,12 @@ use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 class PaymentMethodsService
 {
     /**
+     * Payment-method categories whose products can carry promotional financing (widgets,
+     * mini-widgets, Express Checkout). Used to derive the storefront library's product list.
+     */
+    public const PROMOTIONAL_PRODUCT_CATEGORIES = ['part_payment', 'pay_later'];
+
+    /**
      * @var MerchantProxyInterface
      */
     protected $merchantProxy;
@@ -130,6 +136,30 @@ class PaymentMethodsService
         return array_map(function (SeQuraPaymentMethod $method) {
             return $method->getProduct();
         }, $methods);
+    }
+
+    /**
+     * Returns the merchant's products that can carry promotional financing (categories in
+     * self::PROMOTIONAL_PRODUCT_CATEGORIES). Used to build the storefront library's product list.
+     *
+     * @param string $merchantId
+     *
+     * @return string[]
+     *
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     */
+    public function getMerchantPromotionalProducts(string $merchantId): array
+    {
+        $products = [];
+
+        foreach ($this->getCachedPaymentMethods($merchantId) as $paymentMethod) {
+            if (\in_array($paymentMethod->getCategory(), self::PROMOTIONAL_PRODUCT_CATEGORIES, true)) {
+                $products[] = $paymentMethod->getProduct();
+            }
+        }
+
+        return $products;
     }
 
     /**

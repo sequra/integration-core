@@ -15,6 +15,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsCont
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Banners\BannerCheckoutController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\Checkout\Controller\CheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Controller\ExpressCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
@@ -130,6 +131,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsServic
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutInitializationService;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
@@ -594,6 +596,18 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            CheckoutInitializationService::class,
+            static function () {
+                return new CheckoutInitializationService(
+                    ServiceRegister::getService(CredentialsService::class),
+                    ServiceRegister::getService(CheckoutService::class),
+                    ServiceRegister::getService(WidgetConfiguratorInterface::class),
+                    ServiceRegister::getService(PaymentMethodsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             WidgetSettingsService::class,
             static function () {
                 return new WidgetSettingsService(
@@ -602,7 +616,7 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(CredentialsService::class),
                     ServiceRegister::getService(WidgetConfiguratorInterface::class),
                     ServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
-                    ServiceRegister::getService(CheckoutService::class)
+                    ServiceRegister::getService(CheckoutInitializationService::class)
                 );
             }
         );
@@ -844,6 +858,15 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new PromotionalWidgetsCheckoutController(
                     ServiceRegister::getService(WidgetSettingsService::class),
                     ServiceRegister::getService(CheckoutService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            CheckoutController::class,
+            static function () {
+                return new CheckoutController(
+                    ServiceRegister::getService(CheckoutInitializationService::class)
                 );
             }
         );

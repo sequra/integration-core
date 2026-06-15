@@ -22,11 +22,20 @@ class ExpressCheckoutSolicitRequest
     protected $builder;
 
     /**
-     * @param CreateOrderRequestBuilder $builder Platform-supplied builder used to solicit the order.
+     * @var bool
      */
-    public function __construct(CreateOrderRequestBuilder $builder)
+    protected $checkCountry;
+
+    /**
+     * @param CreateOrderRequestBuilder $builder Platform-supplied builder used to solicit the order.
+     * @param bool $checkCountry When true, the service validates that the order's delivery country
+     * has a configured merchant before soliciting; an unsupported country yields an unsuccessful
+     * response instead of the solicit failing on the missing merchant.
+     */
+    public function __construct(CreateOrderRequestBuilder $builder, bool $checkCountry = false)
     {
         $this->builder = $builder;
+        $this->checkCountry = $checkCountry;
     }
 
     /**
@@ -35,5 +44,13 @@ class ExpressCheckoutSolicitRequest
     public function getBuilder(): CreateOrderRequestBuilder
     {
         return $this->builder;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCountryCheckEnabled(): bool
+    {
+        return $this->checkCountry;
     }
 }
