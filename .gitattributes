@@ -6,6 +6,9 @@
 /.gitignore export-ignore
 /phpstan.neon export-ignore
 DEVELOPER_GUIDE.md export-ignore
+/CLAUDE.md export-ignore
+/.claude/ export-ignore
+/.githooks/ export-ignore
 /docker/ export-ignore
 /docker-compose.yml export-ignore
 /.phpcs.xml.dist export-ignore
