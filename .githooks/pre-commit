@@ -1,0 +1,75 @@
+#!/bin/bash
+#
+# integration-core pre-commit quality gate (operates on staged .php files).
+#
+# Shipped in the repo and enabled by ./setup.sh via:
+#     git config core.hooksPath .githooks
+# Bypass once with:
+#     git commit --no-verify
+#
+# Checks, in order:
+#   1. PHP 7.2 syntax (the language floor) on the staged files, reusing the
+#      already-running php:7.2 container — no image pulls, so this stays fast.
+#   2. phpcbf then phpcs on the staged files — phpcbf's fixes are re-staged
+#      so they become part of the commit.
+#   3. phpstan on staged files under src/ (the scope phpstan.neon targets).
+#
+# The multi-version syntax sweep (7.2–8.5), the full phpstan analysis, and the
+# PHPUnit suite run in the pre-push hook (.githooks/pre-push), not here, to keep
+# per-commit feedback fast.
+#
+# The checks run inside / against the Docker "php" service. If it isn't
+# running the hook FAILS (so unverified code can't slip through); start it
+# with ./setup.sh or bypass with --no-verify. Git hooks have no TTY, so
+# `docker compose exec -T` is used throughout.
+
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+# Staged PHP files (added/copied/modified), NUL-delimited to tolerate spaces.
+STAGED_PHP=()
+while IFS= read -r -d '' f; do
+    STAGED_PHP+=("$f")
+done < <(git diff --cached --name-only --diff-filter=ACM -z -- '*.php')
+
+if [ ${#STAGED_PHP[@]} -eq 0 ]; then
+    echo "No staged PHP files — skipping PHP checks."
+    exit 0
+fi
+
+# Precondition: the Docker "php" service must be reachable. Every check here
+# runs through it via `docker compose exec` — the 7.2 syntax lint, phpcbf,
+# phpcs, and phpstan.
+if ! docker compose exec -T php true >/dev/null 2>&1; then
+    echo "✗ Docker 'php' service is not running — cannot run the pre-commit checks."
+    echo "  Start it with ./setup.sh (or docker compose up -d),"
+    echo "  or bypass with: git commit --no-verify"
+    exit 1
+fi
+
+echo "▶ PHP 7.2 syntax check on ${#STAGED_PHP[@]} staged file(s)..."
+docker compose exec -T php sh -c 'rc=0; for f in "$@"; do php -l -n "$f" >/dev/null || rc=1; done; exit $rc' _ "${STAGED_PHP[@]}"
+
+echo "▶ PHP Code Beautifier (phpcbf)..."
+# phpcbf exits non-zero when it fixes things; phpcs below is the authority.
+docker compose exec -T php sh -c 'vendor/bin/phpcbf --standard=.phpcs.xml.dist "$@"' _ "${STAGED_PHP[@]}" || true
+# Re-stage whatever phpcbf fixed so the fixes are committed.
+git add -- "${STAGED_PHP[@]}"
+
+echo "▶ PHP_CodeSniffer (phpcs)..."
+docker compose exec -T php sh -c 'vendor/bin/phpcs --standard=.phpcs.xml.dist --warning-severity=0 "$@"' _ "${STAGED_PHP[@]}"
+
+# phpstan only over staged files under src/ (phpstan.neon targets src/).
+SRC_PHP=()
+for f in "${STAGED_PHP[@]}"; do
+    case "$f" in src/*) SRC_PHP+=("$f") ;; esac
+done
+if [ ${#SRC_PHP[@]} -gt 0 ]; then
+    echo "▶ PHPStan on ${#SRC_PHP[@]} staged src/ file(s)..."
+    docker compose exec -T php sh -c 'vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=1G "$@"' _ "${SRC_PHP[@]}"
+else
+    echo "▶ PHPStan — no staged src/ files, skipping."
+fi
+
+echo "✓ Pre-commit checks passed."
