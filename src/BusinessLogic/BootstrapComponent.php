@@ -21,6 +21,8 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationCo
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Controller\ConfigurationWebhookController;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\GetAdvancedSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\SaveAdvancedSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Affiliate\GetAffiliateSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Affiliate\SaveAffiliateSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\GetBannerSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\SaveBannerSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Enums\Topics;
@@ -40,6 +42,8 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\Ge
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\SaveWidgetSettingsHandler;
 use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Entities\AdvancedSettings;
 use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Repositories\AdvancedSettingsRepository;
+use SeQura\Core\BusinessLogic\DataAccess\Affiliate\Entities\AffiliateSettings;
+use SeQura\Core\BusinessLogic\DataAccess\Affiliate\Repositories\AffiliateSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Entities\BannerSettings;
 use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Repositories\BannerSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
@@ -67,6 +71,8 @@ use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\Transaction
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\RepositoryContracts\AdvancedSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedLoggerSettingsProvider;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\RepositoryContracts\AffiliateSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateSettingsService;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
@@ -328,6 +334,16 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new AdvancedSettingsRepository(
                     RepositoryRegistry::getRepository(AdvancedSettings::getClassName()),
+                    ServiceRegister::getService(StoreContext::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            AffiliateSettingsRepositoryInterface::class,
+            static function () {
+                return new AffiliateSettingsRepository(
+                    RepositoryRegistry::getRepository(AffiliateSettings::getClassName()),
                     ServiceRegister::getService(StoreContext::class)
                 );
             }
@@ -663,6 +679,15 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new AdvancedSettingsService(
                     ServiceRegister::getService(AdvancedSettingsRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            AffiliateSettingsService::class,
+            static function () {
+                return new AffiliateSettingsService(
+                    ServiceRegister::getService(AffiliateSettingsRepositoryInterface::class)
                 );
             }
         );
@@ -1057,6 +1082,16 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         TopicHandlerRegistry::register(
+            Topics::GET_AFFILIATE_SETTINGS,
+            GetAffiliateSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::SAVE_AFFILIATE_SETTINGS,
+            SaveAffiliateSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
             Topics::GET_BANNER_SETTINGS,
             GetBannerSettingsHandler::class
         );
@@ -1185,6 +1220,24 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new SaveAdvancedSettingsHandler(
                     ServiceRegister::getService(AdvancedSettingsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            GetAffiliateSettingsHandler::class,
+            static function () {
+                return new GetAffiliateSettingsHandler(
+                    ServiceRegister::getService(AffiliateSettingsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            SaveAffiliateSettingsHandler::class,
+            static function () {
+                return new SaveAffiliateSettingsHandler(
+                    ServiceRegister::getService(AffiliateSettingsService::class)
                 );
             }
         );

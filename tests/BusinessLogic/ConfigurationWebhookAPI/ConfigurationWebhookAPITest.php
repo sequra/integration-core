@@ -6,6 +6,8 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\ConfigurationWebhookAPI;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\BannerSettings\BannerSettingsResponse;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Models\AdvancedSettings;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\Models\AffiliateSettings;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateSettingsService;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Exceptions\InvalidBannerUrlException;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\Banner;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Models\BannerSettings;
@@ -61,6 +63,8 @@ use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAffiliateSettingsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAffiliateSettingsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockBannerSettingsService;
@@ -185,6 +189,11 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      * @var AdvancedSettingsService $advancedSettingsService
      */
     private $advancedSettingsService;
+
+    /**
+     * @var AffiliateSettingsService $affiliateSettingsService
+     */
+    private $affiliateSettingsService;
 
     /**
      * @var MockBannerService $bannerService
@@ -363,6 +372,14 @@ class ConfigurationWebhookAPITest extends BaseTestCase
 
         TestServiceRegister::registerService(AdvancedSettingsService::class, function () {
             return $this->advancedSettingsService;
+        });
+
+        $this->affiliateSettingsService = new MockAffiliateSettingsService(
+            new MockAffiliateSettingsRepository()
+        );
+
+        TestServiceRegister::registerService(AffiliateSettingsService::class, function () {
+            return $this->affiliateSettingsService;
         });
 
         $this->bannerService = new MockBannerService();
@@ -1821,6 +1838,91 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             $this->signature,
             [
                 "topic" => "get-advanced-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws EmptyCategoryParameterException
+     */
+    public function testSaveAffiliateSettingsResponse(): void
+    {
+        //Arrange
+        $this->affiliateSettingsService->setAffiliateSettings(null);
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-affiliate-settings",
+                "isEnabled" => true,
+                "offerId" => "1234",
+                "securityToken" => "abc123token"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+        $saved = $this->affiliateSettingsService->getAffiliateSettings();
+        self::assertNotNull($saved);
+        self::assertTrue($saved->isEnabled());
+        self::assertEquals("1234", $saved->getOfferId());
+        self::assertEquals("abc123token", $saved->getSecurityToken());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws EmptyCategoryParameterException
+     */
+    public function testGetAffiliateSettingsResponse(): void
+    {
+        //Arrange
+        $affiliateSettings = new AffiliateSettings(true, "1234", "abc123token");
+        $this->affiliateSettingsService->setAffiliateSettings($affiliateSettings);
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-affiliate-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals([
+            'isEnabled' => true,
+            'offerId' => '1234',
+            'securityToken' => 'abc123token'
+        ], $response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws EmptyCategoryParameterException
+     */
+    public function testGetAffiliateSettingsResponseNoAffiliateSettings(): void
+    {
+        //Arrange
+        $this->affiliateSettingsService->setAffiliateSettings(null);
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-affiliate-settings"
             ]
         );
 

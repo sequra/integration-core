@@ -78,6 +78,14 @@ interface Topics
      */
     public const GET_STORE_INFO = 'get-store-info';
     /**
+     * @var string
+     */
+    public const GET_AFFILIATE_SETTINGS = 'get-affiliate-settings';
+    /**
+     * @var string
+     */
+    public const SAVE_AFFILIATE_SETTINGS = 'save-affiliate-settings';
+    /**
      * @var string[]
      */
     public const ALL_TOPICS = [
@@ -97,6 +105,8 @@ interface Topics
         self::GET_SHOP_CATEGORIES,
         self::GET_SHOP_PRODUCTS,
         self::GET_SELLING_COUNTRIES,
-        self::GET_STORE_INFO
+        self::GET_STORE_INFO,
+        self::GET_AFFILIATE_SETTINGS,
+        self::SAVE_AFFILIATE_SETTINGS
     ];
 }
