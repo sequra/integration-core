@@ -33,22 +33,15 @@ The `bin/` scripts are **Docker wrappers**, not local binaries. `phpunit`, `phpc
 ```bash
 ./bin/composer install           # install deps (runs in composer:latest image)
 ./bin/phpunit                    # full test suite, PHP 7.2 (uses phpunit.xml, --testdox)
-./bin/phpcs                      # PSR-12 style check (config: .phpcs.xml.dist)
+./bin/phpcs                      # PSR-12 style check (config: .phpcs.xml.dist — passed explicitly; the repo's bare .phpcs.xml is ignored by all tooling)
 ./bin/phpcbf                     # auto-fix style violations
 ./bin/phpstan                    # static analysis, level 6 over src/ (config: phpstan.neon)
 ./bin/php-syntax-check --php=7.2 # syntax-only check at a target PHP version (php:<ver>-cli-alpine)
 ```
 
-**Running a single test:** `bin/phpunit` ignores any arguments you pass it and always runs the whole suite. To target one test, invoke PHPUnit inside the container directly:
+**Running a single test:** `bin/phpunit` ignores any arguments you pass it and always runs the whole suite. To target one test, invoke PHPUnit inside the container directly — e.g. `docker compose exec php vendor/bin/phpunit --configuration phpunit.xml --filter testSomeMethod` (see `DEVELOPER_GUIDE.md` for more forms). Note `bin/phpstan` and `bin/composer` *do* forward arguments; `bin/phpcs`/`bin/phpcbf`/`bin/phpunit` do not.
 
-```bash
-docker compose exec php vendor/bin/phpunit --configuration phpunit.xml --filter testSomeMethod
-docker compose exec php vendor/bin/phpunit --configuration phpunit.xml tests/Infrastructure/ServiceRegisterTest.php
-```
-
-(`bin/phpstan` and `bin/composer` *do* forward arguments; `bin/phpcs`/`bin/phpcbf`/`bin/phpunit` do not.)
-
-`run-tests.sh` is the CI-equivalent gate: it runs the suite against **local** `/usr/bin/php7.4`–`php8.5` (not Docker) and then phpcs + phpstan. It only works on a machine that has all those PHP versions installed — it will not run on a typical dev box that lacks them.
+`run-tests.sh` is the local multi-version CI gate — it runs the suite against **local** `/usr/bin/php7.4`–`php8.5` (not Docker) then phpcs + phpstan, so it only runs on a machine that has all those PHP versions installed, not a typical dev box. See `DEVELOPER_GUIDE.md`.
 
 Tests are split into two PHPUnit suites: `tests/Infrastructure` and `tests/BusinessLogic`. The lowest supported version is **PHP 7.2** — `composer.json` pins the platform to 7.2, so do not use syntax newer than 7.2 in `src/`. The container runs XDebug 2.9.8 on port 9003; see `DEVELOPER_GUIDE.md` for IDE setup.
 
@@ -59,7 +52,7 @@ Tests are split into two PHPUnit suites: `tests/Infrastructure` and `tests/Busin
 **`BootstrapComponent` is the wiring manifest.** `BusinessLogic\BootstrapComponent::init()` (extends `Infrastructure\BootstrapComponent`) registers every repository, service, controller, proxy, event listener, and webhook topic handler. When you add a new service/controller/repository, you must register it here, injecting its collaborators via `ServiceRegister::getService(...)`. The host platform calls `init()` once at startup after registering its own platform-specific implementations.
 
 **Four public API facades are the entry points** (`BusinessLogic/AdminAPI`, `CheckoutAPI`, `WebhookAPI`, `ConfigurationWebhookAPI`). Pattern, e.g. `AdminAPI::get()->connection($storeId)->validateConnection($request)`:
-- The facade returns controllers wrapped by **Aspects** (`BusinessLogic/Bootstrap/Aspect`), which apply cross-cutting behavior before each method call.
+- The facade returns controllers wrapped by **Aspects**, which apply cross-cutting behavior before each method call. The aspect *runner* (`Aspect`/`Aspects`/`CompositeAspect`) lives in `BusinessLogic/Bootstrap/Aspect`, but the concrete aspects below live in `BusinessLogic/AdminAPI/Aspects` (namespace `SeQura\Core\BusinessLogic\AdminAPI\Aspects`) and are reused by all four facades.
 - `ErrorHandlingAspect` wraps every call so controllers **return Response objects and never throw** to the caller — domain exceptions become `TranslatableErrorResponse`. Keep this contract: controllers return `Request`/`Response` DTOs.
 - `StoreContextAspect($storeId)` sets the active store for the duration of the call.
 
