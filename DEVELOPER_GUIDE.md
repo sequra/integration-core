@@ -9,6 +9,7 @@ This guide provides comprehensive information for developers working with the Se
 - [Debugging](#debugging)
 - [Running Tests](#running-tests)
 - [Development Workflow](#development-workflow)
+- [Code Review & AI Tooling](#code-review--ai-tooling)
 - [Troubleshooting](#troubleshooting)
 
 ## Available Development Tools
@@ -502,6 +503,66 @@ git config core.hooksPath .githooks
 The pre-push hook first inspects the commits being pushed and **skips entirely** when none of them touch PHP code or the tooling config that drives the checks (`composer.json`/`composer.lock`, `phpunit.xml`, `phpstan.neon`) — so a docs-only push runs nothing.
 
 When their checks do run, both hooks execute inside / against the Docker `php` service. If it isn't running the hook **fails** rather than passing silently, so unverified code can't slip through — start it with `./setup.sh` (or `docker compose up -d`) first. Bypass a hook for one operation with `git commit --no-verify` / `git push --no-verify`.
+
+---
+
+## Code Review & AI Tooling
+
+This repo ships one Claude Code **skill** (`.claude/skills/scaffold-feature/`) and a
+custom **agent** (`.claude/agents/integration-core-reviewer.md`). Both are available
+automatically when you open the repo in Claude Code — nothing to install. Claude Code
+also provides a number of **built-in skills** (e.g. `/code-review`, `/security-review`)
+that work in any project; those are not part of this repo and are not guaranteed to be
+present in every Claude Code setup.
+
+### Using a skill
+
+Skills are invoked with a **slash command**: type `/` in Claude Code and pick (or type)
+the skill name, optionally followed by arguments.
+
+**Shipped by this repo:**
+
+| Command | What it does |
+|---|---|
+| `/scaffold-feature <Name>` | Generates the Domain + DataAccess + BootstrapComponent (+ facade) skeleton for a new feature, following repo conventions. |
+
+Example: `/scaffold-feature ShippingRules`.
+
+**Built-in Claude Code skills** (available generally, not repo-specific) — handy here include
+`/code-review` (diff review for bugs/cleanups), `/security-review`, `/review` (review a PR),
+and `/verify` / `/run` (run the app / confirm a change works). Type `/` to see what your
+Claude Code install offers.
+
+### Code review — two complementary passes
+
+**1. `/code-review` skill (generic correctness + cleanups)**
+
+```text
+/code-review            # default effort: fewer, high-confidence findings
+/code-review high       # broader coverage, may include lower-confidence findings
+/code-review --fix      # apply the findings to the working tree
+/code-review --comment  # post findings as inline PR comments
+```
+Reviews the current diff for bugs, simplifications, reuse, and efficiency — language-level
+issues that aren't specific to this codebase.
+
+**2. `integration-core-reviewer` agent (this repo's architecture invariants)**
+
+This is a sub-agent, not a slash command — you run it by asking Claude to delegate to it:
+- "review my changes with the **integration-core-reviewer**"
+- type `@agent-` and select **integration-core-reviewer**
+- or just "review the current diff against this repo's invariants"
+
+It enforces what the generic review misses: the PHP 7.2 syntax floor, onion-layer
+boundaries, the controllers-return-never-throw facade contract, multistore `StoreContext`
+scoping, and `BootstrapComponent` registration. It also cross-checks against
+`.claude/docs/codingStandard.md` and `.claude/docs/unitTests.md`. It reports
+`file:line` findings only — it does not edit code.
+
+**When to use which:** run both for a thorough review — `/code-review` for general bugs,
+then the `integration-core-reviewer` for the architecture-specific pass. Make sure your
+changes exist (committed, staged, or in the working tree) before running either, since
+both review the current diff.
 
 ---
 

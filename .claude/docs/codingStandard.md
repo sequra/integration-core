@@ -17,7 +17,7 @@ Every change must pass, on **every supported PHP version**:
 ./run-tests.sh    # phpunit on PHP 7.4–8.5  +  phpcs (PSR-12, 7.2-compat)  +  phpstan (level 6)
 ```
 
-- **PHPUnit** — all tests green. New code ships with tests; see `docs/unitTests.md`.
+- **PHPUnit** — all tests green. New code ships with tests; see `.claude/docs/unitTests.md`.
 - **PHPCS** — `PSR12` ruleset + `PHPCompatibility` with `testVersion 7.2-`
   (`.phpcs.xml.dist`). `./bin/phpcbf` auto-fixes most style issues.
 - **PHPStan** — **level 6**, `src/` (`phpstan.neon`). No new errors, no blanket
@@ -95,7 +95,7 @@ A domain class must **never**:
   **injected** (see §4).
 
 Why: the domain is shared by all platforms and must be unit-testable in isolation
-with in-memory test doubles (`docs/unitTests.md`). If a platform need leaks in,
+with in-memory test doubles (`.claude/docs/unitTests.md`). If a platform need leaks in,
 every other integration inherits the coupling.
 
 ### The platform boundary: `Domain/Integration`
@@ -218,5 +218,5 @@ Type information that the language can't carry goes in docblocks — see §6.
 - [ ] New shop dependency expressed as a `Domain/Integration` interface, not platform code.
 - [ ] PHP 7.2-safe syntax (§3); type hints + docblocks with `@throws` (§6).
 - [ ] Registered in `BootstrapComponent` **and** `BaseTestCase`.
-- [ ] Isolated unit test added (mock collaborators, in-memory repos) — `docs/unitTests.md`.
+- [ ] Isolated unit test added (mock collaborators, in-memory repos) — `.claude/docs/unitTests.md`.
 - [ ] `./run-tests.sh` green: phpunit (all PHP versions) + phpcs + phpstan L6.

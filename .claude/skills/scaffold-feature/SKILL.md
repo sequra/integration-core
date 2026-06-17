@@ -18,7 +18,9 @@ file matches the existing style. **`CountryConfiguration` is the canonical refer
      `WebhookAPI`, or `ConfigurationWebhookAPI`) + a facade method.
    - **Talks to SeQura's HTTP API?** → also needs a `ProxyContracts/` interface and a
      `SeQuraAPI` proxy (see `OrderProxy`). Out of scope for the basic skeleton — flag it.
-2. Hard constraints (these are non-negotiable in `src/`):
+2. Hard constraints (these are non-negotiable in `src/`) — the binding source of truth
+   is `.claude/docs/codingStandard.md` (and `.claude/docs/unitTests.md` for tests); the
+   list below is the summary:
    - **PHP 7.2 syntax only.** No arrow fns, no `?->`, no named args, no enums, no
      constructor promotion, no union/typed-property syntax newer than 7.2.
    - **PSR-12** (`.phpcs.xml.dist`) and **PHPStan level 6** clean.
@@ -69,6 +71,7 @@ Add a `ServiceRegister::registerService(...)` lazy-callable block in the matchin
   ->beforeEachMethodOfService(<Feature>Controller::class)`.
 
 ### 5. Tests (`tests/BusinessLogic/<Feature>/`)
+Follow `.claude/docs/unitTests.md` (layout mirrors `src/`, collaborators replaced by test doubles).
 Mirror an existing controller/service test (see `tests/BusinessLogic/AdminAPI/CountryConfiguration/`).
 Register the ORM entity in the test bootstrap so the in-memory repository can resolve it.
 
