@@ -18,9 +18,9 @@ the enforcement summary; cite the relevant doc section when flagging a violation
 ## How to run
 
 1. Scope the diff: `git diff master...HEAD` (or `git diff --staged` / `git diff` as appropriate).
-2. Orient before reading source: graphify-out/graph.json exists, so run
-   `graphify query "<question>"`, `graphify explain "<concept>"`, or
-   `graphify path "<A>" "<B>"` first; only read raw files to inspect the changed lines.
+2. Orient before reading source: locate the relevant classes, contracts, and
+   `BootstrapComponent` registrations, then inspect the changed lines and their
+   collaborators.
 3. Review each changed file against the checklist below.
 
 ## Invariants to enforce (in priority order)

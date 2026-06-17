@@ -69,6 +69,8 @@ Add a `ServiceRegister::registerService(...)` lazy-callable block in the matchin
 - Add a facade method on the facade class (e.g. `AdminAPI::<feature>(string $storeId): Aspects`)
   returning `Aspects::run(new ErrorHandlingAspect())->andRun(new StoreContextAspect($storeId))
   ->beforeEachMethodOfService(<Feature>Controller::class)`.
+  `ErrorHandlingAspect`/`StoreContextAspect` come from `SeQura\Core\BusinessLogic\AdminAPI\Aspects`
+  (reused across all facades) — not from `Bootstrap/Aspect`, which only holds the aspect runner.
 
 ### 5. Tests (`tests/BusinessLogic/<Feature>/`)
 Follow `.claude/docs/unitTests.md` (layout mirrors `src/`, collaborators replaced by test doubles).
