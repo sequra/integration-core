@@ -243,6 +243,28 @@ class ExpressCheckoutServiceTest extends BaseTestCase
     }
 
     /**
+     * The availability probe must fail safe to "unavailable" rather than surfacing the
+     * payment-methods lookup error to the storefront.
+     *
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     */
+    public function testNotAvailableWhenPaymentMethodsLookupThrows(): void
+    {
+        $this->seedHappyState();
+        $this->paymentMethodsService->setThrowPaymentMethodNotFound(true);
+
+        self::assertFalse($this->callIsAvailable());
+    }
+
+    /**
      * @return void
      *
      * @throws BadMerchantIdException

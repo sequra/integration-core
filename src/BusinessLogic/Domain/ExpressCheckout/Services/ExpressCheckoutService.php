@@ -120,7 +120,6 @@ class ExpressCheckoutService
      * @throws BadMerchantIdException
      * @throws WrongCredentialsException
      * @throws FailedToRetrieveSellingCountriesException
-     * @throws PaymentMethodNotFoundException
      * @throws HttpRequestException
      */
     public function isExpressCheckoutAvailable(
@@ -140,7 +139,12 @@ class ExpressCheckoutService
             return false;
         }
 
-        return !empty($this->paymentMethodsService->getCachedPaymentMethods($merchantId));
+        try {
+            return !empty($this->paymentMethodsService->getCachedPaymentMethods($merchantId));
+        } catch (PaymentMethodNotFoundException $exception) {
+            // No payment methods configured for the merchant: Express Checkout is simply unavailable.
+            return false;
+        }
     }
 
     /**

@@ -4,7 +4,6 @@ namespace SeQura\Core\Tests\BusinessLogic\Domain\Checkout\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutInitializationService;
 use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
-use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
@@ -97,12 +96,13 @@ class CheckoutInitializationServiceTest extends BaseTestCase
     /**
      * Returns data with empty identity and resolved-from-empty-deployment script when no
      * credentials match the shopper's country (parity with the previous widget-init behavior).
+     * The products lookup must be skipped so it is never queried with an empty merchant id.
      */
     public function testReturnsEmptyIdentityWhenNoCredentials(): void
     {
         // Arrange
         $this->credentialsService->method('getCredentialsByCountry')->willReturn(null);
-        $this->paymentMethodsService->method('getMerchantPromotionalProducts')->with('')->willReturn([]);
+        $this->paymentMethodsService->expects(self::never())->method('getMerchantPromotionalProducts');
         $this->checkoutService->method('getScriptUri')->with('')->willReturn('');
         $this->widgetConfigurator->method('getLocale')->willReturn('es-ES');
         $this->widgetConfigurator->method('getCurrency')->willReturn('EUR');
@@ -143,21 +143,5 @@ class CheckoutInitializationServiceTest extends BaseTestCase
         self::assertSame('EUR', $data->getCurrency());
         self::assertSame(',', $data->getDecimalSeparator());
         self::assertSame('.', $data->getThousandSeparator());
-    }
-
-    /**
-     * Returns null (no bootstrap) when credentials resolution reports they are not configured.
-     */
-    public function testReturnsNullWhenCredentialsNotFound(): void
-    {
-        // Arrange
-        $this->credentialsService->method('getCredentialsByCountry')
-            ->willThrowException(new CredentialsNotFoundException());
-
-        // Act
-        $data = $this->service()->getInitializationData('ES', 'ES');
-
-        // Assert
-        self::assertNull($data);
     }
 }

@@ -171,7 +171,7 @@ class CredentialsService
         return $credentials;
     }
 
-     /**
+    /**
      * Get the merchant ID by country code.
      *
      * @throws CredentialsNotFoundException

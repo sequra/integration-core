@@ -3,7 +3,6 @@
 namespace SeQura\Core\BusinessLogic\Domain\Checkout\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Checkout\Models\CheckoutInitializationData;
-use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfiguratorInterface;
@@ -59,8 +58,10 @@ class CheckoutInitializationService
     }
 
     /**
-     * Returns the storefront bootstrap config for the seQura checkout library, or null when no
-     * credentials are configured for the shopper's country (seQura is not active).
+     * Returns the storefront bootstrap config for the seQura checkout library. When no credentials
+     * are configured for the shopper's country, the merchant identity is left empty (seQura is not
+     * active for that country) but the library bootstrap (script URL, locale formatting) is still
+     * returned.
      *
      * @param string $shippingCountry
      * @param string $currentCountry
@@ -73,22 +74,18 @@ class CheckoutInitializationService
      */
     public function getInitializationData(string $shippingCountry, string $currentCountry): ?CheckoutInitializationData
     {
-        try {
-            $credentials = $this->credentialsService->getCredentialsByCountry($shippingCountry, $currentCountry);
-            $merchantId = $credentials ? $credentials->getMerchantId() : '';
+        $credentials = $this->credentialsService->getCredentialsByCountry($shippingCountry, $currentCountry);
+        $merchantId = $credentials ? $credentials->getMerchantId() : '';
 
-            return new CheckoutInitializationData(
-                $credentials ? $credentials->getAssetsKey() : '',
-                $merchantId,
-                $this->paymentMethodsService->getMerchantPromotionalProducts($merchantId),
-                $this->checkoutService->getScriptUri($credentials ? $credentials->getDeployment() : ''),
-                $this->widgetConfigurator->getLocale() ?? 'es-ES',
-                $this->widgetConfigurator->getCurrency() ?? 'EUR',
-                $this->widgetConfigurator->getDecimalSeparator() ?? ',',
-                $this->widgetConfigurator->getThousandsSeparator() ?? '.'
-            );
-        } catch (CredentialsNotFoundException $exception) {
-            return null;
-        }
+        return new CheckoutInitializationData(
+            $credentials ? $credentials->getAssetsKey() : '',
+            $merchantId,
+            $merchantId !== '' ? $this->paymentMethodsService->getMerchantPromotionalProducts($merchantId) : [],
+            $this->checkoutService->getScriptUri($credentials ? $credentials->getDeployment() : ''),
+            $this->widgetConfigurator->getLocale() ?? 'es-ES',
+            $this->widgetConfigurator->getCurrency() ?? 'EUR',
+            $this->widgetConfigurator->getDecimalSeparator() ?? ',',
+            $this->widgetConfigurator->getThousandsSeparator() ?? '.'
+        );
     }
 }
