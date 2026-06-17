@@ -9,11 +9,12 @@ This guide provides comprehensive information for developers working with the Se
 - [Debugging](#debugging)
 - [Running Tests](#running-tests)
 - [Development Workflow](#development-workflow)
+- [Code Review & AI Tooling](#code-review--ai-tooling)
 - [Troubleshooting](#troubleshooting)
 
 ## Available Development Tools
 
-The `bin/` directory contains several essential scripts for development and code quality. These scripts are symlinked to their corresponding vendor packages.
+The `bin/` directory contains several essential scripts for development and code quality. **These are Docker wrappers, not symlinks to local binaries.** `bin/phpcs`, `bin/phpcbf`, `bin/phpstan`, and `bin/phpunit` run inside the `php` Compose service via `docker compose exec php …`, so the container **must be running first** (`./setup.sh` or `docker compose up -d`). `bin/composer` and `bin/php-syntax-check` instead launch their own throwaway Docker images and do not require the Compose service.
 
 ### 1. **bin/composer**
 Package dependency manager for PHP projects.
@@ -134,8 +135,15 @@ Unit testing framework for PHP.
 
 **Usage**:
 ```bash
-# Run all tests
+# Run all tests (the container must be running)
 ./bin/phpunit
+```
+
+**Note**: `bin/phpunit` ignores any arguments you pass it and always runs the full suite. To run a single test class or method, invoke PHPUnit inside the container directly:
+
+```bash
+docker compose exec php vendor/bin/phpunit --configuration phpunit.xml --filter testSomeMethod
+docker compose exec php vendor/bin/phpunit --configuration phpunit.xml tests/Infrastructure/ServiceRegisterTest.php
 ```
 
 **Configuration**: See `phpunit.xml`
@@ -323,8 +331,8 @@ Create or verify `.vscode/launch.json` in your project:
 docker compose up -d
 # VSCode: Press F5 to start listening
 
-# Terminal 2: Run specific test
-docker compose exec php php vendor/bin/phpunit tests/BusinessLogic/AdminAPI/AdminAPITest.php --filter testConnectionValidation
+# Terminal 2: Run a specific test
+docker compose exec php vendor/bin/phpunit --configuration phpunit.xml tests/Infrastructure/ServiceRegisterTest.php
 
 # In VSCode: Execution pauses at breakpoints
 # View variables in Debug panel
@@ -449,17 +457,19 @@ docker compose exec -it php bash
    ./bin/phpcs
 
    # Static analysis
-   docker compose exec php vendor/bin/phpstan analyse -c phpstan.neon src/ --memory-limit=512M
+   docker compose exec php vendor/bin/phpstan analyse -c phpstan.neon src/ --memory-limit=1G
    ```
 
 4. **Run Tests**
    ```bash
-   # Run specific tests
-   docker compose exec php php vendor/bin/phpunit tests/BusinessLogic/
+   # Run a subset of tests in the PHP 7.2 container
+   docker compose exec php vendor/bin/phpunit --configuration phpunit.xml tests/BusinessLogic/
 
-   # Or full test suite
-   ./run-tests.sh
+   # Full suite in the container
+   ./bin/phpunit
    ```
+
+   `run-tests.sh` is the CI gate: it runs the suite against **local** `/usr/bin/php7.4`–`php8.5` (not Docker), then phpcs + phpstan. It only works on a machine that has all of those PHP versions installed.
 
 5. **Debug Issues** (if needed)
    - Set breakpoints in VS Code or PhpStorm
@@ -472,28 +482,87 @@ docker compose exec -it php bash
    git commit -m "feat: description of changes"
    ```
 
-### Git Pre-commit Hook (Optional)
+### Git Hooks
 
-Create `.git/hooks/pre-commit` to validate before commits:
+The repo ships quality-gate hooks in `.githooks/`. `./setup.sh` enables them automatically (it sets `core.hooksPath` and marks them executable). To enable them manually — after cloning without running setup, for example:
 
 ```bash
-#!/bin/bash
-echo "Running syntax check..."
-./bin/php-syntax-check --php=7.2 || exit 1
-
-echo "Running code style check..."
-./bin/phpcs || exit 1
-
-echo "Running static analysis..."
-docker compose exec php vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=512M || exit 1
-
-echo "All checks passed!"
+git config core.hooksPath .githooks
 ```
 
-Make it executable:
-```bash
-chmod +x .git/hooks/pre-commit
+**`pre-commit`** — fast checks on the *staged* `.php` files:
+- PHP 7.2 syntax lint, reusing the already-running `php` container (no image pulls).
+- `phpcbf` then `phpcs`; phpcbf's auto-fixes are re-staged so they land in the commit.
+- `phpstan` on staged files under `src/`.
+
+**`pre-push`** — the heavier checks that can't be scoped to staged files:
+- PHP syntax sweep across every supported version (7.2–8.5) over the pushed `.php` files, via throwaway `php:<ver>-cli-alpine` images.
+- Full `phpstan` analysis over `src/`.
+- The full PHPUnit suite.
+
+The pre-push hook first inspects the commits being pushed and **skips entirely** when none of them touch PHP code or the tooling config that drives the checks (`composer.json`/`composer.lock`, `phpunit.xml`, `phpstan.neon`) — so a docs-only push runs nothing.
+
+When their checks do run, both hooks execute inside / against the Docker `php` service. If it isn't running the hook **fails** rather than passing silently, so unverified code can't slip through — start it with `./setup.sh` (or `docker compose up -d`) first. Bypass a hook for one operation with `git commit --no-verify` / `git push --no-verify`.
+
+---
+
+## Code Review & AI Tooling
+
+This repo ships one Claude Code **skill** (`.claude/skills/scaffold-feature/`) and a
+custom **agent** (`.claude/agents/integration-core-reviewer.md`). Both are available
+automatically when you open the repo in Claude Code — nothing to install. Claude Code
+also provides a number of **built-in skills** (e.g. `/code-review`, `/security-review`)
+that work in any project; those are not part of this repo and are not guaranteed to be
+present in every Claude Code setup.
+
+### Using a skill
+
+Skills are invoked with a **slash command**: type `/` in Claude Code and pick (or type)
+the skill name, optionally followed by arguments.
+
+**Shipped by this repo:**
+
+| Command | What it does |
+|---|---|
+| `/scaffold-feature <Name>` | Generates the Domain + DataAccess + BootstrapComponent (+ facade) skeleton for a new feature, following repo conventions. |
+
+Example: `/scaffold-feature ShippingRules`.
+
+**Built-in Claude Code skills** (available generally, not repo-specific) — handy here include
+`/code-review` (diff review for bugs/cleanups), `/security-review`, `/review` (review a PR),
+and `/verify` / `/run` (run the app / confirm a change works). Type `/` to see what your
+Claude Code install offers.
+
+### Code review — two complementary passes
+
+**1. `/code-review` skill (generic correctness + cleanups)**
+
+```text
+/code-review            # default effort: fewer, high-confidence findings
+/code-review high       # broader coverage, may include lower-confidence findings
+/code-review --fix      # apply the findings to the working tree
+/code-review --comment  # post findings as inline PR comments
 ```
+Reviews the current diff for bugs, simplifications, reuse, and efficiency — language-level
+issues that aren't specific to this codebase.
+
+**2. `integration-core-reviewer` agent (this repo's architecture invariants)**
+
+This is a sub-agent, not a slash command — you run it by asking Claude to delegate to it:
+- "review my changes with the **integration-core-reviewer**"
+- type `@agent-` and select **integration-core-reviewer**
+- or just "review the current diff against this repo's invariants"
+
+It enforces what the generic review misses: the PHP 7.2 syntax floor, onion-layer
+boundaries, the controllers-return-never-throw facade contract, multistore `StoreContext`
+scoping, and `BootstrapComponent` registration. It also cross-checks against
+`.claude/docs/codingStandard.md` and `.claude/docs/unitTests.md`. It reports
+`file:line` findings only — it does not edit code.
+
+**When to use which:** run both for a thorough review — `/code-review` for general bugs,
+then the `integration-core-reviewer` for the architecture-specific pass. Make sure your
+changes exist (committed, staged, or in the working tree) before running either, since
+both review the current diff.
 
 ---
 

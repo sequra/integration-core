@@ -20,6 +20,13 @@ vendor
 # Environment variables
 .env
 !.env.example
-.sdd/
-.claude/
-CLAUDE.md
+
+.DS_Store
+
+# Claude files
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/cache/
+.claude/tmp/
+.claude/logs/
+.claude/artifacts/
