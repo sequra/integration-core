@@ -10,6 +10,13 @@ Architecture follows the Onion model with two top-level namespaces (PSR-4):
 - `SeQura\Core\Infrastructure\` → `src/Infrastructure` — technical foundation (HTTP, ORM abstraction, logger, task runner, service registry, serializer).
 - `SeQura\Core\BusinessLogic\` → `src/BusinessLogic` — SeQura domain logic and the public API facades.
 
+## Authoritative standards — read before writing code
+
+These two documents are binding and are the single source of truth; the summaries elsewhere in this file (and in the agents/skills) defer to them:
+
+- **Before writing or changing any code in `src/`** → read `.claude/docs/codingStandard.md` (architecture, PHP 7.2 syntax floor, PSR-12, PHPStan level 6, the quality gate).
+- **Before writing or changing tests** → read `.claude/docs/unitTests.md` (test layout mirroring `src/`, test doubles, isolation rules).
+
 ## Working principles
 
 General working guidelines (adapted from [andrej-karpathy-skills/CLAUDE.md](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/CLAUDE.md)). They bias toward caution over speed; for trivial tasks, use judgment.

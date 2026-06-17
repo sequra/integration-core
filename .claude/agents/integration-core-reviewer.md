@@ -11,6 +11,10 @@ You review changes to `sequra/integration-core` — a platform-agnostic PHP libr
 invariants**, not generic PHP style (phpcs/phpstan already cover style/types). Report
 concrete, file:line findings; do not rewrite the code.
 
+The binding standard is `.claude/docs/codingStandard.md` and test expectations are in
+`.claude/docs/unitTests.md` — read them as the source of truth. The checklist below is
+the enforcement summary; cite the relevant doc section when flagging a violation.
+
 ## How to run
 
 1. Scope the diff: `git diff master...HEAD` (or `git diff --staged` / `git diff` as appropriate).
