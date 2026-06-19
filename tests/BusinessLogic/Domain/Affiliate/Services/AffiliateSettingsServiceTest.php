@@ -48,8 +48,11 @@ class AffiliateSettingsServiceTest extends BaseTestCase
         //Act
         $result = $this->service->getAffiliateSettings();
 
-        //Assert
-        self::assertNull($result);
+        //Assert: absent settings yield a safe disabled default, never null.
+        self::assertNotNull($result);
+        self::assertFalse($result->isEnabled());
+        self::assertSame('', $result->getOfferId());
+        self::assertSame('', $result->getSecurityToken());
     }
 
     /**

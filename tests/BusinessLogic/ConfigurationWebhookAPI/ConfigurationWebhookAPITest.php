@@ -1884,6 +1884,34 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      * @throws InvalidEnvironmentException
      * @throws EmptyCategoryParameterException
      */
+    public function testSaveAffiliateSettingsEnabledWithoutCredentialsIsCoercedToDisabled(): void
+    {
+        //Arrange
+        $this->affiliateSettingsService->setAffiliateSettings(null);
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-affiliate-settings",
+                "isEnabled" => true,
+                "offerId" => "",
+                "securityToken" => ""
+            ]
+        );
+
+        //Assert: enabled with no credentials is unusable, so it persists as disabled.
+        self::assertTrue($response->isSuccessful());
+        $saved = $this->affiliateSettingsService->getAffiliateSettings();
+        self::assertFalse($saved->isEnabled());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws EmptyCategoryParameterException
+     */
     public function testGetAffiliateSettingsResponse(): void
     {
         //Arrange
@@ -1898,13 +1926,9 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             ]
         );
 
-        //Assert
+        //Assert: GET returns only the enabled state, never the offer id or security token.
         self::assertTrue($response->isSuccessful());
-        self::assertEquals([
-            'isEnabled' => true,
-            'offerId' => '1234',
-            'securityToken' => 'abc123token'
-        ], $response->toArray());
+        self::assertEquals(['isEnabled' => true], $response->toArray());
     }
 
     /**
@@ -1926,9 +1950,9 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             ]
         );
 
-        //Assert
+        //Assert: no stored settings reads as a deterministic enabled=false.
         self::assertTrue($response->isSuccessful());
-        self::assertEmpty($response->toArray());
+        self::assertEquals(['isEnabled' => false], $response->toArray());
     }
 
     /**

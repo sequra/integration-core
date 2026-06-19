@@ -32,12 +32,4 @@ class MockAffiliateSettingsRepository implements AffiliateSettingsRepositoryInte
     {
         $this->settings = $settings;
     }
-
-    /**
-     * @return void
-     */
-    public function deleteAffiliateSettings(): void
-    {
-        $this->settings = null;
-    }
 }

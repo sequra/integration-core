@@ -22,9 +22,4 @@ interface AffiliateSettingsRepositoryInterface
      * @return void
      */
     public function setAffiliateSettings(AffiliateSettings $settings): void;
-
-    /**
-     * @return void
-     */
-    public function deleteAffiliateSettings(): void;
 }

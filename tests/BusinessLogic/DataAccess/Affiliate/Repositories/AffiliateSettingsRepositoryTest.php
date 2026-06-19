@@ -168,30 +168,4 @@ class AffiliateSettingsRepositoryTest extends BaseTestCase
         self::assertCount(1, $savedEntity);
         self::assertEquals($affiliateSettings2, $savedEntity[0]->getAffiliateSettings());
     }
-
-    /**
-     * @return void
-     *
-     * @throws Exception
-     */
-    public function testDeleteAffiliateSettings(): void
-    {
-        // arrange
-        $affiliateSettings1 = new AffiliateSettings(true, '1234', 'abc123token');
-        $entity = new AffiliateSettingsEntity();
-
-        $entity->setAffiliateSettings($affiliateSettings1);
-        $entity->setStoreId('1');
-        $this->repository->save($entity);
-
-        // act
-        StoreContext::doWithStore(
-            '1',
-            [$this->affiliateSettingsRepository, 'deleteAffiliateSettings']
-        );
-
-        // assert
-        $entities = $this->repository->select();
-        self::assertCount(0, $entities);
-    }
 }

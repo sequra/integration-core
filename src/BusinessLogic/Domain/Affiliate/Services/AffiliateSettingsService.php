@@ -26,11 +26,14 @@ class AffiliateSettingsService
     }
 
     /**
-     * @return ?AffiliateSettings
+     * Returns the stored affiliate settings, or a safe disabled default when none are stored, so
+     * consumers never have to null-check and "absent" deterministically means disabled.
+     *
+     * @return AffiliateSettings
      */
-    public function getAffiliateSettings(): ?AffiliateSettings
+    public function getAffiliateSettings(): AffiliateSettings
     {
-        return $this->affiliateSettingsRepository->getAffiliateSettings();
+        return $this->affiliateSettingsRepository->getAffiliateSettings() ?? new AffiliateSettings(false, '', '');
     }
 
     /**

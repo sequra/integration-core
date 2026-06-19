@@ -29,7 +29,10 @@ class AffiliateSettings
      */
     public function __construct(bool $isEnabled, string $offerId, string $securityToken)
     {
-        $this->isEnabled = $isEnabled;
+        // "Enabled" requires credentials: an enabled flag with no offer id or security token is not
+        // usable, so it is coerced to disabled. This keeps isEnabled() trustworthy for every consumer
+        // (postback gating, config provider) without each one having to re-check the credentials.
+        $this->isEnabled = $isEnabled && '' !== $offerId && '' !== $securityToken;
         $this->offerId = $offerId;
         $this->securityToken = $securityToken;
     }

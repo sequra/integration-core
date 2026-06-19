@@ -18,11 +18,11 @@ class MockAffiliateSettingsService extends AffiliateSettingsService
     private $affiliateSettings;
 
     /**
-     * @return ?AffiliateSettings
+     * @return AffiliateSettings
      */
-    public function getAffiliateSettings(): ?AffiliateSettings
+    public function getAffiliateSettings(): AffiliateSettings
     {
-        return $this->affiliateSettings;
+        return $this->affiliateSettings ?? new AffiliateSettings(false, '', '');
     }
 
     /**

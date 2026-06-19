@@ -74,18 +74,6 @@ class AffiliateSettingsRepository implements AffiliateSettingsRepositoryInterfac
     }
 
     /**
-     * @return void
-     *
-     * @throws QueryFilterInvalidParamException
-     */
-    public function deleteAffiliateSettings(): void
-    {
-        $entity = $this->getAffiliateSettingsEntity();
-
-        $entity && $this->repository->delete($entity);
-    }
-
-    /**
      * Gets the affiliate settings entity from the database.
      *
      * @return ?AffiliateSettingsEntity

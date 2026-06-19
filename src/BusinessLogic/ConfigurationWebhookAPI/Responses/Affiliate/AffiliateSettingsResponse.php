@@ -3,7 +3,6 @@
 namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\Affiliate;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
-use SeQura\Core\BusinessLogic\Domain\Affiliate\Models\AffiliateSettings;
 
 /**
  * Class AffiliateSettingsResponse
@@ -13,16 +12,16 @@ use SeQura\Core\BusinessLogic\Domain\Affiliate\Models\AffiliateSettings;
 class AffiliateSettingsResponse extends Response
 {
     /**
-     * @var AffiliateSettings $settings
+     * @var bool $isEnabled
      */
-    protected $settings;
+    protected $isEnabled;
 
     /**
-     * @param ?AffiliateSettings $settings
+     * @param bool $isEnabled
      */
-    public function __construct(?AffiliateSettings $settings)
+    public function __construct(bool $isEnabled)
     {
-        $this->settings = $settings;
+        $this->isEnabled = $isEnabled;
     }
 
     /**
@@ -30,6 +29,6 @@ class AffiliateSettingsResponse extends Response
      */
     public function toArray(): array
     {
-        return !$this->settings ? [] : $this->settings->toArray();
+        return ['isEnabled' => $this->isEnabled];
     }
 }
