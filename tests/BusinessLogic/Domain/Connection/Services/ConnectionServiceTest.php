@@ -10,6 +10,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdExceptio
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
@@ -293,6 +294,45 @@ class ConnectionServiceTest extends BaseTestCase
         $savedCredentials = $this->mockCredentialsRepository->getCredentials();
 
         self::assertEquals($credentials, $savedCredentials);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     */
+    public function testConnectAffiliateSettingsSaved(): void
+    {
+        //Arrange
+        $connectionData = new DomainConnectionData(
+            BaseProxy::TEST_MODE,
+            'test_merchant',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+        $this->mockConnectionProxy->setMockCredentials([
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [
+                'affiliate' => [
+                    'enabled' => true,
+                    'offer_id' => 'mock-affiliate-offer',
+                    'security_token' => 'mock-affiliate-security-token',
+                ],
+            ], 'sequra'),
+        ]);
+
+        //Act
+        $this->connectionService->connect([$connectionData]);
+
+        //Assert: the connect-time affiliate block is persisted via the affiliate settings service.
+        $affiliateSettings = TestServiceRegister::getService(AffiliateSettingsService::class)->getAffiliateSettings();
+        self::assertTrue($affiliateSettings->isEnabled());
+        self::assertEquals('mock-affiliate-offer', $affiliateSettings->getOfferId());
+        self::assertEquals('mock-affiliate-security-token', $affiliateSettings->getSecurityToken());
     }
 
     /**

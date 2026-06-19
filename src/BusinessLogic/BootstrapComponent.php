@@ -400,7 +400,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(ConnectionProxyInterface::class),
                     ServiceRegister::getService(CredentialsRepositoryInterface::class),
                     ServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
-                    ServiceRegister::getService(PaymentMethodRepositoryInterface::class)
+                    ServiceRegister::getService(PaymentMethodRepositoryInterface::class),
+                    ServiceRegister::getService(AffiliateSettingsService::class)
                 );
             }
         );

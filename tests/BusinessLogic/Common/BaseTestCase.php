@@ -42,6 +42,7 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\Ge
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\SaveWidgetSettingsHandler;
 use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Entities\AdvancedSettings;
 use SeQura\Core\BusinessLogic\DataAccess\Affiliate\Entities\AffiliateSettings;
+use SeQura\Core\BusinessLogic\DataAccess\Affiliate\Repositories\AffiliateSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Entities\BannerSettings;
 use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Repositories\BannerSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
@@ -66,6 +67,7 @@ use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\Statistica
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\RepositoryContracts\AffiliateSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateSettingsService;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
@@ -304,12 +306,24 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(StoreIntegrationService::class)
                 );
             },
+            AffiliateSettingsRepositoryInterface::class => function () {
+                return new AffiliateSettingsRepository(
+                    TestRepositoryRegistry::getRepository(AffiliateSettings::getClassName()),
+                    StoreContext::getInstance()
+                );
+            },
+            AffiliateSettingsService::class => static function () {
+                return new AffiliateSettingsService(
+                    TestServiceRegister::getService(AffiliateSettingsRepositoryInterface::class)
+                );
+            },
             CredentialsService::class => static function () {
                 return new CredentialsService(
                     TestServiceRegister::getService(ConnectionProxyInterface::class),
                     TestServiceRegister::getService(CredentialsRepositoryInterface::class),
                     TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
-                    TestServiceRegister::getService(PaymentMethodRepositoryInterface::class)
+                    TestServiceRegister::getService(PaymentMethodRepositoryInterface::class),
+                    TestServiceRegister::getService(AffiliateSettingsService::class)
                 );
             },
             PaymentMethodsService::class => static function () {

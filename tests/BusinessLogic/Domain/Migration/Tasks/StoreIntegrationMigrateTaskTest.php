@@ -13,6 +13,8 @@ use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAffiliateSettingsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAffiliateSettingsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
@@ -88,7 +90,8 @@ class StoreIntegrationMigrateTaskTest extends BaseTestCase
                 new MockConnectionProxy(),
                 new MockCredentialsRepository(),
                 new MockCountryConfigurationRepository(),
-                new MockPaymentMethodRepository()
+                new MockPaymentMethodRepository(),
+                new MockAffiliateSettingsService(new MockAffiliateSettingsRepository())
             ),
             $this->storeIntegrationService
         );

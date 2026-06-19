@@ -2,6 +2,8 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Connection\Services;
 
+use SeQura\Core\BusinessLogic\Domain\Affiliate\Models\AffiliateSettings;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
@@ -44,21 +46,29 @@ class CredentialsService
     protected $paymentMethodRepository;
 
     /**
+     * @var AffiliateSettingsService
+     */
+    protected $affiliateSettingsService;
+
+    /**
      * @param ConnectionProxyInterface $connectionProxy
      * @param CredentialsRepositoryInterface $credentialsRepository
      * @param CountryConfigurationRepositoryInterface $countryConfigurationRepository
      * @param PaymentMethodRepositoryInterface $paymentMethodRepository
+     * @param AffiliateSettingsService $affiliateSettingsService
      */
     public function __construct(
         ConnectionProxyInterface $connectionProxy,
         CredentialsRepositoryInterface $credentialsRepository,
         CountryConfigurationRepositoryInterface $countryConfigurationRepository,
-        PaymentMethodRepositoryInterface $paymentMethodRepository
+        PaymentMethodRepositoryInterface $paymentMethodRepository,
+        AffiliateSettingsService $affiliateSettingsService
     ) {
         $this->connectionProxy = $connectionProxy;
         $this->credentialsRepository = $credentialsRepository;
         $this->countryConfigurationRepository = $countryConfigurationRepository;
         $this->paymentMethodRepository = $paymentMethodRepository;
+        $this->affiliateSettingsService = $affiliateSettingsService;
     }
 
     /**
@@ -85,8 +95,38 @@ class CredentialsService
 
         $this->credentialsRepository->deleteCredentialsByDeploymentId($connectionData->getDeployment());
         $this->credentialsRepository->setCredentials($credentials);
+        $this->updateAffiliateSettingsFromCredentials($credentials);
 
         return $credentials;
+    }
+
+    /**
+     * Persists the affiliate settings carried in the connect-time configuration_data, when present.
+     *
+     * The block is merchant-level (identical across the per-country credentials), so the first one
+     * that carries it wins. When no credential carries an affiliate block (e.g. the merchant API has
+     * not started emitting it yet) the stored settings are left untouched.
+     *
+     * @param Credentials[] $credentials
+     *
+     * @return void
+     */
+    private function updateAffiliateSettingsFromCredentials(array $credentials): void
+    {
+        foreach ($credentials as $credential) {
+            $affiliate = $credential->getPayload()['affiliate'] ?? null;
+            if (!\is_array($affiliate)) {
+                continue;
+            }
+
+            $this->affiliateSettingsService->setAffiliateSettings(new AffiliateSettings(
+                (bool)($affiliate['enabled'] ?? false),
+                (string)($affiliate['offer_id'] ?? ''),
+                (string)($affiliate['security_token'] ?? '')
+            ));
+
+            return;
+        }
     }
 
     /**

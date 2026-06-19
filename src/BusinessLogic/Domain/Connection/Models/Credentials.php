@@ -98,7 +98,7 @@ class Credentials extends DataTransferObject
     }
 
     /**
-     * @return array<string>
+     * @return array<string, mixed>
      */
     public function getPayload(): array
     {
