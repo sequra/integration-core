@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+# [v5.5.0](https://github.com/sequra/integration-core/tree/v5.5.0)
+## Added
+- Affiliate configuration support: the `AffiliateSettings` entity and `AffiliateSettingsService`, the `get-affiliate-settings` and `save-affiliate-settings` configuration webhook topics, and connect time provisioning that reads the `affiliate` block from the merchant `configuration_data` and persists it.
+
 # [v1.0.13](https://github.com/sequra/integration-core/tree/v1.0.13)
 ## Changed
 - Added compatibility with PHP8.2.
