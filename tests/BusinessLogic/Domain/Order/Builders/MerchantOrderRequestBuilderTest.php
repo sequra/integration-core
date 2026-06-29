@@ -20,6 +20,8 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Merchant;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAffiliateSettingsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAffiliateSettingsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
@@ -70,7 +72,8 @@ class MerchantOrderRequestBuilderTest extends BaseTestCase
             new MockConnectionProxy(),
             new MockCredentialsRepository(),
             new MockCountryConfigurationRepository(),
-            new MockPaymentMethodRepository()
+            new MockPaymentMethodRepository(),
+            new MockAffiliateSettingsService(new MockAffiliateSettingsRepository())
         );
         $this->connectionService = new MockConnectionService(
             new MockConnectionDataRepository(),

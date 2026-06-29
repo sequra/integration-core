@@ -86,6 +86,14 @@ interface Topics
      */
     public const SAVE_EXPRESS_CHECKOUT_SETTINGS = 'save-express-checkout-settings';
     /**
+     * @var string
+     */
+    public const GET_AFFILIATE_SETTINGS = 'get-affiliate-settings';
+    /**
+     * @var string
+     */
+    public const SAVE_AFFILIATE_SETTINGS = 'save-affiliate-settings';
+    /**
      * @var string[]
      */
     public const ALL_TOPICS = [
@@ -107,6 +115,9 @@ interface Topics
         self::GET_SELLING_COUNTRIES,
         self::GET_STORE_INFO,
         self::GET_EXPRESS_CHECKOUT_SETTINGS,
-        self::SAVE_EXPRESS_CHECKOUT_SETTINGS
+        self::SAVE_EXPRESS_CHECKOUT_SETTINGS,
+        self::GET_STORE_INFO,
+        self::GET_AFFILIATE_SETTINGS,
+        self::SAVE_AFFILIATE_SETTINGS
     ];
 }

@@ -23,6 +23,8 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsC
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Controller\ConfigurationWebhookController;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\GetAdvancedSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\AdvancedSettings\SaveAdvancedSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Affiliate\GetAffiliateSettingsHandler;
+use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Affiliate\SaveAffiliateSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\GetBannerSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\BannerSettings\SaveBannerSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\Enums\Topics;
@@ -43,6 +45,8 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerRegis
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\GetWidgetSettingsHandler;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\WidgetSettings\SaveWidgetSettingsHandler;
 use SeQura\Core\BusinessLogic\DataAccess\AdvancedSettings\Entities\AdvancedSettings;
+use SeQura\Core\BusinessLogic\DataAccess\Affiliate\Entities\AffiliateSettings;
+use SeQura\Core\BusinessLogic\DataAccess\Affiliate\Repositories\AffiliateSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Entities\BannerSettings;
 use SeQura\Core\BusinessLogic\DataAccess\BannerSettings\Repositories\BannerSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData;
@@ -69,6 +73,8 @@ use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\Statistica
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\RepositoryContracts\AffiliateSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateSettingsService;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
@@ -320,12 +326,24 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(StoreIntegrationService::class)
                 );
             },
+            AffiliateSettingsRepositoryInterface::class => function () {
+                return new AffiliateSettingsRepository(
+                    TestRepositoryRegistry::getRepository(AffiliateSettings::getClassName()),
+                    StoreContext::getInstance()
+                );
+            },
+            AffiliateSettingsService::class => static function () {
+                return new AffiliateSettingsService(
+                    TestServiceRegister::getService(AffiliateSettingsRepositoryInterface::class)
+                );
+            },
             CredentialsService::class => static function () {
                 return new CredentialsService(
                     TestServiceRegister::getService(ConnectionProxyInterface::class),
                     TestServiceRegister::getService(CredentialsRepositoryInterface::class),
                     TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
-                    TestServiceRegister::getService(PaymentMethodRepositoryInterface::class)
+                    TestServiceRegister::getService(PaymentMethodRepositoryInterface::class),
+                    TestServiceRegister::getService(AffiliateSettingsService::class)
                 );
             },
             PaymentMethodsService::class => static function () {
@@ -909,6 +927,24 @@ class BaseTestCase extends TestCase
         );
 
         TestServiceRegister::registerService(
+            GetAffiliateSettingsHandler::class,
+            static function () {
+                return new GetAffiliateSettingsHandler(
+                    TestServiceRegister::getService(AffiliateSettingsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            SaveAffiliateSettingsHandler::class,
+            static function () {
+                return new SaveAffiliateSettingsHandler(
+                    TestServiceRegister::getService(AffiliateSettingsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
             GetBannerSettingsHandler::class,
             static function () {
                 return new GetBannerSettingsHandler(
@@ -1049,6 +1085,16 @@ class BaseTestCase extends TestCase
         );
 
         TopicHandlerRegistry::register(
+            Topics::GET_AFFILIATE_SETTINGS,
+            GetAffiliateSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
+            Topics::SAVE_AFFILIATE_SETTINGS,
+            SaveAffiliateSettingsHandler::class
+        );
+
+        TopicHandlerRegistry::register(
             Topics::GET_BANNER_SETTINGS,
             GetBannerSettingsHandler::class
         );
@@ -1130,6 +1176,7 @@ class BaseTestCase extends TestCase
             ExpressCheckoutSettingsEntity::getClassName(),
             MemoryRepository::getClassName()
         );
+        TestRepositoryRegistry::registerRepository(AffiliateSettings::getClassName(), MemoryRepository::getClassName());
     }
 
     /**

@@ -3171,6 +3171,8 @@ The Configuration WebhookAPI follows a **simplified Controller pattern** with **
     - **GetShopProductsHandler**: Handles `get-shop-products` webhook topic
     - **GetStoreInfoHandler**: Handles `get-store-info` webhook topic
     - **SaveWidgetSettingsHandler**: Handles `save-widget-settings` webhook topic
+    - **GetAffiliateSettingsHandler**: Handles `get-affiliate-settings` webhook topic
+    - **SaveAffiliateSettingsHandler**: Handles `save-affiliate-settings` webhook topic
   
 #### Webhook Processing Flow
 
