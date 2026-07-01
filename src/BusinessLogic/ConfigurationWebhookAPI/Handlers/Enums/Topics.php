@@ -116,7 +116,6 @@ interface Topics
         self::GET_STORE_INFO,
         self::GET_EXPRESS_CHECKOUT_SETTINGS,
         self::SAVE_EXPRESS_CHECKOUT_SETTINGS,
-        self::GET_STORE_INFO,
         self::GET_AFFILIATE_SETTINGS,
         self::SAVE_AFFILIATE_SETTINGS
     ];

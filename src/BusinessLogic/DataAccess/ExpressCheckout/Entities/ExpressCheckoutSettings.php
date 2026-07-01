@@ -45,9 +45,14 @@ class ExpressCheckoutSettings extends Entity
         $expressCheckoutSettings = $data['expressCheckoutSettings'] ?? [];
         $this->storeId = $data['storeId'] ?? '';
         $rawConfigs = static::getDataValue($expressCheckoutSettings, 'expressCheckoutConfigs', []);
-        $configs = array_map(static function (array $configData): ExpressCheckoutPageConfig {
-            return ExpressCheckoutPageConfig::fromArray($configData);
-        }, $rawConfigs);
+        $configs = [];
+
+        foreach ($rawConfigs as $configData) {
+            if (\is_array($configData)) {
+                $configs[] = ExpressCheckoutPageConfig::fromArray($configData);
+            }
+        }
+
         $this->expressCheckoutSettings = new DomainExpressCheckoutSettings($configs);
     }
 

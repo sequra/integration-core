@@ -133,8 +133,8 @@ class DisconnectService
      * @param TransactionLogRepositoryInterface $transactionLogRepository
      * @param StoreIntegrationService $storeIntegrationService
      * @param AdvancedSettingsRepositoryInterface $advancedSettingsRepository
-     * @param ExpressCheckoutSettingsRepositoryInterface $expressCheckoutSettingsRepository
      * @param BannerSettingsService $bannerSettingsService
+     * @param ExpressCheckoutSettingsRepositoryInterface $expressCheckoutSettingsRepository
      */
     public function __construct(
         DisconnectServiceInterface $integrationDisconnectService,
@@ -152,8 +152,8 @@ class DisconnectService
         TransactionLogRepositoryInterface $transactionLogRepository,
         StoreIntegrationService $storeIntegrationService,
         AdvancedSettingsRepositoryInterface $advancedSettingsRepository,
-        ExpressCheckoutSettingsRepositoryInterface $expressCheckoutSettingsRepository,
-        BannerSettingsService $bannerSettingsService
+        BannerSettingsService $bannerSettingsService,
+        ExpressCheckoutSettingsRepositoryInterface $expressCheckoutSettingsRepository
     ) {
         $this->integrationDisconnectService = $integrationDisconnectService;
         $this->sendReportRepository = $sendReportRepository;
@@ -170,8 +170,8 @@ class DisconnectService
         $this->transactionLogRepository = $transactionLogRepository;
         $this->storeIntegrationService = $storeIntegrationService;
         $this->advancedSettingsRepository = $advancedSettingsRepository;
-        $this->expressCheckoutSettingsRepository = $expressCheckoutSettingsRepository;
         $this->bannerSettingsService = $bannerSettingsService;
+        $this->expressCheckoutSettingsRepository = $expressCheckoutSettingsRepository;
     }
 
     /**

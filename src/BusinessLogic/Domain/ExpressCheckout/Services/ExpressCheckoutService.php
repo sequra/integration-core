@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfig
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutSettings;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\PrebuiltCreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
@@ -199,27 +200,18 @@ class ExpressCheckoutService
      */
     public function solicit(CreateOrderRequestBuilder $builder, bool $checkCountry = false): ?SeQuraForm
     {
-        if ($checkCountry && !$this->isCountrySupported($builder)) {
+        $createOrderRequest = $builder->build();
+
+        if (
+            $checkCountry &&
+            $this->resolveMerchantId($createOrderRequest->getDeliveryAddress()->getCountryCode()) === null
+        ) {
             return null;
         }
 
-        return $this->orderService->solicitExpressCheckoutForm($builder);
-    }
-
-    /**
-     * Whether the order's delivery country resolves to a configured merchant.
-     *
-     * @param CreateOrderRequestBuilder $builder
-     *
-     * @return bool
-     *
-     * @throws FailedToRetrieveSellingCountriesException
-     */
-    private function isCountrySupported(CreateOrderRequestBuilder $builder): bool
-    {
-        $countryCode = $builder->build()->getDeliveryAddress()->getCountryCode();
-
-        return $this->resolveMerchantId($countryCode) !== null;
+        return $this->orderService->solicitExpressCheckoutForm(
+            new PrebuiltCreateOrderRequestBuilder($createOrderRequest)
+        );
     }
 
     /**

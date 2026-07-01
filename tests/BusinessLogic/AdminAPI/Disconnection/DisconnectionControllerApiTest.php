@@ -60,8 +60,8 @@ class DisconnectionControllerApiTest extends BaseTestCase
             ServiceRegister::getService(TransactionLogRepositoryInterface::class),
             ServiceRegister::getService(StoreIntegrationService::class),
             new MockAdvancedSettingsRepository(),
-            new MockExpressCheckoutSettingsRepository(),
-            ServiceRegister::getService(BannerSettingsService::class)
+            ServiceRegister::getService(BannerSettingsService::class),
+            new MockExpressCheckoutSettingsRepository()
         );
 
         TestServiceRegister::registerService(DisconnectService::class, function () {

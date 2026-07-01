@@ -221,8 +221,8 @@ class DisconnectServiceTest extends BaseTestCase
             $this->transactionLogRepository,
             $this->storeIntegrationService,
             $this->advancedSettingsRepository,
-            $this->expressCheckoutSettingsRepository,
-            $this->bannerSettingsService
+            $this->bannerSettingsService,
+            $this->expressCheckoutSettingsRepository
         );
     }
 
