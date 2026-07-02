@@ -15,6 +15,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\Affiliate\AffiliateController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Banners\BannerCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
@@ -69,6 +70,7 @@ use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\Transaction
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\ProxyContracts\AffiliateProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\RepositoryContracts\AffiliateSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateService;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateSettingsService;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
@@ -318,6 +320,17 @@ class BaseTestCase extends TestCase
             AffiliateSettingsService::class => static function () {
                 return new AffiliateSettingsService(
                     TestServiceRegister::getService(AffiliateSettingsRepositoryInterface::class)
+                );
+            },
+            AffiliateService::class => static function () {
+                return new AffiliateService(
+                    TestServiceRegister::getService(AffiliateSettingsService::class),
+                    TestServiceRegister::getService(AffiliateProxyInterface::class)
+                );
+            },
+            AffiliateController::class => static function () {
+                return new AffiliateController(
+                    TestServiceRegister::getService(AffiliateService::class)
                 );
             },
             CredentialsService::class => static function () {
