@@ -71,6 +71,7 @@ use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\Transaction
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\RepositoryContracts\AdvancedSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedLoggerSettingsProvider;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\ProxyContracts\AffiliateProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\RepositoryContracts\AffiliateSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateSettingsService;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
@@ -142,6 +143,8 @@ use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProv
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Deployments\DeploymentsProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Affiliate\AffiliateProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AffiliateProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AuthorizedProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\ConnectionProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
@@ -897,6 +900,26 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(HttpClient::class),
                     ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            AffiliateProxyFactory::class,
+            static function () {
+                return new AffiliateProxyFactory(
+                    ServiceRegister::getService(HttpClient::class),
+                    ServiceRegister::getService(ConnectionService::class),
+                    ServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            AffiliateProxyInterface::class,
+            static function () {
+                return new AffiliateProxy(
+                    ServiceRegister::getService(AffiliateProxyFactory::class)
                 );
             }
         );

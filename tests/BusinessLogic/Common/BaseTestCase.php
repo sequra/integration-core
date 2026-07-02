@@ -67,6 +67,7 @@ use SeQura\Core\BusinessLogic\DataAccess\StatisticalData\Repositories\Statistica
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\TransactionLogRepository;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\ProxyContracts\AffiliateProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\RepositoryContracts\AffiliateSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateSettingsService;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
@@ -133,6 +134,8 @@ use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProv
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Deployments\DeploymentsProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Affiliate\AffiliateProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AffiliateProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AuthorizedProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\ConnectionProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
@@ -664,6 +667,26 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(HttpClient::class),
                     TestServiceRegister::getService(ConnectionService::class),
                     TestServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            AffiliateProxyFactory::class,
+            static function () {
+                return new AffiliateProxyFactory(
+                    TestServiceRegister::getService(HttpClient::class),
+                    TestServiceRegister::getService(ConnectionService::class),
+                    TestServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            AffiliateProxyInterface::class,
+            static function () {
+                return new AffiliateProxy(
+                    TestServiceRegister::getService(AffiliateProxyFactory::class)
                 );
             }
         );
