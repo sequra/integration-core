@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundEx
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Affiliate\AffiliateHttpProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 
@@ -55,17 +56,17 @@ class AffiliateProxyFactory
     /**
      * @param string $merchantId
      *
-     * @return BaseProxy
+     * @return AffiliateHttpProxy
      *
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws DeploymentNotFoundException
      */
-    public function build(string $merchantId): BaseProxy
+    public function build(string $merchantId): AffiliateHttpProxy
     {
         $connectionData = $this->connectionService->getConnectionDataByMerchantId($merchantId);
         $deployment = $this->deploymentsService->getDeploymentById($connectionData->getDeployment());
 
-        return new BaseProxy($this->client, BaseProxy::resolveApiBaseUrl($connectionData, $deployment));
+        return new AffiliateHttpProxy($this->client, BaseProxy::resolveApiBaseUrl($connectionData, $deployment));
     }
 }

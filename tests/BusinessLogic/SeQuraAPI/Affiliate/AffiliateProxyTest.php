@@ -134,6 +134,26 @@ class AffiliateProxyTest extends BaseTestCase
     }
 
     /**
+     * The conversion is forwarded verbatim to a third party (the affiliate network), so it goes
+     * out as a clean GET: no request body (the whole payload is in the query string) and no
+     * Content-Type, avoiding a GET-with-body that a destination or intermediary could reject.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testConversionSendsNoBodyNorContentType(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(200, [], '')]);
+
+        $this->proxy->sendConversion($this->conversion());
+
+        $request = $this->httpClient->getLastRequest();
+        self::assertSame('', $request['body']);
+        self::assertArrayNotHasKey('Content-Type', $request['headers']);
+    }
+
+    /**
      * @return void
      *
      * @throws Exception
@@ -183,6 +203,23 @@ class AffiliateProxyTest extends BaseTestCase
             'security_token' => 'token-123',
             'status' => 'cancelled',
         ], $body);
+    }
+
+    /**
+     * The POST cancellation carries a JSON body, so (unlike the GET conversion) it keeps the
+     * Content-Type header.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testCancellationCarriesContentTypeHeader(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(200, [], '')]);
+
+        $this->proxy->sendCancellation($this->cancellation());
+
+        self::assertArrayHasKey('Content-Type', $this->httpClient->getLastRequest()['headers']);
     }
 
     /**
