@@ -3,6 +3,8 @@
 namespace SeQura\Core\BusinessLogic\SeQuraAPI;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidRequestBodyException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException;
@@ -83,6 +85,23 @@ class BaseProxy
         }
 
         return rtrim($apiBaseUrl, '/') . '/';
+    }
+
+    /**
+     * Resolves the API base URL for a merchant's connection and deployment, honoring the sandbox
+     * override. Shared by AuthorizedProxy and the affiliate proxy factory so the live/sandbox
+     * precedence lives in a single place.
+     *
+     * @param ConnectionData $connectionData
+     * @param Deployment $deployment
+     *
+     * @return string
+     */
+    public static function resolveApiBaseUrl(ConnectionData $connectionData, Deployment $deployment): string
+    {
+        return $connectionData->getEnvironment() === self::LIVE_MODE ?
+            $deployment->getLiveDeploymentURL()->getApiBaseUrl() :
+            (self::getSandboxApiBaseUrlOverride() ?: $deployment->getSandboxDeploymentURL()->getApiBaseUrl());
     }
 
     /**

@@ -66,10 +66,6 @@ class AffiliateProxyFactory
         $connectionData = $this->connectionService->getConnectionDataByMerchantId($merchantId);
         $deployment = $this->deploymentsService->getDeploymentById($connectionData->getDeployment());
 
-        $baseUrl = $connectionData->getEnvironment() === BaseProxy::LIVE_MODE ?
-            $deployment->getLiveDeploymentURL()->getApiBaseUrl() :
-            (BaseProxy::getSandboxApiBaseUrlOverride() ?: $deployment->getSandboxDeploymentURL()->getApiBaseUrl());
-
-        return new BaseProxy($this->client, $baseUrl);
+        return new BaseProxy($this->client, BaseProxy::resolveApiBaseUrl($connectionData, $deployment));
     }
 }

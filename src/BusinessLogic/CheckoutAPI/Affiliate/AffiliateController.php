@@ -6,6 +6,9 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\Affiliate\Requests\SendCancellationReq
 use SeQura\Core\BusinessLogic\CheckoutAPI\Affiliate\Requests\SendConversionRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Affiliate\Responses\AffiliatePostbackResponse;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -36,6 +39,9 @@ class AffiliateController
      * @return AffiliatePostbackResponse
      *
      * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException When the merchant is not connected.
+     * @throws CredentialsNotFoundException When the merchant has no stored credentials.
+     * @throws DeploymentNotFoundException When the merchant's deployment cannot be resolved.
      */
     public function reportConversion(SendConversionRequest $request): AffiliatePostbackResponse
     {
@@ -55,6 +61,9 @@ class AffiliateController
      * @return AffiliatePostbackResponse
      *
      * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException When the merchant is not connected.
+     * @throws CredentialsNotFoundException When the merchant has no stored credentials.
+     * @throws DeploymentNotFoundException When the merchant's deployment cannot be resolved.
      */
     public function reportCancellation(SendCancellationRequest $request): AffiliatePostbackResponse
     {

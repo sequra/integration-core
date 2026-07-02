@@ -4,6 +4,9 @@ namespace SeQura\Core\BusinessLogic\Domain\Affiliate\ProxyContracts;
 
 use SeQura\Core\BusinessLogic\Domain\Affiliate\Models\AffiliateCancellation;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\Models\AffiliateConversion;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -26,6 +29,9 @@ interface AffiliateProxyInterface
      *     transport failure raises rather than returning false -- see @throws.
      *
      * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException When the merchant is not connected.
+     * @throws CredentialsNotFoundException When the merchant has no stored credentials.
+     * @throws DeploymentNotFoundException When the merchant's deployment cannot be resolved.
      */
     public function sendConversion(AffiliateConversion $conversion): bool;
 
@@ -38,6 +44,9 @@ interface AffiliateProxyInterface
      *     transport failure raises rather than returning false -- see @throws.
      *
      * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException When the merchant is not connected.
+     * @throws CredentialsNotFoundException When the merchant has no stored credentials.
+     * @throws DeploymentNotFoundException When the merchant's deployment cannot be resolved.
      */
     public function sendCancellation(AffiliateCancellation $cancellation): bool;
 }

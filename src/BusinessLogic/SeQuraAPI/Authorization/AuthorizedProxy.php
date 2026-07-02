@@ -54,12 +54,7 @@ class AuthorizedProxy extends BaseProxy
         $this->deployment = $deployment;
         $this->merchantId = $merchantId;
 
-        parent::__construct(
-            $client,
-            $connectionData->getEnvironment() === self::LIVE_MODE ?
-                $deployment->getLiveDeploymentURL()->getApiBaseUrl() :
-                (self::getSandboxApiBaseUrlOverride() ?: $deployment->getSandboxDeploymentURL()->getApiBaseUrl())
-        );
+        parent::__construct($client, self::resolveApiBaseUrl($connectionData, $deployment));
     }
 
     /**

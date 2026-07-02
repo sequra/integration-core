@@ -5,6 +5,9 @@ namespace SeQura\Core\BusinessLogic\Domain\Affiliate\Services;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\Models\AffiliateCancellation;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\Models\AffiliateConversion;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\ProxyContracts\AffiliateProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -53,6 +56,9 @@ class AffiliateService
      * @return bool
      *
      * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException When the merchant is not connected.
+     * @throws CredentialsNotFoundException When the merchant has no stored credentials.
+     * @throws DeploymentNotFoundException When the merchant's deployment cannot be resolved.
      */
     public function reportConversion(
         string $merchantId,
@@ -85,6 +91,9 @@ class AffiliateService
      * @return bool
      *
      * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException When the merchant is not connected.
+     * @throws CredentialsNotFoundException When the merchant has no stored credentials.
+     * @throws DeploymentNotFoundException When the merchant's deployment cannot be resolved.
      */
     public function reportCancellation(string $merchantId, string $transactionId): bool
     {

@@ -5,6 +5,7 @@ namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\Models\AffiliateCancellation;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\Models\AffiliateConversion;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\ProxyContracts\AffiliateProxyInterface;
+use Throwable;
 
 /**
  * Class MockAffiliateProxy.
@@ -29,6 +30,11 @@ class MockAffiliateProxy implements AffiliateProxyInterface
     private $return = true;
 
     /**
+     * @var Throwable|null
+     */
+    private $exception;
+
+    /**
      * @param bool $return
      *
      * @return void
@@ -39,11 +45,27 @@ class MockAffiliateProxy implements AffiliateProxyInterface
     }
 
     /**
+     * Makes the next send throw, simulating a destination that rejects the postback.
+     *
+     * @param Throwable $exception
+     *
+     * @return void
+     */
+    public function setException(Throwable $exception): void
+    {
+        $this->exception = $exception;
+    }
+
+    /**
      * @inheritDoc
      */
     public function sendConversion(AffiliateConversion $conversion): bool
     {
         $this->conversions[] = $conversion;
+
+        if ($this->exception !== null) {
+            throw $this->exception;
+        }
 
         return $this->return;
     }
@@ -54,6 +76,10 @@ class MockAffiliateProxy implements AffiliateProxyInterface
     public function sendCancellation(AffiliateCancellation $cancellation): bool
     {
         $this->cancellations[] = $cancellation;
+
+        if ($this->exception !== null) {
+            throw $this->exception;
+        }
 
         return $this->return;
     }
