@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDa
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
@@ -112,6 +113,11 @@ class DisconnectService
     protected $bannerSettingsService;
 
     /**
+     * @var ExpressCheckoutSettingsRepositoryInterface $expressCheckoutSettingsRepository
+     */
+    protected $expressCheckoutSettingsRepository;
+
+    /**
      * @param DisconnectServiceInterface $integrationDisconnectService
      * @param SendReportRepositoryInterface $sendReportRepository
      * @param ConnectionDataRepositoryInterface $connectionDataRepository
@@ -128,6 +134,7 @@ class DisconnectService
      * @param StoreIntegrationService $storeIntegrationService
      * @param AdvancedSettingsRepositoryInterface $advancedSettingsRepository
      * @param BannerSettingsService $bannerSettingsService
+     * @param ExpressCheckoutSettingsRepositoryInterface $expressCheckoutSettingsRepository
      */
     public function __construct(
         DisconnectServiceInterface $integrationDisconnectService,
@@ -145,7 +152,8 @@ class DisconnectService
         TransactionLogRepositoryInterface $transactionLogRepository,
         StoreIntegrationService $storeIntegrationService,
         AdvancedSettingsRepositoryInterface $advancedSettingsRepository,
-        BannerSettingsService $bannerSettingsService
+        BannerSettingsService $bannerSettingsService,
+        ExpressCheckoutSettingsRepositoryInterface $expressCheckoutSettingsRepository
     ) {
         $this->integrationDisconnectService = $integrationDisconnectService;
         $this->sendReportRepository = $sendReportRepository;
@@ -163,6 +171,7 @@ class DisconnectService
         $this->storeIntegrationService = $storeIntegrationService;
         $this->advancedSettingsRepository = $advancedSettingsRepository;
         $this->bannerSettingsService = $bannerSettingsService;
+        $this->expressCheckoutSettingsRepository = $expressCheckoutSettingsRepository;
     }
 
     /**
@@ -220,6 +229,7 @@ class DisconnectService
         $this->statisticalDataRepository->deleteStatisticalData();
         $this->transactionLogRepository->deleteAllTransactionLogs();
         $this->advancedSettingsRepository->deleteAdvancedSettings();
+        $this->expressCheckoutSettingsRepository->deleteExpressCheckoutSettings();
 
         $this->integrationDisconnectService->disconnect();
     }

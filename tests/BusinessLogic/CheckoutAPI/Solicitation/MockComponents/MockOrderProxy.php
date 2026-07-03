@@ -10,6 +10,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
+use Throwable;
 
 /**
  * Interface MockOrderProxy
@@ -34,6 +35,18 @@ class MockOrderProxy implements OrderProxyInterface
      * @var GetFormRequest
      */
     private $lastGetFormRequest;
+    /**
+     * @var Throwable|null
+     */
+    private $createOrderException;
+    /**
+     * @var Throwable|null
+     */
+    private $getFormException;
+    /**
+     * @var int
+     */
+    private $getFormCallCount = 0;
 
     /**
      * @param ?SeQuraOrder $order
@@ -50,6 +63,39 @@ class MockOrderProxy implements OrderProxyInterface
         $this->availablePaymentMethods = $availablePaymentMethods;
         $this->form = $form ?? new SeQuraForm('');
     }
+
+    /**
+     * Configures the proxy to throw the given exception from createOrder().
+     *
+     * @param Throwable $exception
+     *
+     * @return void
+     */
+    public function setCreateOrderException(Throwable $exception): void
+    {
+        $this->createOrderException = $exception;
+    }
+
+    /**
+     * Configures the proxy to throw the given exception from getForm().
+     *
+     * @param Throwable $exception
+     *
+     * @return void
+     */
+    public function setGetFormException(Throwable $exception): void
+    {
+        $this->getFormException = $exception;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFormCallCount(): int
+    {
+        return $this->getFormCallCount;
+    }
+
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array
     {
         return $this->availablePaymentMethods;
@@ -62,6 +108,10 @@ class MockOrderProxy implements OrderProxyInterface
 
     public function createOrder(CreateOrderRequest $request): SeQuraOrder
     {
+        if ($this->createOrderException !== null) {
+            throw $this->createOrderException;
+        }
+
         return $this->order;
     }
 
@@ -77,7 +127,12 @@ class MockOrderProxy implements OrderProxyInterface
 
     public function getForm(GetFormRequest $request): SeQuraForm
     {
+        $this->getFormCallCount++;
         $this->lastGetFormRequest = $request;
+        if ($this->getFormException !== null) {
+            throw $this->getFormException;
+        }
+
         return $this->form;
     }
 

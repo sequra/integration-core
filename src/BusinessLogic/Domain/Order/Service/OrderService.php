@@ -180,6 +180,29 @@ class OrderService
     }
 
     /**
+     * Solicits the order at SeQura and returns the identification form containing every
+     * available payment method (product and campaign omitted).
+     *
+     * Used by the Express Checkout flow: a customer click on the SeQura button must
+     * produce the form in a single round-trip, without filtering payment methods.
+     *
+     * @param CreateOrderRequestBuilder $builder
+     *
+     * @return SeQuraForm
+     *
+     * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws InvalidUrlException
+     */
+    public function solicitExpressCheckoutForm(CreateOrderRequestBuilder $builder): SeQuraForm
+    {
+        $order = $this->solicitFor($builder);
+
+        return $this->getIdentificationForm($order->getCartId());
+    }
+
+    /**
      * Gets the SeQura form.
      *
      * @param string $cartId
