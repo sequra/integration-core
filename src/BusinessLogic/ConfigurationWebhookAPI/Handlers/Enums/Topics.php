@@ -80,6 +80,14 @@ interface Topics
     /**
      * @var string
      */
+    public const GET_EXPRESS_CHECKOUT_SETTINGS = 'get-express-checkout-settings';
+    /**
+     * @var string
+     */
+    public const SAVE_EXPRESS_CHECKOUT_SETTINGS = 'save-express-checkout-settings';
+    /**
+     * @var string
+     */
     public const GET_AFFILIATE_SETTINGS = 'get-affiliate-settings';
     /**
      * @var string
@@ -106,6 +114,8 @@ interface Topics
         self::GET_SHOP_PRODUCTS,
         self::GET_SELLING_COUNTRIES,
         self::GET_STORE_INFO,
+        self::GET_EXPRESS_CHECKOUT_SETTINGS,
+        self::SAVE_EXPRESS_CHECKOUT_SETTINGS,
         self::GET_AFFILIATE_SETTINGS,
         self::SAVE_AFFILIATE_SETTINGS
     ];

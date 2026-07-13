@@ -21,6 +21,10 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Models\DeploymentURL;
 use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPage;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPageConfig;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutSettings;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
@@ -47,6 +51,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepo
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockExpressCheckoutSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockGeneralSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationDisconnectService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
@@ -159,6 +164,11 @@ class DisconnectServiceTest extends BaseTestCase
     private $bannerSettingsService;
 
     /**
+     * @var ExpressCheckoutSettingsRepositoryInterface $expressCheckoutSettingsRepository
+     */
+    private $expressCheckoutSettingsRepository;
+
+    /**
      * @var DisconnectService $service
      */
     private $service;
@@ -193,6 +203,7 @@ class DisconnectServiceTest extends BaseTestCase
             $this->bannerSettingsRepository,
             $this->bannerService
         );
+        $this->expressCheckoutSettingsRepository = new MockExpressCheckoutSettingsRepository();
 
         $this->service = new DisconnectService(
             $this->integrationDisconnectService,
@@ -210,7 +221,8 @@ class DisconnectServiceTest extends BaseTestCase
             $this->transactionLogRepository,
             $this->storeIntegrationService,
             $this->advancedSettingsRepository,
-            $this->bannerSettingsService
+            $this->bannerSettingsService,
+            $this->expressCheckoutSettingsRepository
         );
     }
 
@@ -334,6 +346,11 @@ class DisconnectServiceTest extends BaseTestCase
         $advancedSettings = new AdvancedSettings(true, 1);
         $this->advancedSettingsRepository->setAdvancedSettings($advancedSettings);
 
+        $expressCheckoutSettings = new ExpressCheckoutSettings([
+            new ExpressCheckoutPageConfig(ExpressCheckoutPage::product(), true),
+        ]);
+        $this->expressCheckoutSettingsRepository->setExpressCheckoutSettings($expressCheckoutSettings);
+
         //Act
         $this->service->disconnect('sequra', false);
 
@@ -351,6 +368,10 @@ class DisconnectServiceTest extends BaseTestCase
         self::assertEquals($statisticalData, $this->statisticalDataRepository->getStatisticalData());
         self::assertEquals($log, $this->transactionLogRepository->getTransactionLog(''));
         self::assertEquals($advancedSettings, $this->advancedSettingsRepository->getAdvancedSettings());
+        self::assertEquals(
+            $expressCheckoutSettings,
+            $this->expressCheckoutSettingsRepository->getExpressCheckoutSettings()
+        );
     }
 
     /**
@@ -465,6 +486,10 @@ class DisconnectServiceTest extends BaseTestCase
         $advancedSettings = new AdvancedSettings(true, 1);
         $this->advancedSettingsRepository->setAdvancedSettings($advancedSettings);
 
+        $this->expressCheckoutSettingsRepository->setExpressCheckoutSettings(new ExpressCheckoutSettings([
+            new ExpressCheckoutPageConfig(ExpressCheckoutPage::product(), true),
+        ]));
+
         //Act
         $this->service->disconnect('sequra', true);
 
@@ -482,6 +507,7 @@ class DisconnectServiceTest extends BaseTestCase
         self::assertNull($this->statisticalDataRepository->getStatisticalData());
         self::assertNull($this->transactionLogRepository->getTransactionLog(''));
         self::assertNull($this->advancedSettingsRepository->getAdvancedSettings());
+        self::assertNull($this->expressCheckoutSettingsRepository->getExpressCheckoutSettings());
     }
 
     /**

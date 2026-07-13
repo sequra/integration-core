@@ -18,14 +18,15 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsServic
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutInitializationService;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCheckoutValidator;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetSettingsService;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetValidator;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -41,9 +42,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     private $mockWidgetSettingsService;
 
     /**
-     * @var MockWidgetValidator
+     * @var MockCheckoutValidator
      */
-    private $mockWidgetValidator;
+    private $mockCheckoutValidator;
 
     /**
      * @return void
@@ -61,15 +62,17 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             }
         );
 
-        $this->mockWidgetValidator = new MockWidgetValidator(
+        $this->mockCheckoutValidator = new MockCheckoutValidator(
             TestServiceRegister::getService(GeneralSettingsService::class),
-            TestServiceRegister::getService(ProductServiceInterface::class)
+            TestServiceRegister::getService(ProductServiceInterface::class),
+            TestServiceRegister::getService(ConnectionService::class),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
 
         TestServiceRegister::registerService(
-            WidgetValidationService::class,
+            CheckoutService::class,
             function () {
-                return $this->mockWidgetValidator;
+                return $this->mockCheckoutValidator;
             }
         );
 
@@ -77,10 +80,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             TestServiceRegister::getService(WidgetSettingsRepositoryInterface::class),
             TestServiceRegister::getService(PaymentMethodsService::class),
             TestServiceRegister::getService(CredentialsService::class),
-            TestServiceRegister::getService(ConnectionService::class),
             TestServiceRegister::getService(WidgetConfiguratorInterface::class),
             TestServiceRegister::getService(MiniWidgetMessagesProviderInterface::class),
-            TestServiceRegister::getService(DeploymentsService::class)
+            TestServiceRegister::getService(CheckoutInitializationService::class)
         );
 
         TestServiceRegister::registerService(
@@ -411,7 +413,7 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     public function testGetAvailableWidgetForCartPageCurrencyInvalid(): void
     {
         //Arrange
-        $this->mockWidgetValidator->setCurrencyValid(false);
+        $this->mockCheckoutValidator->setCurrencyValid(false);
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
@@ -435,8 +437,8 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     public function testGetAvailableWidgetForCartPageIpAddressInvalid(): void
     {
         //Arrange
-        $this->mockWidgetValidator->setCurrencyValid(true);
-        $this->mockWidgetValidator->setAddressValid(false);
+        $this->mockCheckoutValidator->setCurrencyValid(true);
+        $this->mockCheckoutValidator->setAddressValid(false);
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
@@ -460,8 +462,8 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     public function testGetAvailableMiniWidgetForProductListingPageCurrencyInvalid(): void
     {
         //Arrange
-        $this->mockWidgetValidator->setCurrencyValid(false);
-        $this->mockWidgetValidator->setAddressValid(true);
+        $this->mockCheckoutValidator->setCurrencyValid(false);
+        $this->mockCheckoutValidator->setAddressValid(true);
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
@@ -485,8 +487,8 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     public function testGetAvailableMiniWidgetForProductListingPageIpAddressInvalid(): void
     {
         //Arrange
-        $this->mockWidgetValidator->setCurrencyValid(true);
-        $this->mockWidgetValidator->setAddressValid(false);
+        $this->mockCheckoutValidator->setCurrencyValid(true);
+        $this->mockCheckoutValidator->setAddressValid(false);
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
@@ -510,9 +512,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     public function testGetAvailableMiniWidgetForProductListingPageProductNotSupported(): void
     {
         //Arrange
-        $this->mockWidgetValidator->setCurrencyValid(true);
-        $this->mockWidgetValidator->setAddressValid(true);
-        $this->mockWidgetValidator->setProductValid(false);
+        $this->mockCheckoutValidator->setCurrencyValid(true);
+        $this->mockCheckoutValidator->setAddressValid(true);
+        $this->mockCheckoutValidator->setProductValid(false);
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
@@ -536,8 +538,8 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     public function testGetAvailableWidgetsForProductPageCurrencyInvalid(): void
     {
         //Arrange
-        $this->mockWidgetValidator->setCurrencyValid(false);
-        $this->mockWidgetValidator->setAddressValid(true);
+        $this->mockCheckoutValidator->setCurrencyValid(false);
+        $this->mockCheckoutValidator->setAddressValid(true);
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
@@ -561,8 +563,8 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     public function testGetAvailableWidgetsForProductPageIpAddressInvalid(): void
     {
         //Arrange
-        $this->mockWidgetValidator->setCurrencyValid(true);
-        $this->mockWidgetValidator->setAddressValid(false);
+        $this->mockCheckoutValidator->setCurrencyValid(true);
+        $this->mockCheckoutValidator->setAddressValid(false);
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')
@@ -586,9 +588,9 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     public function testGetAvailableWidgetsForProductPageProductNotSupported(): void
     {
         //Arrange
-        $this->mockWidgetValidator->setCurrencyValid(true);
-        $this->mockWidgetValidator->setAddressValid(true);
-        $this->mockWidgetValidator->setProductValid(false);
+        $this->mockCheckoutValidator->setCurrencyValid(true);
+        $this->mockCheckoutValidator->setAddressValid(true);
+        $this->mockCheckoutValidator->setProductValid(false);
 
         //Act
         $response = CheckoutAPI::get()->promotionalWidgets('1')

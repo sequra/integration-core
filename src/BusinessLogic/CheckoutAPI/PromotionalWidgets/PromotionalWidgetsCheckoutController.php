@@ -5,9 +5,12 @@ namespace SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Requests\PromotionalWidgetsCheckoutRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\GetWidgetsCheckoutResponse;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\PromotionalWidgetsCheckoutResponse;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -22,20 +25,20 @@ class PromotionalWidgetsCheckoutController
      */
     protected $promotionalWidgetsService;
     /**
-     * @var WidgetValidationService
+     * @var CheckoutService
      */
-    protected $widgetValidatorService;
+    protected $checkoutValidationService;
 
     /**
      * @param WidgetSettingsService $promotionalWidgetsService
-     * @param WidgetValidationService $widgetValidatorService
+     * @param CheckoutService $checkoutValidationService
      */
     public function __construct(
         WidgetSettingsService $promotionalWidgetsService,
-        WidgetValidationService $widgetValidatorService
+        CheckoutService $checkoutValidationService
     ) {
         $this->promotionalWidgetsService = $promotionalWidgetsService;
-        $this->widgetValidatorService = $widgetValidatorService;
+        $this->checkoutValidationService = $checkoutValidationService;
     }
 
     /**
@@ -61,13 +64,17 @@ class PromotionalWidgetsCheckoutController
      * @return GetWidgetsCheckoutResponse
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
+     * @throws BadMerchantIdException
+     * @throws WrongCredentialsException
+     * @throws FailedToRetrieveSellingCountriesException
      */
     public function getAvailableWidgetForCartPage(PromotionalWidgetsCheckoutRequest $request): GetWidgetsCheckoutResponse
     {
-        if (
-            !$this->widgetValidatorService->isCurrencySupported($request->getCurrentCurrency()) ||
-            !$this->widgetValidatorService->isIpAddressValid($request->getCurrentIpAddress())
-        ) {
+        $isSupported = $this->checkoutValidationService->isWidgetSupported(
+            $request->getCurrentCurrency(),
+            $request->getCurrentIpAddress()
+        );
+        if (!$isSupported) {
             return new GetWidgetsCheckoutResponse([]);
         }
 
@@ -85,17 +92,22 @@ class PromotionalWidgetsCheckoutController
      * @param PromotionalWidgetsCheckoutRequest $request
      *
      * @return GetWidgetsCheckoutResponse
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
      */
     public function getAvailableMiniWidgetForProductListingPage(
         PromotionalWidgetsCheckoutRequest $request
     ): GetWidgetsCheckoutResponse {
-        if (
-            !$this->widgetValidatorService->isCurrencySupported($request->getCurrentCurrency()) ||
-            !$this->widgetValidatorService->isIpAddressValid($request->getCurrentIpAddress()) ||
-            !$this->widgetValidatorService->isProductSupported($request->getProductId())
-        ) {
+        $isSupported = $this->checkoutValidationService->isWidgetSupported(
+            $request->getCurrentCurrency(),
+            $request->getCurrentIpAddress(),
+            $request->getProductId()
+        );
+        if (!$isSupported) {
             return new GetWidgetsCheckoutResponse([]);
         }
 
@@ -114,17 +126,22 @@ class PromotionalWidgetsCheckoutController
      * @param PromotionalWidgetsCheckoutRequest $request
      *
      * @return GetWidgetsCheckoutResponse
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
      * @throws HttpRequestException
      * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
      */
     public function getAvailableWidgetsForProductPage(
         PromotionalWidgetsCheckoutRequest $request
     ): GetWidgetsCheckoutResponse {
-        if (
-            !$this->widgetValidatorService->isCurrencySupported($request->getCurrentCurrency()) ||
-            !$this->widgetValidatorService->isIpAddressValid($request->getCurrentIpAddress()) ||
-            !$this->widgetValidatorService->isProductSupported($request->getProductId())
-        ) {
+        $isSupported = $this->checkoutValidationService->isWidgetSupported(
+            $request->getCurrentCurrency(),
+            $request->getCurrentIpAddress(),
+            $request->getProductId()
+        );
+        if (!$isSupported) {
             return new GetWidgetsCheckoutResponse([]);
         }
 

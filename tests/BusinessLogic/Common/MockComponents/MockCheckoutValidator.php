@@ -2,14 +2,14 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
-use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetValidationService;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
 
 /**
- * Class MockWidgetValidator.
+ * Class MockCheckoutValidator.
  *
  * @package SeQura\Core\Tests\BusinessLogic\Common\MockComponents
  */
-class MockWidgetValidator extends WidgetValidationService
+class MockCheckoutValidator extends CheckoutService
 {
     /**
      * @var bool
@@ -27,11 +27,7 @@ class MockWidgetValidator extends WidgetValidationService
     private $productValid = true;
 
     /**
-     * Validates if current IP address on checkout, if set in general settings, is supported.
-     *
-     * @param string $currentIpAddress
-     *
-     * @return bool
+     * @inheritDoc
      */
     public function isIpAddressValid(string $currentIpAddress): bool
     {
@@ -39,11 +35,7 @@ class MockWidgetValidator extends WidgetValidationService
     }
 
     /**
-     * Returns true if current currency on checkout is supported for widgets.
-     *
-     * @param string $currentCurrency
-     *
-     * @return bool
+     * @inheritDoc
      */
     public function isCurrencySupported(string $currentCurrency): bool
     {
@@ -51,11 +43,7 @@ class MockWidgetValidator extends WidgetValidationService
     }
 
     /**
-     * Returns true if products sku and category are not excluded in SeQura administration.
-     *
-     * @param string $productId
-     *
-     * @return bool
+     * @inheritDoc
      */
     public function isProductSupported(string $productId): bool
     {

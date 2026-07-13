@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
 
@@ -17,6 +18,9 @@ class MockPaymentMethodService extends PaymentMethodsService
 
     /** @var string[] */
     private $products = [];
+
+    /** @var bool */
+    private $throwPaymentMethodNotFound = false;
 
     /**
      * Gets available payment methods for merchant.
@@ -47,9 +51,15 @@ class MockPaymentMethodService extends PaymentMethodsService
      * Returns cached SeQura payment methods.
      *
      * @return SeQuraPaymentMethod[]
+     *
+     * @throws PaymentMethodNotFoundException
      */
     public function getCachedPaymentMethods(string $merchantId): array
     {
+        if ($this->throwPaymentMethodNotFound) {
+            throw new PaymentMethodNotFoundException('No payment methods found.');
+        }
+
         return $this->paymentMethods;
     }
 
@@ -81,5 +91,15 @@ class MockPaymentMethodService extends PaymentMethodsService
     public function setMockProducts(array $products): void
     {
         $this->products = $products;
+    }
+
+    /**
+     * @param bool $throw
+     *
+     * @return void
+     */
+    public function setThrowPaymentMethodNotFound(bool $throw): void
+    {
+        $this->throwPaymentMethodNotFound = $throw;
     }
 }
