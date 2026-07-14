@@ -48,7 +48,7 @@ class CurlHttpClient extends HttpClient
     /**
      * CURL handler.
      *
-     * @var resource
+     * @var resource|null
      */
     protected $curlSession;
 
