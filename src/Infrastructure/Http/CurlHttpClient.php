@@ -197,7 +197,7 @@ class CurlHttpClient extends HttpClient
      */
     protected function closeCurlSession(): void
     {
-        if (PHP_VERSION_ID < 80000 && is_resource($this->curlSession)) {
+        if (PHP_VERSION_ID < 80000 && \is_resource($this->curlSession)) {
             curl_close($this->curlSession);
         }
         $this->curlSession = null;
