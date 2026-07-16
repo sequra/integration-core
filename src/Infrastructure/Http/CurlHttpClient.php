@@ -48,7 +48,7 @@ class CurlHttpClient extends HttpClient
     /**
      * CURL handler.
      *
-     * @var resource
+     * @var resource|null
      */
     protected $curlSession;
 
@@ -114,14 +114,14 @@ class CurlHttpClient extends HttpClient
 
         if ($result === false) {
             $error = curl_errno($this->curlSession) . ' = ' . curl_error($this->curlSession);
-            curl_close($this->curlSession);
+            $this->closeCurlSession();
 
             throw new HttpCommunicationException(
                 'Request ' . $this->curlOptions[CURLOPT_URL] . ' failed. ERROR: ' . $error
             );
         }
 
-        curl_close($this->curlSession);
+        $this->closeCurlSession();
 
         return new HttpResponse($statusCode, $headers, $result);
     }
@@ -149,7 +149,7 @@ class CurlHttpClient extends HttpClient
             Logger::logError('Async process failed. ERROR: ' . $httpError);
         }
 
-        curl_close($this->curlSession);
+        $this->closeCurlSession();
     }
 
     /**
@@ -188,6 +188,19 @@ class CurlHttpClient extends HttpClient
 
         $this->curlSession = curl_init();
         $this->curlOptions = array();
+    }
+
+    /**
+     * Close cURL session.
+     *
+     * @return void
+     */
+    protected function closeCurlSession(): void
+    {
+        if (PHP_VERSION_ID < 80000 && \is_resource($this->curlSession)) {
+            curl_close($this->curlSession);
+        }
+        $this->curlSession = null;
     }
 
     /**
