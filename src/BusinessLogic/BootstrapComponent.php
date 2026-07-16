@@ -14,6 +14,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Store\StoreController;
 use SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\TransactionLogsController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\Affiliate\AffiliateController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Banners\BannerCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Checkout\Controller\CheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Controller\ExpressCheckoutController;
@@ -77,7 +78,9 @@ use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories\Transaction
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\RepositoryContracts\AdvancedSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedLoggerSettingsProvider;
 use SeQura\Core\BusinessLogic\Domain\AdvancedSettings\Services\AdvancedSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\ProxyContracts\AffiliateProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\RepositoryContracts\AffiliateSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateService;
 use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateSettingsService;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\RepositoryContracts\BannerSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\BannerSettings\Services\BannerSettingsService;
@@ -152,6 +155,8 @@ use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProv
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Deployments\DeploymentsProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Affiliate\AffiliateProxy;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AffiliateProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\AuthorizedProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Factories\ConnectionProxyFactory;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
@@ -728,6 +733,25 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            AffiliateService::class,
+            static function () {
+                return new AffiliateService(
+                    ServiceRegister::getService(AffiliateSettingsService::class),
+                    ServiceRegister::getService(AffiliateProxyInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            AffiliateController::class,
+            static function () {
+                return new AffiliateController(
+                    ServiceRegister::getService(AffiliateService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             LoggerSettingsProviderInterface::CLASS_NAME,
             static function () {
                 return new AdvancedLoggerSettingsProvider(
@@ -963,6 +987,26 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(HttpClient::class),
                     ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            AffiliateProxyFactory::class,
+            static function () {
+                return new AffiliateProxyFactory(
+                    ServiceRegister::getService(HttpClient::class),
+                    ServiceRegister::getService(ConnectionService::class),
+                    ServiceRegister::getService(DeploymentsService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            AffiliateProxyInterface::class,
+            static function () {
+                return new AffiliateProxy(
+                    ServiceRegister::getService(AffiliateProxyFactory::class)
                 );
             }
         );
