@@ -324,7 +324,7 @@ abstract class AbstractGenericQueueItemRepositoryTest extends TestCase
             $queueItem->setProgressBasePoints($item['progress']);
             $queueItem->setLastExecutionProgressBasePoints($item['lastExecutionProgress']);
             $queueItem->setRetries($item['retries']);
-            $queueItem->setFailureDescription($item['failureDescription']);
+            $queueItem->setFailureDescription($item['failureDescription'] ?? '');
             $queueItem->setSerializedTask(Serializer::serialize($task));
             $queueItem->setCreateTimestamp($item['createTimestamp']);
             $queueItem->setQueueTimestamp($item['queueTimestamp']);
