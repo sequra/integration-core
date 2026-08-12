@@ -19,6 +19,7 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\Banners\BannerCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Checkout\Controller\CheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Controller\ExpressCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\PaymentMethodsCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Controller\ConfigurationWebhookController;
@@ -903,6 +904,15 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            PaymentMethodsCheckoutController::class,
+            static function () {
+                return new PaymentMethodsCheckoutController(
+                    ServiceRegister::getService(OrderService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             PromotionalWidgetsCheckoutController::class,
             static function () {
                 return new PromotionalWidgetsCheckoutController(
@@ -916,7 +926,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             CheckoutController::class,
             static function () {
                 return new CheckoutController(
-                    ServiceRegister::getService(CheckoutInitializationService::class)
+                    ServiceRegister::getService(CheckoutInitializationService::class),
+                    ServiceRegister::getService(OrderService::class)
                 );
             }
         );
