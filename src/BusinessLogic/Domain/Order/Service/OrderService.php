@@ -163,19 +163,22 @@ class OrderService
     }
 
     /**
-     * Gets available payment methods for solicited order in categories.
+     * Gets available payment methods for solicited order in categories. The merchant the order was solicited for
+     * is taken from the stored order, so callers only need its reference.
      *
      * @param string $orderRef
-     * @param string $merchantId
      *
      * @return SeQuraPaymentMethodCategory[]
      *
      * @throws HttpRequestException
+     * @throws OrderNotFoundException
      */
-    public function getAvailablePaymentMethodsInCategories(string $orderRef, string $merchantId): array
+    public function getAvailablePaymentMethodsInCategories(string $orderRef): array
     {
+        $order = $this->getSeQuraOrder($orderRef);
+
         return $this->proxy->getAvailablePaymentMethodsInCategories(
-            new GetAvailablePaymentMethodsRequest($orderRef, $merchantId)
+            new GetAvailablePaymentMethodsRequest($orderRef, (string)$order->getMerchant()->getId())
         );
     }
 
@@ -319,8 +322,7 @@ class OrderService
         $updatedSeQuraOrder->setPaymentMethod(
             $this->getOrderPaymentMethodInfo(
                 $updatedSeQuraOrder->getReference(),
-                $webhook->getProductCode(),
-                (string)$updatedSeQuraOrder->getMerchant()->getId()
+                $webhook->getProductCode()
             )
         );
 
@@ -477,21 +479,17 @@ class OrderService
      *
      * @param string $orderReference
      * @param string $paymentMethodId
-     * @param string $merchantId
      *
      * @return PaymentMethod|null
      *
      * @throws HttpRequestException
+     * @throws OrderNotFoundException
      */
     private function getOrderPaymentMethodInfo(
         string $orderReference,
-        string $paymentMethodId,
-        string $merchantId
+        string $paymentMethodId
     ): ?PaymentMethod {
-        $methodCategories = $this->getAvailablePaymentMethodsInCategories(
-            $orderReference,
-            $merchantId
-        );
+        $methodCategories = $this->getAvailablePaymentMethodsInCategories($orderReference);
 
         foreach ($methodCategories as $category) {
             foreach ($category->getMethods() as $method) {

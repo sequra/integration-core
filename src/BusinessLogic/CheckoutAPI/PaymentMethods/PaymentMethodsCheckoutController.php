@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods;
 
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\Requests\PaymentMethodsInCategoriesRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\Responses\PaymentMethodsInCategoriesResponse;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
@@ -38,15 +39,13 @@ class PaymentMethodsCheckoutController
      * @return PaymentMethodsInCategoriesResponse
      *
      * @throws HttpRequestException
+     * @throws OrderNotFoundException
      */
     public function getPaymentMethodsInCategories(
         PaymentMethodsInCategoriesRequest $request
     ): PaymentMethodsInCategoriesResponse {
         return new PaymentMethodsInCategoriesResponse(
-            $this->orderService->getAvailablePaymentMethodsInCategories(
-                $request->getOrderRef(),
-                $request->getMerchantId()
-            )
+            $this->orderService->getAvailablePaymentMethodsInCategories($request->getOrderRef())
         );
     }
 }

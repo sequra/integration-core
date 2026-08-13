@@ -513,8 +513,7 @@ class BaseTestCase extends TestCase
             },
             CheckoutController::class => function () {
                 return new CheckoutController(
-                    TestServiceRegister::getService(CheckoutInitializationService::class),
-                    TestServiceRegister::getService(OrderService::class)
+                    TestServiceRegister::getService(CheckoutInitializationService::class)
                 );
             },
             ExpressCheckoutService::class => function () {

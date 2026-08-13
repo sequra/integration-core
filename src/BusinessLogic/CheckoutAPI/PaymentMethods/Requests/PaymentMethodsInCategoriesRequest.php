@@ -13,19 +13,13 @@ class PaymentMethodsInCategoriesRequest
      * @var string
      */
     protected $orderRef;
-    /**
-     * @var string
-     */
-    protected $merchantId;
 
     /**
      * @param string $orderRef Reference of the solicited order.
-     * @param string $merchantId Merchant the order was solicited for.
      */
-    public function __construct(string $orderRef, string $merchantId)
+    public function __construct(string $orderRef)
     {
         $this->orderRef = $orderRef;
-        $this->merchantId = $merchantId;
     }
 
     /**
@@ -34,13 +28,5 @@ class PaymentMethodsInCategoriesRequest
     public function getOrderRef(): string
     {
         return $this->orderRef;
-    }
-
-    /**
-     * @return string
-     */
-    public function getMerchantId(): string
-    {
-        return $this->merchantId;
     }
 }

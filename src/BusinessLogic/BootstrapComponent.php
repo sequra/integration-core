@@ -926,8 +926,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             CheckoutController::class,
             static function () {
                 return new CheckoutController(
-                    ServiceRegister::getService(CheckoutInitializationService::class),
-                    ServiceRegister::getService(OrderService::class)
+                    ServiceRegister::getService(CheckoutInitializationService::class)
                 );
             }
         );
