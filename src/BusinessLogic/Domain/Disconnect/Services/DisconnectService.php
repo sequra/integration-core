@@ -252,14 +252,16 @@ class DisconnectService
 
         // Removes country configurations connected to the deployment
         $countryConfigurations = $this->countryConfigurationRepository->getCountryConfiguration();
-        $newCountyConfigurations = [];
-        foreach ($countryConfigurations as $countryConfiguration) {
-            if (!\in_array($countryConfiguration->getMerchantId(), $merchantIds, true)) {
-                $newCountyConfigurations[] = $countryConfiguration;
+        if ($countryConfigurations) {
+            $newCountyConfigurations = [];
+            foreach ($countryConfigurations as $countryConfiguration) {
+                if (!\in_array($countryConfiguration->getMerchantId(), $merchantIds, true)) {
+                    $newCountyConfigurations[] = $countryConfiguration;
+                }
             }
-        }
 
-        $this->countryConfigurationRepository->setCountryConfiguration($newCountyConfigurations);
+            $this->countryConfigurationRepository->setCountryConfiguration($newCountyConfigurations);
+        }
 
         // Removes all payment methods connected to the deployment
         foreach ($merchantIds as $merchantId) {
