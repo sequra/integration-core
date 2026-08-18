@@ -173,6 +173,80 @@ class ExpressCheckoutSettingsRepositoryTest extends BaseTestCase
     }
 
     /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testGetExpressCheckoutSettingsToleratesLegacyRowWithoutButtonStyle(): void
+    {
+        // Arrange
+        $entity = new ExpressCheckoutSettingsEntity();
+        $entity->inflate([
+            'storeId' => '1',
+            'expressCheckoutSettings' => [
+                'expressCheckoutConfigs' => [],
+            ],
+        ]);
+        TestRepositoryRegistry::getRepository(ExpressCheckoutSettingsEntity::getClassName())->save($entity);
+
+        // Act
+        $loaded = StoreContext::doWithStore('1', [$this->repository, 'getExpressCheckoutSettings']);
+
+        // Assert
+        self::assertNotNull($loaded);
+        self::assertNull($loaded->getButtonStyle());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSetExpressCheckoutSettingsRoundTripsOpaqueButtonStyle(): void
+    {
+        // Arrange
+        $buttonStyle = '{"backgroundColor":"#123456","somethingNewerThanThisRelease":true}';
+        $settings = new ExpressCheckoutSettings(
+            [new ExpressCheckoutPageConfig(ExpressCheckoutPage::product(), true)],
+            $buttonStyle
+        );
+
+        // Act
+        StoreContext::doWithStore('1', [$this->repository, 'setExpressCheckoutSettings'], [$settings]);
+        $loaded = StoreContext::doWithStore('1', [$this->repository, 'getExpressCheckoutSettings']);
+
+        // Assert
+        self::assertNotNull($loaded);
+        self::assertSame($buttonStyle, $loaded->getButtonStyle());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testGetExpressCheckoutSettingsDegradesNonStringButtonStyleToNull(): void
+    {
+        // Arrange
+        $entity = new ExpressCheckoutSettingsEntity();
+        $entity->inflate([
+            'storeId' => '1',
+            'expressCheckoutSettings' => [
+                'expressCheckoutConfigs' => [],
+                'buttonStyle' => ['backgroundColor' => '#123456'],
+            ],
+        ]);
+        TestRepositoryRegistry::getRepository(ExpressCheckoutSettingsEntity::getClassName())->save($entity);
+
+        // Act
+        $loaded = StoreContext::doWithStore('1', [$this->repository, 'getExpressCheckoutSettings']);
+
+        // Assert
+        self::assertNotNull($loaded);
+        self::assertNull($loaded->getButtonStyle());
+    }
+
+    /**
      * @param string $storeId
      *
      * @return ExpressCheckoutSettingsEntity[]

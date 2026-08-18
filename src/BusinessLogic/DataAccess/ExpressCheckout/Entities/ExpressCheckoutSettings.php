@@ -53,7 +53,12 @@ class ExpressCheckoutSettings extends Entity
             }
         }
 
-        $this->expressCheckoutSettings = new DomainExpressCheckoutSettings($configs);
+        $buttonStyle = static::getDataValue($expressCheckoutSettings, 'buttonStyle', null);
+        if (!\is_string($buttonStyle)) {
+            $buttonStyle = null;
+        }
+
+        $this->expressCheckoutSettings = new DomainExpressCheckoutSettings($configs, $buttonStyle);
     }
 
     /**
@@ -67,6 +72,7 @@ class ExpressCheckoutSettings extends Entity
             'expressCheckoutConfigs' => array_map(static function (ExpressCheckoutPageConfig $config) {
                 return $config->toArray();
             }, $this->expressCheckoutSettings->getExpressCheckoutConfigs()),
+            'buttonStyle' => $this->expressCheckoutSettings->getButtonStyle(),
         ];
 
         return $data;
