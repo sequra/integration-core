@@ -2232,6 +2232,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         self::assertEquals([
             'availablePages' => ['product', 'cart', 'mini-cart'],
             'expressCheckoutConfigs' => [],
+            'buttonStyle' => null,
         ], $response->toArray());
     }
 
@@ -2268,6 +2269,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 ['page' => 'cart', 'enabled' => false],
                 ['page' => 'mini-cart', 'enabled' => true],
             ],
+            'buttonStyle' => null,
         ], $response->toArray());
     }
 
@@ -2298,6 +2300,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         self::assertCount(2, $persisted->getExpressCheckoutConfigs());
         self::assertTrue($persisted->isPageEnabled(ExpressCheckoutPage::product()->getPage()));
         self::assertFalse($persisted->isPageEnabled(ExpressCheckoutPage::cart()->getPage()));
+        self::assertNull($persisted->getButtonStyle());
     }
 
     /**
@@ -2334,5 +2337,130 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         self::assertFalse($persisted->isPageEnabled(ExpressCheckoutPage::product()->getPage()));
         self::assertFalse($persisted->isPageEnabled(ExpressCheckoutPage::cart()->getPage()));
         self::assertTrue($persisted->isPageEnabled(ExpressCheckoutPage::miniCart()->getPage()));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testSaveExpressCheckoutSettingsStoresUnknownButtonStyleAttributesVerbatim(): void
+    {
+        //Arrange
+        $buttonStyle = '{"attributeThisReleaseNeverHeardOf":"<script>x</script>",'
+            . '"weird key":[1,2,{"deep":null}],"__proto__":"  spaced  "}';
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-express-checkout-settings",
+                "expressCheckoutConfigs" => [
+                    ['page' => 'product', 'enabled' => true],
+                ],
+                "buttonStyle" => $buttonStyle,
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        $persisted = $this->expressCheckoutSettingsService->getExpressCheckoutSettings();
+        self::assertNotNull($persisted);
+        self::assertSame($buttonStyle, $persisted->getButtonStyle());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testSaveExpressCheckoutSettingsRejectsMalformedButtonStyle(): void
+    {
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-express-checkout-settings",
+                "expressCheckoutConfigs" => [
+                    ['page' => 'product', 'enabled' => true],
+                ],
+                "buttonStyle" => '{"backgroundColor":',
+            ]
+        );
+
+        //Assert
+        self::assertFalse($response->isSuccessful());
+        self::assertEquals([
+            'statusCode' => 400,
+            'errorCode' => 'general.errors.expressCheckout.invalidButtonStyle',
+            'errorMessage' => 'Invalid express checkout button style.',
+            'errorParameters' => [],
+        ], $response->toArray());
+        self::assertNull($this->expressCheckoutSettingsService->getExpressCheckoutSettings());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testSaveExpressCheckoutSettingsRejectsNonStringButtonStyle(): void
+    {
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-express-checkout-settings",
+                "expressCheckoutConfigs" => [],
+                "buttonStyle" => ['backgroundColor' => '#000000'],
+            ]
+        );
+
+        //Assert
+        self::assertFalse($response->isSuccessful());
+        self::assertEquals(
+            'general.errors.expressCheckout.invalidButtonStyle',
+            $response->toArray()['errorCode']
+        );
+        self::assertNull($this->expressCheckoutSettingsService->getExpressCheckoutSettings());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testExpressCheckoutButtonStyleRoundTripsThroughGetResponse(): void
+    {
+        //Arrange
+        $buttonStyle = '{"unknownFutureProp":"x","nested":{"a":[1,2]}}';
+        ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-express-checkout-settings",
+                "expressCheckoutConfigs" => [
+                    ['page' => 'product', 'enabled' => true],
+                ],
+                "buttonStyle" => $buttonStyle,
+            ]
+        );
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-express-checkout-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals([
+            'availablePages' => ['product', 'cart', 'mini-cart'],
+            'expressCheckoutConfigs' => [
+                ['page' => 'product', 'enabled' => true],
+            ],
+            'buttonStyle' => $buttonStyle,
+        ], $response->toArray());
     }
 }
