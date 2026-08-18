@@ -20,15 +20,22 @@ class ExpressCheckoutSettings
     protected $expressCheckoutConfigs;
 
     /**
+     * @var string|null
+     */
+    protected $buttonStyle;
+
+    /**
      * @param ExpressCheckoutPageConfig[] $expressCheckoutConfigs
+     * @param string|null $buttonStyle
      *
      * @throws InvalidExpressCheckoutPageConfigException When an entry is not an ExpressCheckoutPageConfig.
      * @throws DuplicatedExpressCheckoutPageException When two entries reference the same page.
      */
-    public function __construct(array $expressCheckoutConfigs = [])
+    public function __construct(array $expressCheckoutConfigs = [], ?string $buttonStyle = null)
     {
         $this->validateConfigs($expressCheckoutConfigs);
         $this->expressCheckoutConfigs = array_values($expressCheckoutConfigs);
+        $this->buttonStyle = $buttonStyle;
     }
 
     /**
@@ -37,6 +44,14 @@ class ExpressCheckoutSettings
     public function getExpressCheckoutConfigs(): array
     {
         return $this->expressCheckoutConfigs;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getButtonStyle(): ?string
+    {
+        return $this->buttonStyle;
     }
 
     /**
@@ -64,6 +79,7 @@ class ExpressCheckoutSettings
             'expressCheckoutConfigs' => array_map(static function (ExpressCheckoutPageConfig $config) {
                 return $config->toArray();
             }, $this->expressCheckoutConfigs),
+            'buttonStyle' => $this->buttonStyle,
         ];
     }
 

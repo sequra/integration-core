@@ -168,6 +168,7 @@ class ExpressCheckoutSettingsTest extends TestCase
                 ['page' => 'cart', 'enabled' => false],
                 ['page' => 'mini-cart', 'enabled' => true],
             ],
+            'buttonStyle' => null,
         ], $settings->toArray());
     }
 
@@ -178,6 +179,35 @@ class ExpressCheckoutSettingsTest extends TestCase
     {
         $settings = new ExpressCheckoutSettings();
 
-        self::assertSame(['expressCheckoutConfigs' => []], $settings->toArray());
+        self::assertSame(['expressCheckoutConfigs' => [], 'buttonStyle' => null], $settings->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testButtonStyleDefaultsToNull(): void
+    {
+        $settings = new ExpressCheckoutSettings();
+
+        self::assertNull($settings->getButtonStyle());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws InvalidExpressCheckoutPageConfigException
+     */
+    public function testButtonStyleIsCarriedVerbatim(): void
+    {
+        $buttonStyle = '{"backgroundColor":"#123456","somethingNewerThanThisRelease":true}';
+
+        $settings = new ExpressCheckoutSettings(
+            [new ExpressCheckoutPageConfig(ExpressCheckoutPage::product(), true)],
+            $buttonStyle
+        );
+
+        self::assertSame($buttonStyle, $settings->getButtonStyle());
+        self::assertSame($buttonStyle, $settings->toArray()['buttonStyle']);
     }
 }
