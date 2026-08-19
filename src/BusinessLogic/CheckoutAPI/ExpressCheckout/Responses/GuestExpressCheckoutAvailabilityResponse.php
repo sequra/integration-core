@@ -22,13 +22,20 @@ class GuestExpressCheckoutAvailabilityResponse extends Response
     protected $availableCountries;
 
     /**
+     * @var string|null
+     */
+    protected $buttonStyle;
+
+    /**
      * @param bool $available
      * @param string[] $availableCountries ISO country codes for which Express Checkout is available.
+     * @param string|null $buttonStyle
      */
-    public function __construct(bool $available, array $availableCountries)
+    public function __construct(bool $available, array $availableCountries, ?string $buttonStyle)
     {
         $this->available = $available;
         $this->availableCountries = $availableCountries;
+        $this->buttonStyle = $buttonStyle;
     }
 
     /**
@@ -39,6 +46,7 @@ class GuestExpressCheckoutAvailabilityResponse extends Response
         return [
             'available' => $this->available,
             'availableCountries' => $this->availableCountries,
+            'buttonStyle' => $this->buttonStyle,
         ];
     }
 }
