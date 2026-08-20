@@ -2374,11 +2374,6 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      *
      * @throws InvalidEnvironmentException
      */
-    /**
-     * @return void
-     *
-     * @throws InvalidEnvironmentException
-     */
     public function testSaveExpressCheckoutSettingsTreatsAnEmptyButtonStyleAsUnset(): void
     {
         //Act

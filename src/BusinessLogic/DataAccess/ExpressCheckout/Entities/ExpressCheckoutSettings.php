@@ -68,12 +68,7 @@ class ExpressCheckoutSettings extends Entity
     {
         $data = parent::toArray();
         $data['storeId'] = $this->storeId;
-        $data['expressCheckoutSettings'] = [
-            'expressCheckoutConfigs' => array_map(static function (ExpressCheckoutPageConfig $config) {
-                return $config->toArray();
-            }, $this->expressCheckoutSettings->getExpressCheckoutConfigs()),
-            'buttonStyle' => $this->expressCheckoutSettings->getButtonStyle(),
-        ];
+        $data['expressCheckoutSettings'] = $this->expressCheckoutSettings->toArray();
 
         return $data;
     }

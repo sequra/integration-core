@@ -35,7 +35,7 @@ class ExpressCheckoutSettings
     {
         $this->validateConfigs($expressCheckoutConfigs);
         $this->expressCheckoutConfigs = array_values($expressCheckoutConfigs);
-        $this->buttonStyle = $buttonStyle;
+        $this->buttonStyle = $buttonStyle === '' ? null : $buttonStyle;
     }
 
     /**

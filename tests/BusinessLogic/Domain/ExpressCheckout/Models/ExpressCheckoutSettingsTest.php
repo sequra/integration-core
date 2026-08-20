@@ -194,6 +194,16 @@ class ExpressCheckoutSettingsTest extends TestCase
 
     /**
      * @return void
+     */
+    public function testConstructorTreatsAnEmptyButtonStyleAsUnset(): void
+    {
+        $settings = new ExpressCheckoutSettings([], '');
+
+        self::assertNull($settings->getButtonStyle());
+    }
+
+    /**
+     * @return void
      *
      * @throws DuplicatedExpressCheckoutPageException
      * @throws InvalidExpressCheckoutPageConfigException

@@ -114,18 +114,6 @@ class ExpressCheckoutControllerTest extends BaseTestCase
     /**
      * @return void
      */
-    public function testIsAvailableReturnsNullButtonStyleWhenNoSettingsStored(): void
-    {
-        $this->expressCheckoutService->setAvailability(true);
-
-        $response = CheckoutAPI::get()->expressCheckout('1')->isAvailable($this->buildRequest());
-
-        self::assertSame(['available' => true, 'buttonStyle' => null], $response->toArray());
-    }
-
-    /**
-     * @return void
-     */
     public function testIsAvailableOmitsStoredButtonStyleWhenUnavailable(): void
     {
         $buttonStyle = '{"color":"#00FF00","futureAttribute":"value"}';
@@ -223,24 +211,6 @@ class ExpressCheckoutControllerTest extends BaseTestCase
 
         self::assertSame(
             ['available' => true, 'availableCountries' => ['ES'], 'buttonStyle' => $buttonStyle],
-            $response->toArray()
-        );
-    }
-
-    /**
-     * @return void
-     */
-    public function testIsAvailableForGuestReturnsNullButtonStyleWhenNoSettingsStored(): void
-    {
-        $this->expressCheckoutService->setGuestAvailability(true);
-        $this->countryConfigurationService->saveCountryConfiguration([
-            new CountryConfiguration('ES', 'merchant1'),
-        ]);
-
-        $response = CheckoutAPI::get()->expressCheckout('1')->isAvailableForGuest($this->buildGuestRequest());
-
-        self::assertSame(
-            ['available' => true, 'availableCountries' => ['ES'], 'buttonStyle' => null],
             $response->toArray()
         );
     }

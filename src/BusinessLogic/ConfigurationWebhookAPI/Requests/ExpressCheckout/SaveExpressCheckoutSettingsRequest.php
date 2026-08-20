@@ -58,11 +58,7 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
 
         $buttonStyle = $payload['buttonStyle'] ?? null;
 
-        if ($buttonStyle === '') {
-            $buttonStyle = null;
-        }
-
-        if ($buttonStyle !== null && !self::isWellFormedJson($buttonStyle)) {
+        if ($buttonStyle !== null && $buttonStyle !== '' && !self::isWellFormedJson($buttonStyle)) {
             throw new InvalidExpressCheckoutButtonStyleException();
         }
 
