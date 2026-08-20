@@ -31,8 +31,11 @@ class GuestExpressCheckoutAvailabilityResponse extends Response
      * @param string[] $availableCountries ISO country codes for which Express Checkout is available.
      * @param string|null $buttonStyle
      */
-    public function __construct(bool $available, array $availableCountries, ?string $buttonStyle)
-    {
+    public function __construct(
+        bool $available,
+        array $availableCountries,
+        ?string $buttonStyle = null
+    ) {
         $this->available = $available;
         $this->availableCountries = $availableCountries;
         $this->buttonStyle = $buttonStyle;

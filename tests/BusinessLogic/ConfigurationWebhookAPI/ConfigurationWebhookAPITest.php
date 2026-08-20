@@ -2374,6 +2374,37 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      *
      * @throws InvalidEnvironmentException
      */
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testSaveExpressCheckoutSettingsTreatsAnEmptyButtonStyleAsUnset(): void
+    {
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-express-checkout-settings",
+                "expressCheckoutConfigs" => [
+                    ['page' => 'product', 'enabled' => true],
+                ],
+                "buttonStyle" => '',
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        $persisted = $this->expressCheckoutSettingsService->getExpressCheckoutSettings();
+        self::assertNotNull($persisted);
+        self::assertNull($persisted->getButtonStyle());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
     public function testSaveExpressCheckoutSettingsRejectsMalformedButtonStyle(): void
     {
         //Act

@@ -25,7 +25,7 @@ class ExpressCheckoutAvailabilityResponse extends Response
      * @param bool $available
      * @param string|null $buttonStyle
      */
-    public function __construct(bool $available, ?string $buttonStyle)
+    public function __construct(bool $available, ?string $buttonStyle = null)
     {
         $this->available = $available;
         $this->buttonStyle = $buttonStyle;
