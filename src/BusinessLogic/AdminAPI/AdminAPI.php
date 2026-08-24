@@ -32,7 +32,7 @@ class AdminAPI
     /**
      * Gets an AdminAPI instance.
      *
-     * @return Aspects
+     * @return AdminAPI
      */
     public static function get(): object
     {
@@ -44,7 +44,7 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return ConnectionController
      */
     public function connection(string $storeId): object
     {
@@ -59,9 +59,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return StoreController
      */
-    public function store(string $storeId): Aspects
+    public function store(string $storeId): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())
@@ -74,9 +74,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return CountryConfigurationController
      */
-    public function countryConfiguration(string $storeId): Aspects
+    public function countryConfiguration(string $storeId): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())
@@ -89,9 +89,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return PromotionalWidgetsController
      */
-    public function widgetConfiguration(string $storeId): Aspects
+    public function widgetConfiguration(string $storeId): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())
@@ -104,9 +104,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return BannerSettingsController
      */
-    public function bannerSettings(string $storeId): Aspects
+    public function bannerSettings(string $storeId): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())
@@ -119,9 +119,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return PaymentMethodsController
      */
-    public function paymentMethods(string $storeId): Aspects
+    public function paymentMethods(string $storeId): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())
@@ -134,9 +134,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return GeneralSettingsController
      */
-    public function generalSettings(string $storeId): Aspects
+    public function generalSettings(string $storeId): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())
@@ -149,9 +149,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return OrderStatusSettingsController
      */
-    public function orderStatusSettings(string $storeId): Aspects
+    public function orderStatusSettings(string $storeId): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())
@@ -164,9 +164,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return TransactionLogsController
      */
-    public function transactionLogs(string $storeId): Aspects
+    public function transactionLogs(string $storeId): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())
@@ -179,9 +179,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return IntegrationController
      */
-    public function integration(string $storeId): Aspects
+    public function integration(string $storeId): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())
@@ -194,9 +194,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return DisconnectController
      */
-    public function disconnect(string $storeId): Aspects
+    public function disconnect(string $storeId): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())
@@ -209,9 +209,9 @@ class AdminAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return DeploymentsController
      */
-    public function deployments(string $storeId): Aspects
+    public function deployments(string $storeId): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())

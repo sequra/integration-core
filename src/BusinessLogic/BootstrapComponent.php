@@ -413,7 +413,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new ConnectionService(
                     ServiceRegister::getService(ConnectionDataRepositoryInterface::class),
                     ServiceRegister::getService(CredentialsService::class),
-                    ServiceRegister::getService(StoreIntegrationService::class)
+                    ServiceRegister::getService(StoreIntegrationService::class),
+                    ServiceRegister::getService(DeploymentsRepositoryInterface::class)
                 );
             }
         );

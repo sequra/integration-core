@@ -46,6 +46,41 @@ class CountryConfigurationControllerTest extends BaseTestCase
     }
 
     /**
+     * @return void
+     */
+    public function testSellingCountriesAreNotConfigured(): void
+    {
+        // Act
+        $response = AdminAPI::get()->countryConfiguration('1')->areSellingCountriesConfigured();
+
+        // Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals(['configured' => false], $response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSellingCountriesAreConfigured(): void
+    {
+        // Arrange
+        StoreContext::doWithStore(
+            '1',
+            [$this->countryConfigurationRepository, 'setCountryConfiguration'],
+            [[new CountryConfiguration('ES', 'logeecom')]]
+        );
+
+        // Act
+        $response = AdminAPI::get()->countryConfiguration('1')->areSellingCountriesConfigured();
+
+        // Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals(['configured' => true], $response->toArray());
+    }
+
+    /**
      * @throws FailedToRetrieveSellingCountriesException
      */
     public function testIsGetSellingCountriesResponseSuccessful(): void

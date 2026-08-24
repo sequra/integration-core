@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+# [Unreleased]
+## Changed
+- The four API facades (`AdminAPI`, `CheckoutAPI`, `WebhookAPI`, `ConfigurationWebhookAPI`) are typed for static analysis: `Aspects::beforeEachMethodOfInstance()` / `beforeEachMethodOfService()` are generic over their subject and every facade method documents the controller it returns, so a chained call (`AdminAPI::get()->connection($storeId)->connect($request)`) type-checks without a cast or a PHPStan ignore. Runtime behaviour is unchanged: the returned object is still the `Aspects` proxy that applies error handling and the store context around every call.
+
+## Added
+- `AdminAPI::get()->countryConfiguration($storeId)->areSellingCountriesConfigured()`: tells whether a country configuration has been saved for the store, so an integration can wait for the merchant to enable the selling countries in the SeQura portal before it lets the plugin be used.
+- The URL of the SeQura portal is part of the connection responses: `DeploymentURL` carries the `portal_base_url` of the `deployments` endpoint, and `getOnboardingData()` and `connect()` return it as `portalUrl` for the environment and deployment the store is connected to. The returned URL points at the store integrations page of the portal (`/development/store-integrations`), where a merchant configures the connected store.
+
 # [v5.6.0](https://github.com/sequra/integration-core/tree/v5.6.0)
 ## Added
 - Affiliate outbound postbacks: an `AffiliateProxy` (under `SeQuraAPI/Affiliate`) that sends the conversion and cancellation postbacks already shaped for their destination and without attaching the connection credentials, plus a `CheckoutAPI` affiliate facade (`affiliate($storeId)->reportConversion(...)` / `->reportCancellation(...)`) that sources the affiliate credentials from the stored `AffiliateSettings` and dispatches only when affiliate marketing is enabled.

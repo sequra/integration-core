@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsExcep
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
@@ -22,6 +23,11 @@ use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
  */
 class ConnectionService
 {
+    /**
+     * Page of the SeQura portal where a merchant configures the store integrations of their account
+     */
+    private const PORTAL_STORE_INTEGRATIONS_PATH = '/development/store-integrations';
+
     /**
      * @var ConnectionDataRepositoryInterface $connectionDataRepository
      */
@@ -38,18 +44,26 @@ class ConnectionService
     protected $storeIntegrationService;
 
     /**
+     * @var DeploymentsRepositoryInterface $deploymentsRepository
+     */
+    protected $deploymentsRepository;
+
+    /**
      * @param ConnectionDataRepositoryInterface $connectionDataRepository
      * @param CredentialsService $credentialsService
      * @param StoreIntegrationService $storeIntegrationService
+     * @param DeploymentsRepositoryInterface $deploymentsRepository
      */
     public function __construct(
         ConnectionDataRepositoryInterface $connectionDataRepository,
         CredentialsService $credentialsService,
-        StoreIntegrationService $storeIntegrationService
+        StoreIntegrationService $storeIntegrationService,
+        DeploymentsRepositoryInterface $deploymentsRepository
     ) {
         $this->connectionDataRepository = $connectionDataRepository;
         $this->credentialsService = $credentialsService;
         $this->storeIntegrationService = $storeIntegrationService;
+        $this->deploymentsRepository = $deploymentsRepository;
     }
 
     /**
@@ -62,25 +76,53 @@ class ConnectionService
      * @throws WrongCredentialsException
      * @throws PaymentMethodNotFoundException
      * @throws CapabilitiesEmptyException
+     * @throws InvalidUrlException
      */
     public function connect(array $connections): void
     {
         $errors = [];
+        $connected = 0;
 
         foreach ($connections as $connectionData) {
+            // A deployment the merchant left without credentials is not connected
+            if (!$this->hasCredentials($connectionData)) {
+                continue;
+            }
+
             try {
                 $credentials = $this->credentialsService->validateAndUpdateCredentials($connectionData);
                 $this->credentialsService->updateCountryConfigurationWithNewMerchantIdsAndRemoveOldPaymentMethods($credentials);
                 $this->registerWebhooks($connectionData);
                 $this->saveConnectionData($connectionData);
+                $connected++;
             } catch (WrongCredentialsException $exception) {
                 $errors[] = $connectionData->getDeployment();
             }
         }
 
+        if (empty($errors) && $connected === 0) {
+            $errors = array_map(static function (ConnectionData $connectionData) {
+                return $connectionData->getDeployment();
+            }, $connections);
+        }
+
         if (!empty($errors)) {
             throw new WrongCredentialsException(null, $errors);
         }
+    }
+
+    /**
+     * Tells whether a connection carries the credentials a deployment is connected with.
+     *
+     * @param ConnectionData $connectionData
+     *
+     * @return bool
+     */
+    private function hasCredentials(ConnectionData $connectionData): bool
+    {
+        $credentials = $connectionData->getAuthorizationCredentials();
+
+        return $credentials->getUsername() !== '' && $credentials->getPassword() !== '';
     }
 
     /**
@@ -109,6 +151,41 @@ class ConnectionService
     public function getAllConnectionData(): array
     {
         return $this->connectionDataRepository->getAllConnectionSettings();
+    }
+
+    /**
+     * Returns the URL of the SeQura portal page where the store is configured, or null
+     * when the store is not connected yet or nothing is known about its deployment.
+     *
+     * @param ConnectionData[]|null $connections Connections of the store, read when not given
+     *
+     * @return string|null
+     */
+    public function getPortalUrl(?array $connections = null): ?string
+    {
+        $connections = $connections ?? $this->getAllConnectionData();
+
+        if (empty($connections)) {
+            return null;
+        }
+
+        $connection = reset($connections);
+        $deployment = $this->deploymentsRepository->getDeploymentById($connection->getDeployment());
+
+        if (!$deployment) {
+            return null;
+        }
+
+        $deploymentUrl = $connection->isLive() ?
+            $deployment->getLiveDeploymentURL() :
+            $deployment->getSandboxDeploymentURL();
+        $portalUrl = $deploymentUrl ? $deploymentUrl->getPortalBaseUrl() : '';
+
+        if ($portalUrl === '') {
+            return null;
+        }
+
+        return rtrim($portalUrl, '/') . self::PORTAL_STORE_INTEGRATIONS_PATH;
     }
 
     /**

@@ -66,6 +66,14 @@ class ConnectionData extends DataTransferObject
     }
 
     /**
+     * @return bool
+     */
+    public function isLive(): bool
+    {
+        return $this->environment === BaseProxy::LIVE_MODE;
+    }
+
+    /**
      * @param string $environment
      */
     public function setEnvironment(string $environment): void
