@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+# [Unreleased]
+## Changed
+- The four API facades (`AdminAPI`, `CheckoutAPI`, `WebhookAPI`, `ConfigurationWebhookAPI`) are typed for static analysis: `Aspects::beforeEachMethodOfInstance()` / `beforeEachMethodOfService()` are generic over their subject and every facade method documents the controller it returns, so a chained call (`AdminAPI::get()->connection($storeId)->connect($request)`) type-checks without a cast or a PHPStan ignore. Runtime behaviour is unchanged: the returned object is still the `Aspects` proxy that applies error handling and the store context around every call.
+
+## Added
+- `AdminAPI::get()->countryConfiguration($storeId)->areSellingCountriesConfigured()`: tells whether a country configuration has been saved for the store, so an integration can wait for the merchant to enable the selling countries in the SeQura portal before it lets the plugin be used.
+- The URL of the SeQura portal is part of the connection responses: `DeploymentURL` carries the `portal_base_url` of the `deployments` endpoint, and `getOnboardingData()` and `connect()` return it as `portalUrl` for the environment and deployment the store is connected to. The returned URL points at the store integrations page of the portal (`/development/store-integrations`), where a merchant configures the connected store.
+
 # [v5.8.0](https://github.com/sequra/integration-core/tree/v5.8.0)
 ## Added
 - Payment methods of an already solicited order, from the storefront: `CheckoutAPI::get()->solicitedOrderPaymentMethods($storeId)->getPaymentMethodsInCategories(new PaymentMethodsInCategoriesRequest($orderRef))` answers with the methods SeQura offers for that order, grouped in the categories it returns them in. It depends on `OrderService` alone, so an integration that solicits orders without configuring the checkout library can use it; the methods a merchant offers before an order exists still come from `cachedPaymentMethods()`. The payload carries the categories under `categories` and, because a category with no method is returned as well, a `hasAvailablePaymentMethods` flag telling whether the buyer has anything to choose from.

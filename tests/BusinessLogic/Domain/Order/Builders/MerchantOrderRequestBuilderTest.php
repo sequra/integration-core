@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Order\Builders;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
@@ -78,7 +79,8 @@ class MerchantOrderRequestBuilderTest extends BaseTestCase
         $this->connectionService = new MockConnectionService(
             new MockConnectionDataRepository(),
             $this->credentialsService,
-            TestServiceRegister::getService(StoreIntegrationService::class)
+            TestServiceRegister::getService(StoreIntegrationService::class),
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
         );
         $this->merchantDataProvider = new MockMerchantDataProvider();
         $this->builder = new MerchantOrderRequestBuilder(

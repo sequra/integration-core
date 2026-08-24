@@ -19,6 +19,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFo
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
+use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -55,9 +56,12 @@ class ConnectionController
      */
     public function getOnboardingData(): OnboardingDataResponse
     {
+        $connections = $this->connectionService->getAllConnectionData();
+
         return new OnboardingDataResponse(
-            $this->connectionService->getAllConnectionData(),
-            $this->statisticalDataService->getStatisticalData()
+            $connections,
+            $this->statisticalDataService->getStatisticalData(),
+            $this->connectionService->getPortalUrl($connections)
         );
     }
 
@@ -131,13 +135,16 @@ class ConnectionController
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
      * @throws CapabilitiesEmptyException
+     * @throws InvalidUrlException
      */
     public function connect(OnboardingRequest $onboardingRequest): Response
     {
+        $onboardingData = $onboardingRequest->transformToDomainModel();
+
         try {
-            $this->connectionService->connect($onboardingRequest->transformToDomainModel()->getConnections());
+            $this->connectionService->connect($onboardingData->getConnections());
             $this->statisticalDataService->saveStatisticalData(
-                new StatisticalData($onboardingRequest->transformToDomainModel()->isSendStatisticalData())
+                new StatisticalData($onboardingData->isSendStatisticalData())
             );
         } catch (BadMerchantIdException $e) {
             return new ConnectionValidationResponse(false, 'merchantId');
@@ -145,7 +152,7 @@ class ConnectionController
             return new ConnectionValidationResponse(false, $e->getMessage());
         }
 
-        return new SuccessfulConnectionResponse();
+        return new SuccessfulConnectionResponse($this->connectionService->getPortalUrl($onboardingData->getConnections()));
     }
 
     /**
@@ -155,6 +162,7 @@ class ConnectionController
      *
      * @throws CapabilitiesEmptyException
      * @throws InvalidEnvironmentException
+     * @throws InvalidUrlException
      */
     public function reRegisterWebhooks(ReRegisterWebhookRequest $reRegisterWebhookRequest): Response
     {

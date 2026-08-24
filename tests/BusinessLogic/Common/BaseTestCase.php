@@ -329,7 +329,8 @@ class BaseTestCase extends TestCase
                 return new ConnectionService(
                     TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
                     TestServiceRegister::getService(CredentialsService::class),
-                    TestServiceRegister::getService(StoreIntegrationService::class)
+                    TestServiceRegister::getService(StoreIntegrationService::class),
+                    TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
                 );
             },
             AffiliateSettingsRepositoryInterface::class => function () {
@@ -708,7 +709,8 @@ class BaseTestCase extends TestCase
                 return new MockConnectionService(
                     TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
                     TestServiceRegister::getService(CredentialsService::class),
-                    TestServiceRegister::getService(StoreIntegrationService::class)
+                    TestServiceRegister::getService(StoreIntegrationService::class),
+                    TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
                 );
             }
         );

@@ -2,16 +2,15 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Migration\Tasks;
 
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Migration\Tasks\StoreIntegrationMigrateTask;
-use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
-use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAffiliateSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAffiliateSettingsService;
@@ -93,7 +92,8 @@ class StoreIntegrationMigrateTaskTest extends BaseTestCase
                 new MockPaymentMethodRepository(),
                 new MockAffiliateSettingsService(new MockAffiliateSettingsRepository())
             ),
-            $this->storeIntegrationService
+            $this->storeIntegrationService,
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
         );
 
         TestServiceRegister::registerService(ConnectionService::class, function () {

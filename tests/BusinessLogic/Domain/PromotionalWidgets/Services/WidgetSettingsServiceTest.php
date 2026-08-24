@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\PromotionalWidgets\Services;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
@@ -140,7 +141,8 @@ class WidgetSettingsServiceTest extends BaseTestCase
         $this->connectionService = new MockConnectionService(
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
-            TestServiceRegister::getService(StoreIntegrationService::class)
+            TestServiceRegister::getService(StoreIntegrationService::class),
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
         );
 
         TestServiceRegister::registerService(ConnectionService::class, function () {

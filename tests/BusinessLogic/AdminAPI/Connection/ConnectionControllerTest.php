@@ -3,6 +3,10 @@
 namespace SeQura\Core\Tests\BusinessLogic\AdminAPI\Connection;
 
 use Exception;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Models\DeploymentURL;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\ConnectionRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\OnboardingRequest;
@@ -58,6 +62,8 @@ class ConnectionControllerTest extends BaseTestCase
         TestServiceRegister::registerService(HttpClient::class, function () {
             return $this->httpClient;
         });
+
+        $this->storeSeQuraDeployment();
     }
 
     /**
@@ -312,7 +318,7 @@ class ConnectionControllerTest extends BaseTestCase
         $response = AdminAPI::get()->connection('1')->saveConnectionData($request);
 
         // Assert
-        self::assertEquals(['isValid' => true], $response->toArray());
+        self::assertEquals(['isValid' => true, 'portalUrl' => null], $response->toArray());
     }
 
     /**
@@ -403,7 +409,7 @@ class ConnectionControllerTest extends BaseTestCase
         $response = AdminAPI::get()->connection('1')->saveConnectionData($request);
 
         // Assert
-        self::assertEquals(['isValid' => true], $response->toArray());
+        self::assertEquals(['isValid' => true, 'portalUrl' => null], $response->toArray());
     }
 
     /**
@@ -453,7 +459,11 @@ class ConnectionControllerTest extends BaseTestCase
         StoreContext::doWithStore('1', [$this->statisticalDataRepository, 'setStatisticalData'], [$statisticalData]);
         StoreContext::doWithStore('1', [$this->connectionDataRepository, 'setConnectionData'], [$connectionDataSeQura]);
         StoreContext::doWithStore('1', [$this->connectionDataRepository, 'setConnectionData'], [$connectionDataSvea]);
-        $expectedResponse = new OnboardingDataResponse([$connectionDataSeQura, $connectionDataSvea], $statisticalData);
+        $expectedResponse = new OnboardingDataResponse(
+            [$connectionDataSeQura, $connectionDataSvea],
+            $statisticalData,
+            'https://portal-sandbox.sequra.com/development/store-integrations'
+        );
 
         // Act
         $response = AdminAPI::get()->connection('1')->getOnboardingData();
@@ -514,7 +524,8 @@ class ConnectionControllerTest extends BaseTestCase
         $mockConnectionService = new MockConnectionService(
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
-            TestServiceRegister::getService(StoreIntegrationService::class)
+            TestServiceRegister::getService(StoreIntegrationService::class),
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
         );
 
         TestServiceRegister::registerService(ConnectionService::class, function () use ($mockConnectionService) {
@@ -540,7 +551,10 @@ class ConnectionControllerTest extends BaseTestCase
         $response = AdminAPI::get()->connection('1')->connect($request);
 
         // Assert
-        self::assertEquals(['isValid' => true], $response->toArray());
+        self::assertEquals(
+            ['isValid' => true, 'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations'],
+            $response->toArray()
+        );
         self::assertTrue($response->isSuccessful());
     }
 
@@ -553,7 +567,8 @@ class ConnectionControllerTest extends BaseTestCase
         $mockConnectionService = new MockConnectionService(
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
-            TestServiceRegister::getService(StoreIntegrationService::class)
+            TestServiceRegister::getService(StoreIntegrationService::class),
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
         );
 
         $mockConnectionService->setThrowError(true);
@@ -632,12 +647,44 @@ class ConnectionControllerTest extends BaseTestCase
     }
 
     /**
+     * @return void
+     */
+    private function storeSeQuraDeployment(): void
+    {
+        $deploymentsRepository = new MockDeploymentsRepository();
+        $deploymentsRepository->setDeployments([
+            new Deployment(
+                'sequra',
+                'seQura',
+                new DeploymentURL(
+                    'https://live.sequrapi.com/',
+                    'https://live.sequracdn.com/assets/',
+                    'https://portal.sequra.com/'
+                ),
+                new DeploymentURL(
+                    'https://sandbox.sequrapi.com/',
+                    'https://sandbox.sequracdn.com/assets/',
+                    'https://portal-sandbox.sequra.com/'
+                )
+            )
+        ]);
+
+        TestServiceRegister::registerService(
+            DeploymentsRepositoryInterface::class,
+            static function () use ($deploymentsRepository) {
+                return $deploymentsRepository;
+            }
+        );
+    }
+
+    /**
      * @return array
      */
     private function expectedOnboardingDataToArrayResponse(): array
     {
         return [
             'sendStatisticalData' => true,
+            'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations',
             'environment' => 'sandbox',
             'connectionData' =>
                 [

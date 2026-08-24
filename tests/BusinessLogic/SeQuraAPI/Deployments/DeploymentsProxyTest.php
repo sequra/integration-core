@@ -98,15 +98,31 @@ class DeploymentsProxyTest extends BaseTestCase
         $expectedSequraDeployment = new Deployment(
             'sequra',
             'seQura',
-            new DeploymentURL('https://live.sequrapi.com/', 'https://live.sequracdn.com/assets/'),
-            new DeploymentURL('https://sandbox.sequrapi.com/', 'https://sandbox.sequracdn.com/assets/')
+            new DeploymentURL(
+                'https://live.sequrapi.com/',
+                'https://live.sequracdn.com/assets/',
+                'https://portal.sequra.com/'
+            ),
+            new DeploymentURL(
+                'https://sandbox.sequrapi.com/',
+                'https://sandbox.sequracdn.com/assets/',
+                'https://portal-sandbox.sequra.com/'
+            )
         );
 
         $expectedSVEADeployment = new Deployment(
             'svea',
             'SVEA',
-            new DeploymentURL('https://live.sequra.svea.com/', 'https://live.cdn.sequra.svea.com/assets/'),
-            new DeploymentURL('https://next-sandbox.sequra.svea.com/', 'https://next-sandbox.cdn.sequra.svea.com/assets/')
+            new DeploymentURL(
+                'https://live.sequra.svea.com/',
+                'https://live.cdn.sequra.svea.com/assets/',
+                'https://portal.sequra.com/'
+            ),
+            new DeploymentURL(
+                'https://next-sandbox.sequra.svea.com/',
+                'https://next-sandbox.cdn.sequra.svea.com/assets/',
+                'https://portal-sandbox.sequra.com/'
+            )
         );
 
         self::assertEquals($expectedSequraDeployment, $deployments[0]);

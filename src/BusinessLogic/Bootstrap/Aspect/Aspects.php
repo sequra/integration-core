@@ -50,27 +50,53 @@ class Aspects
     }
 
     /**
-     * @param object $subject
+     * Returns a proxy of the given instance: every method call on it is the call on
+     * the instance with the aspects applied around it, so a caller works with the
+     * type it passed in.
      *
-     * @return Aspects
+     * @param T $subject
+     *
+     * @template T of object
+     *
+     * @return T
      */
-    public function beforeEachMethodOfInstance($subject): Aspects
+    public function beforeEachMethodOfInstance(object $subject): object
     {
         $this->subject = $subject;
         $this->subjectClassName = null;
-        return $this;
+
+        // Every call on this instance is forwarded to the subject, so it stands in for it.
+        /**
+ * @var T $proxy
+*/
+        $proxy = $this;
+
+        return $proxy;
     }
 
     /**
-     * @param class-string $serviceClass
+     * Returns a proxy of the given service: every method call on it is the call on
+     * the registered service with the aspects applied around it, so a caller works
+     * with the type it asked for.
      *
-     * @return Aspects
+     * @param class-string<T> $serviceClass
+     *
+     * @template T of object
+     *
+     * @return T
      */
-    public function beforeEachMethodOfService(string $serviceClass): Aspects
+    public function beforeEachMethodOfService(string $serviceClass): object
     {
         $this->subjectClassName = $serviceClass;
         $this->subject = null;
-        return $this;
+
+        // Every call on this instance is forwarded to the service, so it stands in for it.
+        /**
+ * @var T $proxy
+*/
+        $proxy = $this;
+
+        return $proxy;
     }
 
     /**
@@ -81,7 +107,7 @@ class Aspects
      *
      * @throws \Exception
      */
-    public function __call($methodName, $arguments)
+    public function __call(string $methodName, array $arguments)
     {
         if ($this->subject) {
             return $this->aspect->applyOn([$this->subject, $methodName], $arguments);
