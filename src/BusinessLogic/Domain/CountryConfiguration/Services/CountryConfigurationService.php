@@ -7,6 +7,8 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRet
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
+use SeQura\Core\Infrastructure\Logger\Logger;
 
 /**
  * Class CountryConfigurationService
@@ -78,6 +80,16 @@ class CountryConfigurationService
     }
 
     /**
+     * Tells whether a country configuration has been saved for the store.
+     *
+     * @return bool
+     */
+    public function isCountryConfigurationSaved(): bool
+    {
+        return !empty($this->countryConfigurationRepository->getCountryConfiguration());
+    }
+
+    /**
      * Calls the repository to save the country configuration to the database.
      *
      * @param CountryConfiguration[] $countryConfiguration
@@ -111,7 +123,41 @@ class CountryConfigurationService
         }, $countriesCodes);
         $countryConfiguration = array_filter($countryConfiguration);
 
+        $this->logCountriesThatCannotBeSoldIn($countriesCodes, $countryConfiguration);
+
         $this->saveCountryConfiguration($countryConfiguration);
+    }
+
+    /**
+     * Records the countries that were asked for but cannot be sold in: they either have
+     * no merchant of their own or the store does not sell in them. Saving them is not
+     * possible, and without a record of it the store looks unconfigured for no reason.
+     *
+     * @param string[] $countriesCodes
+     * @param CountryConfiguration[] $countryConfiguration
+     *
+     * @return void
+     */
+    private function logCountriesThatCannotBeSoldIn(array $countriesCodes, array $countryConfiguration): void
+    {
+        $savedCodes = array_map(static function (CountryConfiguration $configuration) {
+            return $configuration->getCountryCode();
+        }, $countryConfiguration);
+
+        $skippedCodes = array_diff($countriesCodes, $savedCodes);
+
+        if (empty($skippedCodes)) {
+            return;
+        }
+
+        Logger::logWarning(
+            'Countries were left out of the country configuration: the store has no merchant selling in them.',
+            'Core',
+            [
+                new LogContextData('skippedCountries', implode(',', $skippedCodes)),
+                new LogContextData('savedCountries', implode(',', $savedCodes)),
+            ]
+        );
     }
 
     /**
