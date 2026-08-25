@@ -80,6 +80,32 @@ class CountryConfigurationService
     }
 
     /**
+     * Returns the merchant id configured for the given country, or null when the country has no
+     * configuration or is no longer a selling country.
+     *
+     * Not to be confused with CredentialsService::getMerchantIdByCountryCode(), which resolves the
+     * merchant from the stored credentials and throws when it cannot.
+     *
+     * @param string $countryCode ISO country code.
+     *
+     * @return string|null
+     *
+     * @throws FailedToRetrieveSellingCountriesException
+     */
+    public function getMerchantIdForCountry(string $countryCode): ?string
+    {
+        $configurations = $this->getCountryConfiguration() ?? [];
+
+        foreach ($configurations as $configuration) {
+            if ($configuration->getCountryCode() === $countryCode) {
+                return $configuration->getMerchantId();
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Tells whether a country configuration has been saved for the store.
      *
      * @return bool
