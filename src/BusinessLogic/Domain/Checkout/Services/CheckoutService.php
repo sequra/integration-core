@@ -6,6 +6,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdExceptio
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
@@ -17,8 +18,9 @@ use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
  * Class CheckoutService
  *
  * Shared eligibility checks used by all storefront flows (promotional widgets,
- * Express Checkout, etc.) — IP allowance, supported currency, product/category
- * eligibility against GeneralSettings.
+ * Express Checkout, solicitation, etc.) — IP allowance, supported currency, product/category
+ * eligibility against GeneralSettings, and shipping country against the saved country
+ * configuration.
  *
  * @package SeQura\Core\BusinessLogic\Domain\Checkout\Services
  */
@@ -43,6 +45,10 @@ class CheckoutService
      */
     protected $deploymentsService;
     /**
+     * @var CountryConfigurationService
+     */
+    protected $countryConfigurationService;
+    /**
      * @var ?GeneralSettings
      */
     public static $generalSettings = null;
@@ -56,17 +62,20 @@ class CheckoutService
      * @param ProductServiceInterface $productService
      * @param ConnectionService $connectionService
      * @param DeploymentsService $deploymentsService
+     * @param CountryConfigurationService $countryConfigurationService
      */
     public function __construct(
         GeneralSettingsService $generalSettingsService,
         ProductServiceInterface $productService,
         ConnectionService $connectionService,
-        DeploymentsService $deploymentsService
+        DeploymentsService $deploymentsService,
+        CountryConfigurationService $countryConfigurationService
     ) {
         $this->generalSettingsService = $generalSettingsService;
         $this->productService = $productService;
         $this->connectionService = $connectionService;
         $this->deploymentsService = $deploymentsService;
+        $this->countryConfigurationService = $countryConfigurationService;
     }
 
     /**
@@ -276,6 +285,64 @@ class CheckoutService
         }
 
         if (!$this->isIpAddressValid($ipAddress)) {
+            return false;
+        }
+
+        foreach ($productIds as $productId) {
+            if (!$this->isProductSupported($productId)) {
+                return false;
+            }
+        }
+
+        foreach ($categoryIds as $categoryId) {
+            if (!$this->isCategorySupported($categoryId)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Composite eligibility check for the solicitation (regular checkout) flow.
+     *
+     * Mirrors the guard chain the host platforms used to run themselves before calling
+     * CheckoutAPI::solicitation(): the shipping country must map to a configured merchant, and the
+     * cart must satisfy the GeneralSettings IP allowlist and product/category exclusions.
+     *
+     * Deliberately does not gate on currency: SeQura sells in non-EUR markets and the host guards
+     * this replaces never checked it.
+     *
+     * @param string $shippingCountry ISO country code of the order's delivery address.
+     * @param string $ipAddress IP address of the storefront customer. Empty skips the IP guard.
+     * @param string[] $productIds Product references in the cart (empty array = no per-product check).
+     * @param string[] $categoryIds Category references in the cart (empty array = no per-category check).
+     * @param bool $checkCountry When false, the shipping country guard is skipped. For hosts that
+     * resolve the merchant themselves.
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function isSolicitationSupported(
+        string $shippingCountry,
+        string $ipAddress = '',
+        array $productIds = [],
+        array $categoryIds = [],
+        bool $checkCountry = true
+    ): bool {
+        if (
+            $checkCountry &&
+            $this->countryConfigurationService->getMerchantIdForCountry($shippingCountry) === null
+        ) {
+            return false;
+        }
+
+        // IP address was not provided, skip IP validation.
+        if ($ipAddress !== '' && !$this->isIpAddressValid($ipAddress)) {
             return false;
         }
 
