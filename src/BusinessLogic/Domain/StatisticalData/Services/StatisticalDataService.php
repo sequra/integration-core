@@ -62,6 +62,8 @@ class StatisticalDataService
      * @param StatisticalData $statisticalData
      *
      * @return void
+     *
+     * @throws \Exception
      */
     public function saveStatisticalData(StatisticalData $statisticalData): void
     {
@@ -84,6 +86,8 @@ class StatisticalDataService
 
     /**
      * @return void
+     *
+     * @throws \Exception
      */
     public function setSendReportTime(): void
     {

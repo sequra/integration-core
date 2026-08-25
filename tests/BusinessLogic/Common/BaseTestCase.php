@@ -98,6 +98,7 @@ use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutSer
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\OrderIdentifiersService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Banner\BannerServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutIntegrationInterface;
@@ -170,10 +171,8 @@ use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\Logger\LoggerConfiguration;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
-use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\Serializer\Concrete\JsonSerializer;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
-use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStateTransitionEventBus;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\TaskRunnerWakeup;
 use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
@@ -389,6 +388,14 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(GeneralSettingsRepositoryInterface::class),
                     TestServiceRegister::getService(ConnectionService::class),
                     TestServiceRegister::getService(CountryConfigurationService::class)
+                );
+            },
+            StoreInfoServiceInterface::class => static function () {
+                return new MockStoreInfoService();
+            },
+            OrderIdentifiersService::class => static function () {
+                return new OrderIdentifiersService(
+                    TestServiceRegister::getService(StoreInfoServiceInterface::class)
                 );
             },
             TransactionLogService::class => static function () {
@@ -890,7 +897,9 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(GeneralSettingsService::class),
                     TestServiceRegister::getService(ProductServiceInterface::class),
                     TestServiceRegister::getService(CategoryServiceInterface::class),
-                    TestServiceRegister::getService(CountryConfigurationService::class)
+                    TestServiceRegister::getService(CountryConfigurationService::class),
+                    TestServiceRegister::getService(OrderIdentifiersService::class),
+                    TestServiceRegister::getService(StatisticalDataService::class)
                 );
             }
         );
@@ -900,7 +909,8 @@ class BaseTestCase extends TestCase
             static function () {
                 return new SaveGeneralSettingsHandler(
                     TestServiceRegister::getService(GeneralSettingsService::class),
-                    TestServiceRegister::getService(CountryConfigurationService::class)
+                    TestServiceRegister::getService(CountryConfigurationService::class),
+                    TestServiceRegister::getService(StatisticalDataService::class)
                 );
             }
         );
@@ -910,8 +920,7 @@ class BaseTestCase extends TestCase
             static function () {
                 return new GetWidgetSettingsHandler(
                     TestServiceRegister::getService(WidgetSettingsService::class),
-                    TestServiceRegister::getService(PaymentMethodsService::class),
-                    TestServiceRegister::getService(CredentialsService::class)
+                    TestServiceRegister::getService(PaymentMethodsService::class)
                 );
             }
         );
