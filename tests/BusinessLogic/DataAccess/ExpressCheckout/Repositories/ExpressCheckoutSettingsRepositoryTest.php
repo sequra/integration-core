@@ -265,10 +265,11 @@ class ExpressCheckoutSettingsRepositoryTest extends BaseTestCase
 
         // Act - a store with no settings at all
         $loadedThree = StoreContext::doWithStore('3', [$this->repository, 'getExpressCheckoutSettings']);
+        $reloadedTwo = StoreContext::doWithStore('2', [$this->repository, 'getExpressCheckoutSettings']);
 
         // Assert
         self::assertNull($loadedThree);
-        self::assertSame($buttonStyleTwo, $loadedTwoAfterUpdate->getButtonStyle());
+        self::assertSame($buttonStyleTwo, $reloadedTwo->getButtonStyle());
     }
 
     /**
