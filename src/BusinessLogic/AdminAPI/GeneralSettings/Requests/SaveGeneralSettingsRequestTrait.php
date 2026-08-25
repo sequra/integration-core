@@ -54,6 +54,12 @@ trait SaveGeneralSettingsRequestTrait
      * @var string[] $allowServiceRegistrationItems
      */
     protected $allowServiceRegistrationItems;
+    /**
+     * Order identifier sent to SeQura as the primary order reference.
+     *
+     * @var string|null
+     */
+    protected $orderIdentifier;
 
     /**
      * @param bool $sendOrderReportsPeriodicallyToSeQura
@@ -65,6 +71,7 @@ trait SaveGeneralSettingsRequestTrait
      * @param string[] $enabledForServices
      * @param string[] $allowFirstServicePaymentDelay
      * @param string[] $allowServiceRegistrationItems
+     * @param string|null $orderIdentifier
      */
     public function __construct(
         bool $sendOrderReportsPeriodicallyToSeQura,
@@ -75,7 +82,8 @@ trait SaveGeneralSettingsRequestTrait
         ?string $defaultServicesEndDate = null,
         array $enabledForServices = [],
         array $allowFirstServicePaymentDelay = [],
-        array $allowServiceRegistrationItems = []
+        array $allowServiceRegistrationItems = [],
+        ?string $orderIdentifier = null
     ) {
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
         $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
@@ -86,6 +94,7 @@ trait SaveGeneralSettingsRequestTrait
         $this->enabledForServices = $enabledForServices;
         $this->allowFirstServicePaymentDelay = $allowFirstServicePaymentDelay;
         $this->allowServiceRegistrationItems = $allowServiceRegistrationItems;
+        $this->orderIdentifier = $orderIdentifier;
     }
 
     /**
@@ -104,7 +113,8 @@ trait SaveGeneralSettingsRequestTrait
             $this->enabledForServices,
             $this->allowFirstServicePaymentDelay,
             $this->allowServiceRegistrationItems,
-            $this->defaultServicesEndDate
+            $this->defaultServicesEndDate,
+            $this->orderIdentifier
         );
     }
 }

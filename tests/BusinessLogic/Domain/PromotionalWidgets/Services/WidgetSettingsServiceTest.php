@@ -26,6 +26,9 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Exceptions\DuplicatedWidgetProductException;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Exceptions\EmptyWidgetSelectorParameterException;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Exceptions\InvalidWidgetStylesException;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\CustomWidgetsSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSelectorSettings;
@@ -1455,5 +1458,211 @@ class WidgetSettingsServiceTest extends BaseTestCase
         self::assertEquals(20, $widget->getMaxAmount());
         self::assertEquals('altPriceSelector', $widget->getAltPriceSelector());
         self::assertEquals('altPriceTriggerSelector', $widget->getAltTriggerSelector());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testItRefusesWidgetsOnTheProductPageWithoutThePriceSelector(): void
+    {
+        // Arrange
+        $settings = new WidgetSettingsModel(
+            true,
+            false,
+            false,
+            null,
+            new WidgetSelectorSettings('', 'locationSelector')
+        );
+
+        // Assert
+        $this->expectException(EmptyWidgetSelectorParameterException::class);
+
+        // Act
+        $this->widgetSettingsService->setWidgetSettings($settings);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testItRefusesWidgetsOnTheCartPageWithoutThePriceSelector(): void
+    {
+        // Arrange
+        $settings = new WidgetSettingsModel(
+            false,
+            false,
+            true,
+            null,
+            new WidgetSelectorSettings('priceSelector', 'locationSelector'),
+            new WidgetSelectorSettings('', 'cartLocationSelector')
+        );
+
+        // Assert
+        $this->expectException(EmptyWidgetSelectorParameterException::class);
+
+        // Act
+        $this->widgetSettingsService->setWidgetSettings($settings);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testItRefusesMiniWidgetsOnTheListingPageWithoutThePriceSelector(): void
+    {
+        // Arrange
+        $settings = new WidgetSettingsModel(
+            false,
+            true,
+            false,
+            null,
+            new WidgetSelectorSettings('priceSelector', 'locationSelector'),
+            new WidgetSelectorSettings('cartPriceSelector', 'cartLocationSelector'),
+            new WidgetSelectorSettings('', 'listingLocationSelector')
+        );
+
+        // Assert
+        $this->expectException(EmptyWidgetSelectorParameterException::class);
+
+        // Act
+        $this->widgetSettingsService->setWidgetSettings($settings);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testItRefusesTheSamePaymentMethodConfiguredTwice(): void
+    {
+        // Arrange
+        $productSettings = new WidgetSelectorSettings('priceSelector', 'locationSelector');
+        $productSettings->setCustomWidgetsSettings([
+            new CustomWidgetsSettings('firstSelector', 'pp3', true, ''),
+            new CustomWidgetsSettings('secondSelector', 'pp3', true, ''),
+        ]);
+
+        $settings = new WidgetSettingsModel(true, false, false, null, $productSettings);
+
+        // Assert
+        $this->expectException(DuplicatedWidgetProductException::class);
+
+        // Act
+        $this->widgetSettingsService->setWidgetSettings($settings);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testItAcceptsCustomConfigurationsOfDifferentPaymentMethods(): void
+    {
+        // Arrange
+        $productSettings = new WidgetSelectorSettings('priceSelector', 'locationSelector');
+        $productSettings->setCustomWidgetsSettings([
+            new CustomWidgetsSettings('firstSelector', 'pp3', true, ''),
+            new CustomWidgetsSettings('secondSelector', 'i1', true, ''),
+            new CustomWidgetsSettings('thirdSelector', '', false, ''),
+        ]);
+
+        $settings = new WidgetSettingsModel(true, false, false, null, $productSettings);
+
+        // Act
+        $this->widgetSettingsService->setWidgetSettings($settings);
+
+        // Assert
+        self::assertSame($settings, $this->widgetSettingsRepository->getWidgetSettings());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testItRefusesWidgetStylesThatAreNotJson(): void
+    {
+        // Arrange
+        $settings = new WidgetSettingsModel(
+            true,
+            false,
+            false,
+            'not json',
+            new WidgetSelectorSettings('priceSelector', 'locationSelector')
+        );
+
+        // Assert
+        $this->expectException(InvalidWidgetStylesException::class);
+
+        // Act
+        $this->widgetSettingsService->setWidgetSettings($settings);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testItRefusesCustomWidgetStylesThatAreNotJson(): void
+    {
+        // Arrange
+        $productSettings = new WidgetSelectorSettings('priceSelector', 'locationSelector');
+        $productSettings->setCustomWidgetsSettings([
+            new CustomWidgetsSettings('firstSelector', 'pp3', true, 'not json'),
+        ]);
+
+        $settings = new WidgetSettingsModel(true, false, false, null, $productSettings);
+
+        // Assert
+        $this->expectException(InvalidWidgetStylesException::class);
+
+        // Act
+        $this->widgetSettingsService->setWidgetSettings($settings);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testItStoresSettingsWithoutSelectorsWhenTheWidgetsAreTurnedOff(): void
+    {
+        // Arrange
+        $settings = new WidgetSettingsModel(false, false, false, '{"alignment":"left"}');
+
+        // Act
+        $this->widgetSettingsService->setWidgetSettings($settings);
+
+        // Assert
+        self::assertSame($settings, $this->widgetSettingsRepository->getWidgetSettings());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testItStoresSettingsOfEveryPageTheWidgetsAreTurnedOnFor(): void
+    {
+        // Arrange
+        $settings = new WidgetSettingsModel(
+            true,
+            true,
+            true,
+            '{"alignment":"left"}',
+            new WidgetSelectorSettings('priceSelector', 'locationSelector'),
+            new WidgetSelectorSettings('cartPriceSelector', 'cartLocationSelector', 'pp3'),
+            new WidgetSelectorSettings('listingPriceSelector', 'listingLocationSelector', 'pp3')
+        );
+
+        // Act
+        $this->widgetSettingsService->setWidgetSettings($settings);
+
+        // Assert
+        self::assertSame($settings, $this->widgetSettingsRepository->getWidgetSettings());
     }
 }
