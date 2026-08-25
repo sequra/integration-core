@@ -4,6 +4,7 @@ namespace SeQura\Core\Tests\BusinessLogic\Domain\ExpressCheckout\Models;
 
 use PHPUnit\Framework\TestCase;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\DuplicatedExpressCheckoutPageException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutButtonStyleException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageConfigException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPage;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPageConfig;
@@ -219,5 +220,72 @@ class ExpressCheckoutSettingsTest extends TestCase
 
         self::assertSame($buttonStyle, $settings->getButtonStyle());
         self::assertSame($buttonStyle, $settings->toArray()['buttonStyle']);
+    }
+
+    /**
+     * @return array<string, string[]>
+     */
+    public function invalidButtonStyleProvider(): array
+    {
+        return [
+            'json null literal' => ['null'],
+            'json number' => ['123'],
+            'json string' => ['"#ffffff"'],
+            'json list' => ['[{"backgroundColor":"#123456"}]'],
+            'truncated object' => ['{"backgroundColor":'],
+            'not json at all' => ['<div>'],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidButtonStyleProvider
+     *
+     * @param string $buttonStyle
+     *
+     * @return void
+     *
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws InvalidExpressCheckoutButtonStyleException
+     */
+    public function testConstructorRejectsAButtonStyleThatIsNotAJsonObject(string $buttonStyle): void
+    {
+        $this->expectException(InvalidExpressCheckoutButtonStyleException::class);
+
+        new ExpressCheckoutSettings([], $buttonStyle);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws InvalidExpressCheckoutButtonStyleException
+     */
+    public function testConstructorRejectsAnOversizedButtonStyle(): void
+    {
+        $buttonStyle = '{"backgroundColor":"' . str_repeat('a', 1515) . '"}';
+        self::assertSame(1537, strlen($buttonStyle));
+
+        $this->expectException(InvalidExpressCheckoutButtonStyleException::class);
+
+        new ExpressCheckoutSettings([], $buttonStyle);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws InvalidExpressCheckoutButtonStyleException
+     */
+    public function testConstructorAcceptsAButtonStyleAtTheSizeLimit(): void
+    {
+        $buttonStyle = '{"backgroundColor":"' . str_repeat('a', 1514) . '"}';
+        self::assertSame(1536, strlen($buttonStyle));
+
+        $settings = new ExpressCheckoutSettings([], $buttonStyle);
+
+        self::assertSame($buttonStyle, $settings->getButtonStyle());
     }
 }

@@ -58,7 +58,7 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
 
         $buttonStyle = $payload['buttonStyle'] ?? null;
 
-        if ($buttonStyle !== null && $buttonStyle !== '' && !self::isWellFormedJson($buttonStyle)) {
+        if ($buttonStyle !== null && !\is_string($buttonStyle)) {
             throw new InvalidExpressCheckoutButtonStyleException();
         }
 
@@ -70,25 +70,10 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
      *
      * @throws DuplicatedExpressCheckoutPageException
      * @throws InvalidExpressCheckoutPageConfigException
+     * @throws InvalidExpressCheckoutButtonStyleException
      */
     public function transformToDomainModel(): ExpressCheckoutSettings
     {
         return new ExpressCheckoutSettings($this->expressCheckoutConfigs, $this->buttonStyle);
-    }
-
-    /**
-     * @param mixed $value
-     *
-     * @return bool
-     */
-    private static function isWellFormedJson($value): bool
-    {
-        if (!\is_string($value)) {
-            return false;
-        }
-
-        json_decode($value);
-
-        return json_last_error() === JSON_ERROR_NONE;
     }
 }

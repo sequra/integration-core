@@ -2489,4 +2489,64 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'buttonStyle' => $buttonStyle,
         ], $response->toArray());
     }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testSaveExpressCheckoutSettingsRejectsOversizedButtonStyle(): void
+    {
+        //Arrange
+        $buttonStyle = '{"backgroundColor":"' . str_repeat('a', 1515) . '"}';
+        self::assertSame(1537, strlen($buttonStyle));
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-express-checkout-settings",
+                "expressCheckoutConfigs" => [
+                    ['page' => 'product', 'enabled' => true],
+                ],
+                "buttonStyle" => $buttonStyle,
+            ]
+        );
+
+        //Assert
+        self::assertFalse($response->isSuccessful());
+        self::assertEquals(
+            'general.errors.expressCheckout.invalidButtonStyle',
+            $response->toArray()['errorCode']
+        );
+        self::assertNull($this->expressCheckoutSettingsService->getExpressCheckoutSettings());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testSaveExpressCheckoutSettingsAcceptsButtonStyleAtTheSizeLimit(): void
+    {
+        //Arrange
+        $buttonStyle = '{"backgroundColor":"' . str_repeat('a', 1514) . '"}';
+        self::assertSame(1536, strlen($buttonStyle));
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-express-checkout-settings",
+                "expressCheckoutConfigs" => [],
+                "buttonStyle" => $buttonStyle,
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        $persisted = $this->expressCheckoutSettingsService->getExpressCheckoutSettings();
+        self::assertNotNull($persisted);
+        self::assertSame($buttonStyle, $persisted->getButtonStyle());
+    }
 }
