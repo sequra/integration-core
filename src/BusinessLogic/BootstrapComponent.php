@@ -623,7 +623,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(GeneralSettingsService::class),
                     ServiceRegister::getService(ProductServiceInterface::class),
                     ServiceRegister::getService(ConnectionService::class),
-                    ServiceRegister::getService(DeploymentsService::class)
+                    ServiceRegister::getService(DeploymentsService::class),
+                    ServiceRegister::getService(CountryConfigurationService::class)
                 );
             }
         );
@@ -900,7 +901,10 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             SolicitationController::class,
             static function () {
-                return new SolicitationController(ServiceRegister::getService(OrderService::class));
+                return new SolicitationController(
+                    ServiceRegister::getService(OrderService::class),
+                    ServiceRegister::getService(CheckoutService::class)
+                );
             }
         );
 

@@ -4,7 +4,12 @@ namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation;
 
 use phpDocumentor\Reflection\Types\Self_;
 use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
-use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Requests\SolicitationRequest;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
@@ -16,6 +21,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockCreateOrderRequestBuilder;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockOrderProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantOrderBuilder;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
@@ -45,6 +51,11 @@ class SolicitationGetFormCheckoutApiTest extends BaseTestCase
      */
     private $shopOrderCreation;
 
+    /**
+     * @var MockCountryConfigurationService
+     */
+    private $countryConfigurationService;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -59,16 +70,33 @@ class SolicitationGetFormCheckoutApiTest extends BaseTestCase
         $this->shopOrderCreation = TestServiceRegister::getService(OrderCreationInterface::class);
 
         TestServiceRegister::registerService(
-            SolicitationController::class,
+            OrderService::class,
             function () {
-                return new SolicitationController(new OrderService(
+                return new OrderService(
                     $this->orderProxy,
                     $this->orderRepository,
                     $this->merchantOrderBuilder,
                     $this->shopOrderCreation
-                ));
+                );
             }
         );
+
+        // CheckoutService caches GeneralSettings in statics for the duration of a request.
+        CheckoutService::$generalSettings = null;
+        CheckoutService::$generalSettingsFetched = false;
+
+        $this->countryConfigurationService = new MockCountryConfigurationService(
+            TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
+            TestServiceRegister::getService(SellingCountriesService::class)
+        );
+        TestServiceRegister::registerService(CountryConfigurationService::class, function () {
+            return $this->countryConfigurationService;
+        });
+
+        // MockCreateOrderRequestBuilder ships an 'ES' delivery address.
+        $this->countryConfigurationService->saveCountryConfiguration([
+            new CountryConfiguration('ES', 'testMerchantId'),
+        ]);
     }
 
     public function testSucessfulGetOrderForm()
@@ -82,7 +110,7 @@ class SolicitationGetFormCheckoutApiTest extends BaseTestCase
             $expectedForm
         );
         CheckoutAPI::get()->solicitation('test1')->solicitFor(
-            new MockCreateOrderRequestBuilder(null, 'testCartId')
+            new SolicitationRequest(new MockCreateOrderRequestBuilder(null, 'testCartId'))
         );
 
         // Act

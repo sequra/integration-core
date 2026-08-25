@@ -38,6 +38,11 @@ class MockCreateOrderRequestBuilder implements CreateOrderRequestBuilder
      */
     private $orderRequest;
 
+    /**
+     * @var int
+     */
+    private $buildCallCount = 0;
+
     public function __construct(?Exception $exception = null, $cartId = 'testCart123')
     {
         $this->throwException = $exception;
@@ -52,6 +57,8 @@ class MockCreateOrderRequestBuilder implements CreateOrderRequestBuilder
      */
     public function build(): CreateOrderRequest
     {
+        $this->buildCallCount++;
+
         if ($this->throwException) {
             throw $this->throwException;
         }
@@ -61,6 +68,17 @@ class MockCreateOrderRequestBuilder implements CreateOrderRequestBuilder
         }
 
         return $this->generateMinimalCreateOrderRequest();
+    }
+
+    /**
+     * Number of times build() was called. A host builder may not be idempotent, so the
+     * solicitation flow must build the request exactly once.
+     *
+     * @return int
+     */
+    public function getBuildCallCount(): int
+    {
+        return $this->buildCallCount;
     }
 
     /**

@@ -87,6 +87,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
 use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
@@ -527,6 +528,12 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(OrderService::class)
                 );
             },
+            SolicitationController::class => function () {
+                return new SolicitationController(
+                    TestServiceRegister::getService(OrderService::class),
+                    TestServiceRegister::getService(CheckoutService::class)
+                );
+            },
             ExpressCheckoutController::class => function () {
                 return new ExpressCheckoutController(
                     TestServiceRegister::getService(ExpressCheckoutService::class),
@@ -585,7 +592,8 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(GeneralSettingsService::class),
                     TestServiceRegister::getService(ProductServiceInterface::class),
                     TestServiceRegister::getService(ConnectionService::class),
-                    TestServiceRegister::getService(DeploymentsService::class)
+                    TestServiceRegister::getService(DeploymentsService::class),
+                    TestServiceRegister::getService(CountryConfigurationService::class)
                 );
             },
             CheckoutInitializationService::class => function () {
