@@ -10,6 +10,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInter
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderMerchantNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
@@ -390,11 +391,7 @@ class OrderServiceTest extends BaseTestCase
             __DIR__ . '/../../../Common/ApiResponses/Order/GetPaymentMethodsResponses/SuccessfulResponse.json'
         );
 
-        $order = json_decode(file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'), true);
-        $order['order']['merchant']['id'] = 'testMerchantId';
-        $seQuraOrder = SeQuraOrder::fromArray($order['order']);
-        $seQuraOrder->setReference('testId');
-        $this->orderRepository->setSeQuraOrder($seQuraOrder);
+        $this->storeOrderWithMerchant('testMerchantId');
 
         $this->httpClient->setMockResponses([new HttpResponse(200, [], $rawResponseBody)]);
         $response = $this->orderService->getAvailablePaymentMethodsInCategories('testId');
@@ -487,20 +484,9 @@ class OrderServiceTest extends BaseTestCase
     public function testGetPaymentMethodsInCategoriesUsesMerchantOfStoredOrder(): void
     {
         // Arrange
-        $this->orderProxy = new MockOrderProxy();
-        $this->orderRepository = new MockSeQuraOrderRepository();
-        $this->orderService = new OrderService(
-            $this->orderProxy,
-            $this->orderRepository,
-            $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
-        );
+        $this->useMockOrderProxy();
 
-        $order = json_decode(file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'), true);
-        $order['order']['merchant']['id'] = 'merchantOfTheOrder';
-        $seQuraOrder = SeQuraOrder::fromArray($order['order']);
-        $seQuraOrder->setReference('testId');
-        $this->orderRepository->setSeQuraOrder($seQuraOrder);
+        $this->storeOrderWithMerchant('merchantOfTheOrder');
 
         // Act
         $this->orderService->getAvailablePaymentMethodsInCategories('testId');
@@ -517,16 +503,49 @@ class OrderServiceTest extends BaseTestCase
      *
      * @throws Exception
      */
+    public function testGetPaymentMethodsInCategoriesUsesSuppliedMerchantWithoutTheStoredOrder(): void
+    {
+        // Arrange
+        $this->useMockOrderProxy();
+
+        // Act
+        $this->orderService->getAvailablePaymentMethodsInCategories('testId', 'merchantOfTheCaller');
+
+        // Assert
+        $proxyRequest = $this->orderProxy->getLastPaymentMethodsInCategoriesRequest();
+        self::assertNotNull($proxyRequest);
+        self::assertEquals('testId', $proxyRequest->getOrderId());
+        self::assertEquals('merchantOfTheCaller', $proxyRequest->getMerchantId());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testGetPaymentMethodsInCategoriesForOrderWithoutMerchant(): void
+    {
+        // Arrange
+        $this->useMockOrderProxy();
+
+        $this->storeOrderWithMerchant('');
+
+        // Assert
+        $this->expectException(OrderMerchantNotFoundException::class);
+
+        // Act
+        $this->orderService->getAvailablePaymentMethodsInCategories('testId');
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
     public function testGetPaymentMethodsInCategoriesForUnknownOrder(): void
     {
         // Arrange
-        $this->orderProxy = new MockOrderProxy();
-        $this->orderService = new OrderService(
-            $this->orderProxy,
-            new MockSeQuraOrderRepository(),
-            $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
-        );
+        $this->useMockOrderProxy();
 
         // Assert
         $this->expectException(OrderNotFoundException::class);
@@ -860,6 +879,45 @@ class OrderServiceTest extends BaseTestCase
             "extra" => "testDeliveryAddressExtra",
             "vat_number" => "testDeliveryAddressVatNumber"
         ];
+    }
+
+    /**
+     * Rebuilds the service on a proxy and a repository that record what they were given, for tests asserting
+     * on the request that left rather than on the response that came back.
+     *
+     * @return void
+     */
+    private function useMockOrderProxy(): void
+    {
+        $this->orderProxy = new MockOrderProxy();
+        $this->orderRepository = new MockSeQuraOrderRepository();
+        $this->orderService = new OrderService(
+            $this->orderProxy,
+            $this->orderRepository,
+            $this->merchantOrderBuilder,
+            TestServiceRegister::getService(OrderCreationInterface::class)
+        );
+    }
+
+    /**
+     * Stores the mock order under the reference the payment method tests look it up by, solicited for the
+     * given merchant.
+     *
+     * @param string $merchantId
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    private function storeOrderWithMerchant(string $merchantId): void
+    {
+        $order = json_decode(file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'), true);
+        $order['order']['merchant']['id'] = $merchantId;
+
+        $seQuraOrder = SeQuraOrder::fromArray($order['order']);
+        $seQuraOrder->setReference('testId');
+
+        $this->orderRepository->setSeQuraOrder($seQuraOrder);
     }
 
     private function expectedInvoiceAddressToArrayResponse(): array

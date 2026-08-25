@@ -62,11 +62,14 @@ class CheckoutAPI
     }
 
     /**
+     * Payment methods of an order already solicited at SeQura, addressed by its reference. The methods a
+     * merchant offers before an order exists come from cachedPaymentMethods() instead.
+     *
      * @param string $storeId
      *
      * @return object
      */
-    public function paymentMethods(string $storeId): object
+    public function solicitedOrderPaymentMethods(string $storeId): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())
