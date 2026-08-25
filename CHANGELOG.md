@@ -4,10 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 # [Unreleased]
+## Fixed
+- The HTTP logger no longer writes the value of a header that authenticates the caller: `Authorization`, `Proxy-Authorization`, `Cookie` and `Set-Cookie` are logged with their name and `***` in place of the value.
+
 ## Changed
 - The four API facades (`AdminAPI`, `CheckoutAPI`, `WebhookAPI`, `ConfigurationWebhookAPI`) are typed for static analysis: `Aspects::beforeEachMethodOfInstance()` / `beforeEachMethodOfService()` are generic over their subject and every facade method documents the controller it returns, so a chained call (`AdminAPI::get()->connection($storeId)->connect($request)`) type-checks without a cast or a PHPStan ignore. Runtime behaviour is unchanged: the returned object is still the `Aspects` proxy that applies error handling and the store context around every call.
 
 ## Added
+- Widget settings are validated before they are stored, by the domain service, so both the admin API and the configuration webhook refuse a configuration the widgets cannot be displayed with.
+- General settings carry the order identifier the integration sends to SeQura as the primary order reference: `orderIdentifier` is stored on `GeneralSettings` and read from the `save-general-settings` payload, and `get-general-settings` answers with it. The values a merchant may choose from are a property of the shop platform, so they come from the integration through the optional `OrderIdentifiersProviderInterface` companion of `StoreInfoServiceInterface`; the response carries them as `listOfOrderIdentifiers`, and leaves the key out for an integration that publishes none.
+- Whether SeQura may collect statistical data is configured together with the general settings: `save-general-settings` reads `isSendStatisticalData` and stores it as the existing `StatisticalData`, and `get-general-settings` answers with it. A payload without the field leaves the stored value alone rather than turning the collection off.
 - `AdminAPI::get()->countryConfiguration($storeId)->areSellingCountriesConfigured()`: tells whether a country configuration has been saved for the store, so an integration can wait for the merchant to enable the selling countries in the SeQura portal before it lets the plugin be used.
 - The URL of the SeQura portal is part of the connection responses: `DeploymentURL` carries the `portal_base_url` of the `deployments` endpoint, and `getOnboardingData()` and `connect()` return it as `portalUrl` for the environment and deployment the store is connected to. The returned URL points at the store integrations page of the portal (`/development/store-integrations`), where a merchant configures the connected store.
 

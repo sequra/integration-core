@@ -103,6 +103,7 @@ use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutSer
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\OrderIdentifiersService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutIntegrationInterface;
@@ -483,6 +484,15 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(GeneralSettingsRepositoryInterface::class),
                     ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(CountryConfigurationService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            OrderIdentifiersService::class,
+            static function () {
+                return new OrderIdentifiersService(
+                    ServiceRegister::getService(StoreInfoServiceInterface::class)
                 );
             }
         );
@@ -1267,7 +1277,9 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(GeneralSettingsService::class),
                     ServiceRegister::getService(ProductServiceInterface::class),
                     ServiceRegister::getService(CategoryServiceInterface::class),
-                    ServiceRegister::getService(CountryConfigurationService::class)
+                    ServiceRegister::getService(CountryConfigurationService::class),
+                    ServiceRegister::getService(OrderIdentifiersService::class),
+                    ServiceRegister::getService(StatisticalDataService::class)
                 );
             }
         );
@@ -1277,7 +1289,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new SaveGeneralSettingsHandler(
                     ServiceRegister::getService(GeneralSettingsService::class),
-                    ServiceRegister::getService(CountryConfigurationService::class)
+                    ServiceRegister::getService(CountryConfigurationService::class),
+                    ServiceRegister::getService(StatisticalDataService::class)
                 );
             }
         );

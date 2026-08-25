@@ -67,8 +67,13 @@ use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSelectorSet
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
+use SeQura\Core\BusinessLogic\Domain\SendReport\Models\SendReport;
+use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Models\StoreInfo;
+use SeQura\Core\BusinessLogic\Domain\Webhook\Exceptions\WebhookSignatureValidationFailed;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAdvancedSettingsRepository;
@@ -98,6 +103,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockShopOrderStatusesService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreInfoService;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreInfoServiceWithOrderIdentifiers;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionDataRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
@@ -227,6 +233,11 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     private $credentialsService;
 
     /**
+     * @var StatisticalDataService $statisticalDataService
+     */
+    private $statisticalDataService;
+
+    /**
      * @var string
      */
     private $signature;
@@ -344,6 +355,8 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         TestServiceRegister::registerService(GeneralSettingsService::class, function () {
             return $this->generalSettingsService;
         });
+
+        $this->statisticalDataService = TestServiceRegister::getService(StatisticalDataService::class);
 
         $this->expressCheckoutSettingsService = new MockExpressCheckoutService(
             TestServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class),
@@ -1571,7 +1584,9 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 'ES'
             ],
             'defaultServicesEndDate' => 'P1Y',
+            'orderIdentifier' => null,
             'sellingCountries' => ['ES', 'FR', 'IT', 'PT'],
+            'isSendStatisticalData' => false,
         ], $response->toArray());
     }
 
@@ -1590,6 +1605,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             new ShopProduct('1', 'sku1', 'Product 001'),
             new ShopProduct('11', 'sku2', 'Product 011')
         ]);
+        $this->statisticalDataService->saveStatisticalData(new StatisticalData(true));
 
         //Act
         $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
@@ -1600,8 +1616,14 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         );
 
         //Assert
+        // A store that never saved its general settings still gets what does not
+        // depend on them: the consent given at onboarding, and the selling countries.
+        $data = $response->toArray();
+
         self::assertTrue($response->isSuccessful());
-        self::assertEmpty($response->toArray());
+        self::assertTrue($data['isSendStatisticalData']);
+        self::assertEquals([], $data['sellingCountries']);
+        self::assertArrayNotHasKey('allowedIPAddresses', $data);
     }
 
     /**
@@ -1667,8 +1689,197 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
-     * @throws EmptyCategoryParameterException
+     * @throws WebhookSignatureValidationFailed
+     */
+    public function testSaveGeneralSettingsSavesOrderIdentifier(): void
+    {
+        //Act
+        ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-general-settings",
+                "sellingCountries" => [],
+                "orderIdentifier" => "orderReference"
+            ]
+        );
+
+        //Assert
+        self::assertEquals(
+            'orderReference',
+            $this->generalSettingsService->getGeneralSettings()->getOrderIdentifier()
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws WebhookSignatureValidationFailed
+     */
+    public function testSaveGeneralSettingsIgnoresAnOrderIdentifierThatIsNotAString(): void
+    {
+        //Act
+        ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-general-settings",
+                "sellingCountries" => [],
+                "orderIdentifier" => 5
+            ]
+        );
+
+        //Assert
+        self::assertNull($this->generalSettingsService->getGeneralSettings()->getOrderIdentifier());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws WebhookSignatureValidationFailed
+     * @throws \DateMalformedStringException
+     */
+    public function testSaveGeneralSettingsKeepsTheReportScheduleWhenTheConsentIsUnchanged(): void
+    {
+        //Arrange
+        $this->statisticalDataService->saveStatisticalData(new StatisticalData(true));
+
+        /** @var SendReportRepositoryInterface $sendReportRepository */
+        $sendReportRepository = TestServiceRegister::getService(SendReportRepositoryInterface::class);
+        $sendReportRepository->setSendReport(new SendReport(1000));
+
+        //Act
+        ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-general-settings",
+                "sellingCountries" => [],
+                "isSendStatisticalData" => true
+            ]
+        );
+
+        //Assert
+        // Storing the consent schedules the next delivery report, so a save that does
+        // not change it must not push that report another day away.
+        self::assertEquals(1000, $sendReportRepository->getSendReport()->getSendReportTime());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws WebhookSignatureValidationFailed
+     */
+    public function testSaveGeneralSettingsSavesStatisticalData(): void
+    {
+        //Act
+        ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-general-settings",
+                "sellingCountries" => [],
+                "isSendStatisticalData" => true
+            ]
+        );
+
+        //Assert
+        self::assertTrue($this->statisticalDataService->getStatisticalData()->isSendStatisticalData());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws WebhookSignatureValidationFailed
+     * @throws \DateMalformedStringException
+     */
+    public function testSaveGeneralSettingsKeepsStatisticalDataOutOfThePayload(): void
+    {
+        //Arrange
+        $this->statisticalDataService->saveStatisticalData(new StatisticalData(true));
+
+        //Act
+        ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-general-settings",
+                "sellingCountries" => []
+            ]
+        );
+
+        //Assert
+        self::assertTrue($this->statisticalDataService->getStatisticalData()->isSendStatisticalData());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws WebhookSignatureValidationFailed
+     * @throws \DateMalformedStringException
+     */
+    public function testGetGeneralSettingsReturnsOrderIdentifiersOfTheIntegration(): void
+    {
+        //Arrange
+        $storeInfoService = new MockStoreInfoServiceWithOrderIdentifiers();
+        $storeInfoService->setMockOrderIdentifiers([
+            'orderId' => 'Order ID',
+            'orderReference' => 'Order Reference',
+        ]);
+
+        TestServiceRegister::registerService(StoreInfoServiceInterface::class, static function () use ($storeInfoService) {
+            return $storeInfoService;
+        });
+
+        $this->generalSettingsService->saveGeneralSettings(
+            new GeneralSettings(false, true, [], [], [], [], [], [], 'P1Y', 'orderReference')
+        );
+        $this->statisticalDataService->saveStatisticalData(new StatisticalData(true));
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-general-settings"
+            ]
+        );
+
+        //Assert
+        $data = $response->toArray();
+
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals('orderReference', $data['orderIdentifier']);
+        self::assertEquals([
+            'orderId' => 'Order ID',
+            'orderReference' => 'Order Reference',
+        ], $data['listOfOrderIdentifiers']);
+        self::assertTrue($data['isSendStatisticalData']);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws WebhookSignatureValidationFailed
+     */
+    public function testGetGeneralSettingsOmitsOrderIdentifiersWhenTheIntegrationPublishesNone(): void
+    {
+        //Arrange
+        $this->generalSettingsService->saveGeneralSettings(
+            new GeneralSettings(false, true, [], [], [], [], [], [], 'P1Y')
+        );
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-general-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertArrayNotHasKey('listOfOrderIdentifiers', $response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws WebhookSignatureValidationFailed
      */
     public function testGetOrderStatusListResponse(): void
     {
@@ -1716,8 +1927,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
-     * @throws EmptyCategoryParameterException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testGetOrderStatusSettingsResponse(): void
     {
@@ -1757,8 +1967,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
-     * @throws EmptyCategoryParameterException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testSaveOrderStatusSettingsResponse(): void
     {
@@ -1797,8 +2006,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
-     * @throws EmptyCategoryParameterException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testSetAdvancedSettingsResponse(): void
     {
@@ -1825,8 +2033,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
-     * @throws EmptyCategoryParameterException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testGetAdvancedSettingsResponse(): void
     {
@@ -1854,8 +2061,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
-     * @throws EmptyCategoryParameterException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testGetAdvancedSettingsResponseNoAdvancedSettings(): void
     {
@@ -1879,8 +2085,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
-     * @throws EmptyCategoryParameterException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testSaveAffiliateSettingsResponse(): void
     {
@@ -1911,8 +2116,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
-     * @throws EmptyCategoryParameterException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testSaveAffiliateSettingsEnabledWithoutCredentialsIsCoercedToDisabled(): void
     {
@@ -1939,8 +2143,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
-     * @throws EmptyCategoryParameterException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testGetAffiliateSettingsResponse(): void
     {
@@ -1964,8 +2167,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
-     * @throws EmptyCategoryParameterException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testGetAffiliateSettingsResponseNoAffiliateSettings(): void
     {
@@ -1988,7 +2190,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidBannerUrlException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testSaveBannerSettingsResponse(): void
     {
@@ -2063,7 +2265,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidBannerUrlException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testSaveBannerSettingsInvalidURLResponse(): void
     {
@@ -2117,7 +2319,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidBannerUrlException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testGetBannerSettingsResponse(): void
     {
@@ -2175,7 +2377,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidBannerUrlException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testGetBannerSettingsEmptyResponse(): void
     {
@@ -2216,7 +2418,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testGetExpressCheckoutSettingsResponseNoSettings(): void
     {
@@ -2239,9 +2441,9 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
      * @throws DuplicatedExpressCheckoutPageException
      * @throws InvalidExpressCheckoutPageConfigException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testGetExpressCheckoutSettingsResponseWithPersistedConfigs(): void
     {
@@ -2275,7 +2477,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testSaveExpressCheckoutSettingsResponse(): void
     {
@@ -2304,8 +2506,9 @@ class ConfigurationWebhookAPITest extends BaseTestCase
     /**
      * @return void
      *
-     * @throws InvalidEnvironmentException|DuplicatedExpressCheckoutPageException
+     * @throws DuplicatedExpressCheckoutPageException
      * @throws InvalidExpressCheckoutPageConfigException
+     * @throws WebhookSignatureValidationFailed
      */
     public function testSaveExpressCheckoutSettingsOverwritesPreviousValues(): void
     {
