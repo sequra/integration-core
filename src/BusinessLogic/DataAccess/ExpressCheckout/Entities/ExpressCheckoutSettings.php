@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\DataAccess\ExpressCheckout\Entities;
 
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\DuplicatedExpressCheckoutPageException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutButtonStyleException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageConfigException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPageConfig;
@@ -53,7 +54,20 @@ class ExpressCheckoutSettings extends Entity
             }
         }
 
-        $this->expressCheckoutSettings = new DomainExpressCheckoutSettings($configs);
+        $buttonStyle = static::getDataValue($expressCheckoutSettings, 'buttonStyle', null);
+        if (!\is_string($buttonStyle)) {
+            $buttonStyle = null;
+        }
+
+        // A style is rejected when it is written, so a stored one that no longer
+        // validates means the row was corrupted or hand-edited. Dropping just the
+        // style keeps the page configs readable: the button falls back to its
+        // default look instead of every read of this row failing.
+        try {
+            $this->expressCheckoutSettings = new DomainExpressCheckoutSettings($configs, $buttonStyle);
+        } catch (InvalidExpressCheckoutButtonStyleException $exception) {
+            $this->expressCheckoutSettings = new DomainExpressCheckoutSettings($configs);
+        }
     }
 
     /**
@@ -63,11 +77,7 @@ class ExpressCheckoutSettings extends Entity
     {
         $data = parent::toArray();
         $data['storeId'] = $this->storeId;
-        $data['expressCheckoutSettings'] = [
-            'expressCheckoutConfigs' => array_map(static function (ExpressCheckoutPageConfig $config) {
-                return $config->toArray();
-            }, $this->expressCheckoutSettings->getExpressCheckoutConfigs()),
-        ];
+        $data['expressCheckoutSettings'] = $this->expressCheckoutSettings->toArray();
 
         return $data;
     }

@@ -14,6 +14,7 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfigur
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutSettings;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
@@ -81,7 +82,7 @@ class ExpressCheckoutControllerTest extends BaseTestCase
         $response = CheckoutAPI::get()->expressCheckout('1')->isAvailable($this->buildRequest());
 
         self::assertTrue($response->isSuccessful());
-        self::assertSame(['available' => true], $response->toArray());
+        self::assertSame(['available' => true, 'buttonStyle' => null], $response->toArray());
     }
 
     /**
@@ -93,7 +94,35 @@ class ExpressCheckoutControllerTest extends BaseTestCase
 
         $response = CheckoutAPI::get()->expressCheckout('1')->isAvailable($this->buildRequest());
 
-        self::assertSame(['available' => false], $response->toArray());
+        self::assertSame(['available' => false, 'buttonStyle' => null], $response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testIsAvailableCarriesStoredButtonStyleVerbatim(): void
+    {
+        $buttonStyle = '{"color":"#00FF00","futureAttribute":"value"}';
+        $this->expressCheckoutService->setAvailability(true);
+        $this->expressCheckoutService->saveExpressCheckoutSettings(new ExpressCheckoutSettings([], $buttonStyle));
+
+        $response = CheckoutAPI::get()->expressCheckout('1')->isAvailable($this->buildRequest());
+
+        self::assertSame(['available' => true, 'buttonStyle' => $buttonStyle], $response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testIsAvailableOmitsStoredButtonStyleWhenUnavailable(): void
+    {
+        $buttonStyle = '{"color":"#00FF00","futureAttribute":"value"}';
+        $this->expressCheckoutService->setAvailability(false);
+        $this->expressCheckoutService->saveExpressCheckoutSettings(new ExpressCheckoutSettings([], $buttonStyle));
+
+        $response = CheckoutAPI::get()->expressCheckout('1')->isAvailable($this->buildRequest());
+
+        self::assertSame(['available' => false, 'buttonStyle' => null], $response->toArray());
     }
 
     /**
@@ -110,7 +139,10 @@ class ExpressCheckoutControllerTest extends BaseTestCase
         $response = CheckoutAPI::get()->expressCheckout('1')->isAvailableForGuest($this->buildGuestRequest());
 
         self::assertTrue($response->isSuccessful());
-        self::assertSame(['available' => true, 'availableCountries' => ['ES', 'FR']], $response->toArray());
+        self::assertSame(
+            ['available' => true, 'availableCountries' => ['ES', 'FR'], 'buttonStyle' => null],
+            $response->toArray()
+        );
     }
 
     /**
@@ -125,7 +157,10 @@ class ExpressCheckoutControllerTest extends BaseTestCase
 
         $response = CheckoutAPI::get()->expressCheckout('1')->isAvailableForGuest($this->buildGuestRequest());
 
-        self::assertSame(['available' => false, 'availableCountries' => []], $response->toArray());
+        self::assertSame(
+            ['available' => false, 'availableCountries' => [], 'buttonStyle' => null],
+            $response->toArray()
+        );
     }
 
     /**
@@ -137,7 +172,47 @@ class ExpressCheckoutControllerTest extends BaseTestCase
 
         $response = CheckoutAPI::get()->expressCheckout('1')->isAvailableForGuest($this->buildGuestRequest());
 
-        self::assertSame(['available' => false, 'availableCountries' => []], $response->toArray());
+        self::assertSame(
+            ['available' => false, 'availableCountries' => [], 'buttonStyle' => null],
+            $response->toArray()
+        );
+    }
+
+    /**
+     * @return void
+     */
+    public function testIsAvailableForGuestOmitsStoredButtonStyleWhenNoCountriesConfigured(): void
+    {
+        $buttonStyle = '{"color":"#00FF00","futureAttribute":"value"}';
+        $this->expressCheckoutService->setGuestAvailability(true);
+        $this->expressCheckoutService->saveExpressCheckoutSettings(new ExpressCheckoutSettings([], $buttonStyle));
+
+        $response = CheckoutAPI::get()->expressCheckout('1')->isAvailableForGuest($this->buildGuestRequest());
+
+        self::assertSame(
+            ['available' => false, 'availableCountries' => [], 'buttonStyle' => null],
+            $response->toArray()
+        );
+    }
+
+    /**
+     * @return void
+     */
+    public function testIsAvailableForGuestCarriesStoredButtonStyleVerbatim(): void
+    {
+        $buttonStyle = '{"color":"#00FF00","futureAttribute":"value"}';
+        $this->expressCheckoutService->setGuestAvailability(true);
+        $this->expressCheckoutService->saveExpressCheckoutSettings(new ExpressCheckoutSettings([], $buttonStyle));
+        $this->countryConfigurationService->saveCountryConfiguration([
+            new CountryConfiguration('ES', 'merchant1'),
+        ]);
+
+        $response = CheckoutAPI::get()->expressCheckout('1')->isAvailableForGuest($this->buildGuestRequest());
+
+        self::assertSame(
+            ['available' => true, 'availableCountries' => ['ES'], 'buttonStyle' => $buttonStyle],
+            $response->toArray()
+        );
     }
 
     /**

@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\ExpressChec
 
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\ConfigurationWebhookRequest;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\DuplicatedExpressCheckoutPageException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutButtonStyleException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageConfigException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPageConfig;
@@ -22,11 +23,18 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
     protected $expressCheckoutConfigs;
 
     /**
-     * @param ExpressCheckoutPageConfig[] $expressCheckoutConfigs
+     * @var string|null
      */
-    public function __construct(array $expressCheckoutConfigs)
+    protected $buttonStyle;
+
+    /**
+     * @param ExpressCheckoutPageConfig[] $expressCheckoutConfigs
+     * @param string|null $buttonStyle
+     */
+    public function __construct(array $expressCheckoutConfigs, ?string $buttonStyle = null)
     {
         $this->expressCheckoutConfigs = $expressCheckoutConfigs;
+        $this->buttonStyle = $buttonStyle;
     }
 
     /**
@@ -35,6 +43,7 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
      * @return self
      *
      * @throws InvalidExpressCheckoutPageException
+     * @throws InvalidExpressCheckoutButtonStyleException
      */
     public static function fromPayload(array $payload): object
     {
@@ -47,7 +56,13 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
             }
         }
 
-        return new self($configs);
+        $buttonStyle = $payload['buttonStyle'] ?? null;
+
+        if ($buttonStyle !== null && !\is_string($buttonStyle)) {
+            throw new InvalidExpressCheckoutButtonStyleException();
+        }
+
+        return new self($configs, $buttonStyle);
     }
 
     /**
@@ -55,9 +70,10 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
      *
      * @throws DuplicatedExpressCheckoutPageException
      * @throws InvalidExpressCheckoutPageConfigException
+     * @throws InvalidExpressCheckoutButtonStyleException
      */
     public function transformToDomainModel(): ExpressCheckoutSettings
     {
-        return new ExpressCheckoutSettings($this->expressCheckoutConfigs);
+        return new ExpressCheckoutSettings($this->expressCheckoutConfigs, $this->buttonStyle);
     }
 }
