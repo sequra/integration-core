@@ -6,6 +6,7 @@ use Exception;
 use InvalidArgumentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
@@ -179,6 +180,9 @@ class OrderService
      * @throws HttpRequestException
      * @throws OrderNotFoundException
      * @throws OrderMerchantNotFoundException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws DeploymentNotFoundException
      */
     public function getAvailablePaymentMethodsInCategories(string $orderRef, string $merchantId = ''): array
     {

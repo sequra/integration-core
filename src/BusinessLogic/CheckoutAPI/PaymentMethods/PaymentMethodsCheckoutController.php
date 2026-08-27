@@ -4,6 +4,10 @@ namespace SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods;
 
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\Requests\PaymentMethodsInCategoriesRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\Responses\PaymentMethodsInCategoriesResponse;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderMerchantNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
@@ -40,6 +44,10 @@ class PaymentMethodsCheckoutController
      *
      * @throws HttpRequestException
      * @throws OrderNotFoundException
+     * @throws OrderMerchantNotFoundException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws DeploymentNotFoundException
      */
     public function getPaymentMethodsInCategories(
         PaymentMethodsInCategoriesRequest $request

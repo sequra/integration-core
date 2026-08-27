@@ -375,6 +375,56 @@ class DisconnectServiceTest extends BaseTestCase
     }
 
     /**
+     * A partial disconnect of a deployment nothing is configured for must leave the country configuration
+     * alone: the repository answers with null when no entity is stored, and writing back an empty list
+     * would create one.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testDisconnectNotFullWithoutCountryConfigurations(): void
+    {
+        //Arrange
+        $this->credentialsRepository->setCredentials([
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [], 'sequra'),
+        ]);
+        $this->countryConfigurationRepository->deleteCountryConfigurations();
+
+        //Act
+        $this->service->disconnect('sequra', false);
+
+        //Assert
+        self::assertNull($this->countryConfigurationRepository->getCountryConfiguration());
+    }
+
+    /**
+     * When every stored country configuration belongs to the disconnected deployment, all of them are
+     * removed: the configurations are gone, but the entity holding them stays.
+     *
+     * @return void
+     *
+     *
+     * @throws Exception
+     */
+    public function testDisconnectNotFullRemovesAllCountryConfigurations(): void
+    {
+        //Arrange
+        $this->credentialsRepository->setCredentials([
+            new Credentials('logeecom1', 'PT', 'EUR', 'assetsKey1', [], 'sequra'),
+        ]);
+        $this->countryConfigurationRepository->setCountryConfiguration([
+            new CountryConfiguration('PT', 'logeecom1'),
+        ]);
+
+        //Act
+        $this->service->disconnect('sequra', false);
+
+        //Assert
+        self::assertSame([], $this->countryConfigurationRepository->getCountryConfiguration());
+    }
+
+    /**
      * @return void
      *
      * @throws InvalidEnvironmentException

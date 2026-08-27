@@ -139,9 +139,6 @@ class MockOrderProxy implements OrderProxyInterface
         return true;
     }
 
-    /**
-     * @throws Throwable
-     */
     public function getForm(GetFormRequest $request): SeQuraForm
     {
         $this->getFormCallCount++;

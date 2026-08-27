@@ -176,6 +176,8 @@ class PaymentMethodsCheckoutApiTest extends BaseTestCase
 
         // Assert
         self::assertFalse($response->isSuccessful());
+        self::assertSame(0, $response->toArray()['statusCode']);
+        self::assertSame('general.errors.unknown', $response->toArray()['errorCode']);
     }
 
     public function testHasAvailablePaymentMethodsIsNoGuardOnAFailedCall(): void
