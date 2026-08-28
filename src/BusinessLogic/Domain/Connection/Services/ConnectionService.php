@@ -14,6 +14,8 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmp
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
+use SeQura\Core\Infrastructure\Logger\Logger;
 
 /**
  * Class ConnectionService
@@ -22,6 +24,11 @@ use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
  */
 class ConnectionService
 {
+    /**
+     * Env var key that, when explicitly truthy, skips store integration registration during onboarding.
+     */
+    public const SKIP_STORE_INTEGRATION_REGISTRATION_ENV = 'SEQURA_SKIP_STORE_INTEGRATION_REGISTRATION';
+
     /**
      * @var ConnectionDataRepositoryInterface $connectionDataRepository
      */
@@ -71,7 +78,21 @@ class ConnectionService
             try {
                 $credentials = $this->credentialsService->validateAndUpdateCredentials($connectionData);
                 $this->credentialsService->updateCountryConfigurationWithNewMerchantIdsAndRemoveOldPaymentMethods($credentials);
-                $this->registerWebhooks($connectionData);
+                if (self::shouldSkipStoreIntegrationRegistration()) {
+                    Logger::logWarning(
+                        'Store integration registration skipped during connect because '
+                        . self::SKIP_STORE_INTEGRATION_REGISTRATION_ENV . ' is set. '
+                        . 'Webhooks will not be registered for this merchant.',
+                        'Core',
+                        [
+                            new LogContextData('merchantId', $connectionData->getMerchantId()),
+                            new LogContextData('deployment', $connectionData->getDeployment()),
+                        ]
+                    );
+                } else {
+                    $this->registerWebhooks($connectionData);
+                }
+
                 $this->saveConnectionData($connectionData);
             } catch (WrongCredentialsException $exception) {
                 $errors[] = $connectionData->getDeployment();
@@ -81,6 +102,23 @@ class ConnectionService
         if (!empty($errors)) {
             throw new WrongCredentialsException(null, $errors);
         }
+    }
+
+    /**
+     * Tells whether store integration registration must be skipped during onboarding, based on an env var.
+     * Only an explicit truthy value ("1" or "true", case-insensitive, trimmed) enables the skip; anything
+     * else, including an absent or empty value, means "do not skip".
+     *
+     * @return bool
+     */
+    public static function shouldSkipStoreIntegrationRegistration(): bool
+    {
+        $flag = getenv(self::SKIP_STORE_INTEGRATION_REGISTRATION_ENV);
+        if (!\is_string($flag)) {
+            return false;
+        }
+
+        return \in_array(strtolower(trim($flag)), ['1', 'true'], true);
     }
 
     /**

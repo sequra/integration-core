@@ -86,6 +86,8 @@ class ConnectionServiceTest extends BaseTestCase
     {
         parent::setUp();
 
+        putenv(ConnectionService::SKIP_STORE_INTEGRATION_REGISTRATION_ENV);
+
         $httpClient = TestServiceRegister::getService(HttpClient::class);
         $this->httpClient = $httpClient;
         TestServiceRegister::registerService(HttpClient::class, function () {
@@ -112,6 +114,13 @@ class ConnectionServiceTest extends BaseTestCase
         $this->mockCredentialsRepository = TestServiceRegister::getService(CredentialsRepositoryInterface::class);
         $this->mockCountryConfigurationRepository = TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class);
         $this->mockPaymentMethodRepository = TestServiceRegister::getService(PaymentMethodRepositoryInterface::class);
+    }
+
+    protected function tearDown(): void
+    {
+        putenv(ConnectionService::SKIP_STORE_INTEGRATION_REGISTRATION_ENV);
+
+        parent::tearDown();
     }
 
     /**
@@ -612,5 +621,91 @@ class ConnectionServiceTest extends BaseTestCase
         //Assert
         self::assertEmpty($paymentMethod);
         self::assertEquals('logeecom1-svea', $countryConfigurations[0]->getMerchantId());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     */
+    public function testConnectRegistersStoreIntegrationWhenSkipEnvIsAbsent(): void
+    {
+        //Arrange
+        $connectionData = $this->createConnectionData();
+
+        //Act
+        $this->connectionService->connect([$connectionData]);
+
+        //Assert
+        self::assertArrayHasKey('test_merchant', $this->mockStoreIntegrationService->getCreatedIntegrationIds());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     */
+    public function testConnectSkipsStoreIntegrationButStillSavesConnectionDataWhenSkipEnvIsSet(): void
+    {
+        //Arrange
+        putenv(ConnectionService::SKIP_STORE_INTEGRATION_REGISTRATION_ENV . '=true');
+        $connectionData = $this->createConnectionData();
+
+        //Act
+        $this->connectionService->connect([$connectionData]);
+
+        //Assert
+        self::assertEmpty($this->mockStoreIntegrationService->getCreatedIntegrationIds());
+        $result = $this->connectionService->getConnectionDataByDeployment('sequra');
+        self::assertNotNull($result);
+        self::assertEquals($connectionData->getMerchantId(), $result->getMerchantId());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     */
+    public function testConnectRegistersStoreIntegrationWhenSkipEnvIsJunk(): void
+    {
+        //Arrange
+        putenv(ConnectionService::SKIP_STORE_INTEGRATION_REGISTRATION_ENV . '=maybe');
+        $connectionData = $this->createConnectionData();
+
+        //Act
+        $this->connectionService->connect([$connectionData]);
+
+        //Assert
+        self::assertArrayHasKey('test_merchant', $this->mockStoreIntegrationService->getCreatedIntegrationIds());
+    }
+
+    /**
+     * @return DomainConnectionData
+     *
+     * @throws InvalidEnvironmentException
+     */
+    private function createConnectionData(): DomainConnectionData
+    {
+        return new DomainConnectionData(
+            BaseProxy::TEST_MODE,
+            'test_merchant',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
     }
 }
