@@ -25,7 +25,8 @@ use SeQura\Core\Infrastructure\Logger\Logger;
 class ConnectionService
 {
     /**
-     * Env var key that, when explicitly truthy, skips store integration registration during onboarding.
+     * Env var key that, when explicitly truthy, skips store integration (and therefore webhook) registration
+     * for sandbox connections.
      */
     public const SKIP_STORE_INTEGRATION_REGISTRATION_ENV = 'SEQURA_SKIP_STORE_INTEGRATION_REGISTRATION';
 
@@ -78,21 +79,7 @@ class ConnectionService
             try {
                 $credentials = $this->credentialsService->validateAndUpdateCredentials($connectionData);
                 $this->credentialsService->updateCountryConfigurationWithNewMerchantIdsAndRemoveOldPaymentMethods($credentials);
-                if (self::shouldSkipStoreIntegrationRegistration()) {
-                    Logger::logWarning(
-                        'Store integration registration skipped during connect because '
-                        . self::SKIP_STORE_INTEGRATION_REGISTRATION_ENV . ' is set. '
-                        . 'Webhooks will not be registered for this merchant.',
-                        'Core',
-                        [
-                            new LogContextData('merchantId', $connectionData->getMerchantId()),
-                            new LogContextData('deployment', $connectionData->getDeployment()),
-                        ]
-                    );
-                } else {
-                    $this->registerWebhooks($connectionData);
-                }
-
+                $this->registerWebhooks($connectionData);
                 $this->saveConnectionData($connectionData);
             } catch (WrongCredentialsException $exception) {
                 $errors[] = $connectionData->getDeployment();
@@ -102,23 +89,6 @@ class ConnectionService
         if (!empty($errors)) {
             throw new WrongCredentialsException(null, $errors);
         }
-    }
-
-    /**
-     * Tells whether store integration registration must be skipped during onboarding, based on an env var.
-     * Only an explicit truthy value ("1" or "true", case-insensitive, trimmed) enables the skip; anything
-     * else, including an absent or empty value, means "do not skip".
-     *
-     * @return bool
-     */
-    public static function shouldSkipStoreIntegrationRegistration(): bool
-    {
-        $flag = getenv(self::SKIP_STORE_INTEGRATION_REGISTRATION_ENV);
-        if (!\is_string($flag)) {
-            return false;
-        }
-
-        return \in_array(strtolower(trim($flag)), ['1', 'true'], true);
     }
 
     /**
@@ -249,6 +219,45 @@ class ConnectionService
      */
     protected function registerWebhooks(ConnectionData $connectionData): void
     {
+        if (self::shouldSkipStoreIntegrationRegistration($connectionData)) {
+            Logger::logWarning(
+                'Store integration registration skipped because '
+                . self::SKIP_STORE_INTEGRATION_REGISTRATION_ENV . ' is set. '
+                . 'Webhooks will not be registered for this merchant.',
+                'Core',
+                [
+                    new LogContextData('merchantId', $connectionData->getMerchantId()),
+                    new LogContextData('deployment', $connectionData->getDeployment()),
+                ]
+            );
+
+            return;
+        }
+
         $this->storeIntegrationService->createStoreIntegration($connectionData);
+    }
+
+    /**
+     * Tells whether store integration registration must be skipped, based on an env var. This is a local
+     * development aid, so it is honored in sandbox only: setting the variable against a live merchant has
+     * no effect. Only an explicit truthy value ("1" or "true", case-insensitive, trimmed) enables the skip;
+     * anything else, including an absent or empty value, means "do not skip".
+     *
+     * @param ConnectionData $connectionData
+     *
+     * @return bool
+     */
+    protected static function shouldSkipStoreIntegrationRegistration(ConnectionData $connectionData): bool
+    {
+        if (!$connectionData->isSandbox()) {
+            return false;
+        }
+
+        $flag = getenv(self::SKIP_STORE_INTEGRATION_REGISTRATION_ENV);
+        if (!\is_string($flag)) {
+            return false;
+        }
+
+        return \in_array(strtolower(trim($flag)), ['1', 'true'], true);
     }
 }

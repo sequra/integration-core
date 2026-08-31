@@ -74,6 +74,14 @@ class ConnectionData extends DataTransferObject
     }
 
     /**
+     * @return bool
+     */
+    public function isSandbox(): bool
+    {
+        return $this->environment === BaseProxy::TEST_MODE;
+    }
+
+    /**
      * @return AuthorizationCredentials
      */
     public function getAuthorizationCredentials(): AuthorizationCredentials

@@ -24,6 +24,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
+use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\Http\HttpClient;
@@ -695,14 +696,58 @@ class ConnectionServiceTest extends BaseTestCase
     }
 
     /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     */
+    public function testConnectIgnoresSkipEnvInLiveMode(): void
+    {
+        //Arrange
+        putenv(ConnectionService::SKIP_STORE_INTEGRATION_REGISTRATION_ENV . '=true');
+        $connectionData = $this->createConnectionData(BaseProxy::LIVE_MODE);
+
+        //Act
+        $this->connectionService->connect([$connectionData]);
+
+        //Assert
+        self::assertArrayHasKey('test_merchant', $this->mockStoreIntegrationService->getCreatedIntegrationIds());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidEnvironmentException
+     * @throws InvalidUrlException
+     */
+    public function testReRegisterWebhooksSkipsStoreIntegrationWhenSkipEnvIsSet(): void
+    {
+        //Arrange
+        putenv(ConnectionService::SKIP_STORE_INTEGRATION_REGISTRATION_ENV . '=true');
+
+        //Act
+        $this->connectionService->reRegisterWebhooks($this->createConnectionData());
+
+        //Assert
+        self::assertEmpty($this->mockStoreIntegrationService->getCreatedIntegrationIds());
+    }
+
+    /**
+     * @param string $environment
+     *
      * @return DomainConnectionData
      *
      * @throws InvalidEnvironmentException
      */
-    private function createConnectionData(): DomainConnectionData
+    private function createConnectionData(string $environment = BaseProxy::TEST_MODE): DomainConnectionData
     {
         return new DomainConnectionData(
-            BaseProxy::TEST_MODE,
+            $environment,
             'test_merchant',
             'sequra',
             new AuthorizationCredentials('test_username', 'test_password')

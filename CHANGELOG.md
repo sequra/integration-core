@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+# [Unreleased]
+## Added
+- `SEQURA_SKIP_STORE_INTEGRATION_REGISTRATION` env var that, when set to `1`/`true`, skips store integration registration (and therefore webhook registration) during connect, re-registration and the store integration migration task. Honored for sandbox connections only; it is ignored in live mode.
+
 # [v5.6.0](https://github.com/sequra/integration-core/tree/v5.6.0)
 ## Added
 - Affiliate outbound postbacks: an `AffiliateProxy` (under `SeQuraAPI/Affiliate`) that sends the conversion and cancellation postbacks already shaped for their destination and without attaching the connection credentials, plus a `CheckoutAPI` affiliate facade (`affiliate($storeId)->reportConversion(...)` / `->reportCancellation(...)`) that sources the affiliate credentials from the stored `AffiliateSettings` and dispatches only when affiliate marketing is enabled.
