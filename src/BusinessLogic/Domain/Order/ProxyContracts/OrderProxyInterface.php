@@ -28,6 +28,9 @@ interface OrderProxyInterface
      * @param GetAvailablePaymentMethodsRequest $request
      *
      * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws DeploymentNotFoundException
      *
      * @return SeQuraPaymentMethod[]
      */
