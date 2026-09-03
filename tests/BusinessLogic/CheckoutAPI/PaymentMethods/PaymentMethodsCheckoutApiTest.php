@@ -6,6 +6,7 @@ use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\Requests\PaymentMethodsInCategoriesRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderMerchantNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
@@ -165,6 +166,24 @@ class PaymentMethodsCheckoutApiTest extends BaseTestCase
         self::assertFalse($response->isSuccessful());
         self::assertSame(404, $response->toArray()['statusCode']);
         self::assertSame('general.errors.order.notFound', $response->toArray()['errorCode']);
+    }
+
+    public function testGetPaymentMethodsInCategoriesOrderMerchantNotFound(): void
+    {
+        // Arrange
+        $this->orderService->method('getAvailablePaymentMethodsInCategories')
+            ->willThrowException(
+                new OrderMerchantNotFoundException('SeQura order with reference testOrderRef carries no merchant id.')
+            );
+
+        // Act
+        $response = CheckoutAPI::get()->solicitedOrderPaymentMethods('1')
+            ->getPaymentMethodsInCategories(new PaymentMethodsInCategoriesRequest('testOrderRef'));
+
+        // Assert
+        self::assertFalse($response->isSuccessful());
+        self::assertSame(404, $response->toArray()['statusCode']);
+        self::assertSame('general.errors.order.merchantNotFound', $response->toArray()['errorCode']);
     }
 
     public function testGetPaymentMethodsInCategoriesApiFailure(): void
