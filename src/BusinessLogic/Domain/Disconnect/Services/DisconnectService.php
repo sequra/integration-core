@@ -252,7 +252,7 @@ class DisconnectService
 
         // Removes country configurations connected to the deployment
         $countryConfigurations = $this->countryConfigurationRepository->getCountryConfiguration();
-        if ($countryConfigurations) {
+        if ($countryConfigurations !== null) {
             $newCountyConfigurations = [];
             foreach ($countryConfigurations as $countryConfiguration) {
                 if (!\in_array($countryConfiguration->getMerchantId(), $merchantIds, true)) {
