@@ -173,7 +173,7 @@ class OrderService
      * merchant off the stored order instead, and then requires the order to be there.
      *
      * @param string $orderRef
-     * @param string $merchantId Merchant the order was solicited for. Read from the stored order when omitted.
+     * @param string|null $merchantId Merchant the order was solicited for. Read from the stored order when omitted.
      *
      * @return SeQuraPaymentMethodCategory[]
      *
@@ -184,9 +184,9 @@ class OrderService
      * @throws CredentialsNotFoundException
      * @throws DeploymentNotFoundException
      */
-    public function getAvailablePaymentMethodsInCategories(string $orderRef, string $merchantId = ''): array
+    public function getAvailablePaymentMethodsInCategories(string $orderRef, ?string $merchantId = null): array
     {
-        if ($merchantId === '') {
+        if ($merchantId === null) {
             $merchantId = $this->getOrderMerchantId($this->getSeQuraOrder($orderRef));
         }
 
@@ -530,7 +530,10 @@ class OrderService
         string $paymentMethodId,
         string $merchantId
     ): ?PaymentMethod {
-        $methodCategories = $this->getAvailablePaymentMethodsInCategories($orderReference, $merchantId);
+        $methodCategories = $this->getAvailablePaymentMethodsInCategories(
+            $orderReference,
+            $merchantId
+        );
 
         foreach ($methodCategories as $category) {
             foreach ($category->getMethods() as $method) {

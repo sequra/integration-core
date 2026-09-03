@@ -523,6 +523,27 @@ class OrderServiceTest extends BaseTestCase
      *
      * @throws Exception
      */
+    public function testGetPaymentMethodsInCategoriesPassesASuppliedEmptyMerchantThrough(): void
+    {
+        // Arrange
+        // Callers holding the merchant read it off an untyped field, so an empty id is a value they may pass.
+        // It is not the same as omitting the argument, and must not send the lookup to the stored order.
+        $this->useMockOrderProxy();
+
+        // Act
+        $this->orderService->getAvailablePaymentMethodsInCategories('testId', '');
+
+        // Assert
+        $proxyRequest = $this->orderProxy->getLastPaymentMethodsInCategoriesRequest();
+        self::assertNotNull($proxyRequest);
+        self::assertEquals('', $proxyRequest->getMerchantId());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
     public function testGetPaymentMethodsInCategoriesForOrderWithoutMerchant(): void
     {
         // Arrange
