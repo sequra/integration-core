@@ -53,33 +53,36 @@ class PaymentMethodsCheckoutApiTest extends BaseTestCase
         // Assert
         self::assertTrue($response->isSuccessful());
         self::assertEquals([
-            [
-                'title' => 'Paga Después',
-                'description' => 'Paga después',
-                'icon' => 'pay_later.svg',
-                'methods' => [
-                    [
-                        'product' => 'i1',
-                        'title' => 'Paga Después',
-                        'longTitle' => 'Paga Después',
-                        'cost' => [
-                            'setupFee' => 0,
-                            'instalmentFee' => 0,
-                            'downPaymentFees' => 0,
-                            'instalmentTotal' => 0,
-                        ],
-                        'startsAt' => '2000-02-22 21:22:00',
-                        'endsAt' => '2222-02-22 21:22:00',
-                        'campaign' => null,
-                        'claim' => null,
-                        'description' => null,
-                        'icon' => null,
-                        'costDescription' => null,
-                        'minAmount' => null,
-                        'maxAmount' => null,
-                    ]
-                ],
-            ]
+            'categories' => [
+                [
+                    'title' => 'Paga Después',
+                    'description' => 'Paga después',
+                    'icon' => 'pay_later.svg',
+                    'methods' => [
+                        [
+                            'product' => 'i1',
+                            'title' => 'Paga Después',
+                            'longTitle' => 'Paga Después',
+                            'cost' => [
+                                'setupFee' => 0,
+                                'instalmentFee' => 0,
+                                'downPaymentFees' => 0,
+                                'instalmentTotal' => 0,
+                            ],
+                            'startsAt' => '2000-02-22 21:22:00',
+                            'endsAt' => '2222-02-22 21:22:00',
+                            'campaign' => null,
+                            'claim' => null,
+                            'description' => null,
+                            'icon' => null,
+                            'costDescription' => null,
+                            'minAmount' => null,
+                            'maxAmount' => null,
+                        ]
+                    ],
+                ]
+            ],
+            'hasAvailablePaymentMethods' => true,
         ], $response->toArray());
     }
 
@@ -127,8 +130,8 @@ class PaymentMethodsCheckoutApiTest extends BaseTestCase
 
         // Assert
         self::assertTrue($response->isSuccessful());
-        self::assertEmpty($response->toArray());
-        self::assertFalse($response->hasAvailablePaymentMethods());
+        self::assertEmpty($response->toArray()['categories']);
+        self::assertFalse($response->toArray()['hasAvailablePaymentMethods']);
     }
 
     public function testGetPaymentMethodsInCategoriesCategoryWithoutMethods(): void
@@ -144,8 +147,8 @@ class PaymentMethodsCheckoutApiTest extends BaseTestCase
 
         // Assert
         self::assertTrue($response->isSuccessful());
-        self::assertNotEmpty($response->toArray());
-        self::assertFalse($response->hasAvailablePaymentMethods());
+        self::assertNotEmpty($response->toArray()['categories']);
+        self::assertFalse($response->toArray()['hasAvailablePaymentMethods']);
     }
 
     public function testGetPaymentMethodsInCategoriesOrderNotFound(): void
@@ -178,23 +181,6 @@ class PaymentMethodsCheckoutApiTest extends BaseTestCase
         self::assertFalse($response->isSuccessful());
         self::assertSame(0, $response->toArray()['statusCode']);
         self::assertSame('general.errors.unknown', $response->toArray()['errorCode']);
-    }
-
-    public function testHasAvailablePaymentMethodsIsNoGuardOnAFailedCall(): void
-    {
-        // Arrange
-        $this->orderService->method('getAvailablePaymentMethodsInCategories')
-            ->willThrowException(new HttpRequestException('Request failed.'));
-
-        // Act
-        $response = CheckoutAPI::get()->solicitedOrderPaymentMethods('1')
-            ->getPaymentMethodsInCategories(new PaymentMethodsInCategoriesRequest('testOrderRef'));
-
-        // Assert
-        // A failed call answers with an ErrorResponse, whose __call returns the response itself for every
-        // unknown method. The helper therefore reads as truthy, and says nothing until isSuccessful() passed.
-        self::assertFalse($response->isSuccessful());
-        self::assertSame($response, $response->hasAvailablePaymentMethods());
     }
 
     /**
