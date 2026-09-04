@@ -260,6 +260,56 @@ class ConnectionServiceTest extends BaseTestCase
      *
      * @throws InvalidEnvironmentException
      */
+    public function testGetPortalBaseUrlOfSandboxConnection(): void
+    {
+        // Act
+        $portalBaseUrl = $this->connectionService->getPortalBaseUrl($this->connectionData(BaseProxy::TEST_MODE));
+
+        // Assert
+        self::assertEquals('https://portal-sandbox.sequra.com', $portalBaseUrl);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalBaseUrlOfLiveConnection(): void
+    {
+        // Act
+        $portalBaseUrl = $this->connectionService->getPortalBaseUrl($this->connectionData(BaseProxy::LIVE_MODE));
+
+        // Assert
+        self::assertEquals('https://portal.sequra.com', $portalBaseUrl);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalBaseUrlOfUnknownDeployment(): void
+    {
+        // Arrange
+        $connectionService = new ConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            $this->mockStoreIntegrationService,
+            new MockDeploymentsRepository()
+        );
+
+        // Act
+        $portalBaseUrl = $connectionService->getPortalBaseUrl($this->connectionData(BaseProxy::LIVE_MODE));
+
+        // Assert
+        self::assertNull($portalBaseUrl);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
     public function testGetPortalUrlOfUnknownDeployment(): void
     {
         // Arrange
