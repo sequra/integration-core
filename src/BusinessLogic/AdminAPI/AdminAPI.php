@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\DisconnectController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
+use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\OrderManagementController;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
@@ -157,6 +158,21 @@ class AdminAPI
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
             ->beforeEachMethodOfService(OrderStatusSettingsController::class);
+    }
+
+    /**
+     * Returns an OrderManagementController instance.
+     *
+     * @param string $storeId
+     *
+     * @return OrderManagementController
+     */
+    public function orderManagement(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(OrderManagementController::class);
     }
 
     /**

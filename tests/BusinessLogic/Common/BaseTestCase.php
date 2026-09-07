@@ -10,6 +10,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\DisconnectController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
+use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\OrderManagementController;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
@@ -461,6 +462,11 @@ class BaseTestCase extends TestCase
                 return new CountryConfigurationController(
                     TestServiceRegister::getService(CountryConfigurationService::class),
                     TestServiceRegister::getService(SellingCountriesService::class)
+                );
+            },
+            OrderManagementController::class => function () {
+                return new OrderManagementController(
+                    TestServiceRegister::getService(OrderService::class)
                 );
             },
             OrderStatusSettingsController::class => function () {
