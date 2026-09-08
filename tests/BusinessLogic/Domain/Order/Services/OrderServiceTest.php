@@ -308,6 +308,49 @@ class OrderServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testOrderCreationForOrderWithoutMerchant(): void
+    {
+        // Arrange
+        $this->orderProxy = new MockOrderProxy();
+        $this->orderRepository = new MockSeQuraOrderRepository();
+        $this->shopOrderCreator = new MockOrderCreation();
+        $this->orderService = new OrderService(
+            $this->orderProxy,
+            $this->orderRepository,
+            $this->merchantOrderBuilder,
+            $this->shopOrderCreator
+        );
+
+        $array = json_decode(file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'), true);
+        $array['order']['merchant']['id'] = '';
+        $seQuraOrder = SeQuraOrder::fromArray($array['order']);
+        $seQuraOrder->setReference('d168f9bc-de62-4635-be52-0f0c0a5903aa');
+        $seQuraOrder->setCartId('5678');
+        $seQuraOrder->setOrderRef1('ZXCV1234');
+        $seQuraOrder->setState('approved');
+
+        StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$seQuraOrder]);
+        $this->shopOrderCreator->setShopOrderReference('shop-order-ref-1234');
+
+        $webhook = Webhook::fromArray([
+            'signature' => 'K6hDNSwfcJjF+suAJqXAjA==',
+            'order_ref' => 'd168f9bc-de62-4635-be52-0f0c0a5903aa',
+            'approved_since' => '3',
+            'product_code' => 'i1',
+            'sq_state' => 'approved',
+            'order_ref_1' => 'ZXCV1234',
+        ]);
+
+        // Assert
+        $this->expectException(OrderMerchantNotFoundException::class);
+
+        // Act
+        $this->orderService->createOrder($webhook);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testUpdateSeQuraOrderStatus(): void
     {
         $this->orderRepository = new MockSeQuraOrderRepository();

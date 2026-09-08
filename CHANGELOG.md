@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `OrderNotFoundException` and `OrderMerchantNotFoundException` are answered by the API error handling as `404` responses carrying `general.errors.order.notFound` and `general.errors.order.merchantNotFound`, instead of falling through to `general.errors.unknown`. An integration that translates error codes needs the two new labels; one that does not have them renders the English `errorMessage` the response already carries. No endpoint that existed before reaches either exception, so the change is visible only through the new payment methods endpoint.
 
 ## Fixed
+- Creating an order from a webhook raises `OrderMerchantNotFoundException` when the stored order carries no merchant id, rather than reading the id straight off the order and failing further down in the credentials lookup. The order reference is part of the message, so a webhook that fails this way points back at the order that caused it.
 - `QueueItem::setFailureDescription(null)` stores an empty string. The property and `getFailureDescription()` are typed `string`, so a null kept as it came made the getter throw a `TypeError` instead of returning.
 - A partial disconnect no longer rewrites the country configuration of a store that has none stored: `getCountryConfiguration()` answering `null` is told apart from an empty list, and the deployment cleanup leaves the record alone instead of saving an empty one over it.
 

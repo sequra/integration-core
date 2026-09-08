@@ -336,7 +336,7 @@ class OrderService
             $this->getOrderPaymentMethodInfo(
                 $updatedSeQuraOrder->getReference(),
                 $webhook->getProductCode(),
-                (string)$updatedSeQuraOrder->getMerchant()->getId()
+                $this->getOrderMerchantId($updatedSeQuraOrder)
             )
         );
 
@@ -523,7 +523,9 @@ class OrderService
      * @return PaymentMethod|null
      *
      * @throws HttpRequestException
-     * @throws OrderNotFoundException|OrderMerchantNotFoundException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws DeploymentNotFoundException
      */
     private function getOrderPaymentMethodInfo(
         string $orderReference,
