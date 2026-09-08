@@ -558,12 +558,15 @@ class QueueItem extends Entity
     /**
      * Sets queue item failure description.
      *
+     * Null is stored as an empty string: the property and its getter are typed string, so a null kept as-is
+     * makes getFailureDescription() throw rather than return.
+     *
      * @param string|null $failureDescription
      *   Queue item failure description.
      */
     public function setFailureDescription(?string $failureDescription): void
     {
-        $this->failureDescription = $failureDescription;
+        $this->failureDescription = $failureDescription ?? '';
     }
 
     /**

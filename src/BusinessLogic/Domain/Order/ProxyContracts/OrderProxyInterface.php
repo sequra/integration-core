@@ -2,6 +2,9 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts;
 
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
@@ -25,6 +28,9 @@ interface OrderProxyInterface
      * @param GetAvailablePaymentMethodsRequest $request
      *
      * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws DeploymentNotFoundException
      *
      * @return SeQuraPaymentMethod[]
      */
@@ -36,6 +42,9 @@ interface OrderProxyInterface
      * @param GetAvailablePaymentMethodsRequest $request
      *
      * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws DeploymentNotFoundException
      *
      * @return SeQuraPaymentMethodCategory[]
      */

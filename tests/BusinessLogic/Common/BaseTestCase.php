@@ -19,6 +19,7 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\Affiliate\AffiliateController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Banners\BannerCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Checkout\Controller\CheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\PaymentMethodsCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Controller\ExpressCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Controller\ConfigurationWebhookController;
@@ -497,6 +498,11 @@ class BaseTestCase extends TestCase
             CachedPaymentMethodsController::class => function () {
                 return new CachedPaymentMethodsController(
                     TestServiceRegister::getService(PaymentMethodsService::class)
+                );
+            },
+            PaymentMethodsCheckoutController::class => function () {
+                return new PaymentMethodsCheckoutController(
+                    TestServiceRegister::getService(OrderService::class)
                 );
             },
             PromotionalWidgetsCheckoutController::class => function () {

@@ -7,6 +7,10 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\TranslatableErrorResponse;
 use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspect;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderMerchantNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\TranslatableOrderMerchantNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\TranslatableOrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableException;
 use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableUnhandledException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
@@ -53,6 +57,28 @@ class ErrorHandlingAspect implements Aspect
             );
 
             $response = TranslatableErrorResponse::fromError(new WrongCredentialsException());
+        } catch (OrderNotFoundException $e) {
+            Logger::logWarning(
+                $e->getMessage(),
+                'Core',
+                [
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', \get_class($e)),
+                ]
+            );
+
+            $response = TranslatableErrorResponse::fromError(new TranslatableOrderNotFoundException($e));
+        } catch (OrderMerchantNotFoundException $e) {
+            Logger::logWarning(
+                $e->getMessage(),
+                'Core',
+                [
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', \get_class($e)),
+                ]
+            );
+
+            $response = TranslatableErrorResponse::fromError(new TranslatableOrderMerchantNotFoundException($e));
         } catch (HttpApiInvalidUrlParameterException $e) {
             Logger::logError(
                 $e->getMessage(),
