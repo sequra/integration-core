@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-# [Unreleased]
+# [v5.8.0](https://github.com/sequra/integration-core/tree/v5.8.0)
 ## Added
 - Payment methods of an already solicited order, from the storefront: `CheckoutAPI::get()->solicitedOrderPaymentMethods($storeId)->getPaymentMethodsInCategories(new PaymentMethodsInCategoriesRequest($orderRef))` answers with the methods SeQura offers for that order, grouped in the categories it returns them in. It depends on `OrderService` alone, so an integration that solicits orders without configuring the checkout library can use it; the methods a merchant offers before an order exists still come from `cachedPaymentMethods()`. The payload carries the categories under `categories` and, because a category with no method is returned as well, a `hasAvailablePaymentMethods` flag telling whether the buyer has anything to choose from.
 - `OrderMerchantNotFoundException`, raised for a stored order whose merchant carries no id, so the failure names the order rather than surfacing further down as a missing credentials error with nothing pointing back at it.
