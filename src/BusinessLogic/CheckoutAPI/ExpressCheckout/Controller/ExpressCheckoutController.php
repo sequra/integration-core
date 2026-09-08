@@ -64,15 +64,18 @@ class ExpressCheckoutController
      */
     public function isAvailable(ExpressCheckoutAvailabilityRequest $request): ExpressCheckoutAvailabilityResponse
     {
+        $available = $this->expressCheckoutService->isExpressCheckoutAvailable(
+            $request->getPage(),
+            $request->getCountry(),
+            $request->getCurrency(),
+            $request->getIpAddress(),
+            $request->getProductIds(),
+            $request->getCategoryIds()
+        );
+
         return new ExpressCheckoutAvailabilityResponse(
-            $this->expressCheckoutService->isExpressCheckoutAvailable(
-                $request->getPage(),
-                $request->getCountry(),
-                $request->getCurrency(),
-                $request->getIpAddress(),
-                $request->getProductIds(),
-                $request->getCategoryIds()
-            )
+            $available,
+            $available ? $this->resolveButtonStyle() : null
         );
     }
 
@@ -102,8 +105,13 @@ class ExpressCheckoutController
         );
 
         $countries = $available ? $this->countryConfigurationService->getCountryCodes() : [];
+        $hasCountries = !empty($countries);
 
-        return new GuestExpressCheckoutAvailabilityResponse(!empty($countries), $countries);
+        return new GuestExpressCheckoutAvailabilityResponse(
+            $hasCountries,
+            $countries,
+            $hasCountries ? $this->resolveButtonStyle() : null
+        );
     }
 
     /**
@@ -134,5 +142,15 @@ class ExpressCheckoutController
         }
 
         return new IdentificationFormResponse($form);
+    }
+
+    /**
+     * @return string|null
+     */
+    private function resolveButtonStyle(): ?string
+    {
+        $settings = $this->expressCheckoutService->getExpressCheckoutSettings();
+
+        return $settings ? $settings->getButtonStyle() : null;
     }
 }

@@ -173,6 +173,132 @@ class ExpressCheckoutSettingsRepositoryTest extends BaseTestCase
     }
 
     /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testGetExpressCheckoutSettingsToleratesLegacyRowWithoutButtonStyle(): void
+    {
+        // Arrange
+        $entity = new ExpressCheckoutSettingsEntity();
+        $entity->inflate([
+            'storeId' => '1',
+            'expressCheckoutSettings' => [
+                'expressCheckoutConfigs' => [],
+            ],
+        ]);
+        TestRepositoryRegistry::getRepository(ExpressCheckoutSettingsEntity::getClassName())->save($entity);
+
+        // Act
+        $loaded = StoreContext::doWithStore('1', [$this->repository, 'getExpressCheckoutSettings']);
+
+        // Assert
+        self::assertNotNull($loaded);
+        self::assertNull($loaded->getButtonStyle());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSetExpressCheckoutSettingsRoundTripsOpaqueButtonStyle(): void
+    {
+        // Arrange
+        $buttonStyle = '{"backgroundColor":"#123456","somethingNewerThanThisRelease":true}';
+        $settings = new ExpressCheckoutSettings(
+            [new ExpressCheckoutPageConfig(ExpressCheckoutPage::product(), true)],
+            $buttonStyle
+        );
+
+        // Act
+        StoreContext::doWithStore('1', [$this->repository, 'setExpressCheckoutSettings'], [$settings]);
+        $loaded = StoreContext::doWithStore('1', [$this->repository, 'getExpressCheckoutSettings']);
+
+        // Assert
+        self::assertNotNull($loaded);
+        self::assertSame($buttonStyle, $loaded->getButtonStyle());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSetExpressCheckoutSettingsScopesButtonStyleByStore(): void
+    {
+        // Arrange
+        $buttonStyleOne = '{"backgroundColor":"#123456"}';
+        $buttonStyleTwo = '{"backgroundColor":"#abcdef"}';
+        $storeOne = new ExpressCheckoutSettings(
+            [new ExpressCheckoutPageConfig(ExpressCheckoutPage::product(), true)],
+            $buttonStyleOne
+        );
+        $storeTwo = new ExpressCheckoutSettings(
+            [new ExpressCheckoutPageConfig(ExpressCheckoutPage::cart(), true)],
+            $buttonStyleTwo
+        );
+
+        // Act
+        StoreContext::doWithStore('1', [$this->repository, 'setExpressCheckoutSettings'], [$storeOne]);
+        StoreContext::doWithStore('2', [$this->repository, 'setExpressCheckoutSettings'], [$storeTwo]);
+        $loadedOne = StoreContext::doWithStore('1', [$this->repository, 'getExpressCheckoutSettings']);
+        $loadedTwo = StoreContext::doWithStore('2', [$this->repository, 'getExpressCheckoutSettings']);
+
+        // Assert
+        self::assertSame($buttonStyleOne, $loadedOne->getButtonStyle());
+        self::assertSame($buttonStyleTwo, $loadedTwo->getButtonStyle());
+
+        // Act - updating store '1' must leave store '2' untouched
+        $buttonStyleOneUpdated = '{"backgroundColor":"#000000"}';
+        $storeOneUpdated = new ExpressCheckoutSettings(
+            [new ExpressCheckoutPageConfig(ExpressCheckoutPage::product(), true)],
+            $buttonStyleOneUpdated
+        );
+        StoreContext::doWithStore('1', [$this->repository, 'setExpressCheckoutSettings'], [$storeOneUpdated]);
+        $loadedOneAfterUpdate = StoreContext::doWithStore('1', [$this->repository, 'getExpressCheckoutSettings']);
+        $loadedTwoAfterUpdate = StoreContext::doWithStore('2', [$this->repository, 'getExpressCheckoutSettings']);
+
+        // Assert
+        self::assertSame($buttonStyleOneUpdated, $loadedOneAfterUpdate->getButtonStyle());
+        self::assertSame($buttonStyleTwo, $loadedTwoAfterUpdate->getButtonStyle());
+
+        // Act - a store with no settings at all
+        $loadedThree = StoreContext::doWithStore('3', [$this->repository, 'getExpressCheckoutSettings']);
+        $reloadedTwo = StoreContext::doWithStore('2', [$this->repository, 'getExpressCheckoutSettings']);
+
+        // Assert
+        self::assertNull($loadedThree);
+        self::assertSame($buttonStyleTwo, $reloadedTwo->getButtonStyle());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testGetExpressCheckoutSettingsDegradesNonStringButtonStyleToNull(): void
+    {
+        // Arrange
+        $entity = new ExpressCheckoutSettingsEntity();
+        $entity->inflate([
+            'storeId' => '1',
+            'expressCheckoutSettings' => [
+                'expressCheckoutConfigs' => [],
+                'buttonStyle' => ['backgroundColor' => '#123456'],
+            ],
+        ]);
+        TestRepositoryRegistry::getRepository(ExpressCheckoutSettingsEntity::getClassName())->save($entity);
+
+        // Act
+        $loaded = StoreContext::doWithStore('1', [$this->repository, 'getExpressCheckoutSettings']);
+
+        // Assert
+        self::assertNotNull($loaded);
+        self::assertNull($loaded->getButtonStyle());
+    }
+
+    /**
      * @param string $storeId
      *
      * @return ExpressCheckoutSettingsEntity[]
