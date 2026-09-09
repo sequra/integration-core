@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\Requests;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Request\Request;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
 
@@ -29,18 +30,34 @@ class OrderUpdateRequest extends Request
     protected $unshippedCart;
 
     /**
+     * @var Address|null
+     */
+    protected $deliveryAddress;
+
+    /**
+     * @var Address|null
+     */
+    protected $invoiceAddress;
+
+    /**
      * @param string $shopOrderReference Reference the shop knows the order by.
      * @param Cart|null $shippedCart Shipped cart to submit, null to leave the stored one alone.
      * @param Cart|null $unshippedCart Unshipped cart to submit, null to leave the stored one alone.
+     * @param Address|null $deliveryAddress Delivery address to submit, null to leave the stored one alone.
+     * @param Address|null $invoiceAddress Invoice address to submit, null to leave the stored one alone.
      */
     public function __construct(
         string $shopOrderReference,
         ?Cart $shippedCart = null,
-        ?Cart $unshippedCart = null
+        ?Cart $unshippedCart = null,
+        ?Address $deliveryAddress = null,
+        ?Address $invoiceAddress = null
     ) {
         $this->shopOrderReference = $shopOrderReference;
         $this->shippedCart = $shippedCart;
         $this->unshippedCart = $unshippedCart;
+        $this->deliveryAddress = $deliveryAddress;
+        $this->invoiceAddress = $invoiceAddress;
     }
 
     /**
@@ -54,8 +71,8 @@ class OrderUpdateRequest extends Request
             $this->shopOrderReference,
             $this->shippedCart,
             $this->unshippedCart,
-            null,
-            null
+            $this->deliveryAddress,
+            $this->invoiceAddress
         );
     }
 }
