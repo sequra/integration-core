@@ -115,6 +115,7 @@ class WebhookValidatorTest extends BaseTestCase
     public function testInvalidState()
     {
         $this->expectException(InvalidStateException::class);
+        $this->expectExceptionCode(501);
 
         $validator = new WebhookValidator();
         $validator->validate(Webhook::fromArray([

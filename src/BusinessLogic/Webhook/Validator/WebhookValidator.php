@@ -49,7 +49,7 @@ class WebhookValidator
         }
 
         if (!\in_array($webhook->sqState, self::ALLOWED_STATES)) {
-            throw new InvalidStateException("Unknown event '{$webhook->sqState}'", 400);
+            throw new InvalidStateException("Unknown event '{$webhook->sqState}'", 501);
         }
     }
 
