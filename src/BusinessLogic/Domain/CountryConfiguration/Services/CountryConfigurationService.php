@@ -60,7 +60,9 @@ class CountryConfigurationService
             }
         }
 
-        return $configuredCountries;
+        // Re-indexed: unset leaves gaps in the keys, and every caller passes this on to
+        // json_encode, which turns a gapped array into an object instead of a list.
+        return array_values($configuredCountries);
     }
 
     /**
