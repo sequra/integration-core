@@ -5,6 +5,7 @@ namespace SeQura\Core\Tests\BusinessLogic\AdminAPI\OrderManagement;
 use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\Requests\OrderUpdateRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ProductItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -138,6 +139,46 @@ class OrderManagementControllerTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testUpdateSubmitsBothAddresses(): void
+    {
+        // Act
+        AdminAPI::get()->orderManagement('1')->updateOrder(new OrderUpdateRequest(
+            'ZXCV1234',
+            null,
+            null,
+            $this->address('Carrer del Rec'),
+            $this->address('Gran Via')
+        ));
+
+        // Assert
+        $updateData = $this->orderService->getLastUpdateData();
+        self::assertNotNull($updateData);
+        self::assertNotNull($updateData->getDeliveryAddress());
+        self::assertNotNull($updateData->getInvoiceAddress());
+        self::assertEquals('Carrer del Rec', $updateData->getDeliveryAddress()->getAddressLine1());
+        self::assertEquals('Gran Via', $updateData->getInvoiceAddress()->getAddressLine1());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateLeavesAnOmittedAddressAlone(): void
+    {
+        // Act
+        AdminAPI::get()->orderManagement('1')->updateOrder(
+            new OrderUpdateRequest('ZXCV1234', $this->cart(1000), null, $this->address('Carrer del Rec'))
+        );
+
+        // Assert
+        $updateData = $this->orderService->getLastUpdateData();
+        self::assertNotNull($updateData);
+        self::assertNotNull($updateData->getDeliveryAddress());
+        self::assertNull($updateData->getInvoiceAddress());
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testUpdateRunsInTheStoreTheFacadeWasGiven(): void
     {
         // Act
@@ -169,6 +210,18 @@ class OrderManagementControllerTest extends BaseTestCase
     /**
      * Returns a cart of one product line worth the given total.
      *
+     * @param int $totalWithTax
+     *
+     * @return Cart
+     *
+     * @throws Exception
+     */
+    private function address(string $addressLine1): Address
+    {
+        return new Address('', $addressLine1, '', '08003', 'Barcelona', 'ES');
+    }
+
+    /**
      * @param int $totalWithTax
      *
      * @return Cart
