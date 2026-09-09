@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\DisconnectController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
+use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\OrderManagementController;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
@@ -826,6 +827,15 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new GeneralSettingsController(
                     ServiceRegister::getService(GeneralSettingsService::class),
                     ServiceRegister::getService(CategoryService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            OrderManagementController::class,
+            static function () {
+                return new OrderManagementController(
+                    ServiceRegister::getService(OrderService::class)
                 );
             }
         );

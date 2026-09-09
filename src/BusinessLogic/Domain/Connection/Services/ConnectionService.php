@@ -169,7 +169,18 @@ class ConnectionService
             return null;
         }
 
-        $connection = reset($connections);
+        $portalUrl = $this->getPortalBaseUrl(reset($connections));
+
+        return $portalUrl === null ? null : $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH;
+    }
+
+    /**
+     * @param ConnectionData $connection
+     *
+     * @return string|null
+     */
+    public function getPortalBaseUrl(ConnectionData $connection): ?string
+    {
         $deployment = $this->deploymentsRepository->getDeploymentById($connection->getDeployment());
 
         if (!$deployment) {
@@ -181,11 +192,7 @@ class ConnectionService
             $deployment->getSandboxDeploymentURL();
         $portalUrl = $deploymentUrl ? $deploymentUrl->getPortalBaseUrl() : '';
 
-        if ($portalUrl === '') {
-            return null;
-        }
-
-        return rtrim($portalUrl, '/') . self::PORTAL_STORE_INTEGRATIONS_PATH;
+        return $portalUrl === '' ? null : rtrim($portalUrl, '/');
     }
 
     /**
