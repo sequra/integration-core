@@ -602,7 +602,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(OrderProxyInterface::class),
                     ServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
                     ServiceRegister::getService(MerchantOrderRequestBuilder::class),
-                    ServiceRegister::getService(OrderCreationInterface::class)
+                    ServiceRegister::getService(OrderCreationInterface::class),
+                    ServiceRegister::getService(CheckoutService::class)
                 );
             }
         );
@@ -913,8 +914,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             SolicitationController::class,
             static function () {
                 return new SolicitationController(
-                    ServiceRegister::getService(OrderService::class),
-                    ServiceRegister::getService(CheckoutService::class)
+                    ServiceRegister::getService(OrderService::class)
                 );
             }
         );

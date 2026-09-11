@@ -4,12 +4,17 @@ namespace SeQura\Core\BusinessLogic\Domain\Order\Service;
 
 use Exception;
 use InvalidArgumentException;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\PrebuiltCreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidOrderStateException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderMerchantNotFoundException;
@@ -53,6 +58,10 @@ class OrderService
      */
     protected $shopOrderCreator;
     /**
+     * @var CheckoutService
+     */
+    protected $checkoutService;
+    /**
      * @var SeQuraOrderRepositoryInterface
      */
     protected $orderRepository;
@@ -66,17 +75,20 @@ class OrderService
      * @param SeQuraOrderRepositoryInterface $orderRepository
      * @param MerchantOrderRequestBuilder $merchantOrderRequestBuilder
      * @param OrderCreationInterface $shopOrderCreator
+     * @param CheckoutService $checkoutService
      */
     public function __construct(
         OrderProxyInterface $proxy,
         SeQuraOrderRepositoryInterface $orderRepository,
         MerchantOrderRequestBuilder $merchantOrderRequestBuilder,
-        OrderCreationInterface $shopOrderCreator
+        OrderCreationInterface $shopOrderCreator,
+        CheckoutService $checkoutService
     ) {
         $this->proxy = $proxy;
         $this->orderRepository = $orderRepository;
         $this->merchantOrderRequestBuilder = $merchantOrderRequestBuilder;
         $this->shopOrderCreator = $shopOrderCreator;
+        $this->checkoutService = $checkoutService;
     }
 
     /**
@@ -143,6 +155,51 @@ class OrderService
         $this->orderRepository->setSeQuraOrder($order);
 
         return $order;
+    }
+
+    /**
+     * Solicits the order only for a cart SeQura may be offered for, so an ineligible cart costs no
+     * HTTP call. The shipping country and the shopper's IP are read off the built order itself:
+     * the builder is what knows them, and the guard then cannot disagree with what is solicited.
+     *
+     * @param CreateOrderRequestBuilder $builder
+     * @param string[] $productIds Product references in the cart (empty array = no per-product check).
+     * @param string[] $categoryIds Category references in the cart (empty array = no per-category check).
+     * @param bool $checkCountry When false, the shipping country guard is skipped. For hosts that
+     * resolve the merchant themselves.
+     *
+     * @return SeQuraOrder|null Null when the cart is not eligible.
+     *
+     * @throws BadMerchantIdException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws InvalidUrlException
+     * @throws WrongCredentialsException
+     */
+    public function solicitIfSupported(
+        CreateOrderRequestBuilder $builder,
+        array $productIds = [],
+        array $categoryIds = [],
+        bool $checkCountry = true
+    ): ?SeQuraOrder {
+        $createOrderRequest = $builder->build();
+
+        $isSupported = $this->checkoutService->isSolicitationSupported(
+            $createOrderRequest->getDeliveryAddress()->getCountryCode(),
+            $createOrderRequest->getCustomer()->getIpNumber(),
+            $productIds,
+            $categoryIds,
+            $checkCountry
+        );
+
+        if (!$isSupported) {
+            return null;
+        }
+
+        // The host builder may not be idempotent, so reuse the request built above.
+        return $this->solicitFor(new PrebuiltCreateOrderRequestBuilder($createOrderRequest));
     }
 
     /**
