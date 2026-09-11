@@ -7,7 +7,10 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
+use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestShopLogger;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -78,6 +81,63 @@ class CountryConfigurationServiceTest extends BaseTestCase
         $this->sellsIn(['ES', 'FR']);
 
         self::assertSame(['ES', 'FR'], $this->service->getCountryCodes());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSaveCountryConfigurationForCountriesCodesLeavesOutACountryWithNoMerchant(): void
+    {
+        // Arrange
+        $this->sellsIn(['ES']);
+
+        // Act
+        $this->service->saveCountryConfigurationForCountriesCodes(['ES', 'FR']);
+
+        // Assert
+        self::assertSame(['ES'], array_map(static function (CountryConfiguration $configured) {
+            return $configured->getCountryCode();
+        }, $this->repository->getCountryConfiguration()));
+    }
+
+    /**
+     * @return void
+     */
+    public function testSaveCountryConfigurationForCountriesCodesLogsTheCountriesLeftOut(): void
+    {
+        // Arrange
+        $logger = new TestShopLogger();
+        TestServiceRegister::registerService(ShopLoggerAdapter::CLASS_NAME, static function () use ($logger) {
+            return $logger;
+        });
+        $this->sellsIn(['ES']);
+
+        // Act
+        $this->service->saveCountryConfigurationForCountriesCodes(['ES', 'FR']);
+
+        // Assert
+        self::assertTrue(
+            $logger->isMessageContainedInLog('Countries were left out of the country configuration')
+        );
+        self::assertSame(
+            ['skippedCountries' => 'FR', 'savedCountries' => 'ES'],
+            $this->contextOf($logger->data->getContext())
+        );
+    }
+
+    /**
+     * @param LogContextData[] $context
+     *
+     * @return string[]
+     */
+    private function contextOf(array $context): array
+    {
+        $values = [];
+        foreach ($context as $item) {
+            $values[$item->getName()] = $item->getValue();
+        }
+
+        return $values;
     }
 
     /**
