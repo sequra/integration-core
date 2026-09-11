@@ -77,7 +77,7 @@ class ConnectionService
     /**
      * @param ConnectionData[] $connections
      *
-     * @return void
+     * @return ConnectionData[] The connections that were connected, without the ones left without credentials
      *
      * @throws BadMerchantIdException
      * @throws HttpRequestException
@@ -86,13 +86,14 @@ class ConnectionService
      * @throws CapabilitiesEmptyException
      * @throws InvalidUrlException
      */
-    public function connect(array $connections): void
+    public function connect(array $connections): array
     {
         $errors = [];
-        $connected = 0;
+        $connected = [];
 
         foreach ($connections as $connectionData) {
-            // A deployment the merchant left without credentials is not connected
+            // A deployment the merchant left without credentials is left untouched, not connected and
+            // not disconnected either: disconnecting has its own endpoint
             if (!$this->hasCredentials($connectionData)) {
                 continue;
             }
@@ -102,21 +103,17 @@ class ConnectionService
                 $this->credentialsService->updateCountryConfigurationWithNewMerchantIdsAndRemoveOldPaymentMethods($credentials);
                 $this->registerWebhooks($connectionData);
                 $this->saveConnectionData($connectionData);
-                $connected++;
+                $connected[] = $connectionData;
             } catch (WrongCredentialsException $exception) {
                 $errors[] = $connectionData->getDeployment();
             }
         }
 
-        if (empty($errors) && $connected === 0) {
-            $errors = array_map(static function (ConnectionData $connectionData) {
-                return $connectionData->getDeployment();
-            }, $connections);
-        }
-
         if (!empty($errors)) {
             throw new WrongCredentialsException(null, $errors);
         }
+
+        return $connected;
     }
 
     /**
