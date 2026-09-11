@@ -9,6 +9,7 @@ use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\LogData;
 use SeQura\Core\Tests\Infrastructure\Common\BaseInfrastructureTestWithServices;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
+use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestLoggingHttpClient;
 
 /**
  * Class LoggingHttpclientTest.
@@ -132,6 +133,76 @@ class LoggingHttpclientTest extends BaseInfrastructureTestWithServices
 
         // Assert
         self::assertContains('{"Authorization":"Authorization: ***"}', $this->loggedHeaders());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws HttpCommunicationException
+     */
+    public function testItMasksASecretHeaderWhoseValueIsNotAString(): void
+    {
+        // Arrange
+        $this->wrappedClient->setMockResponses([new HttpResponse(200, [], '{}')]);
+
+        // Act
+        $this->client->request('GET', 'https://sandbox.sequrapi.com/orders', ['Authorization' => 1234], '');
+
+        // Assert
+        self::assertStringContainsString('{"Authorization":"***"}', implode("\n", $this->loggedHeaders()));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws HttpCommunicationException
+     */
+    public function testItLeavesANonStringValueOfANumericallyKeyedHeaderAlone(): void
+    {
+        // Arrange
+        $this->wrappedClient->setMockResponses([new HttpResponse(200, [], '{}')]);
+
+        // Act
+        $this->client->request('GET', 'https://sandbox.sequrapi.com/orders', [1234], '');
+
+        // Assert
+        self::assertStringContainsString('[1234]', implode("\n", $this->loggedHeaders()));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws HttpCommunicationException
+     */
+    public function testItSendsTheRequestThroughTheWrappedClient(): void
+    {
+        // Arrange
+        $response = new HttpResponse(200, [], '{"sent":true}');
+        $this->wrappedClient->setMockResponses([$response]);
+        $client = new TestLoggingHttpClient($this->wrappedClient);
+
+        // Act
+        $sent = $client->sendHttpRequest('POST', 'https://sandbox.sequrapi.com/orders', [], '{}');
+
+        // Assert
+        self::assertSame($response, $sent);
+        self::assertSame('POST', $this->wrappedClient->getLastRequest()['method']);
+    }
+
+    /**
+     * @return void
+     */
+    public function testItSendsTheAsyncRequestThroughTheWrappedClient(): void
+    {
+        // Arrange
+        $client = new TestLoggingHttpClient($this->wrappedClient);
+
+        // Act
+        $client->sendHttpRequestAsync('POST', 'https://sandbox.sequrapi.com/orders', [], '{}');
+
+        // Assert
+        self::assertTrue($this->wrappedClient->calledAsync);
+        self::assertSame('POST', $this->wrappedClient->getLastRequest()['method']);
     }
 
     /**

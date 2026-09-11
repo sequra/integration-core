@@ -97,7 +97,8 @@ class SolicitationCheckoutApiTest extends BaseTestCase
                     $this->orderProxy,
                     $this->orderRepository,
                     $this->merchantOrderBuilder,
-                    $this->shopOrderCreation
+                    $this->shopOrderCreation,
+                    TestServiceRegister::getService(CheckoutService::class)
                 );
             }
         );
@@ -287,7 +288,7 @@ class SolicitationCheckoutApiTest extends BaseTestCase
 
         // Act
         $response = CheckoutAPI::get()->solicitation('test1')->solicitFor(
-            new SolicitationRequest(new MockCreateOrderRequestBuilder(), '', [], [], false)
+            new SolicitationRequest(new MockCreateOrderRequestBuilder(), [], [], false)
         );
 
         // Assert
@@ -305,7 +306,7 @@ class SolicitationCheckoutApiTest extends BaseTestCase
 
         // Act
         $response = CheckoutAPI::get()->solicitation('test1')->solicitFor(
-            new SolicitationRequest(new MockCreateOrderRequestBuilder(), '1.2.3.4')
+            new SolicitationRequest(new MockCreateOrderRequestBuilder())
         );
 
         // Assert
@@ -324,7 +325,7 @@ class SolicitationCheckoutApiTest extends BaseTestCase
 
         // Act
         $response = CheckoutAPI::get()->solicitation('test1')->solicitFor(
-            new SolicitationRequest(new MockCreateOrderRequestBuilder(), '', ['p1'])
+            new SolicitationRequest(new MockCreateOrderRequestBuilder(), ['p1'])
         );
 
         // Assert

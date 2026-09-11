@@ -310,7 +310,8 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(OrderProxyInterface::class),
                     TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
                     TestServiceRegister::getService(MerchantOrderRequestBuilder::class),
-                    TestServiceRegister::getService(OrderCreationInterface::class)
+                    TestServiceRegister::getService(OrderCreationInterface::class),
+                    TestServiceRegister::getService(CheckoutService::class)
                 );
             },
             OrderReportService::class => static function () {

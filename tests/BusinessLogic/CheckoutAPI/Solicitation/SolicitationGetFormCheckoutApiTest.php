@@ -76,7 +76,8 @@ class SolicitationGetFormCheckoutApiTest extends BaseTestCase
                     $this->orderProxy,
                     $this->orderRepository,
                     $this->merchantOrderBuilder,
-                    $this->shopOrderCreation
+                    $this->shopOrderCreation,
+                    TestServiceRegister::getService(CheckoutService::class)
                 );
             }
         );

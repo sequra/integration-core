@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\AdminAPI\OrderManagement;
 
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
 use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\Requests\OrderUpdateRequest;
@@ -38,7 +39,8 @@ class OrderManagementControllerTest extends BaseTestCase
             TestServiceRegister::getService(OrderProxyInterface::class),
             TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
             TestServiceRegister::getService(MerchantOrderRequestBuilder::class),
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
         $this->orderService->setUpdatedOrder($this->seQuraOrder());
 

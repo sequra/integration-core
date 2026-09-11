@@ -288,19 +288,7 @@ class CheckoutService
             return false;
         }
 
-        foreach ($productIds as $productId) {
-            if (!$this->isProductSupported($productId)) {
-                return false;
-            }
-        }
-
-        foreach ($categoryIds as $categoryId) {
-            if (!$this->isCategorySupported($categoryId)) {
-                return false;
-            }
-        }
-
-        return true;
+        return $this->areProductsAndCategoriesSupported($productIds, $categoryIds);
     }
 
     /**
@@ -346,6 +334,24 @@ class CheckoutService
             return false;
         }
 
+        return $this->areProductsAndCategoriesSupported($productIds, $categoryIds);
+    }
+
+    /**
+     * Returns true when every product and every category in the cart is one SeQura may be offered for.
+     *
+     * @param string[] $productIds Product references in the cart (empty array = no per-product check).
+     * @param string[] $categoryIds Category references in the cart (empty array = no per-category check).
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    private function areProductsAndCategoriesSupported(array $productIds, array $categoryIds): bool
+    {
         foreach ($productIds as $productId) {
             if (!$this->isProductSupported($productId)) {
                 return false;
