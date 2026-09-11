@@ -10,6 +10,7 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\Checkout\Controller\CheckoutController
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Controller\ExpressCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Banners\BannerCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\PaymentMethodsCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
 
@@ -58,6 +59,22 @@ class CheckoutAPI
             ::run(new ErrorHandlingAspect())
             ->andRun(new StoreContextAspect($storeId))
             ->beforeEachMethodOfService(CachedPaymentMethodsController::class);
+    }
+
+    /**
+     * Payment methods of an order already solicited at SeQura, addressed by its reference. The methods a
+     * merchant offers before an order exists come from cachedPaymentMethods() instead.
+     *
+     * @param string $storeId
+     *
+     * @return object
+     */
+    public function solicitedOrderPaymentMethods(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(PaymentMethodsCheckoutController::class);
     }
 
     /**

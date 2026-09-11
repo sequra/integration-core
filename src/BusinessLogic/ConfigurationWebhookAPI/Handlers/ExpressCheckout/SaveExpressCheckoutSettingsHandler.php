@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Handlers\TopicHandlerInter
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\ExpressCheckout\SaveExpressCheckoutSettingsRequest;
 use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Responses\ExpressCheckout\SaveExpressCheckoutSettingsResponse;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\DuplicatedExpressCheckoutPageException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutButtonStyleException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageConfigException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
@@ -39,6 +40,7 @@ class SaveExpressCheckoutSettingsHandler implements TopicHandlerInterface
      * @throws InvalidExpressCheckoutPageException
      * @throws DuplicatedExpressCheckoutPageException
      * @throws InvalidExpressCheckoutPageConfigException
+     * @throws InvalidExpressCheckoutButtonStyleException
      */
     public function handle(array $payload): Response
     {

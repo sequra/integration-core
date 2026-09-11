@@ -15,6 +15,8 @@ use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmp
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
+use SeQura\Core\Infrastructure\Logger\Logger;
 
 /**
  * Class ConnectionService
@@ -27,6 +29,12 @@ class ConnectionService
      * Page of the SeQura portal where a merchant configures the store integrations of their account
      */
     private const PORTAL_STORE_INTEGRATIONS_PATH = '/development/store-integrations';
+
+    /**
+     * Env var key that, when explicitly truthy, skips store integration (and therefore webhook) registration
+     * for sandbox connections.
+     */
+    public const SKIP_STORE_INTEGRATION_REGISTRATION_ENV = 'SEQURA_SKIP_STORE_INTEGRATION_REGISTRATION';
 
     /**
      * @var ConnectionDataRepositoryInterface $connectionDataRepository
@@ -295,6 +303,45 @@ class ConnectionService
      */
     protected function registerWebhooks(ConnectionData $connectionData): void
     {
+        if (self::shouldSkipStoreIntegrationRegistration($connectionData)) {
+            Logger::logWarning(
+                'Store integration registration skipped because '
+                . self::SKIP_STORE_INTEGRATION_REGISTRATION_ENV . ' is set. '
+                . 'Webhooks will not be registered for this merchant.',
+                'Core',
+                [
+                    new LogContextData('merchantId', $connectionData->getMerchantId()),
+                    new LogContextData('deployment', $connectionData->getDeployment()),
+                ]
+            );
+
+            return;
+        }
+
         $this->storeIntegrationService->createStoreIntegration($connectionData);
+    }
+
+    /**
+     * Tells whether store integration registration must be skipped, based on an env var. This is a local
+     * development aid, so it is honored in sandbox only: setting the variable against a live merchant has
+     * no effect. Only an explicit truthy value ("1" or "true", case-insensitive, trimmed) enables the skip;
+     * anything else, including an absent or empty value, means "do not skip".
+     *
+     * @param ConnectionData $connectionData
+     *
+     * @return bool
+     */
+    protected static function shouldSkipStoreIntegrationRegistration(ConnectionData $connectionData): bool
+    {
+        if (!$connectionData->isSandbox()) {
+            return false;
+        }
+
+        $flag = getenv(self::SKIP_STORE_INTEGRATION_REGISTRATION_ENV);
+        if (!\is_string($flag)) {
+            return false;
+        }
+
+        return \in_array(strtolower(trim($flag)), ['1', 'true'], true);
     }
 }

@@ -17,11 +17,18 @@ class ExpressCheckoutAvailabilityResponse extends Response
     protected $available;
 
     /**
-     * @param bool $available
+     * @var string|null
      */
-    public function __construct(bool $available)
+    protected $buttonStyle;
+
+    /**
+     * @param bool $available
+     * @param string|null $buttonStyle
+     */
+    public function __construct(bool $available, ?string $buttonStyle = null)
     {
         $this->available = $available;
+        $this->buttonStyle = $buttonStyle;
     }
 
     /**
@@ -29,6 +36,9 @@ class ExpressCheckoutAvailabilityResponse extends Response
      */
     public function toArray(): array
     {
-        return ['available' => $this->available];
+        return [
+            'available' => $this->available,
+            'buttonStyle' => $this->buttonStyle,
+        ];
     }
 }

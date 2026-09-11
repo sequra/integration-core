@@ -42,6 +42,9 @@ class GetExpressCheckoutSettingsResponse extends Response
         $configs = $this->expressCheckoutSettings
             ? $this->expressCheckoutSettings->getExpressCheckoutConfigs()
             : [];
+        $buttonStyle = $this->expressCheckoutSettings
+            ? $this->expressCheckoutSettings->getButtonStyle()
+            : null;
 
         return [
             'availablePages' => array_map(static function (ExpressCheckoutPage $page) {
@@ -50,6 +53,7 @@ class GetExpressCheckoutSettingsResponse extends Response
             'expressCheckoutConfigs' => array_map(static function (ExpressCheckoutPageConfig $config) {
                 return $config->toArray();
             }, $configs),
+            'buttonStyle' => $buttonStyle,
         ];
     }
 }

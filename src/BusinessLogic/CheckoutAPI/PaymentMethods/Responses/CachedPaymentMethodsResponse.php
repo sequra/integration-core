@@ -12,6 +12,8 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
  */
 class CachedPaymentMethodsResponse extends Response
 {
+    use PaymentMethodResponseTrait;
+
     /**
      * @var SeQuraPaymentMethod[]
      */
@@ -30,30 +32,6 @@ class CachedPaymentMethodsResponse extends Response
      */
     public function toArray(): array
     {
-        $methods = [];
-        foreach ($this->paymentMethods as $paymentMethod) {
-            $methods[] = [
-                'product' => $paymentMethod->getProduct(),
-                'title' => $paymentMethod->getTitle(),
-                'longTitle' => $paymentMethod->getLongTitle(),
-                'cost' => [
-                    'setupFee' => $paymentMethod->getCost()->getSetupFee(),
-                    'instalmentFee' => $paymentMethod->getCost()->getInstalmentFee(),
-                    'downPaymentFees' => $paymentMethod->getCost()->getDownPaymentFees(),
-                    'instalmentTotal' => $paymentMethod->getCost()->getInstalmentTotal(),
-                ],
-                'startsAt' => $paymentMethod->getStartsAt()->format('Y-m-d H:i:s'),
-                'endsAt' => $paymentMethod->getEndsAt()->format('Y-m-d H:i:s'),
-                'campaign' => $paymentMethod->getCampaign(),
-                'claim' => $paymentMethod->getClaim(),
-                'description' => $paymentMethod->getDescription(),
-                'icon' => $paymentMethod->getIcon(),
-                'costDescription' => $paymentMethod->getCostDescription(),
-                'minAmount' => $paymentMethod->getMinAmount(),
-                'maxAmount' => $paymentMethod->getMaxAmount()
-            ];
-        }
-
-        return $methods;
+        return array_map([$this, 'paymentMethodToArray'], $this->paymentMethods);
     }
 }

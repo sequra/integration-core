@@ -48,6 +48,10 @@ class MockOrderProxy implements OrderProxyInterface
      */
     private $getFormCallCount = 0;
     /**
+     * @var GetAvailablePaymentMethodsRequest|null
+     */
+    private $lastPaymentMethodsInCategoriesRequest;
+    /**
      * @var int
      */
     private $createOrderCallCount = 0;
@@ -118,7 +122,17 @@ class MockOrderProxy implements OrderProxyInterface
 
     public function getAvailablePaymentMethodsInCategories(GetAvailablePaymentMethodsRequest $request): array
     {
+        $this->lastPaymentMethodsInCategoriesRequest = $request;
+
         return [];
+    }
+
+    /**
+     * @return GetAvailablePaymentMethodsRequest|null
+     */
+    public function getLastPaymentMethodsInCategoriesRequest(): ?GetAvailablePaymentMethodsRequest
+    {
+        return $this->lastPaymentMethodsInCategoriesRequest;
     }
 
     public function createOrder(CreateOrderRequest $request): SeQuraOrder
