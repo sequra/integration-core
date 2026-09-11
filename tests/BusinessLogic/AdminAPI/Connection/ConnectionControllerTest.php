@@ -561,6 +561,85 @@ class ConnectionControllerTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testConnectReturnsPortalUrlOfConnectedDeployment(): void
+    {
+        // Arrange
+        $mockConnectionService = new MockConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            TestServiceRegister::getService(StoreIntegrationService::class),
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+        );
+        $mockConnectionService->setMockConnectedConnections([
+            new ConnectionData(
+                BaseProxy::TEST_MODE,
+                'test',
+                'sequra',
+                new AuthorizationCredentials('test_username', 'test_password')
+            )
+        ]);
+
+        TestServiceRegister::registerService(ConnectionService::class, function () use ($mockConnectionService) {
+            return $mockConnectionService;
+        });
+        $svea = new ConnectionRequest(
+            BaseProxy::TEST_MODE,
+            'test_username',
+            'test_password',
+            'test',
+            'svea'
+        );
+        $sequra = new ConnectionRequest(
+            BaseProxy::TEST_MODE,
+            'test_username',
+            'test_password',
+            'test',
+            'sequra'
+        );
+        $request = new OnboardingRequest([$svea, $sequra], false);
+
+        // Act
+        $response = AdminAPI::get()->connection('1')->connect($request);
+
+        // Assert
+        self::assertEquals(
+            ['isValid' => true, 'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations'],
+            $response->toArray()
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testConnectWithoutCredentialsKeepsTheStatisticalDataUntouched(): void
+    {
+        // Arrange
+        TestServiceRegister::registerService(ConnectionService::class, function () {
+            return new ConnectionService(
+                TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                TestServiceRegister::getService(CredentialsService::class),
+                TestServiceRegister::getService(StoreIntegrationService::class),
+                TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            );
+        });
+        $request = new OnboardingRequest(
+            [new ConnectionRequest(BaseProxy::TEST_MODE, 'test', '', '', 'sequra')],
+            false
+        );
+
+        // Act
+        $response = AdminAPI::get()->connection('1')->connect($request);
+
+        // Assert
+        self::assertEquals(['isValid' => true, 'portalUrl' => null], $response->toArray());
+        self::assertNull(
+            StoreContext::doWithStore('1', [$this->statisticalDataRepository, 'getStatisticalData'])
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testConnectError(): void
     {
         // Arrange

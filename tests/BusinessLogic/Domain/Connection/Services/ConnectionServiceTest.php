@@ -492,9 +492,48 @@ class ConnectionServiceTest extends BaseTestCase
      * @throws HttpRequestException
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
      * @throws InvalidUrlException
      */
-    public function testConnectWithoutAnyCredentials(): void
+    public function testConnectReturnsOnlyTheConnectedDeployments(): void
+    {
+        // Arrange
+        $this->mockConnectionProxy->setMockCredentials([
+            new Credentials('logeecom1', 'ES', 'EUR', 'assetsKey1', [], 'sequra')
+        ]);
+        $sequra = $this->connectionData(BaseProxy::TEST_MODE);
+
+        // Act
+        $connected = $this->connectionService->connect([
+            new DomainConnectionData(
+                BaseProxy::TEST_MODE,
+                'test_merchant',
+                'svea',
+                new AuthorizationCredentials('', '')
+            ),
+            $sequra
+        ]);
+
+        // Assert
+        self::assertEquals([$sequra], $connected);
+        self::assertEquals(
+            'https://portal-sandbox.sequra.com/development/store-integrations',
+            $this->connectionService->getPortalUrl($connected)
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testConnectWithoutAnyCredentialsConnectsNothing(): void
     {
         // Arrange
         $connections = [
@@ -506,11 +545,46 @@ class ConnectionServiceTest extends BaseTestCase
             )
         ];
 
+        // Act
+        $connected = $this->connectionService->connect($connections);
+
         // Assert
-        $this->expectException(WrongCredentialsException::class);
+        self::assertSame([], $connected);
+        self::assertNull($this->connectionService->getConnectionDataByDeployment('sequra'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testConnectKeepsTheCredentialsOfADeploymentSubmittedBlank(): void
+    {
+        // Arrange
+        $this->connectionService->saveConnectionData($this->connectionData(BaseProxy::TEST_MODE));
 
         // Act
-        $this->connectionService->connect($connections);
+        $connected = $this->connectionService->connect([
+            new DomainConnectionData(
+                BaseProxy::TEST_MODE,
+                'test_merchant',
+                'sequra',
+                new AuthorizationCredentials('', '')
+            )
+        ]);
+
+        // Assert
+        self::assertSame([], $connected);
+        self::assertEquals(
+            $this->connectionData(BaseProxy::TEST_MODE)->getAuthorizationCredentials(),
+            $this->connectionService->getConnectionDataByDeployment('sequra')->getAuthorizationCredentials()
+        );
     }
 
     /**

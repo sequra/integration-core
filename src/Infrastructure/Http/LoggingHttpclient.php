@@ -98,13 +98,39 @@ class LoggingHttpclient extends HttpClient
     {
         $masked = [];
 
-        foreach ((array)$headers as $name => $value) {
-            $masked[$name] = \in_array(strtolower((string)$name), self::SECRET_HEADERS, true)
-                ? $this->maskedValue((string)$name, $value)
+        foreach ((array)$headers as $key => $value) {
+            $name = $this->headerName($key, $value);
+            $masked[$key] = \in_array(strtolower($name), self::SECRET_HEADERS, true)
+                ? $this->maskedValue($name, $value)
                 : $value;
         }
 
         return (string)json_encode($masked);
+    }
+
+    /**
+     * Returns the name of a header. Headers are keyed by name here, but the list a host
+     * platform hands over may as well be the numerically keyed one cURL itself takes, in
+     * which case the whole "Name: value" line is the value and the name is read off it.
+     *
+     * @param int|string $key
+     * @param mixed $value
+     *
+     * @return string
+     */
+    protected function headerName($key, $value): string
+    {
+        if (!\is_int($key)) {
+            return (string)$key;
+        }
+
+        if (!\is_string($value)) {
+            return '';
+        }
+
+        $separator = strpos($value, ':');
+
+        return $separator === false ? '' : substr($value, 0, $separator);
     }
 
     /**

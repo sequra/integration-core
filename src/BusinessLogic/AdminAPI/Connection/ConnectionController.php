@@ -142,17 +142,20 @@ class ConnectionController
         $onboardingData = $onboardingRequest->transformToDomainModel();
 
         try {
-            $this->connectionService->connect($onboardingData->getConnections());
-            $this->statisticalDataService->saveStatisticalData(
-                new StatisticalData($onboardingData->isSendStatisticalData())
-            );
+            $connected = $this->connectionService->connect($onboardingData->getConnections());
+
+            if (!empty($connected)) {
+                $this->statisticalDataService->saveStatisticalData(
+                    new StatisticalData($onboardingData->isSendStatisticalData())
+                );
+            }
         } catch (BadMerchantIdException $e) {
             return new ConnectionValidationResponse(false, 'merchantId');
         } catch (WrongCredentialsException $e) {
             return new ConnectionValidationResponse(false, $e->getMessage());
         }
 
-        return new SuccessfulConnectionResponse($this->connectionService->getPortalUrl($onboardingData->getConnections()));
+        return new SuccessfulConnectionResponse($this->connectionService->getPortalUrl($connected));
     }
 
     /**
