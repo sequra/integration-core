@@ -72,6 +72,34 @@ class LoggingHttpclientTest extends BaseInfrastructureTestWithServices
      *
      * @throws HttpCommunicationException
      */
+    public function testItKeepsTheAuthorizationOfANumericallyKeyedHeaderListOutOfTheLog(): void
+    {
+        // Arrange
+        $this->wrappedClient->setMockResponses([new HttpResponse(200, [], '{}')]);
+
+        // Act
+        $this->client->request(
+            'POST',
+            'https://sandbox.sequrapi.com/orders',
+            [
+                'Content-Type: application/json',
+                'Authorization: Basic bWVyY2hhbnQ6c2VjcmV0',
+            ],
+            '{}'
+        );
+
+        // Assert
+        $headers = implode("\n", $this->loggedHeaders());
+
+        self::assertStringNotContainsString('bWVyY2hhbnQ6c2VjcmV0', $headers);
+        self::assertStringContainsString('["Content-Type: application\\/json","Authorization: ***"]', $headers);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws HttpCommunicationException
+     */
     public function testItKeepsACookieOutOfTheLog(): void
     {
         // Arrange
