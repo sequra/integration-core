@@ -6,6 +6,8 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Requests\SolicitationRequ
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Response\IdentificationFormResponse;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Response\SolicitationResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
@@ -48,7 +50,10 @@ class SolicitationController
      * @throws FailedToRetrieveSellingCountriesException
      * @throws HttpRequestException
      * @throws InvalidUrlException
-     * @throws WrongCredentialsException|OrderMerchantNotFoundException
+     * @throws OrderMerchantNotFoundException
+     * @throws WrongCredentialsException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
      */
     public function solicitFor(SolicitationRequest $request): SolicitationResponse
     {
