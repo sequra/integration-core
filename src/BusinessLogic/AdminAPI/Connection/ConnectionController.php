@@ -136,6 +136,7 @@ class ConnectionController
      * @throws PaymentMethodNotFoundException
      * @throws CapabilitiesEmptyException
      * @throws InvalidUrlException
+     * @throws \Exception
      */
     public function connect(OnboardingRequest $onboardingRequest): Response
     {
@@ -144,11 +145,13 @@ class ConnectionController
         try {
             $connected = $this->connectionService->connect($onboardingData->getConnections());
 
-            if (!empty($connected)) {
-                $this->statisticalDataService->saveStatisticalData(
-                    new StatisticalData($onboardingData->isSendStatisticalData())
-                );
+            if (empty($connected)) {
+                return new ConnectionValidationResponse(false, 'username/password');
             }
+
+            $this->statisticalDataService->saveStatisticalData(
+                new StatisticalData($onboardingData->isSendStatisticalData())
+            );
         } catch (BadMerchantIdException $e) {
             return new ConnectionValidationResponse(false, 'merchantId');
         } catch (WrongCredentialsException $e) {

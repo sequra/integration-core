@@ -159,8 +159,8 @@ class ConnectionService
     }
 
     /**
-     * Returns the URL of the SeQura portal page where the store is configured, or null
-     * when the store is not connected yet or nothing is known about its deployment.
+     * Returns the URL of the SeQura portal page where the store is configured, or null when
+     * the store is not connected yet or no connected deployment names a portal.
      *
      * @param ConnectionData[]|null $connections Connections of the store, read when not given
      *
@@ -170,13 +170,15 @@ class ConnectionService
     {
         $connections = $connections ?? $this->getAllConnectionData();
 
-        if (empty($connections)) {
-            return null;
+        foreach ($connections as $connection) {
+            $portalUrl = $this->getPortalBaseUrl($connection);
+
+            if ($portalUrl !== null) {
+                return $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH;
+            }
         }
 
-        $portalUrl = $this->getPortalBaseUrl(reset($connections));
-
-        return $portalUrl === null ? null : $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH;
+        return null;
     }
 
     /**

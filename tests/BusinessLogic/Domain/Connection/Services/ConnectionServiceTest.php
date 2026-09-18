@@ -338,6 +338,63 @@ class ConnectionServiceTest extends BaseTestCase
     }
 
     /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalUrlSkipsTheDeploymentNamingNoPortal(): void
+    {
+        // Arrange
+        $deploymentsRepository = new MockDeploymentsRepository();
+        $deploymentsRepository->setDeployments([
+            new Deployment(
+                'svea',
+                'SVEA',
+                new DeploymentURL(
+                    'https://live.sequra.svea.com/',
+                    'https://live.cdn.sequra.svea.com/assets/'
+                ),
+                new DeploymentURL(
+                    'https://next-sandbox.sequra.svea.com/',
+                    'https://next-sandbox.cdn.sequra.svea.com/assets/'
+                )
+            ),
+            new Deployment(
+                'sequra',
+                'seQura',
+                new DeploymentURL(
+                    'https://live.sequrapi.com/',
+                    'https://live.sequracdn.com/assets/',
+                    'https://portal.sequra.com/'
+                ),
+                new DeploymentURL(
+                    'https://sandbox.sequrapi.com/',
+                    'https://sandbox.sequracdn.com/assets/',
+                    'https://portal-sandbox.sequra.com/'
+                )
+            )
+        ]);
+        $connectionService = new ConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            $this->mockStoreIntegrationService,
+            $deploymentsRepository
+        );
+        $svea = new DomainConnectionData(
+            BaseProxy::TEST_MODE,
+            'test_merchant',
+            'svea',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+
+        // Act
+        $portalUrl = $connectionService->getPortalUrl([$svea, $this->connectionData(BaseProxy::TEST_MODE)]);
+
+        // Assert
+        self::assertEquals('https://portal-sandbox.sequra.com/development/store-integrations', $portalUrl);
+    }
+
+    /**
      * Puts the SeQura deployment the tests connect to into the store, the way a
      * deployments fetch would.
      *
