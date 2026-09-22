@@ -252,6 +252,28 @@ class ConnectionServiceTest extends BaseTestCase
      *
      * @throws InvalidEnvironmentException
      */
+    public function testGetPortalUrlOfConnectionWithAStoredIntegrationId(): void
+    {
+        // Arrange
+        $connectionData = $this->connectionData(BaseProxy::TEST_MODE);
+        $connectionData->setIntegrationId('integration 1/2');
+        $this->connectionService->saveConnectionData($connectionData);
+
+        // Act
+        $portalUrl = $this->connectionService->getPortalUrl();
+
+        // Assert
+        self::assertEquals(
+            'https://portal-sandbox.sequra.com/development/store-integrations/integration%201%2F2',
+            $portalUrl
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
     public function testGetPortalUrlOfLiveConnection(): void
     {
         // Arrange
@@ -574,7 +596,7 @@ class ConnectionServiceTest extends BaseTestCase
         // Assert
         self::assertEquals([$sequra], $connected);
         self::assertEquals(
-            'https://portal-sandbox.sequra.com/development/store-integrations',
+            'https://portal-sandbox.sequra.com/development/store-integrations/integrationId',
             $this->connectionService->getPortalUrl($connected)
         );
     }

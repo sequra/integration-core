@@ -173,9 +173,17 @@ class ConnectionService
         foreach ($connections as $connection) {
             $portalUrl = $this->getPortalBaseUrl($connection);
 
-            if ($portalUrl !== null) {
-                return $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH;
+            if ($portalUrl === null) {
+                continue;
             }
+
+            $integrationId = $connection->getIntegrationId();
+
+            // A store connected before the id was kept, or one whose registration was skipped, has
+            // none - it gets the list page, which is where it has always been sent.
+            return $integrationId === null || $integrationId === '' ?
+                $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH :
+                $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH . '/' . rawurlencode($integrationId);
         }
 
         return null;
@@ -317,7 +325,11 @@ class ConnectionService
             return;
         }
 
-        $this->storeIntegrationService->createStoreIntegration($connectionData);
+        // Both callers save the connection data immediately after this, so setting the id on the
+        // model is enough to persist it - no write of its own.
+        $connectionData->setIntegrationId(
+            $this->storeIntegrationService->createStoreIntegration($connectionData)
+        );
     }
 
     /**
