@@ -170,6 +170,8 @@ class ConnectionService
     {
         $connections = $connections ?? $this->getAllConnectionData();
 
+        $listUrl = null;
+
         foreach ($connections as $connection) {
             $portalUrl = $this->getPortalBaseUrl($connection);
 
@@ -179,14 +181,17 @@ class ConnectionService
 
             $integrationId = $connection->getIntegrationId();
 
+            if ($integrationId !== null && $integrationId !== '') {
+                return $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH . '/' . rawurlencode($integrationId);
+            }
+
             // A store connected before the id was kept, or one whose registration was skipped, has
-            // none - it gets the list page, which is where it has always been sent.
-            return $integrationId === null || $integrationId === '' ?
-                $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH :
-                $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH . '/' . rawurlencode($integrationId);
+            // none. Keep the first such portal as the fallback, but go on looking: another
+            // connection may carry an id, and deployments can share a portal.
+            $listUrl = $listUrl ?? $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH;
         }
 
-        return null;
+        return $listUrl;
     }
 
     /**
