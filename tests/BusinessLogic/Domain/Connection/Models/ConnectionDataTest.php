@@ -64,7 +64,7 @@ class ConnectionDataTest extends BaseTestCase
     /**
      * @throws InvalidEnvironmentException
      */
-    public function testIntegrationIdDefaultsToNullAndIsCarriedIntoArray(): void
+    public function testIntegrationIdDefaultsToNullAndIsCarriedInToArray(): void
     {
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
