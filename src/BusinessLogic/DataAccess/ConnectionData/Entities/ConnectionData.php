@@ -64,7 +64,8 @@ class ConnectionData extends Entity
                 $this->getEncryptorUtility()->decrypt(
                     self::getArrayValue($connectionData['authorizationCredentials'], 'password')
                 )
-            )
+            ),
+            self::getArrayValue($connectionData, 'integrationId')
         );
     }
 
@@ -81,6 +82,7 @@ class ConnectionData extends Entity
             'environment' => $this->connectionData->getEnvironment(),
             'merchantId' => $this->connectionData->getMerchantId(),
             'deployment' => $this->connectionData->getDeployment() ?? '',
+            'integrationId' => $this->connectionData->getIntegrationId(),
             'authorizationCredentials' => [
                 'username' => $this->connectionData->getAuthorizationCredentials()->getUsername(),
                 'password' => $this->getEncryptorUtility()->encrypt(
