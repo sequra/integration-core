@@ -413,6 +413,61 @@ class ConnectionControllerTest extends BaseTestCase
     }
 
     /**
+     * The request carries no integration id, so saving it must not take the store's portal deep link away.
+     *
+     * @throws Exception
+     */
+    public function testUpdateConnectionDataKeepsTheIntegrationIdAndThePortalDeepLink(): void
+    {
+        // Arrange
+        // The test container wires MockConnectionService, whose save never reaches the repository.
+        // This test is about what gets stored, so it drives the real service.
+        TestServiceRegister::registerService(ConnectionService::class, static function () {
+            return new ConnectionService(
+                TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                TestServiceRegister::getService(CredentialsService::class),
+                TestServiceRegister::getService(StoreIntegrationService::class),
+                TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            );
+        });
+
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password'),
+            'integration-1'
+        );
+
+        StoreContext::doWithStore('1', [$this->connectionDataRepository, 'setConnectionData'], [$connectionData]);
+
+        $request = new ConnectionRequest(
+            BaseProxy::TEST_MODE,
+            'logeecom2',
+            'test_username2',
+            'test_password2',
+            'sequra'
+        );
+
+        // Act
+        AdminAPI::get()->connection('1')->saveConnectionData($request);
+        $response = AdminAPI::get()->connection('1')->getOnboardingData();
+
+        // Assert
+        $connection = StoreContext::doWithStore(
+            '1',
+            [$this->connectionDataRepository, 'getConnectionDataByDeploymentId'],
+            ['sequra']
+        );
+        self::assertSame('integration-1', $connection->getIntegrationId());
+        self::assertSame('logeecom2', $connection->getMerchantId());
+        self::assertSame(
+            'https://portal-sandbox.sequra.com/development/store-integrations/integration-1',
+            $response->toArray()['portalUrl']
+        );
+    }
+
+    /**
      * @throws InvalidEnvironmentException
      */
     public function testIsGetOnboardingDataResponseSuccessful(): void
