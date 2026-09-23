@@ -31,6 +31,11 @@ class ConnectionService
     private const PORTAL_STORE_INTEGRATIONS_PATH = '/development/store-integrations';
 
     /**
+     * Path, under a store integration's page, of the settings the merchant edits
+     */
+    private const PORTAL_STORE_INTEGRATION_SETTINGS_PATH = '/settings';
+
+    /**
      * Env var key that, when explicitly truthy, skips store integration (and therefore webhook) registration
      * for sandbox connections.
      */
@@ -182,7 +187,8 @@ class ConnectionService
             $integrationId = $connection->getIntegrationId();
 
             if ($integrationId !== null && $integrationId !== '') {
-                return $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH . '/' . rawurlencode($integrationId);
+                return $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH . '/' . rawurlencode($integrationId)
+                    . self::PORTAL_STORE_INTEGRATION_SETTINGS_PATH;
             }
 
             // A store connected before the id was kept, or one whose registration was skipped, has

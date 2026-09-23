@@ -462,7 +462,7 @@ class ConnectionControllerTest extends BaseTestCase
         self::assertSame('integration-1', $connection->getIntegrationId());
         self::assertSame('logeecom2', $connection->getMerchantId());
         self::assertSame(
-            'https://portal-sandbox.sequra.com/development/store-integrations/integration-1',
+            'https://portal-sandbox.sequra.com/development/store-integrations/integration-1/settings',
             $response->toArray()['portalUrl']
         );
     }

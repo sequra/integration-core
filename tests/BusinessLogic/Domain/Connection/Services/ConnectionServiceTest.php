@@ -264,7 +264,7 @@ class ConnectionServiceTest extends BaseTestCase
 
         // Assert
         self::assertEquals(
-            'https://portal-sandbox.sequra.com/development/store-integrations/integration%201%2F2',
+            'https://portal-sandbox.sequra.com/development/store-integrations/integration%201%2F2/settings',
             $portalUrl
         );
     }
@@ -421,7 +421,7 @@ class ConnectionServiceTest extends BaseTestCase
 
         // Assert
         self::assertEquals(
-            'https://portal-sandbox.sequra.com/development/store-integrations/integration-1',
+            'https://portal-sandbox.sequra.com/development/store-integrations/integration-1/settings',
             $portalUrl
         );
     }
@@ -663,7 +663,7 @@ class ConnectionServiceTest extends BaseTestCase
         // Assert
         self::assertEquals([$sequra], $connected);
         self::assertEquals(
-            'https://portal-sandbox.sequra.com/development/store-integrations/integrationId',
+            'https://portal-sandbox.sequra.com/development/store-integrations/integrationId/settings',
             $this->connectionService->getPortalUrl($connected)
         );
     }
