@@ -31,6 +31,11 @@ class ConnectionService
     private const PORTAL_STORE_INTEGRATIONS_PATH = '/development/store-integrations';
 
     /**
+     * Path, under a store integration's page, of the settings the merchant edits
+     */
+    private const PORTAL_STORE_INTEGRATION_SETTINGS_PATH = '/settings';
+
+    /**
      * Env var key that, when explicitly truthy, skips store integration (and therefore webhook) registration
      * for sandbox connections.
      */
@@ -170,15 +175,29 @@ class ConnectionService
     {
         $connections = $connections ?? $this->getAllConnectionData();
 
+        $listUrl = null;
+
         foreach ($connections as $connection) {
             $portalUrl = $this->getPortalBaseUrl($connection);
 
-            if ($portalUrl !== null) {
-                return $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH;
+            if ($portalUrl === null) {
+                continue;
             }
+
+            $integrationId = $connection->getIntegrationId();
+
+            if ($integrationId !== null && $integrationId !== '') {
+                return $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH . '/' . rawurlencode($integrationId)
+                    . self::PORTAL_STORE_INTEGRATION_SETTINGS_PATH;
+            }
+
+            // A store connected before the id was kept, or one whose registration was skipped, has
+            // none. Keep the first such portal as the fallback, but go on looking: another
+            // connection may carry an id, and deployments can share a portal.
+            $listUrl = $listUrl ?? $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH;
         }
 
-        return null;
+        return $listUrl;
     }
 
     /**
@@ -317,7 +336,11 @@ class ConnectionService
             return;
         }
 
-        $this->storeIntegrationService->createStoreIntegration($connectionData);
+        // Both callers save the connection data immediately after this, so setting the id on the
+        // model is enough to persist it - no write of its own.
+        $connectionData->setIntegrationId(
+            $this->storeIntegrationService->createStoreIntegration($connectionData)
+        );
     }
 
     /**

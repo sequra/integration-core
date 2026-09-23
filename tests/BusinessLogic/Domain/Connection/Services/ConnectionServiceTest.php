@@ -252,6 +252,28 @@ class ConnectionServiceTest extends BaseTestCase
      *
      * @throws InvalidEnvironmentException
      */
+    public function testGetPortalUrlOfConnectionWithAStoredIntegrationId(): void
+    {
+        // Arrange
+        $connectionData = $this->connectionData(BaseProxy::TEST_MODE);
+        $connectionData->setIntegrationId('integration 1/2');
+        $this->connectionService->saveConnectionData($connectionData);
+
+        // Act
+        $portalUrl = $this->connectionService->getPortalUrl();
+
+        // Assert
+        self::assertEquals(
+            'https://portal-sandbox.sequra.com/development/store-integrations/integration%201%2F2/settings',
+            $portalUrl
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
     public function testGetPortalUrlOfLiveConnection(): void
     {
         // Arrange
@@ -335,6 +357,73 @@ class ConnectionServiceTest extends BaseTestCase
 
         // Assert
         self::assertNull($portalUrl);
+    }
+
+    /**
+     * Deployments can share a portal, so a connection without an id must not hide the deep link
+     * another connection carries.
+     *
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalUrlPrefersTheConnectionCarryingAnIntegrationId(): void
+    {
+        // Arrange
+        $deploymentsRepository = new MockDeploymentsRepository();
+        $deploymentsRepository->setDeployments([
+            new Deployment(
+                'svea',
+                'SVEA',
+                new DeploymentURL(
+                    'https://live.sequra.svea.com/',
+                    'https://live.cdn.sequra.svea.com/assets/',
+                    'https://portal.sequra.com/'
+                ),
+                new DeploymentURL(
+                    'https://next-sandbox.sequra.svea.com/',
+                    'https://next-sandbox.cdn.sequra.svea.com/assets/',
+                    'https://portal-sandbox.sequra.com/'
+                )
+            ),
+            new Deployment(
+                'sequra',
+                'seQura',
+                new DeploymentURL(
+                    'https://live.sequrapi.com/',
+                    'https://live.sequracdn.com/assets/',
+                    'https://portal.sequra.com/'
+                ),
+                new DeploymentURL(
+                    'https://sandbox.sequrapi.com/',
+                    'https://sandbox.sequracdn.com/assets/',
+                    'https://portal-sandbox.sequra.com/'
+                )
+            )
+        ]);
+        $connectionService = new ConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            $this->mockStoreIntegrationService,
+            $deploymentsRepository
+        );
+        $svea = new DomainConnectionData(
+            BaseProxy::TEST_MODE,
+            'test_merchant',
+            'svea',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+        $sequra = $this->connectionData(BaseProxy::TEST_MODE);
+        $sequra->setIntegrationId('integration-1');
+
+        // Act
+        $portalUrl = $connectionService->getPortalUrl([$svea, $sequra]);
+
+        // Assert
+        self::assertEquals(
+            'https://portal-sandbox.sequra.com/development/store-integrations/integration-1/settings',
+            $portalUrl
+        );
     }
 
     /**
@@ -574,7 +663,7 @@ class ConnectionServiceTest extends BaseTestCase
         // Assert
         self::assertEquals([$sequra], $connected);
         self::assertEquals(
-            'https://portal-sandbox.sequra.com/development/store-integrations',
+            'https://portal-sandbox.sequra.com/development/store-integrations/integrationId/settings',
             $this->connectionService->getPortalUrl($connected)
         );
     }
