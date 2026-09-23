@@ -70,20 +70,20 @@ class StoreIntegrationService
      *
      * @param ConnectionData $connectionData
      *
-     * @return void
+     * @return string Id of the registered integration in the portal
      *
      * @throws CapabilitiesEmptyException
      * @throws InvalidUrlException
      */
-    public function createStoreIntegration(ConnectionData $connectionData): void
+    public function createStoreIntegration(ConnectionData $connectionData): string
     {
         $signature = $this->computeSignature($connectionData);
         $webhookUrl = $this->buildWebhookUrl($this->integrationService->getWebhookUrl(), $signature);
         $capabilities = $this->getSupportedCapabilities();
 
-        $this->storeIntegrationsProxy->createStoreIntegration(
+        return $this->storeIntegrationsProxy->createStoreIntegration(
             new CreateStoreIntegrationRequest($connectionData, $webhookUrl, $capabilities)
-        );
+        )->getIntegrationId();
     }
 
     /**
