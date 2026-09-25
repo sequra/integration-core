@@ -428,6 +428,97 @@ class ConnectionServiceTest extends BaseTestCase
     }
 
     /**
+     * The seQura and the SVEA deployment each register a store integration of their own, on
+     * the same portal.
+     *
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalUrlsByDeploymentLinksEachConnectionToItsOwnIntegration(): void
+    {
+        // Arrange
+        $deploymentsRepository = new MockDeploymentsRepository();
+        $deploymentsRepository->setDeployments([
+            new Deployment(
+                'svea',
+                'SVEA',
+                new DeploymentURL(
+                    'https://live.sequra.svea.com/',
+                    'https://live.cdn.sequra.svea.com/assets/',
+                    'https://portal.sequra.com/'
+                ),
+                new DeploymentURL(
+                    'https://next-sandbox.sequra.svea.com/',
+                    'https://next-sandbox.cdn.sequra.svea.com/assets/',
+                    'https://portal-sandbox.sequra.com/'
+                )
+            ),
+            new Deployment(
+                'sequra',
+                'seQura',
+                new DeploymentURL(
+                    'https://live.sequrapi.com/',
+                    'https://live.sequracdn.com/assets/',
+                    'https://portal.sequra.com/'
+                ),
+                new DeploymentURL(
+                    'https://sandbox.sequrapi.com/',
+                    'https://sandbox.sequracdn.com/assets/',
+                    'https://portal-sandbox.sequra.com/'
+                )
+            )
+        ]);
+        $connectionService = new ConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            $this->mockStoreIntegrationService,
+            $deploymentsRepository
+        );
+        $svea = new DomainConnectionData(
+            BaseProxy::TEST_MODE,
+            'test_merchant_pt',
+            'svea',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+        $svea->setIntegrationId('1400');
+        $sequra = $this->connectionData(BaseProxy::TEST_MODE);
+        $sequra->setIntegrationId('2145');
+
+        // Act
+        $portalUrls = $connectionService->getPortalUrlsByDeployment([$sequra, $svea]);
+
+        // Assert
+        self::assertEquals(
+            [
+                'sequra' => 'https://portal-sandbox.sequra.com/development/store-integrations/2145/settings',
+                'svea' => 'https://portal-sandbox.sequra.com/development/store-integrations/1400/settings',
+            ],
+            $portalUrls
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalUrlsByDeploymentFallsBackToTheListForAConnectionWithoutAnId(): void
+    {
+        // Arrange
+        $connectionData = $this->connectionData(BaseProxy::TEST_MODE);
+
+        // Act
+        $portalUrls = $this->connectionService->getPortalUrlsByDeployment([$connectionData]);
+
+        // Assert
+        self::assertEquals(
+            ['sequra' => 'https://portal-sandbox.sequra.com/development/store-integrations'],
+            $portalUrls
+        );
+    }
+
+    /**
      * @return void
      *
      * @throws InvalidEnvironmentException
