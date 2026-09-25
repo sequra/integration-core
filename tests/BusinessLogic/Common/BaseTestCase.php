@@ -451,8 +451,7 @@ class BaseTestCase extends TestCase
             },
             ConnectionController::class => function () {
                 return new ConnectionController(
-                    TestServiceRegister::getService(ConnectionService::class),
-                    TestServiceRegister::getService(StatisticalDataService::class)
+                    TestServiceRegister::getService(ConnectionService::class)
                 );
             },
             DisconnectController::class => function () {
@@ -480,7 +479,8 @@ class BaseTestCase extends TestCase
             GeneralSettingsController::class => function () {
                 return new GeneralSettingsController(
                     TestServiceRegister::getService(GeneralSettingsService::class),
-                    TestServiceRegister::getService(CategoryService::class)
+                    TestServiceRegister::getService(CategoryService::class),
+                    TestServiceRegister::getService(StatisticalDataService::class)
                 );
             },
             TransactionLogsController::class => function () {

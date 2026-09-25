@@ -16,8 +16,6 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentExc
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
-use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
-use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
 use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
@@ -35,18 +33,11 @@ class ConnectionController
     protected $connectionService;
 
     /**
-     * @var StatisticalDataService
-     */
-    protected $statisticalDataService;
-
-    /**
      * @param ConnectionService $connectionService
-     * @param StatisticalDataService $statisticalDataService
      */
-    public function __construct(ConnectionService $connectionService, StatisticalDataService $statisticalDataService)
+    public function __construct(ConnectionService $connectionService)
     {
         $this->connectionService = $connectionService;
-        $this->statisticalDataService = $statisticalDataService;
     }
 
     /**
@@ -60,7 +51,6 @@ class ConnectionController
 
         return new OnboardingDataResponse(
             $connections,
-            $this->statisticalDataService->getStatisticalData(),
             $this->connectionService->getPortalUrl($connections)
         );
     }
@@ -148,10 +138,6 @@ class ConnectionController
             if (empty($connected)) {
                 return new ConnectionValidationResponse(false, 'username/password');
             }
-
-            $this->statisticalDataService->saveStatisticalData(
-                new StatisticalData($onboardingData->isSendStatisticalData())
-            );
         } catch (BadMerchantIdException $e) {
             return new ConnectionValidationResponse(false, 'merchantId');
         } catch (WrongCredentialsException $e) {

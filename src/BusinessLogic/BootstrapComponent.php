@@ -798,8 +798,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             ConnectionController::class,
             static function () {
                 return new ConnectionController(
-                    ServiceRegister::getService(ConnectionService::class),
-                    ServiceRegister::getService(StatisticalDataService::class)
+                    ServiceRegister::getService(ConnectionService::class)
                 );
             }
         );
@@ -828,7 +827,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new GeneralSettingsController(
                     ServiceRegister::getService(GeneralSettingsService::class),
-                    ServiceRegister::getService(CategoryService::class)
+                    ServiceRegister::getService(CategoryService::class),
+                    ServiceRegister::getService(StatisticalDataService::class)
                 );
             }
         );
