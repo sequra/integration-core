@@ -317,7 +317,7 @@ class ConnectionControllerTest extends BaseTestCase
         $response = AdminAPI::get()->connection('1')->saveConnectionData($request);
 
         // Assert
-        self::assertEquals(['isValid' => true, 'portalUrl' => null], $response->toArray());
+        self::assertEquals(['isValid' => true, 'portalUrl' => null, 'portalUrls' => []], $response->toArray());
     }
 
     /**
@@ -408,7 +408,7 @@ class ConnectionControllerTest extends BaseTestCase
         $response = AdminAPI::get()->connection('1')->saveConnectionData($request);
 
         // Assert
-        self::assertEquals(['isValid' => true, 'portalUrl' => null], $response->toArray());
+        self::assertEquals(['isValid' => true, 'portalUrl' => null, 'portalUrls' => []], $response->toArray());
     }
 
     /**
@@ -512,7 +512,8 @@ class ConnectionControllerTest extends BaseTestCase
         StoreContext::doWithStore('1', [$this->connectionDataRepository, 'setConnectionData'], [$connectionDataSvea]);
         $expectedResponse = new OnboardingDataResponse(
             [$connectionDataSeQura, $connectionDataSvea],
-            'https://portal-sandbox.sequra.com/development/store-integrations'
+            'https://portal-sandbox.sequra.com/development/store-integrations',
+            ['sequra' => 'https://portal-sandbox.sequra.com/development/store-integrations', 'svea' => null]
         );
 
         // Act
@@ -600,7 +601,14 @@ class ConnectionControllerTest extends BaseTestCase
 
         // Assert
         self::assertEquals(
-            ['isValid' => true, 'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations'],
+            [
+                'isValid' => true,
+                'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations',
+                'portalUrls' => [
+                    'sequra' => 'https://portal-sandbox.sequra.com/development/store-integrations',
+                    'svea' => null
+                ]
+            ],
             $response->toArray()
         );
         self::assertTrue($response->isSuccessful());
@@ -651,7 +659,11 @@ class ConnectionControllerTest extends BaseTestCase
 
         // Assert
         self::assertEquals(
-            ['isValid' => true, 'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations'],
+            [
+                'isValid' => true,
+                'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations',
+                'portalUrls' => ['sequra' => 'https://portal-sandbox.sequra.com/development/store-integrations']
+            ],
             $response->toArray()
         );
     }
@@ -717,7 +729,11 @@ class ConnectionControllerTest extends BaseTestCase
 
         // Assert
         self::assertEquals(
-            ['isValid' => true, 'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations'],
+            [
+                'isValid' => true,
+                'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations',
+                'portalUrls' => ['sequra' => 'https://portal-sandbox.sequra.com/development/store-integrations']
+            ],
             $response->toArray()
         );
         self::assertNull(
@@ -851,6 +867,10 @@ class ConnectionControllerTest extends BaseTestCase
     {
         return [
             'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations',
+            'portalUrls' => [
+                'sequra' => 'https://portal-sandbox.sequra.com/development/store-integrations',
+                'svea' => null
+            ],
             'environment' => 'sandbox',
             'connectionData' =>
                 [

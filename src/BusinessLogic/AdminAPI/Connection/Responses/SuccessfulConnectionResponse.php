@@ -17,11 +17,18 @@ class SuccessfulConnectionResponse extends Response
     protected $portalUrl;
 
     /**
-     * @param string|null $portalUrl URL of the SeQura portal the store is connected to
+     * @var array<string, string|null>
      */
-    public function __construct(?string $portalUrl = null)
+    protected $portalUrls;
+
+    /**
+     * @param string|null $portalUrl URL of the SeQura portal the store is connected to
+     * @param array<string, string|null> $portalUrls Portal URL of each connection, keyed by its deployment
+     */
+    public function __construct(?string $portalUrl = null, array $portalUrls = [])
     {
         $this->portalUrl = $portalUrl;
+        $this->portalUrls = $portalUrls;
     }
 
     /**
@@ -31,7 +38,8 @@ class SuccessfulConnectionResponse extends Response
     {
         return [
             'isValid' => true,
-            'portalUrl' => $this->portalUrl
+            'portalUrl' => $this->portalUrl,
+            'portalUrls' => $this->portalUrls
         ];
     }
 }
