@@ -363,7 +363,8 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(CredentialsRepositoryInterface::class),
                     TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
                     TestServiceRegister::getService(PaymentMethodRepositoryInterface::class),
-                    TestServiceRegister::getService(AffiliateSettingsService::class)
+                    TestServiceRegister::getService(AffiliateSettingsService::class),
+                    TestServiceRegister::getService(SellingCountriesServiceInterface::class)
                 );
             },
             PaymentMethodsService::class => static function () {
