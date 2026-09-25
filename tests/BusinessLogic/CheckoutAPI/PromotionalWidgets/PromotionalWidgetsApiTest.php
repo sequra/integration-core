@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\GetWidget
 use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\Responses\PromotionalWidgetsCheckoutResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
@@ -66,7 +67,8 @@ class PromotionalWidgetsApiTest extends BaseTestCase
             TestServiceRegister::getService(GeneralSettingsService::class),
             TestServiceRegister::getService(ProductServiceInterface::class),
             TestServiceRegister::getService(ConnectionService::class),
-            TestServiceRegister::getService(DeploymentsService::class)
+            TestServiceRegister::getService(DeploymentsService::class),
+            TestServiceRegister::getService(CountryConfigurationService::class)
         );
 
         TestServiceRegister::registerService(

@@ -7,14 +7,18 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 
 /**
- * Class CaptureResponse
+ * Class SolicitationResponse
  *
- * @package SeQura\Core\BusinessLogic\AdminAPI\Capture\Response
+ * A successful response with a null order and no payment methods means the cart is not eligible
+ * for SeQura (unsupported shipping country, or a GeneralSettings exclusion) — an expected shopper
+ * state rather than a failure.
+ *
+ * @package SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Response
  */
 class SolicitationResponse extends Response
 {
     /**
-     * @var SeQuraOrder
+     * @var SeQuraOrder|null
      */
     protected $order;
     /**
@@ -25,19 +29,19 @@ class SolicitationResponse extends Response
     /**
      * SolicitationResponse constructor.
      *
-     * @param SeQuraOrder $order
+     * @param SeQuraOrder|null $order Null when the cart is not eligible for SeQura.
      * @param SeQuraPaymentMethod[] $availablePaymentMethods
      */
-    public function __construct(SeQuraOrder $order, array $availablePaymentMethods)
+    public function __construct(?SeQuraOrder $order, array $availablePaymentMethods)
     {
         $this->order = $order;
         $this->availablePaymentMethods = $availablePaymentMethods;
     }
 
     /**
-     * @return SeQuraOrder
+     * @return SeQuraOrder|null
      */
-    public function getSolicitedOrder(): SeQuraOrder
+    public function getSolicitedOrder(): ?SeQuraOrder
     {
         return $this->order;
     }
@@ -56,7 +60,7 @@ class SolicitationResponse extends Response
     public function toArray(): array
     {
         return [
-            'order' => $this->order->toArray(),
+            'order' => $this->order ? $this->order->toArray() : null,
             'availablePaymentMethods' => array_map(static function (SeQuraPaymentMethod $paymentMethod) {
                 return [
                     'product' => $paymentMethod->getProduct(),

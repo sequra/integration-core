@@ -15,18 +15,11 @@ class OnboardingData
     protected $connectionData;
 
     /**
-     * @var bool
-     */
-    protected $sendStatisticalData;
-
-    /**
      * @param ConnectionData[] $connections
-     * @param bool $sendStatisticalData
      */
-    public function __construct(array $connections, bool $sendStatisticalData)
+    public function __construct(array $connections)
     {
         $this->connectionData = $connections;
-        $this->sendStatisticalData = $sendStatisticalData;
     }
 
     /**
@@ -45,21 +38,5 @@ class OnboardingData
     public function setConnections(array $connections): void
     {
         $this->connectionData = $connections;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSendStatisticalData(): bool
-    {
-        return $this->sendStatisticalData;
-    }
-
-    /**
-     * @param bool $sendStatisticalData
-     */
-    public function setSendStatisticalData(bool $sendStatisticalData): void
-    {
-        $this->sendStatisticalData = $sendStatisticalData;
     }
 }

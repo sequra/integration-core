@@ -2,16 +2,15 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Migration\Tasks;
 
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Migration\Tasks\StoreIntegrationMigrateTask;
-use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
-use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAffiliateSettingsRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockAffiliateSettingsService;
@@ -24,6 +23,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsService
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDomainStoreService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreInfoService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
@@ -91,9 +91,11 @@ class StoreIntegrationMigrateTaskTest extends BaseTestCase
                 new MockCredentialsRepository(),
                 new MockCountryConfigurationRepository(),
                 new MockPaymentMethodRepository(),
-                new MockAffiliateSettingsService(new MockAffiliateSettingsRepository())
+                new MockAffiliateSettingsService(new MockAffiliateSettingsRepository()),
+                new MockSellingCountriesService()
             ),
-            $this->storeIntegrationService
+            $this->storeIntegrationService,
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
         );
 
         TestServiceRegister::registerService(ConnectionService::class, function () {

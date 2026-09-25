@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Order\Services;
 
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
 use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
@@ -97,7 +98,8 @@ class OrderServiceTest extends BaseTestCase
             TestServiceRegister::getService(OrderProxyInterface::class),
             TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
         $this->orderRepository = TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class);
     }
@@ -113,7 +115,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         $expectedSeQuraOrder = (new MockCreateOrderRequestBuilder())->build()->toSequraOrderInstance('testOrderRef');
@@ -269,7 +272,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            $this->shopOrderCreator
+            $this->shopOrderCreator,
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
@@ -318,7 +322,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            $this->shopOrderCreator
+            $this->shopOrderCreator,
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         $array = json_decode(file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'), true);
@@ -359,7 +364,8 @@ class OrderServiceTest extends BaseTestCase
             TestServiceRegister::getService(OrderProxyInterface::class),
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            $this->shopOrderCreator
+            $this->shopOrderCreator,
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
@@ -398,7 +404,8 @@ class OrderServiceTest extends BaseTestCase
             TestServiceRegister::getService(OrderProxyInterface::class),
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            $this->shopOrderCreator
+            $this->shopOrderCreator,
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
@@ -638,7 +645,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         $builder = new MockCreateOrderRequestBuilder();
@@ -669,7 +677,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         // Act
@@ -699,7 +708,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             new MockSeQuraOrderRepository(),
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         // Assert
@@ -732,7 +742,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             new MockSeQuraOrderRepository(),
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         // Assert
@@ -959,7 +970,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
     }
 

@@ -501,7 +501,8 @@ class ExpressCheckoutServiceTest extends BaseTestCase
             $orderProxy,
             new MockSeQuraOrderRepository(),
             $merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         TestServiceRegister::registerService(OrderService::class, static function () use ($orderService) {
@@ -542,7 +543,8 @@ class ExpressCheckoutServiceTest extends BaseTestCase
                 TestServiceRegister::getService(CredentialsService::class),
                 TestServiceRegister::getService(MerchantDataProviderInterface::class)
             ),
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
         TestServiceRegister::registerService(OrderService::class, static function () use ($orderService) {
             return $orderService;
@@ -582,7 +584,8 @@ class ExpressCheckoutServiceTest extends BaseTestCase
                 TestServiceRegister::getService(CredentialsService::class),
                 TestServiceRegister::getService(MerchantDataProviderInterface::class)
             ),
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
         TestServiceRegister::registerService(OrderService::class, static function () use ($orderService) {
             return $orderService;

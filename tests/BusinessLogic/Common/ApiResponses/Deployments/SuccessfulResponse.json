@@ -4,11 +4,13 @@
     "name": "seQura",
     "live": {
       "api_base_url": "https://live.sequrapi.com/",
-      "assets_base_url": "https://live.sequracdn.com/assets/"
+      "assets_base_url": "https://live.sequracdn.com/assets/",
+      "portal_base_url": "https://portal.sequra.com/"
     },
     "sandbox": {
       "api_base_url": "https://sandbox.sequrapi.com/",
-      "assets_base_url": "https://sandbox.sequracdn.com/assets/"
+      "assets_base_url": "https://sandbox.sequracdn.com/assets/",
+      "portal_base_url": "https://portal-sandbox.sequra.com/"
     }
   },
   {
@@ -16,11 +18,13 @@
     "name": "SVEA",
     "live": {
       "api_base_url": "https://live.sequra.svea.com/",
-      "assets_base_url": "https://live.cdn.sequra.svea.com/assets/"
+      "assets_base_url": "https://live.cdn.sequra.svea.com/assets/",
+      "portal_base_url": "https://portal.sequra.com/"
     },
     "sandbox": {
       "api_base_url": "https://next-sandbox.sequra.svea.com/",
-      "assets_base_url": "https://next-sandbox.cdn.sequra.svea.com/assets/"
+      "assets_base_url": "https://next-sandbox.cdn.sequra.svea.com/assets/",
+      "portal_base_url": "https://portal-sandbox.sequra.com/"
     }
   }
 ]

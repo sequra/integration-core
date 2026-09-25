@@ -78,4 +78,82 @@ class ConnectionDataRepositoryTest extends BaseTestCase
         $this->assertEquals('live_password', $connectionData->getAuthorizationCredentials()->getPassword());
         $this->assertEquals('sequra', $connectionData->getDeployment());
     }
+
+    /**
+     * @throws InvalidEnvironmentException
+     */
+    public function testIntegrationIdIsStoredAndReadBack(): void
+    {
+        // Arrange
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'test',
+            'svea',
+            new AuthorizationCredentials('test_username', 'test_password'),
+            'integration-1'
+        );
+
+        // Act
+        $this->repository->setConnectionData($connectionData);
+        $loaded = $this->repository->getConnectionDataByDeploymentId('svea');
+
+        // Assert
+        $this->assertSame('integration-1', $loaded->getIntegrationId());
+    }
+
+    /**
+     * A model built from a request carries no id, and saving it must not lose the stored one.
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testSetConnectionDataWithoutIntegrationIdKeepsTheStoredOne(): void
+    {
+        // Arrange
+        $registered = $this->repository->getConnectionDataByDeploymentId('sequra');
+        $registered->setIntegrationId('integration-1');
+        $this->repository->setConnectionData($registered);
+
+        $fromRequest = new ConnectionData(
+            BaseProxy::LIVE_MODE,
+            'live',
+            'sequra',
+            new AuthorizationCredentials('live_username', 'live_password')
+        );
+
+        // Act
+        $this->repository->setConnectionData($fromRequest);
+        $loaded = $this->repository->getConnectionDataByDeploymentId('sequra');
+
+        // Assert
+        $this->assertSame('integration-1', $loaded->getIntegrationId());
+        $this->assertSame('integration-1', $fromRequest->getIntegrationId());
+        $this->assertEquals(BaseProxy::LIVE_MODE, $loaded->getEnvironment());
+        $this->assertEquals('live_username', $loaded->getAuthorizationCredentials()->getUsername());
+    }
+
+    /**
+     * @throws InvalidEnvironmentException
+     */
+    public function testSetConnectionDataWithAnIntegrationIdReplacesTheStoredOne(): void
+    {
+        // Arrange
+        $registered = $this->repository->getConnectionDataByDeploymentId('sequra');
+        $registered->setIntegrationId('integration-1');
+        $this->repository->setConnectionData($registered);
+
+        $reRegistered = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'test',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password'),
+            'integration-2'
+        );
+
+        // Act
+        $this->repository->setConnectionData($reRegistered);
+        $loaded = $this->repository->getConnectionDataByDeploymentId('sequra');
+
+        // Assert
+        $this->assertSame('integration-2', $loaded->getIntegrationId());
+    }
 }

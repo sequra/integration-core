@@ -41,8 +41,16 @@ class MockDeploymentsService extends DeploymentsService
         return new Deployment(
             'sequra',
             'seQura',
-            new DeploymentURL('https://live.sequrapi.com/', 'https://live.sequracdn.com/assets/'),
-            new DeploymentURL('https://sandbox.sequrapi.com/', 'https://sandbox.sequracdn.com/assets/')
+            new DeploymentURL(
+                'https://live.sequrapi.com/',
+                'https://live.sequracdn.com/assets/',
+                'https://portal.sequra.com/'
+            ),
+            new DeploymentURL(
+                'https://sandbox.sequrapi.com/',
+                'https://sandbox.sequracdn.com/assets/',
+                'https://portal-sandbox.sequra.com/'
+            )
         );
     }
 

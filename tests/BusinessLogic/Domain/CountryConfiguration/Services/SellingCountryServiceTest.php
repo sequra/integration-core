@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\CountryConfiguration\Services;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
@@ -45,7 +46,8 @@ class SellingCountryServiceTest extends BaseTestCase
         $this->connectionService = new MockConnectionService(
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
-            TestServiceRegister::getService(StoreIntegrationService::class)
+            TestServiceRegister::getService(StoreIntegrationService::class),
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
         );
 
         $this->sellingCountriesService = new SellingCountriesService(

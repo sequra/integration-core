@@ -16,9 +16,9 @@ class WebhookAPI
     /**
      * @param string $storeId
      *
-     * @return Aspects
+     * @return WebhookController
      */
-    public static function webhookHandler(string $storeId = ''): Aspects
+    public static function webhookHandler(string $storeId = ''): object
     {
         return Aspects
             ::run(new StoreContextAspect($storeId))

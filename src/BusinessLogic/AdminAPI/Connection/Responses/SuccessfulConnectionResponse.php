@@ -12,12 +12,34 @@ use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 class SuccessfulConnectionResponse extends Response
 {
     /**
+     * @var string|null
+     */
+    protected $portalUrl;
+
+    /**
+     * @var array<string, string|null>
+     */
+    protected $portalUrls;
+
+    /**
+     * @param string|null $portalUrl URL of the SeQura portal the store is connected to
+     * @param array<string, string|null> $portalUrls Portal URL of each connection, keyed by its deployment
+     */
+    public function __construct(?string $portalUrl = null, array $portalUrls = [])
+    {
+        $this->portalUrl = $portalUrl;
+        $this->portalUrls = $portalUrls;
+    }
+
+    /**
      * @inheritDoc
      */
     public function toArray(): array
     {
         return [
-            'isValid' => true
+            'isValid' => true,
+            'portalUrl' => $this->portalUrl,
+            'portalUrls' => $this->portalUrls
         ];
     }
 }

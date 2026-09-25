@@ -34,6 +34,15 @@ class ConnectionData extends DataTransferObject
     protected $authorizationCredentials;
 
     /**
+     * Id of this store's integration in the SeQura portal, as the portal reported it when the
+     * integration was registered. Null for a store connected before the id was kept, and for one
+     * whose registration was skipped.
+     *
+     * @var string|null
+     */
+    protected $integrationId;
+
+    /**
      * @param string $environment
      * @param string|null $merchantId
      * @param string $deployment
@@ -45,7 +54,8 @@ class ConnectionData extends DataTransferObject
         string $environment,
         ?string $merchantId,
         string $deployment,
-        AuthorizationCredentials $authorizationCredentials
+        AuthorizationCredentials $authorizationCredentials,
+        ?string $integrationId = null
     ) {
         if (!\in_array($environment, [BaseProxy::LIVE_MODE, BaseProxy::TEST_MODE], true)) {
             throw new InvalidEnvironmentException();
@@ -55,6 +65,7 @@ class ConnectionData extends DataTransferObject
         $this->merchantId = $merchantId;
         $this->deployment = $deployment;
         $this->authorizationCredentials = $authorizationCredentials;
+        $this->integrationId = $integrationId;
     }
 
     /**
@@ -63,6 +74,14 @@ class ConnectionData extends DataTransferObject
     public function getEnvironment(): string
     {
         return $this->environment;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLive(): bool
+    {
+        return $this->environment === BaseProxy::LIVE_MODE;
     }
 
     /**
@@ -132,6 +151,24 @@ class ConnectionData extends DataTransferObject
     }
 
     /**
+     * @return string|null
+     */
+    public function getIntegrationId(): ?string
+    {
+        return $this->integrationId;
+    }
+
+    /**
+     * @param string|null $integrationId
+     *
+     * @return void
+     */
+    public function setIntegrationId(?string $integrationId): void
+    {
+        $this->integrationId = $integrationId;
+    }
+
+    /**
      * @inheritDoc
      */
     public function toArray(): array
@@ -140,6 +177,7 @@ class ConnectionData extends DataTransferObject
             'environment' => $this->environment,
             'merchantId' => $this->merchantId,
             'deployment' => $this->deployment,
+            'integrationId' => $this->integrationId,
             'authorizationCredentials' => $this->authorizationCredentials->toArray(),
         ];
 

@@ -12,10 +12,16 @@ use SeQura\Core\BusinessLogic\Domain\Integration\PromotionalWidgets\WidgetConfig
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Exceptions\DuplicatedWidgetProductException;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Exceptions\EmptyWidgetSelectorParameterException;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Exceptions\InvalidWidgetStylesException;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\CustomWidgetsSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\Widget;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetInitializer;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSelectorSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models\WidgetSettings;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\TranslatableLabel;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -91,17 +97,157 @@ class WidgetSettingsService
     }
 
     /**
-     * Sets widget settings.
+     * Sets widget settings. The settings are validated first, so that a configuration
+     * a widget cannot be displayed with is refused instead of stored: every page the
+     * widgets are turned on for needs the selector the price is read from, a payment
+     * method may be configured only once, and the styles must be readable.
      *
      * @param WidgetSettings $settings
      *
      * @return void
      *
+     * @throws DuplicatedWidgetProductException
+     * @throws EmptyWidgetSelectorParameterException
+     * @throws InvalidWidgetStylesException
      * @throws Exception
      */
     public function setWidgetSettings(WidgetSettings $settings): void
     {
+        $this->validate($settings);
+
         $this->widgetSettingsRepository->setWidgetSettings($settings);
+    }
+
+    /**
+     * Refuses widget settings the widgets cannot be displayed with.
+     *
+     * @param WidgetSettings $settings
+     *
+     * @return void
+     *
+     * @throws DuplicatedWidgetProductException
+     * @throws EmptyWidgetSelectorParameterException
+     * @throws InvalidWidgetStylesException
+     */
+    protected function validate(WidgetSettings $settings): void
+    {
+        $productSettings = $settings->getWidgetSettingsForProduct();
+
+        if ($settings->isDisplayOnProductPage()) {
+            $this->assertPriceSelector($productSettings, 'productPage');
+        }
+
+        if ($settings->isShowInstallmentsInCartPage()) {
+            $this->assertPriceSelector($settings->getWidgetSettingsForCart(), 'cartPage');
+        }
+
+        if ($settings->isShowInstallmentsInProductListing()) {
+            $this->assertPriceSelector($settings->getWidgetSettingsForListing(), 'productListingPage');
+        }
+
+        $customWidgetsSettings = $productSettings ? $productSettings->getCustomWidgetsSettings() : [];
+
+        $this->assertDistinctProducts($customWidgetsSettings);
+        $this->assertValidStyles($settings->getWidgetConfig());
+
+        foreach ($customWidgetsSettings as $customWidgetSettings) {
+            $this->assertValidStyles($customWidgetSettings->getCustomWidgetStyle());
+        }
+    }
+
+    /**
+     * Verifies that the page the widgets are turned on for names the element its price
+     * is read from.
+     *
+     * @param WidgetSelectorSettings|null $selectorSettings
+     * @param string $page
+     *
+     * @return void
+     *
+     * @throws EmptyWidgetSelectorParameterException
+     */
+    protected function assertPriceSelector(?WidgetSelectorSettings $selectorSettings, string $page): void
+    {
+        if ($selectorSettings !== null && trim($selectorSettings->getPriceSelector()) !== '') {
+            return;
+        }
+
+        throw new EmptyWidgetSelectorParameterException(
+            new TranslatableLabel(
+                'The price selector is required for the ' . $page . '.',
+                'general.errors.widgetSettings.priceSelectorRequired'
+            )
+        );
+    }
+
+    /**
+     * Verifies that no payment method carries more than one configuration of its own,
+     * as only one of them could ever be applied.
+     *
+     * @param CustomWidgetsSettings[] $customWidgetsSettings
+     *
+     * @return void
+     *
+     * @throws DuplicatedWidgetProductException
+     */
+    protected function assertDistinctProducts(array $customWidgetsSettings): void
+    {
+        $seen = [];
+        foreach ($customWidgetsSettings as $customWidgetSettings) {
+            $product = $customWidgetSettings->getProduct();
+
+            if ($product === '') {
+                continue;
+            }
+
+            if (isset($seen[$product])) {
+                throw new DuplicatedWidgetProductException(
+                    new TranslatableLabel(
+                        'The payment method ' . $product . ' is configured more than once.',
+                        'general.errors.widgetSettings.duplicatedProduct'
+                    )
+                );
+            }
+
+            $seen[$product] = true;
+        }
+    }
+
+    /**
+     * Verifies that the given widget styles can be read back.
+     *
+     * @param string|null $styles
+     *
+     * @return void
+     *
+     * @throws InvalidWidgetStylesException
+     */
+    protected function assertValidStyles(?string $styles): void
+    {
+        if ($styles === null || trim($styles) === '' || $this->isValidJson($styles)) {
+            return;
+        }
+
+        throw new InvalidWidgetStylesException(
+            new TranslatableLabel(
+                'The widget styles are not valid JSON.',
+                'general.errors.widgetSettings.invalidStyles'
+            )
+        );
+    }
+
+    /**
+     * Tells whether the given string can be read as JSON.
+     *
+     * @param string $json
+     *
+     * @return bool
+     */
+    protected function isValidJson(string $json): bool
+    {
+        \json_decode($json);
+
+        return \json_last_error() === JSON_ERROR_NONE;
     }
 
     /**

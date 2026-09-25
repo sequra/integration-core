@@ -3,6 +3,10 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Connection\Services;
 
 use DateTime;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Models\DeploymentURL;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData as DomainConnectionData;
@@ -16,9 +20,12 @@ use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyIn
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
@@ -99,6 +106,8 @@ class ConnectionServiceTest extends BaseTestCase
             return $this->mockConnectionProxy;
         });
 
+        $this->storeSeQuraDeployment();
+
         $this->mockStoreIntegrationService = new MockStoreIntegrationService(
             new MockIntegrationStoreIntegrationService(),
             new MockStoreIntegrationProxy(),
@@ -109,7 +118,8 @@ class ConnectionServiceTest extends BaseTestCase
         $this->connectionService = new ConnectionService(
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
-            $this->mockStoreIntegrationService
+            $this->mockStoreIntegrationService,
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
         );
 
         $this->mockCredentialsRepository = TestServiceRegister::getService(CredentialsRepositoryInterface::class);
@@ -211,6 +221,455 @@ class ConnectionServiceTest extends BaseTestCase
 
     /**
      * @return void
+     */
+    public function testGetPortalUrlWithoutConnection(): void
+    {
+        // Act
+        $portalUrl = $this->connectionService->getPortalUrl();
+
+        // Assert
+        self::assertNull($portalUrl);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalUrlOfSandboxConnection(): void
+    {
+        // Arrange
+        $this->connectionService->saveConnectionData($this->connectionData(BaseProxy::TEST_MODE));
+
+        // Act
+        $portalUrl = $this->connectionService->getPortalUrl();
+
+        // Assert
+        self::assertEquals('https://portal-sandbox.sequra.com/development/store-integrations', $portalUrl);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalUrlOfConnectionWithAStoredIntegrationId(): void
+    {
+        // Arrange
+        $connectionData = $this->connectionData(BaseProxy::TEST_MODE);
+        $connectionData->setIntegrationId('integration 1/2');
+        $this->connectionService->saveConnectionData($connectionData);
+
+        // Act
+        $portalUrl = $this->connectionService->getPortalUrl();
+
+        // Assert
+        self::assertEquals(
+            'https://portal-sandbox.sequra.com/development/store-integrations/integration%201%2F2/settings',
+            $portalUrl
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalUrlOfLiveConnection(): void
+    {
+        // Arrange
+        $this->connectionService->saveConnectionData($this->connectionData(BaseProxy::LIVE_MODE));
+
+        // Act
+        $portalUrl = $this->connectionService->getPortalUrl();
+
+        // Assert
+        self::assertEquals('https://portal.sequra.com/development/store-integrations', $portalUrl);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalBaseUrlOfSandboxConnection(): void
+    {
+        // Act
+        $portalBaseUrl = $this->connectionService->getPortalBaseUrl($this->connectionData(BaseProxy::TEST_MODE));
+
+        // Assert
+        self::assertEquals('https://portal-sandbox.sequra.com', $portalBaseUrl);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalBaseUrlOfLiveConnection(): void
+    {
+        // Act
+        $portalBaseUrl = $this->connectionService->getPortalBaseUrl($this->connectionData(BaseProxy::LIVE_MODE));
+
+        // Assert
+        self::assertEquals('https://portal.sequra.com', $portalBaseUrl);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalBaseUrlOfUnknownDeployment(): void
+    {
+        // Arrange
+        $connectionService = new ConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            $this->mockStoreIntegrationService,
+            new MockDeploymentsRepository()
+        );
+
+        // Act
+        $portalBaseUrl = $connectionService->getPortalBaseUrl($this->connectionData(BaseProxy::LIVE_MODE));
+
+        // Assert
+        self::assertNull($portalBaseUrl);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalUrlOfUnknownDeployment(): void
+    {
+        // Arrange
+        $connectionService = new ConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            $this->mockStoreIntegrationService,
+            new MockDeploymentsRepository()
+        );
+        $connectionService->saveConnectionData($this->connectionData(BaseProxy::LIVE_MODE));
+
+        // Act
+        $portalUrl = $connectionService->getPortalUrl();
+
+        // Assert
+        self::assertNull($portalUrl);
+    }
+
+    /**
+     * Deployments can share a portal, so a connection without an id must not hide the deep link
+     * another connection carries.
+     *
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalUrlPrefersTheConnectionCarryingAnIntegrationId(): void
+    {
+        // Arrange
+        $deploymentsRepository = new MockDeploymentsRepository();
+        $deploymentsRepository->setDeployments([
+            new Deployment(
+                'svea',
+                'SVEA',
+                new DeploymentURL(
+                    'https://live.sequra.svea.com/',
+                    'https://live.cdn.sequra.svea.com/assets/',
+                    'https://portal.sequra.com/'
+                ),
+                new DeploymentURL(
+                    'https://next-sandbox.sequra.svea.com/',
+                    'https://next-sandbox.cdn.sequra.svea.com/assets/',
+                    'https://portal-sandbox.sequra.com/'
+                )
+            ),
+            new Deployment(
+                'sequra',
+                'seQura',
+                new DeploymentURL(
+                    'https://live.sequrapi.com/',
+                    'https://live.sequracdn.com/assets/',
+                    'https://portal.sequra.com/'
+                ),
+                new DeploymentURL(
+                    'https://sandbox.sequrapi.com/',
+                    'https://sandbox.sequracdn.com/assets/',
+                    'https://portal-sandbox.sequra.com/'
+                )
+            )
+        ]);
+        $connectionService = new ConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            $this->mockStoreIntegrationService,
+            $deploymentsRepository
+        );
+        $svea = new DomainConnectionData(
+            BaseProxy::TEST_MODE,
+            'test_merchant',
+            'svea',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+        $sequra = $this->connectionData(BaseProxy::TEST_MODE);
+        $sequra->setIntegrationId('integration-1');
+
+        // Act
+        $portalUrl = $connectionService->getPortalUrl([$svea, $sequra]);
+
+        // Assert
+        self::assertEquals(
+            'https://portal-sandbox.sequra.com/development/store-integrations/integration-1/settings',
+            $portalUrl
+        );
+    }
+
+    /**
+     * The seQura and the SVEA deployment each register a store integration of their own, on
+     * the same portal.
+     *
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalUrlsByDeploymentLinksEachConnectionToItsOwnIntegration(): void
+    {
+        // Arrange
+        $deploymentsRepository = new MockDeploymentsRepository();
+        $deploymentsRepository->setDeployments([
+            new Deployment(
+                'svea',
+                'SVEA',
+                new DeploymentURL(
+                    'https://live.sequra.svea.com/',
+                    'https://live.cdn.sequra.svea.com/assets/',
+                    'https://portal.sequra.com/'
+                ),
+                new DeploymentURL(
+                    'https://next-sandbox.sequra.svea.com/',
+                    'https://next-sandbox.cdn.sequra.svea.com/assets/',
+                    'https://portal-sandbox.sequra.com/'
+                )
+            ),
+            new Deployment(
+                'sequra',
+                'seQura',
+                new DeploymentURL(
+                    'https://live.sequrapi.com/',
+                    'https://live.sequracdn.com/assets/',
+                    'https://portal.sequra.com/'
+                ),
+                new DeploymentURL(
+                    'https://sandbox.sequrapi.com/',
+                    'https://sandbox.sequracdn.com/assets/',
+                    'https://portal-sandbox.sequra.com/'
+                )
+            )
+        ]);
+        $connectionService = new ConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            $this->mockStoreIntegrationService,
+            $deploymentsRepository
+        );
+        $svea = new DomainConnectionData(
+            BaseProxy::TEST_MODE,
+            'test_merchant_pt',
+            'svea',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+        $svea->setIntegrationId('1400');
+        $sequra = $this->connectionData(BaseProxy::TEST_MODE);
+        $sequra->setIntegrationId('2145');
+
+        // Act
+        $portalUrls = $connectionService->getPortalUrlsByDeployment([$sequra, $svea]);
+
+        // Assert
+        self::assertEquals(
+            [
+                'sequra' => 'https://portal-sandbox.sequra.com/development/store-integrations/2145/settings',
+                'svea' => 'https://portal-sandbox.sequra.com/development/store-integrations/1400/settings',
+            ],
+            $portalUrls
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalUrlsByDeploymentFallsBackToTheListForAConnectionWithoutAnId(): void
+    {
+        // Arrange
+        $connectionData = $this->connectionData(BaseProxy::TEST_MODE);
+
+        // Act
+        $portalUrls = $this->connectionService->getPortalUrlsByDeployment([$connectionData]);
+
+        // Assert
+        self::assertEquals(
+            ['sequra' => 'https://portal-sandbox.sequra.com/development/store-integrations'],
+            $portalUrls
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalUrlSkipsTheDeploymentNamingNoPortal(): void
+    {
+        // Arrange
+        $deploymentsRepository = new MockDeploymentsRepository();
+        $deploymentsRepository->setDeployments([
+            new Deployment(
+                'svea',
+                'SVEA',
+                new DeploymentURL(
+                    'https://live.sequra.svea.com/',
+                    'https://live.cdn.sequra.svea.com/assets/'
+                ),
+                new DeploymentURL(
+                    'https://next-sandbox.sequra.svea.com/',
+                    'https://next-sandbox.cdn.sequra.svea.com/assets/'
+                )
+            ),
+            new Deployment(
+                'sequra',
+                'seQura',
+                new DeploymentURL(
+                    'https://live.sequrapi.com/',
+                    'https://live.sequracdn.com/assets/',
+                    'https://portal.sequra.com/'
+                ),
+                new DeploymentURL(
+                    'https://sandbox.sequrapi.com/',
+                    'https://sandbox.sequracdn.com/assets/',
+                    'https://portal-sandbox.sequra.com/'
+                )
+            )
+        ]);
+        $connectionService = new ConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            $this->mockStoreIntegrationService,
+            $deploymentsRepository
+        );
+        $svea = new DomainConnectionData(
+            BaseProxy::TEST_MODE,
+            'test_merchant',
+            'svea',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+
+        // Act
+        $portalUrl = $connectionService->getPortalUrl([$svea, $this->connectionData(BaseProxy::TEST_MODE)]);
+
+        // Assert
+        self::assertEquals('https://portal-sandbox.sequra.com/development/store-integrations', $portalUrl);
+    }
+
+    /**
+     * Puts the SeQura deployment the tests connect to into the store, the way a
+     * deployments fetch would.
+     *
+     * @return void
+     */
+    /**
+     * @param string[] $shopCountries
+     *
+     * @return ConnectionService
+     */
+    private function connectionServiceSellingIn(array $shopCountries): ConnectionService
+    {
+        $sellingCountriesService = new class ($shopCountries) implements SellingCountriesServiceInterface {
+            /**
+             * @var string[]
+             */
+            private $countries;
+
+            /**
+             * @param string[] $countries
+             */
+            public function __construct(array $countries)
+            {
+                $this->countries = $countries;
+            }
+
+            public function getSellingCountries(): array
+            {
+                return $this->countries;
+            }
+        };
+
+        return new ConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            new CredentialsService(
+                $this->mockConnectionProxy,
+                $this->mockCredentialsRepository,
+                $this->mockCountryConfigurationRepository,
+                $this->mockPaymentMethodRepository,
+                TestServiceRegister::getService(AffiliateSettingsService::class),
+                $sellingCountriesService
+            ),
+            $this->mockStoreIntegrationService,
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+        );
+    }
+
+    private function storeSeQuraDeployment(): void
+    {
+        $deploymentsRepository = new MockDeploymentsRepository();
+        $deploymentsRepository->setDeployments([
+            new Deployment(
+                'sequra',
+                'seQura',
+                new DeploymentURL(
+                    'https://live.sequrapi.com/',
+                    'https://live.sequracdn.com/assets/',
+                    'https://portal.sequra.com/'
+                ),
+                new DeploymentURL(
+                    'https://sandbox.sequrapi.com/',
+                    'https://sandbox.sequracdn.com/assets/',
+                    'https://portal-sandbox.sequra.com/'
+                )
+            )
+        ]);
+
+        TestServiceRegister::registerService(
+            DeploymentsRepositoryInterface::class,
+            static function () use ($deploymentsRepository) {
+                return $deploymentsRepository;
+            }
+        );
+    }
+
+    /**
+     * @param string $environment
+     *
+     * @return DomainConnectionData
+     *
+     * @throws InvalidEnvironmentException
+     */
+    private function connectionData(string $environment): DomainConnectionData
+    {
+        return new DomainConnectionData(
+            $environment,
+            'test_merchant',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+    }
+
+    /**
+     * @return void
      *
      * @throws BadMerchantIdException
      * @throws CapabilitiesEmptyException
@@ -218,6 +677,7 @@ class ConnectionServiceTest extends BaseTestCase
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
      * @throws WrongCredentialsException
+     * @throws InvalidUrlException
      */
     public function testConnectWrongCredentials(): void
     {
@@ -250,6 +710,7 @@ class ConnectionServiceTest extends BaseTestCase
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
      * @throws WrongCredentialsException
+     * @throws InvalidUrlException
      */
     public function testBadMerchantIdException(): void
     {
@@ -278,6 +739,144 @@ class ConnectionServiceTest extends BaseTestCase
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
      * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testConnectSkipsDeploymentWithoutCredentials(): void
+    {
+        // Arrange
+        $this->mockConnectionProxy->setMockCredentials([
+            new Credentials('logeecom1', 'ES', 'EUR', 'assetsKey1', [], 'sequra')
+        ]);
+
+        // Act
+        $this->connectionService->connect([
+            $this->connectionData(BaseProxy::TEST_MODE),
+            new DomainConnectionData(
+                BaseProxy::TEST_MODE,
+                'test_merchant',
+                'svea',
+                new AuthorizationCredentials('', '')
+            )
+        ]);
+
+        // Assert
+        self::assertNotNull($this->connectionService->getConnectionDataByDeployment('sequra'));
+        self::assertNull($this->connectionService->getConnectionDataByDeployment('svea'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testConnectReturnsOnlyTheConnectedDeployments(): void
+    {
+        // Arrange
+        $this->mockConnectionProxy->setMockCredentials([
+            new Credentials('logeecom1', 'ES', 'EUR', 'assetsKey1', [], 'sequra')
+        ]);
+        $sequra = $this->connectionData(BaseProxy::TEST_MODE);
+
+        // Act
+        $connected = $this->connectionService->connect([
+            new DomainConnectionData(
+                BaseProxy::TEST_MODE,
+                'test_merchant',
+                'svea',
+                new AuthorizationCredentials('', '')
+            ),
+            $sequra
+        ]);
+
+        // Assert
+        self::assertEquals([$sequra], $connected);
+        self::assertEquals(
+            'https://portal-sandbox.sequra.com/development/store-integrations/integrationId/settings',
+            $this->connectionService->getPortalUrl($connected)
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testConnectWithoutAnyCredentialsConnectsNothing(): void
+    {
+        // Arrange
+        $connections = [
+            new DomainConnectionData(
+                BaseProxy::TEST_MODE,
+                'test_merchant',
+                'sequra',
+                new AuthorizationCredentials('', '')
+            )
+        ];
+
+        // Act
+        $connected = $this->connectionService->connect($connections);
+
+        // Assert
+        self::assertSame([], $connected);
+        self::assertNull($this->connectionService->getConnectionDataByDeployment('sequra'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testConnectKeepsTheCredentialsOfADeploymentSubmittedBlank(): void
+    {
+        // Arrange
+        $this->connectionService->saveConnectionData($this->connectionData(BaseProxy::TEST_MODE));
+
+        // Act
+        $connected = $this->connectionService->connect([
+            new DomainConnectionData(
+                BaseProxy::TEST_MODE,
+                'test_merchant',
+                'sequra',
+                new AuthorizationCredentials('', '')
+            )
+        ]);
+
+        // Assert
+        self::assertSame([], $connected);
+        self::assertEquals(
+            $this->connectionData(BaseProxy::TEST_MODE)->getAuthorizationCredentials(),
+            $this->connectionService->getConnectionDataByDeployment('sequra')->getAuthorizationCredentials()
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
      */
     public function testConnectCredentialsSaved(): void
     {
@@ -315,6 +914,7 @@ class ConnectionServiceTest extends BaseTestCase
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
      * @throws WrongCredentialsException
+     * @throws InvalidUrlException
      */
     public function testConnectAffiliateSettingsSaved(): void
     {
@@ -354,6 +954,7 @@ class ConnectionServiceTest extends BaseTestCase
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
      * @throws WrongCredentialsException
+     * @throws InvalidUrlException
      */
     public function testConnectConnectionDataSaved(): void
     {
@@ -383,6 +984,109 @@ class ConnectionServiceTest extends BaseTestCase
         self::assertEquals($connectionData->getMerchantId(), $result->getMerchantId());
         self::assertEquals($connectionData->getEnvironment(), $result->getEnvironment());
         self::assertEquals($connectionData->getDeployment(), $result->getDeployment());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testConnectEnablesTheSellingCountriesTheShopSellsIn(): void
+    {
+        // Arrange
+        $connectionService = $this->connectionServiceSellingIn(['ES', 'FR', 'DE']);
+        $this->mockConnectionProxy->setMockCredentials([
+            new Credentials('logeecom_es', 'ES', 'EUR', 'assetsKey1', [], 'sequra'),
+            new Credentials('logeecom_fr', 'FR', 'EUR', 'assetsKey2', [], 'sequra'),
+            new Credentials('logeecom_pt', 'PT', 'EUR', 'assetsKey3', [], 'sequra'),
+        ]);
+
+        // Act
+        $connectionService->connect([$this->connectionData(BaseProxy::TEST_MODE)]);
+
+        // Assert
+        self::assertEquals(
+            [new CountryConfiguration('ES', 'logeecom_es'), new CountryConfiguration('FR', 'logeecom_fr')],
+            $this->mockCountryConfigurationRepository->getCountryConfiguration()
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testReconnectKeepsTheSellingCountriesTheMerchantConfigured(): void
+    {
+        // Arrange
+        $connectionService = $this->connectionServiceSellingIn(['ES', 'FR']);
+        $connectionService->saveConnectionData($this->connectionData(BaseProxy::TEST_MODE));
+        $this->mockCountryConfigurationRepository->setCountryConfiguration([
+            new CountryConfiguration('ES', 'logeecom_es'),
+        ]);
+        $this->mockConnectionProxy->setMockCredentials([
+            new Credentials('logeecom_es', 'ES', 'EUR', 'assetsKey1', [], 'sequra'),
+            new Credentials('logeecom_fr', 'FR', 'EUR', 'assetsKey2', [], 'sequra'),
+        ]);
+
+        // Act
+        $connectionService->connect([$this->connectionData(BaseProxy::TEST_MODE)]);
+
+        // Assert
+        self::assertEquals(
+            [new CountryConfiguration('ES', 'logeecom_es')],
+            $this->mockCountryConfigurationRepository->getCountryConfiguration()
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testConnectingAnotherDeploymentAddsItsSellingCountries(): void
+    {
+        // Arrange
+        $connectionService = $this->connectionServiceSellingIn(['ES', 'SE']);
+        $connectionService->saveConnectionData($this->connectionData(BaseProxy::TEST_MODE));
+        $this->mockCountryConfigurationRepository->setCountryConfiguration([
+            new CountryConfiguration('ES', 'logeecom_es'),
+        ]);
+        $this->mockConnectionProxy->setMockCredentials([
+            new Credentials('logeecom_se', 'SE', 'SEK', 'assetsKey1', [], 'svea'),
+        ]);
+
+        // Act
+        $connectionService->connect([new DomainConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom_se',
+            'svea',
+            new AuthorizationCredentials('test_username', 'test_password')
+        )]);
+
+        // Assert
+        self::assertEquals(
+            [new CountryConfiguration('ES', 'logeecom_es'), new CountryConfiguration('SE', 'logeecom_se')],
+            $this->mockCountryConfigurationRepository->getCountryConfiguration()
+        );
     }
 
     /**
@@ -555,6 +1259,7 @@ class ConnectionServiceTest extends BaseTestCase
      * @throws WrongCredentialsException
      * @throws PaymentMethodNotFoundException
      * @throws CapabilitiesEmptyException
+     * @throws InvalidUrlException
      */
     public function testConnectNewDeploymentSuccessful(): void
     {

@@ -51,6 +51,10 @@ class MockOrderProxy implements OrderProxyInterface
      * @var GetAvailablePaymentMethodsRequest|null
      */
     private $lastPaymentMethodsInCategoriesRequest;
+    /**
+     * @var int
+     */
+    private $createOrderCallCount = 0;
 
     /**
      * @param ?SeQuraOrder $order
@@ -100,6 +104,17 @@ class MockOrderProxy implements OrderProxyInterface
         return $this->getFormCallCount;
     }
 
+    /**
+     * Number of times createOrder() was called. Used to assert that an eligibility guard
+     * short-circuited before any solicitation was sent.
+     *
+     * @return int
+     */
+    public function getCreateOrderCallCount(): int
+    {
+        return $this->createOrderCallCount;
+    }
+
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array
     {
         return $this->availablePaymentMethods;
@@ -122,6 +137,8 @@ class MockOrderProxy implements OrderProxyInterface
 
     public function createOrder(CreateOrderRequest $request): SeQuraOrder
     {
+        $this->createOrderCallCount++;
+
         if ($this->createOrderException !== null) {
             throw $this->createOrderException;
         }
