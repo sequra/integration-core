@@ -103,9 +103,16 @@ class ConnectionService
                 continue;
             }
 
+            // Only a deployment connected for the first time gets its countries: a reconnect must not
+            // bring back the countries the merchant turned off in the portal
+            $isFirstConnection = $this->getConnectionDataByDeployment($connectionData->getDeployment()) === null;
+
             try {
                 $credentials = $this->credentialsService->validateAndUpdateCredentials($connectionData);
                 $this->credentialsService->updateCountryConfigurationWithNewMerchantIdsAndRemoveOldPaymentMethods($credentials);
+                if ($isFirstConnection) {
+                    $this->credentialsService->enableSellingCountries($credentials);
+                }
                 $this->registerWebhooks($connectionData);
                 $this->saveConnectionData($connectionData);
                 $connected[] = $connectionData;

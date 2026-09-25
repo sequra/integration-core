@@ -31,6 +31,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsReposit
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -74,7 +75,8 @@ class MerchantOrderRequestBuilderTest extends BaseTestCase
             new MockCredentialsRepository(),
             new MockCountryConfigurationRepository(),
             new MockPaymentMethodRepository(),
-            new MockAffiliateSettingsService(new MockAffiliateSettingsRepository())
+            new MockAffiliateSettingsService(new MockAffiliateSettingsRepository()),
+            new MockSellingCountriesService()
         );
         $this->connectionService = new MockConnectionService(
             new MockConnectionDataRepository(),

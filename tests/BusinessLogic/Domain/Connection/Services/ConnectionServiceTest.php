@@ -25,6 +25,7 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
@@ -489,6 +490,48 @@ class ConnectionServiceTest extends BaseTestCase
      *
      * @return void
      */
+    /**
+     * @param string[] $shopCountries
+     *
+     * @return ConnectionService
+     */
+    private function connectionServiceSellingIn(array $shopCountries): ConnectionService
+    {
+        $sellingCountriesService = new class ($shopCountries) implements SellingCountriesServiceInterface {
+            /**
+             * @var string[]
+             */
+            private $countries;
+
+            /**
+             * @param string[] $countries
+             */
+            public function __construct(array $countries)
+            {
+                $this->countries = $countries;
+            }
+
+            public function getSellingCountries(): array
+            {
+                return $this->countries;
+            }
+        };
+
+        return new ConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            new CredentialsService(
+                $this->mockConnectionProxy,
+                $this->mockCredentialsRepository,
+                $this->mockCountryConfigurationRepository,
+                $this->mockPaymentMethodRepository,
+                TestServiceRegister::getService(AffiliateSettingsService::class),
+                $sellingCountriesService
+            ),
+            $this->mockStoreIntegrationService,
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+        );
+    }
+
     private function storeSeQuraDeployment(): void
     {
         $deploymentsRepository = new MockDeploymentsRepository();
@@ -850,6 +893,109 @@ class ConnectionServiceTest extends BaseTestCase
         self::assertEquals($connectionData->getMerchantId(), $result->getMerchantId());
         self::assertEquals($connectionData->getEnvironment(), $result->getEnvironment());
         self::assertEquals($connectionData->getDeployment(), $result->getDeployment());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testConnectEnablesTheSellingCountriesTheShopSellsIn(): void
+    {
+        // Arrange
+        $connectionService = $this->connectionServiceSellingIn(['ES', 'FR', 'DE']);
+        $this->mockConnectionProxy->setMockCredentials([
+            new Credentials('logeecom_es', 'ES', 'EUR', 'assetsKey1', [], 'sequra'),
+            new Credentials('logeecom_fr', 'FR', 'EUR', 'assetsKey2', [], 'sequra'),
+            new Credentials('logeecom_pt', 'PT', 'EUR', 'assetsKey3', [], 'sequra'),
+        ]);
+
+        // Act
+        $connectionService->connect([$this->connectionData(BaseProxy::TEST_MODE)]);
+
+        // Assert
+        self::assertEquals(
+            [new CountryConfiguration('ES', 'logeecom_es'), new CountryConfiguration('FR', 'logeecom_fr')],
+            $this->mockCountryConfigurationRepository->getCountryConfiguration()
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testReconnectKeepsTheSellingCountriesTheMerchantConfigured(): void
+    {
+        // Arrange
+        $connectionService = $this->connectionServiceSellingIn(['ES', 'FR']);
+        $connectionService->saveConnectionData($this->connectionData(BaseProxy::TEST_MODE));
+        $this->mockCountryConfigurationRepository->setCountryConfiguration([
+            new CountryConfiguration('ES', 'logeecom_es'),
+        ]);
+        $this->mockConnectionProxy->setMockCredentials([
+            new Credentials('logeecom_es', 'ES', 'EUR', 'assetsKey1', [], 'sequra'),
+            new Credentials('logeecom_fr', 'FR', 'EUR', 'assetsKey2', [], 'sequra'),
+        ]);
+
+        // Act
+        $connectionService->connect([$this->connectionData(BaseProxy::TEST_MODE)]);
+
+        // Assert
+        self::assertEquals(
+            [new CountryConfiguration('ES', 'logeecom_es')],
+            $this->mockCountryConfigurationRepository->getCountryConfiguration()
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testConnectingAnotherDeploymentAddsItsSellingCountries(): void
+    {
+        // Arrange
+        $connectionService = $this->connectionServiceSellingIn(['ES', 'SE']);
+        $connectionService->saveConnectionData($this->connectionData(BaseProxy::TEST_MODE));
+        $this->mockCountryConfigurationRepository->setCountryConfiguration([
+            new CountryConfiguration('ES', 'logeecom_es'),
+        ]);
+        $this->mockConnectionProxy->setMockCredentials([
+            new Credentials('logeecom_se', 'SE', 'SEK', 'assetsKey1', [], 'svea'),
+        ]);
+
+        // Act
+        $connectionService->connect([new DomainConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom_se',
+            'svea',
+            new AuthorizationCredentials('test_username', 'test_password')
+        )]);
+
+        // Assert
+        self::assertEquals(
+            [new CountryConfiguration('ES', 'logeecom_es'), new CountryConfiguration('SE', 'logeecom_se')],
+            $this->mockCountryConfigurationRepository->getCountryConfiguration()
+        );
     }
 
     /**

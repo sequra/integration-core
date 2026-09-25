@@ -108,16 +108,6 @@ class CountryConfigurationService
     }
 
     /**
-     * Tells whether a country configuration has been saved for the store.
-     *
-     * @return bool
-     */
-    public function isCountryConfigurationSaved(): bool
-    {
-        return !empty($this->countryConfigurationRepository->getCountryConfiguration());
-    }
-
-    /**
      * Calls the repository to save the country configuration to the database.
      *
      * @param CountryConfiguration[] $countryConfiguration
