@@ -27,8 +27,7 @@ class OnboardingDataModelTest extends BaseTestCase
                 'sequra',
                 new AuthorizationCredentials('username', 'password')
             )
-            ],
-            true
+            ]
         );
 
         $connData = [
@@ -36,9 +35,7 @@ class OnboardingDataModelTest extends BaseTestCase
         ];
 
         $onboardingData->setConnections($connData);
-        $onboardingData->setSendStatisticalData(false);
 
         self::assertEquals($connData, $onboardingData->getConnections());
-        self::assertFalse($onboardingData->isSendStatisticalData());
     }
 }

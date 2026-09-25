@@ -5,6 +5,7 @@ namespace SeQura\Core\Tests\BusinessLogic\AdminAPI\GeneralSettings;
 use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Requests\GeneralSettingsRequest;
+use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Requests\StatisticalDataRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\GeneralSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\ShopCategoriesResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\Responses\SuccessfulGeneralSettingsResponse;
@@ -14,6 +15,8 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCategoryService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -201,6 +204,50 @@ class GeneralSettingsControllerTest extends BaseTestCase
 
         // Assert
         self::assertEquals($expectedResponse, $response);
+    }
+
+    public function testGetStatisticalDataIsEmptyWhenNeverSaved(): void
+    {
+        // Act
+        $response = AdminAPI::get()->generalSettings('1')->getStatisticalData();
+
+        // Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals([], $response->toArray());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetStatisticalDataResponseToArray(): void
+    {
+        // Arrange
+        StoreContext::doWithStore(
+            '1',
+            [TestServiceRegister::getService(StatisticalDataRepositoryInterface::class), 'setStatisticalData'],
+            [new StatisticalData(false)]
+        );
+
+        // Act
+        $response = AdminAPI::get()->generalSettings('1')->getStatisticalData();
+
+        // Assert
+        self::assertEquals(['sendStatisticalData' => false], $response->toArray());
+    }
+
+    public function testSaveStatisticalData(): void
+    {
+        // Act
+        $response = AdminAPI::get()->generalSettings('1')->saveStatisticalData(new StatisticalDataRequest(true));
+
+        // Assert
+        self::assertTrue($response->isSuccessful());
+        $statisticalData = StoreContext::doWithStore(
+            '1',
+            [TestServiceRegister::getService(StatisticalDataRepositoryInterface::class), 'getStatisticalData']
+        );
+        self::assertNotNull($statisticalData);
+        self::assertTrue($statisticalData->isSendStatisticalData());
     }
 
     public function testSaveResponseToArray(): void
