@@ -185,26 +185,67 @@ class ConnectionService
         $listUrl = null;
 
         foreach ($connections as $connection) {
-            $portalUrl = $this->getPortalBaseUrl($connection);
+            $portalUrl = $this->getConnectionPortalUrl($connection);
 
             if ($portalUrl === null) {
                 continue;
             }
 
-            $integrationId = $connection->getIntegrationId();
-
-            if ($integrationId !== null && $integrationId !== '') {
-                return $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH . '/' . rawurlencode($integrationId)
-                    . self::PORTAL_STORE_INTEGRATION_SETTINGS_PATH;
+            if (self::hasIntegrationId($connection)) {
+                return $portalUrl;
             }
 
             // A store connected before the id was kept, or one whose registration was skipped, has
             // none. Keep the first such portal as the fallback, but go on looking: another
             // connection may carry an id, and deployments can share a portal.
-            $listUrl = $listUrl ?? $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH;
+            $listUrl = $listUrl ?? $portalUrl;
         }
 
         return $listUrl;
+    }
+
+    /**
+     * Returns the portal URL of each connection, keyed by its deployment: each deployment
+     * registers a store integration of its own, so each has its own page in the portal.
+     *
+     * @param ConnectionData[] $connections
+     *
+     * @return array<string, string|null>
+     */
+    public function getPortalUrlsByDeployment(array $connections): array
+    {
+        $portalUrls = [];
+
+        foreach ($connections as $connection) {
+            $portalUrls[$connection->getDeployment()] = $this->getConnectionPortalUrl($connection);
+        }
+
+        return $portalUrls;
+    }
+
+    /**
+     * Returns the URL of the portal page of the connection's own store integration, the list of
+     * store integrations when the connection keeps no id, or null when its deployment names no portal.
+     *
+     * @param ConnectionData $connection
+     *
+     * @return string|null
+     */
+    public function getConnectionPortalUrl(ConnectionData $connection): ?string
+    {
+        $portalUrl = $this->getPortalBaseUrl($connection);
+
+        if ($portalUrl === null) {
+            return null;
+        }
+
+        if (!self::hasIntegrationId($connection)) {
+            return $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH;
+        }
+
+        return $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH . '/'
+            . rawurlencode((string)$connection->getIntegrationId())
+            . self::PORTAL_STORE_INTEGRATION_SETTINGS_PATH;
     }
 
     /**
@@ -372,5 +413,17 @@ class ConnectionService
         }
 
         return \in_array(strtolower(trim($flag)), ['1', 'true'], true);
+    }
+
+    /**
+     * @param ConnectionData $connection
+     *
+     * @return bool
+     */
+    private static function hasIntegrationId(ConnectionData $connection): bool
+    {
+        $integrationId = $connection->getIntegrationId();
+
+        return $integrationId !== null && $integrationId !== '';
     }
 }

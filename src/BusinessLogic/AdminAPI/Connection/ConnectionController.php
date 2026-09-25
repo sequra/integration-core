@@ -51,7 +51,8 @@ class ConnectionController
 
         return new OnboardingDataResponse(
             $connections,
-            $this->connectionService->getPortalUrl($connections)
+            $this->connectionService->getPortalUrl($connections),
+            $this->connectionService->getPortalUrlsByDeployment($connections)
         );
     }
 
@@ -144,7 +145,10 @@ class ConnectionController
             return new ConnectionValidationResponse(false, $e->getMessage());
         }
 
-        return new SuccessfulConnectionResponse($this->connectionService->getPortalUrl($connected));
+        return new SuccessfulConnectionResponse(
+            $this->connectionService->getPortalUrl($connected),
+            $this->connectionService->getPortalUrlsByDeployment($connected)
+        );
     }
 
     /**
