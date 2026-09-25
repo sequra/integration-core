@@ -20,7 +20,6 @@ use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDa
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
-use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
@@ -473,7 +472,6 @@ class ConnectionControllerTest extends BaseTestCase
     public function testIsGetOnboardingDataResponseSuccessful(): void
     {
         // Arrange
-        $this->statisticalDataRepository->setStatisticalData(new StatisticalData(true));
         $this->connectionDataRepository->setConnectionData(
             new ConnectionData(
                 BaseProxy::TEST_MODE,
@@ -496,7 +494,6 @@ class ConnectionControllerTest extends BaseTestCase
     public function testGetOnboardingDataResponse(): void
     {
         // Arrange
-        $statisticalData = new StatisticalData(true);
         $connectionDataSeQura = new ConnectionData(
             BaseProxy::TEST_MODE,
             'logeecom',
@@ -511,12 +508,10 @@ class ConnectionControllerTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
-        StoreContext::doWithStore('1', [$this->statisticalDataRepository, 'setStatisticalData'], [$statisticalData]);
         StoreContext::doWithStore('1', [$this->connectionDataRepository, 'setConnectionData'], [$connectionDataSeQura]);
         StoreContext::doWithStore('1', [$this->connectionDataRepository, 'setConnectionData'], [$connectionDataSvea]);
         $expectedResponse = new OnboardingDataResponse(
             [$connectionDataSeQura, $connectionDataSvea],
-            $statisticalData,
             'https://portal-sandbox.sequra.com/development/store-integrations'
         );
 
@@ -533,7 +528,6 @@ class ConnectionControllerTest extends BaseTestCase
     public function testGetOnboardingDataResponseToArray(): void
     {
         // Arrange
-        $statisticalData = new StatisticalData(true);
         $connectionDataSeQura = new ConnectionData(
             BaseProxy::TEST_MODE,
             'logeecom',
@@ -548,7 +542,6 @@ class ConnectionControllerTest extends BaseTestCase
             new AuthorizationCredentials('test_username2', 'test_password2')
         );
 
-        StoreContext::doWithStore('1', [$this->statisticalDataRepository, 'setStatisticalData'], [$statisticalData]);
         StoreContext::doWithStore('1', [$this->connectionDataRepository, 'setConnectionData'], [$connectionDataSeQura]);
         StoreContext::doWithStore('1', [$this->connectionDataRepository, 'setConnectionData'], [$connectionDataSvea]);
         // Act
@@ -600,7 +593,7 @@ class ConnectionControllerTest extends BaseTestCase
             'test',
             'svea'
         );
-        $request = new OnboardingRequest([$connection1, $connection2], false);
+        $request = new OnboardingRequest([$connection1, $connection2]);
 
         // Act
         $response = AdminAPI::get()->connection('1')->connect($request);
@@ -651,7 +644,7 @@ class ConnectionControllerTest extends BaseTestCase
             'test',
             'sequra'
         );
-        $request = new OnboardingRequest([$svea, $sequra], false);
+        $request = new OnboardingRequest([$svea, $sequra]);
 
         // Act
         $response = AdminAPI::get()->connection('1')->connect($request);
@@ -666,7 +659,7 @@ class ConnectionControllerTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testConnectWithoutCredentialsFailsAndKeepsTheStatisticalDataUntouched(): void
+    public function testConnectWithoutCredentialsFails(): void
     {
         // Arrange
         TestServiceRegister::registerService(ConnectionService::class, function () {
@@ -678,8 +671,7 @@ class ConnectionControllerTest extends BaseTestCase
             );
         });
         $request = new OnboardingRequest(
-            [new ConnectionRequest(BaseProxy::TEST_MODE, 'test', '', '', 'sequra')],
-            false
+            [new ConnectionRequest(BaseProxy::TEST_MODE, 'test', '', '', 'sequra')]
         );
 
         // Act
@@ -687,15 +679,12 @@ class ConnectionControllerTest extends BaseTestCase
 
         // Assert
         self::assertEquals(['isValid' => false, 'reason' => 'username/password'], $response->toArray());
-        self::assertNull(
-            StoreContext::doWithStore('1', [$this->statisticalDataRepository, 'getStatisticalData'])
-        );
     }
 
     /**
      * @throws Exception
      */
-    public function testConnectSavesTheStatisticalDataWhenOnlyOneDeploymentConnects(): void
+    public function testConnectLeavesTheStatisticalDataUnset(): void
     {
         // Arrange
         $mockConnectionService = new MockConnectionService(
@@ -720,8 +709,7 @@ class ConnectionControllerTest extends BaseTestCase
             [
                 new ConnectionRequest(BaseProxy::TEST_MODE, 'test', '', '', 'svea'),
                 new ConnectionRequest(BaseProxy::TEST_MODE, 'test', 'test_username', 'test_password', 'sequra')
-            ],
-            true
+            ]
         );
 
         // Act
@@ -732,9 +720,9 @@ class ConnectionControllerTest extends BaseTestCase
             ['isValid' => true, 'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations'],
             $response->toArray()
         );
-        $statisticalData = StoreContext::doWithStore('1', [$this->statisticalDataRepository, 'getStatisticalData']);
-        self::assertNotNull($statisticalData);
-        self::assertTrue($statisticalData->isSendStatisticalData());
+        self::assertNull(
+            StoreContext::doWithStore('1', [$this->statisticalDataRepository, 'getStatisticalData'])
+        );
     }
 
     /**
@@ -862,7 +850,6 @@ class ConnectionControllerTest extends BaseTestCase
     private function expectedOnboardingDataToArrayResponse(): array
     {
         return [
-            'sendStatisticalData' => true,
             'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations',
             'environment' => 'sandbox',
             'connectionData' =>
