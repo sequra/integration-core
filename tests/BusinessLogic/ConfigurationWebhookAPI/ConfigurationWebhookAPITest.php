@@ -441,7 +441,8 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             new MockCredentialsRepository(),
             new MockCountryConfigurationRepository(),
             new MockPaymentMethodRepository(),
-            $this->affiliateSettingsService
+            $this->affiliateSettingsService,
+            new MockSellingCountriesService()
         );
 
         TestServiceRegister::registerService(CredentialsService::class, function () {

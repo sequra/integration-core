@@ -4,7 +4,6 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration;
 
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Requests\CountryConfigurationRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\CountryConfigurationResponse;
-use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\SellingCountriesConfiguredResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\SellingCountriesResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\CountryConfiguration\Responses\SuccessfulCountryConfigurationResponse;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
@@ -39,18 +38,6 @@ class CountryConfigurationController
     ) {
         $this->countryConfigurationService = $countryConfigurationService;
         $this->sellingCountriesService = $sellingCountriesService;
-    }
-
-    /**
-     * Tells whether the selling countries of the store have been configured.
-     *
-     * @return SellingCountriesConfiguredResponse
-     */
-    public function areSellingCountriesConfigured(): SellingCountriesConfiguredResponse
-    {
-        return new SellingCountriesConfiguredResponse(
-            $this->countryConfigurationService->isCountryConfigurationSaved()
-        );
     }
 
     /**
