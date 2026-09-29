@@ -359,6 +359,41 @@ class OrderService
     }
 
     /**
+     * Tells SeQura the order of the cart is known by a new shop reference from now on, and keeps it under that
+     * reference. An order SeQura refuses the change for keeps its old one, and an order no shop reference was
+     * reported for yet is left alone.
+     *
+     * @param string $cartId
+     * @param string $shopReference
+     *
+     * @return void
+     *
+     * @throws OrderNotFoundException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws HttpApiNotFoundException
+     * @throws HttpRequestException
+     */
+    public function updateMerchantReference(string $cartId, string $shopReference): void
+    {
+        $order = $this->orderRepository->getByCartId($cartId);
+        if (!$order) {
+            throw new OrderNotFoundException('Order for cart ' . $cartId . ' not found.', 404);
+        }
+
+        $currentReference = $order->getOrderRef1();
+        if ($currentReference === '' || $currentReference === $shopReference) {
+            return;
+        }
+
+        $merchantReference = new MerchantReference($shopReference, $order->getMerchantReference()->getOrderRef2());
+        $this->proxy->updateMerchantReference($order->getMerchant()->getId(), $currentReference, $merchantReference);
+        $order->setOrderRef1($shopReference);
+        $order->setMerchantReference($merchantReference);
+        $this->orderRepository->setSeQuraOrder($order);
+    }
+
+    /**
      * Creates and saves a new SeQuraOrder.
      *
      * @param Webhook $webhook

@@ -35,6 +35,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\Http\HttpResponse;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockCreateOrderRequestBuilder;
@@ -258,6 +259,89 @@ class OrderServiceTest extends BaseTestCase
         self::assertEquals($this->expectedUnshippedToArrayResponse(), $response->getUnshippedCart()->toArray());
         self::assertEquals($this->expectedDeliveryAddressToArrayResponse(), $response->getDeliveryAddress()->toArray());
         self::assertEquals($this->expectedInvoiceAddressToArrayResponse(), $response->getInvoiceAddress()->toArray());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceTellsSeQuraAndKeepsTheOrderUnderTheNewReference(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrder();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateMerchantReference'], ['5678', 'NEWREF99']);
+
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertStringContainsString('merchants/logeecom/orders/ZXCV1234/merchant_reference', $lastRequest['url']);
+        self::assertEquals(
+            ['merchant_reference' => ['order_ref_1' => 'NEWREF99', 'order_ref_2' => '0080-1234-4343-5353']],
+            json_decode($lastRequest['body'], true)
+        );
+
+        $stored = StoreContext::doWithStore('1', [$this->orderRepository, 'getByShopReference'], ['NEWREF99']);
+        self::assertNotNull($stored);
+        self::assertEquals('NEWREF99', $stored->getOrderRef1());
+        self::assertEquals('NEWREF99', $stored->getMerchantReference()->getOrderRef1());
+        self::assertEquals('0080-1234-4343-5353', $stored->getMerchantReference()->getOrderRef2());
+        self::assertNull(StoreContext::doWithStore('1', [$this->orderRepository, 'getByShopReference'], ['ZXCV1234']));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceSendsNothingForTheReferenceSeQuraAlreadyHas(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(404, [], '')]);
+        $this->storeConfirmedOrder();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateMerchantReference'], ['5678', 'ZXCV1234']);
+
+        $stored = StoreContext::doWithStore('1', [$this->orderRepository, 'getByCartId'], ['5678']);
+        self::assertEquals('ZXCV1234', $stored->getOrderRef1());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceSendsNothingForAnOrderWithoutAShopReference(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(404, [], '')]);
+        $this->storeConfirmedOrder('');
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateMerchantReference'], ['5678', 'NEWREF99']);
+
+        $stored = StoreContext::doWithStore('1', [$this->orderRepository, 'getByCartId'], ['5678']);
+        self::assertEquals('', $stored->getOrderRef1());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceKeepsTheOldReferenceWhenSeQuraRefuses(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(404, [], '')]);
+        $this->storeConfirmedOrder();
+        $exception = null;
+
+        try {
+            StoreContext::doWithStore('1', [$this->orderService, 'updateMerchantReference'], ['5678', 'NEWREF99']);
+        } catch (HttpApiNotFoundException $exception) {
+        }
+
+        self::assertNotNull($exception);
+        $stored = StoreContext::doWithStore('1', [$this->orderRepository, 'getByCartId'], ['5678']);
+        self::assertEquals('ZXCV1234', $stored->getOrderRef1());
+        self::assertEquals('ZXCV1234', $stored->getMerchantReference()->getOrderRef1());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceForUnknownCart(): void
+    {
+        $this->expectException(OrderNotFoundException::class);
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateMerchantReference'], ['5678', 'NEWREF99']);
     }
 
     /**
@@ -973,6 +1057,29 @@ class OrderServiceTest extends BaseTestCase
             TestServiceRegister::getService(OrderCreationInterface::class),
             TestServiceRegister::getService(CheckoutService::class)
         );
+    }
+
+    /**
+     * Stores the mock order as confirmed for cart 5678, known to the shop by the given reference.
+     *
+     * @param string $shopReference
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    private function storeConfirmedOrder(string $shopReference = 'ZXCV1234'): void
+    {
+        $order = json_decode(file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'), true);
+        $order['order']['merchant_reference']['order_ref_1'] = $shopReference;
+
+        $seQuraOrder = SeQuraOrder::fromArray($order['order']);
+        $seQuraOrder->setReference('sequra-ref-1234');
+        $seQuraOrder->setCartId('5678');
+        $seQuraOrder->setOrderRef1($shopReference);
+        $seQuraOrder->setState('confirmed');
+
+        StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$seQuraOrder]);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponent
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -154,6 +155,13 @@ class MockOrderProxy implements OrderProxyInterface
     public function updateOrder(UpdateOrderRequest $request): bool
     {
         return true;
+    }
+
+    public function updateMerchantReference(
+        string $merchantId,
+        string $shopOrderReference,
+        MerchantReference $merchantReference
+    ): void {
     }
 
     public function getForm(GetFormRequest $request): SeQuraForm

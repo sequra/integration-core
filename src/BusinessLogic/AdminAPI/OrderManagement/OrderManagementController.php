@@ -4,8 +4,15 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\OrderManagement;
 
 use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\Requests\OrderUpdateRequest;
+use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\Requests\UpdateMerchantReferenceRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\Responses\OrderUpdateResponse;
+use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\Responses\UpdateMerchantReferenceResponse;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException;
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
  * Class OrderManagementController
@@ -42,5 +49,26 @@ class OrderManagementController
     public function updateOrder(OrderUpdateRequest $request): OrderUpdateResponse
     {
         return new OrderUpdateResponse($this->orderService->updateOrder($request->transformToDomainModel()));
+    }
+
+    /**
+     * Tells seQura the order of the cart is known by a new shop reference from now on, so what the shop reports
+     * under that reference still reaches the order.
+     *
+     * @param UpdateMerchantReferenceRequest $request
+     *
+     * @return UpdateMerchantReferenceResponse
+     *
+     * @throws OrderNotFoundException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws HttpApiNotFoundException
+     * @throws HttpRequestException
+     */
+    public function updateMerchantReference(UpdateMerchantReferenceRequest $request): UpdateMerchantReferenceResponse
+    {
+        $this->orderService->updateMerchantReference($request->getCartId(), $request->getShopOrderReference());
+
+        return new UpdateMerchantReferenceResponse();
     }
 }

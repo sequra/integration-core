@@ -6,6 +6,7 @@ use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
 use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\Requests\OrderUpdateRequest;
+use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\Requests\UpdateMerchantReferenceRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ProductItem;
@@ -203,6 +204,38 @@ class OrderManagementControllerTest extends BaseTestCase
         // Act
         $response = AdminAPI::get()->orderManagement('1')->updateOrder(
             new OrderUpdateRequest('ZXCV1234', $this->cart(1000), $this->cart(0))
+        );
+
+        // Assert
+        self::assertFalse($response->isSuccessful());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testMerchantReferenceUpdateHandsTheCartAndReferenceOverInTheFacadeStore(): void
+    {
+        // Act
+        $response = AdminAPI::get()->orderManagement('7')->updateMerchantReference(
+            new UpdateMerchantReferenceRequest('5678', 'NEWREF99')
+        );
+
+        // Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals(['5678', 'NEWREF99', '7'], $this->orderService->getLastMerchantReferenceUpdate());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testFailedMerchantReferenceUpdateAnswersUnsuccessfullyInsteadOfThrowing(): void
+    {
+        // Arrange
+        $this->orderService->setUpdateException(new Exception('seQura does not know the order.'));
+
+        // Act
+        $response = AdminAPI::get()->orderManagement('1')->updateMerchantReference(
+            new UpdateMerchantReferenceRequest('5678', 'NEWREF99')
         );
 
         // Assert
