@@ -939,6 +939,70 @@ class OrderProxyTest extends BaseTestCase
      *
      * @throws Exception
      */
+    public function testUpdateMerchantReferencePutsTheNewReferencesOnTheOrderSeQuraKnowsByTheOldOne(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+
+        $this->proxy->updateMerchantReference(
+            'testMerchantId',
+            'testOrderRef1',
+            new MerchantReference('newOrderRef1', 'testOrderRef2')
+        );
+
+        self::assertCount(1, $this->httpClient->getHistory());
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertEquals(HttpClient::HTTP_METHOD_PUT, $lastRequest['method']);
+        self::assertStringContainsString(
+            'https://sandbox.sequrapi.com/merchants/testMerchantId/orders/testOrderRef1/merchant_reference',
+            $lastRequest['url']
+        );
+        self::assertArrayHasKey('Authorization', $lastRequest['headers']);
+        self::assertEquals(
+            ['merchant_reference' => ['order_ref_1' => 'newOrderRef1', 'order_ref_2' => 'testOrderRef2']],
+            json_decode($lastRequest['body'], true)
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceEncodesTheReferenceInThePath(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+
+        $this->proxy->updateMerchantReference('testMerchantId', 'FA/2026 #1', new MerchantReference('newOrderRef1'));
+
+        self::assertStringContainsString(
+            'merchants/testMerchantId/orders/FA%2F2026%20%231/merchant_reference',
+            $this->httpClient->getLastRequest()['url']
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceUnknownOrderResponse(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(404, [], '')]);
+
+        $this->expectException(HttpApiNotFoundException::class);
+
+        $this->proxy->updateMerchantReference(
+            'testMerchantId',
+            'testOrderRef1',
+            new MerchantReference('newOrderRef1', 'testOrderRef2')
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
     public function testUpdateOrderInvalidMerchantIdResponse(): void
     {
         $exception = null;
