@@ -37,6 +37,11 @@ class MockOrderService extends OrderService
     private $updateException;
 
     /**
+     * @var string[]|null
+     */
+    private $lastMerchantReferenceUpdate;
+
+    /**
      * @param SeQuraOrder $order
      *
      * @return void
@@ -54,6 +59,14 @@ class MockOrderService extends OrderService
     public function setUpdateException(Throwable $exception): void
     {
         $this->updateException = $exception;
+    }
+
+    /**
+     * @return string[]|null The cart id, the shop reference and the store id of the last change.
+     */
+    public function getLastMerchantReferenceUpdate(): ?array
+    {
+        return $this->lastMerchantReferenceUpdate;
     }
 
     /**
@@ -91,5 +104,19 @@ class MockOrderService extends OrderService
         }
 
         return $this->updatedOrder;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws Throwable
+     */
+    public function updateMerchantReference(string $cartId, string $shopReference): void
+    {
+        $this->lastMerchantReferenceUpdate = [$cartId, $shopReference, StoreContext::getInstance()->getStoreId()];
+
+        if ($this->updateException) {
+            throw $this->updateException;
+        }
     }
 }

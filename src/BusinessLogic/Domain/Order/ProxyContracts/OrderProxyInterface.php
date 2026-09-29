@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundEx
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -27,12 +28,12 @@ interface OrderProxyInterface
      *
      * @param GetAvailablePaymentMethodsRequest $request
      *
-     * @throws HttpRequestException
+     * @return SeQuraPaymentMethod[]
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws DeploymentNotFoundException
      *
-     * @return SeQuraPaymentMethod[]
+     * @throws HttpRequestException
      */
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array;
 
@@ -41,12 +42,12 @@ interface OrderProxyInterface
      *
      * @param GetAvailablePaymentMethodsRequest $request
      *
-     * @throws HttpRequestException
+     * @return SeQuraPaymentMethodCategory[]
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws DeploymentNotFoundException
      *
-     * @return SeQuraPaymentMethodCategory[]
+     * @throws HttpRequestException
      */
     public function getAvailablePaymentMethodsInCategories(GetAvailablePaymentMethodsRequest $request): array;
 
@@ -55,9 +56,9 @@ interface OrderProxyInterface
      *
      * @param CreateOrderRequest $request
      *
-     * @throws HttpRequestException
-     *
      * @return SeQuraOrder
+     *
+     * @throws HttpRequestException
      */
     public function createOrder(CreateOrderRequest $request): SeQuraOrder;
 
@@ -85,13 +86,32 @@ interface OrderProxyInterface
     public function updateOrder(UpdateOrderRequest $request): bool;
 
     /**
+     * Changes the references an existing order is known by on the SeQura API.
+     *
+     * @param string $merchantId
+     * @param string $shopOrderReference The reference SeQura knows the order by now.
+     * @param MerchantReference $merchantReference The references the order is known by from now on.
+     *
+     * @return void
+     *
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws HttpRequestException when SeQura does not accept the change
+     */
+    public function updateMerchantReference(
+        string $merchantId,
+        string $shopOrderReference,
+        MerchantReference $merchantReference
+    ): void;
+
+    /**
      * Gets the user verification form.
      *
      * @param GetFormRequest $request
      *
-     * @throws HttpRequestException
-     *
      * @return SeQuraForm
+     *
+     * @throws HttpRequestException
      */
     public function getForm(GetFormRequest $request): SeQuraForm;
 }
