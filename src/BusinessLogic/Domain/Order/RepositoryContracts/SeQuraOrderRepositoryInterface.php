@@ -39,6 +39,15 @@ interface SeQuraOrderRepositoryInterface
     public function getByCartId(string $cartId): ?SeQuraOrder;
 
     /**
+     * Gets Sequra orders by shop cart/quote references
+     *
+     * @param string[] $cartIds
+     *
+     * @return SeQuraOrder[]
+     */
+    public function getOrderBatchByCartIds(array $cartIds): array;
+
+    /**
      * Gets Sequra order by Sequra order reference
      *
      * @param string $sequraOrderReference
