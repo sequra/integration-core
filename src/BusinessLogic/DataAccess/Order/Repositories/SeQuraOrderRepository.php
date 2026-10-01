@@ -67,6 +67,19 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         return $result;
     }
 
+    public function getOrderBatchByCartIds(array $cartIds): array
+    {
+        $filter = new QueryFilter();
+        $filter->where('cartId', Operators::IN, $cartIds);
+
+        /**
+         * @var SeQuraOrder[] $result
+         */
+        $result = $this->repository->select($filter);
+
+        return $result;
+    }
+
     public function getByOrderReference(string $sequraOrderReference): ?SeQuraOrder
     {
         $filter = new QueryFilter();
