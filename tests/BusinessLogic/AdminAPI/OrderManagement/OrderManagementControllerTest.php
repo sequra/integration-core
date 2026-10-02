@@ -7,6 +7,7 @@ use Exception;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\Requests\OrderUpdateRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\Requests\UpdateMerchantReferenceRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderUpdateRejectedException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ProductItem;
@@ -15,6 +16,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\Tests\BusinessLogic\AdminAPI\OrderManagement\MockComponents\MockOrderService;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
@@ -208,6 +210,32 @@ class OrderManagementControllerTest extends BaseTestCase
 
         // Assert
         self::assertFalse($response->isSuccessful());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRejectedUpdateAnswersWithTheReasonSeQuraGave(): void
+    {
+        // Arrange
+        $this->orderService->setUpdateException(new OrderUpdateRejectedException(new HttpApiInvalidUrlParameterException(
+            'Order sequra-ref-1234 cannot upsell from 478.48 (original value) to 603.59',
+            403
+        )));
+
+        // Act
+        $response = AdminAPI::get()->orderManagement('1')->updateOrder(
+            new OrderUpdateRequest('ZXCV1234', $this->cart(1000), $this->cart(0))
+        );
+
+        // Assert
+        self::assertFalse($response->isSuccessful());
+        self::assertEquals([
+            'statusCode' => 403,
+            'errorCode' => OrderUpdateRejectedException::ERROR_CODE,
+            'errorMessage' => 'Order sequra-ref-1234 cannot upsell from 478.48 (original value) to 603.59',
+            'errorParameters' => [],
+        ], $response->toArray());
     }
 
     /**
