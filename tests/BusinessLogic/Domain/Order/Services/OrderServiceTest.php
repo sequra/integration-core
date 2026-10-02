@@ -13,6 +13,7 @@ use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderMerchantNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderUpdateRejectedException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
@@ -35,6 +36,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\Http\HttpResponse;
@@ -49,6 +51,11 @@ use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 class OrderServiceTest extends BaseTestCase
 {
+    /**
+     * The reason SeQura gives for an increase it will not finance.
+     */
+    private const UPSELL_REFUSAL = 'Order sequra-ref-1234 cannot upsell from 478.48 (original value) to 603.59';
+
     /**
      * @var OrderService
      */
@@ -288,6 +295,137 @@ class OrderServiceTest extends BaseTestCase
         self::assertEquals($this->expectedUnshippedToArrayResponse(), $response->getUnshippedCart()->toArray());
         self::assertEquals($this->expectedDeliveryAddressToArrayResponse(), $response->getDeliveryAddress()->toArray());
         self::assertEquals($this->expectedInvoiceAddressToArrayResponse(), $response->getInvoiceAddress()->toArray());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateSeQuraRefusesCarriesTheReasonSeQuraGave(): void
+    {
+        $this->refuseNextUpdate();
+        $this->storeConfirmedOrder();
+
+        $exception = $this->updateIgnoringRejection($this->getOrderUpdateData());
+
+        self::assertNotNull($exception);
+        self::assertEquals(403, $exception->getCode());
+        self::assertEquals(OrderUpdateRejectedException::ERROR_CODE, $exception->getTranslatableLabel()->getCode());
+        self::assertEquals(self::UPSELL_REFUSAL, $exception->getTranslatableLabel()->getMessage());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateSeQuraRefusesKeepsWhatItHoldsAndWhatTheRefusedUpdateTotalled(): void
+    {
+        $this->refuseNextUpdate();
+        $this->storeConfirmedOrder();
+        $before = $this->storedOrder();
+        $update = $this->getOrderUpdateData();
+
+        $this->updateIgnoringRejection($update);
+
+        $stored = $this->storedOrder();
+        self::assertEquals($before->getShippedCart()->toArray(), $stored->getShippedCart()->toArray());
+        self::assertEquals($before->getUnshippedCart()->toArray(), $stored->getUnshippedCart()->toArray());
+        self::assertEquals(
+            $update->getShippedCart()->getOrderTotalWithTax() + $update->getUnshippedCart()->getOrderTotalWithTax(),
+            $stored->getRejectedOrderTotal()
+        );
+        self::assertNotEquals(0, $stored->getRejectedOrderTotal());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateSeQuraAcceptsClearsTheRejection(): void
+    {
+        $this->refuseNextUpdate();
+        $this->storeConfirmedOrder();
+        $this->updateIgnoringRejection($this->getOrderUpdateData());
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [$this->getOrderUpdateData()]);
+
+        self::assertEquals(0, $this->storedOrder()->getRejectedOrderTotal());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMatchingWhatSeQuraHoldsClearsTheRejectionWithoutSendingAnything(): void
+    {
+        $this->refuseNextUpdate();
+        $this->storeConfirmedOrder();
+        $this->updateIgnoringRejection($this->getOrderUpdateData());
+        $sent = \count($this->httpClient->getHistory());
+        $held = $this->storedOrder();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', $held->getShippedCart(), $held->getUnshippedCart(), null, null),
+        ]);
+
+        self::assertEquals(0, $this->storedOrder()->getRejectedOrderTotal());
+        self::assertCount($sent, $this->httpClient->getHistory());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateSeQuraForbidsForAnotherReasonIsNotARejection(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(403, [], json_encode([
+            'errors' => ['You do not have access to this URL'],
+        ]))]);
+        $this->storeConfirmedOrder();
+        $exception = null;
+
+        try {
+            StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [$this->getOrderUpdateData()]);
+        } catch (HttpApiInvalidUrlParameterException $exception) {
+        }
+
+        self::assertNotNull($exception);
+        self::assertNotInstanceOf(OrderUpdateRejectedException::class, $exception);
+        self::assertEquals(0, $this->storedOrder()->getRejectedOrderTotal());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithoutTheCartsSeQuraAcceptsKeepsTheRejection(): void
+    {
+        $this->refuseNextUpdate();
+        $this->storeConfirmedOrder();
+        $this->updateIgnoringRejection($this->getOrderUpdateData());
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $rejected = $this->storedOrder()->getRejectedOrderTotal();
+        $address = $this->getOrderUpdateData()->getDeliveryAddress()->toArray();
+        $address['city'] = 'Elsewhere';
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, Address::fromArray($address), null),
+        ]);
+
+        $stored = $this->storedOrder();
+        self::assertEquals('Elsewhere', $stored->getDeliveryAddress()->getCity());
+        self::assertEquals($rejected, $stored->getRejectedOrderTotal());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithoutTheCartsAndNothingChangedKeepsTheRejection(): void
+    {
+        $this->refuseNextUpdate();
+        $this->storeConfirmedOrder();
+        $this->updateIgnoringRejection($this->getOrderUpdateData());
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null),
+        ]);
+
+        self::assertNotEquals(0, $this->storedOrder()->getRejectedOrderTotal());
     }
 
     /**
@@ -1086,6 +1224,50 @@ class OrderServiceTest extends BaseTestCase
             TestServiceRegister::getService(OrderCreationInterface::class),
             TestServiceRegister::getService(CheckoutService::class)
         );
+    }
+
+    /**
+     * SeQura refuses the next update, the way it refuses an increase it will not finance.
+     *
+     * @return void
+     */
+    private function refuseNextUpdate(): void
+    {
+        $this->httpClient->setMockResponses([
+            new HttpResponse(403, [], json_encode(['errors' => [self::UPSELL_REFUSAL]])),
+        ]);
+    }
+
+    /**
+     * Sends the update and returns the refusal instead of throwing it.
+     *
+     * @param OrderUpdateData $orderUpdateData
+     *
+     * @return OrderUpdateRejectedException|null
+     *
+     * @throws Exception
+     */
+    private function updateIgnoringRejection(OrderUpdateData $orderUpdateData): ?OrderUpdateRejectedException
+    {
+        try {
+            StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [$orderUpdateData]);
+        } catch (OrderUpdateRejectedException $exception) {
+            return $exception;
+        }
+
+        return null;
+    }
+
+    /**
+     * The mock order as it is stored now.
+     *
+     * @return SeQuraOrder
+     *
+     * @throws Exception
+     */
+    private function storedOrder(): SeQuraOrder
+    {
+        return StoreContext::doWithStore('1', [$this->orderRepository, 'getByCartId'], ['5678']);
     }
 
     /**
