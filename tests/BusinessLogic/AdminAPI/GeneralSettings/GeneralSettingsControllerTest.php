@@ -160,13 +160,23 @@ class GeneralSettingsControllerTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testGetNonExistingGeneralSettingsResponseToArray(): void
+    public function testGetNotYetStoredGeneralSettingsResponseToArray(): void
     {
         // Act
         $response = AdminAPI::get()->generalSettings('1')->getGeneralSettings();
 
         // Assert
-        self::assertEquals([], $response->toArray());
+        self::assertEquals([
+            'sendOrderReportsPeriodicallyToSeQura' => false,
+            'showSeQuraCheckoutAsHostedPage' => false,
+            'allowedIPAddresses' => [],
+            'excludedProducts' => [],
+            'excludedCategories' => [],
+            'enabledForServices' => [],
+            'allowFirstServicePaymentDelay' => [],
+            'allowServiceRegistrationItems' => [],
+            'defaultServicesEndDate' => 'P1Y'
+        ], $response->toArray());
     }
 
     public function testIsSaveResponseSuccessful(): void

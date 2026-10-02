@@ -20,9 +20,9 @@ class MockGeneralSettingsService extends GeneralSettingsService
     /**
      * @return ?GeneralSettings
      */
-    public function getGeneralSettings(): ?GeneralSettings
+    public function getGeneralSettings(): GeneralSettings
     {
-        return $this->generalSettings;
+        return $this->generalSettings ?? new GeneralSettings(false, false, [], [], []);
     }
 
     /**

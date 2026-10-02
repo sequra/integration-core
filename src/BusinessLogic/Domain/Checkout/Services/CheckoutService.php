@@ -49,7 +49,7 @@ class CheckoutService
      */
     protected $countryConfigurationService;
     /**
-     * @var ?GeneralSettings
+     * @var GeneralSettings|null
      */
     public static $generalSettings = null;
     /**
@@ -118,10 +118,6 @@ class CheckoutService
     {
         $generalSettings = $this->getGeneralSettings();
 
-        if (!$generalSettings) {
-            return true;
-        }
-
         $allowedIPAddresses = $generalSettings->getAllowedIPAddresses() ?? [];
 
         return !(!empty($allowedIPAddresses) && !\in_array($currentIpAddress, $allowedIPAddresses, true));
@@ -159,10 +155,6 @@ class CheckoutService
         }
 
         $generalSettings = $this->getGeneralSettings();
-
-        if (!$generalSettings) {
-            return true;
-        }
 
         if (empty($generalSettings->getEnabledForServices()) && $this->productService->isProductVirtual($productId)) {
             return false;
@@ -249,10 +241,6 @@ class CheckoutService
         }
 
         $generalSettings = $this->getGeneralSettings();
-
-        if (!$generalSettings) {
-            return true;
-        }
 
         $excludedCategories = $generalSettings->getExcludedCategories() ?? [];
 
@@ -370,16 +358,16 @@ class CheckoutService
     /**
      * Caches GeneralSettings across multiple calls within the same HTTP request.
      *
-     * @return ?GeneralSettings
+     * @return GeneralSettings
      *
      * @throws BadMerchantIdException
      * @throws WrongCredentialsException
      * @throws FailedToRetrieveSellingCountriesException
      * @throws HttpRequestException
      */
-    private function getGeneralSettings(): ?GeneralSettings
+    private function getGeneralSettings(): GeneralSettings
     {
-        if (self::$generalSettingsFetched) {
+        if (self::$generalSettingsFetched && self::$generalSettings !== null) {
             return self::$generalSettings;
         }
 

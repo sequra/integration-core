@@ -231,10 +231,10 @@ class CheckoutValidationServiceTest extends BaseTestCase
     public function dataProviderIsProductSupportedForVirtualProduct(): array
     {
         return [
-            // No general settings
+            // No general settings stored: the defaults, which enable no service selling
             [
                 null,
-                true,
+                false,
             ],
             // No service selling enabled
             [
