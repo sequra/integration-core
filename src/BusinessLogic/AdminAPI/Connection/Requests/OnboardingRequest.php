@@ -14,20 +14,11 @@ class OnboardingRequest extends Request
     protected $connectionRequests;
 
     /**
-     * @var bool $sendStatisticalData
-     */
-    protected $sendStatisticalData;
-
-    /**
      * @param ConnectionRequest[] $connectionRequests
-     * @param bool $sendStatisticalData
      */
-    public function __construct(
-        array $connectionRequests,
-        bool $sendStatisticalData
-    ) {
+    public function __construct(array $connectionRequests)
+    {
         $this->connectionRequests = $connectionRequests;
-        $this->sendStatisticalData = $sendStatisticalData;
     }
 
     /**
@@ -45,6 +36,6 @@ class OnboardingRequest extends Request
             $connections[] = $connectionRequest->transformToDomainModel();
         }
 
-        return new OnboardingData($connections, $this->sendStatisticalData);
+        return new OnboardingData($connections);
     }
 }

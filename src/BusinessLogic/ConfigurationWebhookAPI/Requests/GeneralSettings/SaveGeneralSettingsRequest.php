@@ -21,6 +21,8 @@ class SaveGeneralSettingsRequest extends ConfigurationWebhookRequest
      */
     public static function fromPayload(array $payload): object
     {
+        $orderIdentifier = $payload['orderIdentifier'] ?? null;
+
         return new self(
             $payload['sendOrderReportsPeriodicallyToSeQura'] ?? false,
             $payload['showSeQuraCheckoutAsHostedPage'] ?? false,
@@ -30,7 +32,8 @@ class SaveGeneralSettingsRequest extends ConfigurationWebhookRequest
             $payload['defaultServicesEndDate'] ?? null,
             $payload['enabledForServices'] ?? [],
             $payload['allowFirstServicePaymentDelay'] ?? [],
-            $payload['allowServiceRegistrationItems'] ?? []
+            $payload['allowServiceRegistrationItems'] ?? [],
+            \is_string($orderIdentifier) ? $orderIdentifier : null
         );
     }
 }

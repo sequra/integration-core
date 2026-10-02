@@ -15,7 +15,7 @@ use SeQura\Core\BusinessLogic\Domain\Product\Model\ShopProduct;
 class GetGeneralSettingsResponse extends Response
 {
     /**
-     * @var GeneralSettings $generalSettings
+     * @var GeneralSettings|null $generalSettings
      */
     protected $generalSettings;
     /**
@@ -34,17 +34,37 @@ class GetGeneralSettingsResponse extends Response
     protected $sellingCountries;
 
     /**
-     * @param GeneralSettings $generalSettings
+     * @var array<string, string> $listOfOrderIdentifiers
+     */
+    protected $listOfOrderIdentifiers;
+
+    /**
+     * @var bool $isSendStatisticalData
+     */
+    protected $isSendStatisticalData;
+
+    /**
+     * @param GeneralSettings|null $generalSettings
      * @param ShopProduct[] $products
      * @param Category[] $categories
      * @param string[] $sellingCountries
+     * @param array<string, string> $listOfOrderIdentifiers
+     * @param bool $isSendStatisticalData
      */
-    public function __construct(GeneralSettings $generalSettings, array $products, array $categories, array $sellingCountries)
-    {
+    public function __construct(
+        ?GeneralSettings $generalSettings,
+        array $products,
+        array $categories,
+        array $sellingCountries,
+        array $listOfOrderIdentifiers,
+        bool $isSendStatisticalData
+    ) {
         $this->generalSettings = $generalSettings;
         $this->products = $products;
         $this->categories = $categories;
         $this->sellingCountries = $sellingCountries;
+        $this->listOfOrderIdentifiers = $listOfOrderIdentifiers;
+        $this->isSendStatisticalData = $isSendStatisticalData;
     }
 
     /**
@@ -52,7 +72,7 @@ class GetGeneralSettingsResponse extends Response
      */
     public function toArray(): array
     {
-        $response = $this->generalSettings->toArray();
+        $response = $this->generalSettings ? $this->generalSettings->toArray() : [];
 
         if (!empty($this->products)) {
             $response['excludedProducts'] = array_map(function (ShopProduct $product) {
@@ -73,6 +93,12 @@ class GetGeneralSettingsResponse extends Response
         }
 
         $response['sellingCountries'] = $this->sellingCountries;
+        $response['isSendStatisticalData'] = $this->isSendStatisticalData;
+
+        // Left out for an integration that publishes no order identifiers.
+        if (!empty($this->listOfOrderIdentifiers)) {
+            $response['listOfOrderIdentifiers'] = $this->listOfOrderIdentifiers;
+        }
 
         return $response;
     }

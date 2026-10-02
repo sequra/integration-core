@@ -9,6 +9,9 @@ use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\Unsuccessful
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\WidgetSettingsResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\Responses\WidgetConfiguratorResponse;
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Exceptions\DuplicatedWidgetProductException;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Exceptions\EmptyWidgetSelectorParameterException;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Exceptions\InvalidWidgetStylesException;
 use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Services\WidgetSettingsService;
 
 /**
@@ -58,6 +61,9 @@ class PromotionalWidgetsController
      *
      * @return Response
      *
+     * @throws DuplicatedWidgetProductException
+     * @throws EmptyWidgetSelectorParameterException
+     * @throws InvalidWidgetStylesException
      * @throws Exception
      */
     public function setWidgetSettings(WidgetSettingsRequest $settingsRequest): Response

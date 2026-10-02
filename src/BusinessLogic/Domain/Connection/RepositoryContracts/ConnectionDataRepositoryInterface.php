@@ -21,7 +21,8 @@ interface ConnectionDataRepositoryInterface
     public function getConnectionDataByDeploymentId(string $deployment): ?ConnectionData;
 
     /**
-     * Insert/update ConnectionData for current store context.
+     * Insert/update ConnectionData for current store context. An update whose model carries no
+     * integration id keeps the one already stored for the deployment.
      *
      * @param ConnectionData $connectionData
      *

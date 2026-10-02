@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\AdminAPI\Deployments\DeploymentsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Disconnect\DisconnectController;
 use SeQura\Core\BusinessLogic\AdminAPI\GeneralSettings\GeneralSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\Integration\IntegrationController;
+use SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\OrderManagementController;
 use SeQura\Core\BusinessLogic\AdminAPI\OrderStatusSettings\OrderStatusSettingsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\PaymentMethodsController;
 use SeQura\Core\BusinessLogic\AdminAPI\PromotionalWidgets\PromotionalWidgetsController;
@@ -104,6 +105,7 @@ use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutSer
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
+use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\OrderIdentifiersService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutIntegrationInterface;
@@ -414,7 +416,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                 return new ConnectionService(
                     ServiceRegister::getService(ConnectionDataRepositoryInterface::class),
                     ServiceRegister::getService(CredentialsService::class),
-                    ServiceRegister::getService(StoreIntegrationService::class)
+                    ServiceRegister::getService(StoreIntegrationService::class),
+                    ServiceRegister::getService(DeploymentsRepositoryInterface::class)
                 );
             }
         );
@@ -427,7 +430,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(CredentialsRepositoryInterface::class),
                     ServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
                     ServiceRegister::getService(PaymentMethodRepositoryInterface::class),
-                    ServiceRegister::getService(AffiliateSettingsService::class)
+                    ServiceRegister::getService(AffiliateSettingsService::class),
+                    ServiceRegister::getService(SellingCountriesServiceInterface::class)
                 );
             }
         );
@@ -483,6 +487,15 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(GeneralSettingsRepositoryInterface::class),
                     ServiceRegister::getService(ConnectionService::class),
                     ServiceRegister::getService(CountryConfigurationService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            OrderIdentifiersService::class,
+            static function () {
+                return new OrderIdentifiersService(
+                    ServiceRegister::getService(StoreInfoServiceInterface::class)
                 );
             }
         );
@@ -590,7 +603,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(OrderProxyInterface::class),
                     ServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
                     ServiceRegister::getService(MerchantOrderRequestBuilder::class),
-                    ServiceRegister::getService(OrderCreationInterface::class)
+                    ServiceRegister::getService(OrderCreationInterface::class),
+                    ServiceRegister::getService(CheckoutService::class)
                 );
             }
         );
@@ -613,7 +627,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(GeneralSettingsService::class),
                     ServiceRegister::getService(ProductServiceInterface::class),
                     ServiceRegister::getService(ConnectionService::class),
-                    ServiceRegister::getService(DeploymentsService::class)
+                    ServiceRegister::getService(DeploymentsService::class),
+                    ServiceRegister::getService(CountryConfigurationService::class)
                 );
             }
         );
@@ -784,8 +799,7 @@ class BootstrapComponent extends BaseBootstrapComponent
             ConnectionController::class,
             static function () {
                 return new ConnectionController(
-                    ServiceRegister::getService(ConnectionService::class),
-                    ServiceRegister::getService(StatisticalDataService::class)
+                    ServiceRegister::getService(ConnectionService::class)
                 );
             }
         );
@@ -814,7 +828,17 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new GeneralSettingsController(
                     ServiceRegister::getService(GeneralSettingsService::class),
-                    ServiceRegister::getService(CategoryService::class)
+                    ServiceRegister::getService(CategoryService::class),
+                    ServiceRegister::getService(StatisticalDataService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            OrderManagementController::class,
+            static function () {
+                return new OrderManagementController(
+                    ServiceRegister::getService(OrderService::class)
                 );
             }
         );
@@ -890,7 +914,9 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             SolicitationController::class,
             static function () {
-                return new SolicitationController(ServiceRegister::getService(OrderService::class));
+                return new SolicitationController(
+                    ServiceRegister::getService(OrderService::class)
+                );
             }
         );
 
@@ -1276,7 +1302,9 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(GeneralSettingsService::class),
                     ServiceRegister::getService(ProductServiceInterface::class),
                     ServiceRegister::getService(CategoryServiceInterface::class),
-                    ServiceRegister::getService(CountryConfigurationService::class)
+                    ServiceRegister::getService(CountryConfigurationService::class),
+                    ServiceRegister::getService(OrderIdentifiersService::class),
+                    ServiceRegister::getService(StatisticalDataService::class)
                 );
             }
         );
@@ -1286,7 +1314,8 @@ class BootstrapComponent extends BaseBootstrapComponent
             static function () {
                 return new SaveGeneralSettingsHandler(
                     ServiceRegister::getService(GeneralSettingsService::class),
-                    ServiceRegister::getService(CountryConfigurationService::class)
+                    ServiceRegister::getService(CountryConfigurationService::class),
+                    ServiceRegister::getService(StatisticalDataService::class)
                 );
             }
         );

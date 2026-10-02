@@ -37,17 +37,34 @@ class MockConnectionService extends ConnectionService
     private $allConnectionData = [];
 
     /**
-     * @param array $connections
+     * @var ConnectionData[]|null $connectedConnections
+     */
+    private $connectedConnections = null;
+
+    /**
+     * @param ConnectionData[] $connections
      *
-     * @return void
+     * @return ConnectionData[]
      *
      * @throws Exception
      */
-    public function connect(array $connections): void
+    public function connect(array $connections): array
     {
         if ($this->throwError) {
             throw new Exception('testing error');
         }
+
+        return $this->connectedConnections ?? $connections;
+    }
+
+    /**
+     * @param ConnectionData[] $connectedConnections
+     *
+     * @return void
+     */
+    public function setMockConnectedConnections(array $connectedConnections): void
+    {
+        $this->connectedConnections = $connectedConnections;
     }
 
     /**

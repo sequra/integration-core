@@ -4,16 +4,22 @@ namespace SeQura\Core\BusinessLogic\Domain\Order\Service;
 
 use Exception;
 use InvalidArgumentException;
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Builders\PrebuiltCreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidOrderStateException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderMerchantNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderUpdateRejectedException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
@@ -30,6 +36,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderReposi
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethodCategory;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
@@ -53,6 +60,10 @@ class OrderService
      */
     protected $shopOrderCreator;
     /**
+     * @var CheckoutService
+     */
+    protected $checkoutService;
+    /**
      * @var SeQuraOrderRepositoryInterface
      */
     protected $orderRepository;
@@ -66,17 +77,20 @@ class OrderService
      * @param SeQuraOrderRepositoryInterface $orderRepository
      * @param MerchantOrderRequestBuilder $merchantOrderRequestBuilder
      * @param OrderCreationInterface $shopOrderCreator
+     * @param CheckoutService $checkoutService
      */
     public function __construct(
         OrderProxyInterface $proxy,
         SeQuraOrderRepositoryInterface $orderRepository,
         MerchantOrderRequestBuilder $merchantOrderRequestBuilder,
-        OrderCreationInterface $shopOrderCreator
+        OrderCreationInterface $shopOrderCreator,
+        CheckoutService $checkoutService
     ) {
         $this->proxy = $proxy;
         $this->orderRepository = $orderRepository;
         $this->merchantOrderRequestBuilder = $merchantOrderRequestBuilder;
         $this->shopOrderCreator = $shopOrderCreator;
+        $this->checkoutService = $checkoutService;
     }
 
     /**
@@ -146,12 +160,60 @@ class OrderService
     }
 
     /**
+     * Solicits the order only for a cart SeQura may be offered for, so an ineligible cart costs no
+     * HTTP call. The shipping country and the shopper's IP are read off the built order itself:
+     * the builder is what knows them, and the guard then cannot disagree with what is solicited.
+     *
+     * @param CreateOrderRequestBuilder $builder
+     * @param string[] $productIds Product references in the cart (empty array = no per-product check).
+     * @param string[] $categoryIds Category references in the cart (empty array = no per-category check).
+     * @param bool $checkCountry When false, the shipping country guard is skipped. For hosts that
+     * resolve the merchant themselves.
+     *
+     * @return SeQuraOrder|null Null when the cart is not eligible.
+     *
+     * @throws BadMerchantIdException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws InvalidUrlException
+     * @throws WrongCredentialsException
+     */
+    public function solicitIfSupported(
+        CreateOrderRequestBuilder $builder,
+        array $productIds = [],
+        array $categoryIds = [],
+        bool $checkCountry = true
+    ): ?SeQuraOrder {
+        $createOrderRequest = $builder->build();
+
+        $isSupported = $this->checkoutService->isSolicitationSupported(
+            $createOrderRequest->getDeliveryAddress()->getCountryCode(),
+            $createOrderRequest->getCustomer()->getIpNumber(),
+            $productIds,
+            $categoryIds,
+            $checkCountry
+        );
+
+        if (!$isSupported) {
+            return null;
+        }
+
+        // The host builder may not be idempotent, so reuse the request built above.
+        return $this->solicitFor(new PrebuiltCreateOrderRequestBuilder($createOrderRequest));
+    }
+
+    /**
      * Gets available payment methods for solicited order
      *
      * @param SeQuraOrder $order
      *
      * @return SeQuraPaymentMethod[]
      *
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws DeploymentNotFoundException
      * @throws HttpRequestException
      * @throws OrderMerchantNotFoundException
      */
@@ -294,11 +356,56 @@ class OrderService
             $hasChanges = true;
         }
 
+        // Only an update carrying both carts can show that a refused increase was resolved.
+        $clearsRejection = $newShippedCart !== null && $newUnshippedCart !== null
+            && $order->getRejectedOrderTotal() > 0;
+
+        if ($clearsRejection) {
+            $order->setRejectedOrderTotal(0);
+        }
+
         if ($hasChanges) {
             $this->tryOrderUpdate($order);
+        } elseif ($clearsRejection) {
+            $this->orderRepository->setSeQuraOrder($order);
         }
 
         return $order;
+    }
+
+    /**
+     * Tells SeQura the order of the cart is known by a new shop reference from now on, and keeps it under that
+     * reference. An order SeQura refuses the change for keeps its old one, and an order no shop reference was
+     * reported for yet is left alone.
+     *
+     * @param string $cartId
+     * @param string $shopReference
+     *
+     * @return void
+     *
+     * @throws OrderNotFoundException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws HttpApiNotFoundException
+     * @throws HttpRequestException
+     */
+    public function updateMerchantReference(string $cartId, string $shopReference): void
+    {
+        $order = $this->orderRepository->getByCartId($cartId);
+        if (!$order) {
+            throw new OrderNotFoundException('Order for cart ' . $cartId . ' not found.', 404);
+        }
+
+        $currentReference = $order->getOrderRef1();
+        if ($currentReference === '' || $currentReference === $shopReference) {
+            return;
+        }
+
+        $merchantReference = new MerchantReference($shopReference, $order->getMerchantReference()->getOrderRef2());
+        $this->proxy->updateMerchantReference($order->getMerchant()->getId(), $currentReference, $merchantReference);
+        $order->setOrderRef1($shopReference);
+        $order->setMerchantReference($merchantReference);
+        $this->orderRepository->setSeQuraOrder($order);
     }
 
     /**
@@ -383,10 +490,34 @@ class OrderService
     }
 
     /**
+     * Gets the SeQura order.
+     *
+     * @param string $orderReference
+     *
+     * @return SeQuraOrder
+     *
+     * @throws OrderNotFoundException
+     */
+    public function getSeQuraOrder(string $orderReference): SeQuraOrder
+    {
+        $seQuraOrder = $this->orderRepository->getByOrderReference($orderReference);
+        if (!$seQuraOrder) {
+            throw new OrderNotFoundException("SeQura order with reference $orderReference is not found.", 404);
+        }
+
+        return $seQuraOrder;
+    }
+
+    /**
+     * Sends the order to SeQura and keeps it as SeQura now holds it. An increase SeQura refuses leaves the stored
+     * order as it was, with what the refused update totalled.
+     *
      * @param SeQuraOrder $order
      *
      * @return void
      *
+     * @throws OrderUpdateRejectedException
+     * @throws HttpApiInvalidUrlParameterException
      * @throws HttpApiNotFoundException
      * @throws HttpRequestException
      * @throws Exception
@@ -401,6 +532,14 @@ class OrderService
             if (!\in_array($order->getState(), [OrderRequestStates::CANCELLED, OrderRequestStates::ON_HOLD])) {
                 throw $exception;
             }
+        } catch (HttpApiInvalidUrlParameterException $exception) {
+            if (\stripos($exception->getMessage(), OrderUpdateRejectedException::UPSELL_REFUSAL) === false) {
+                throw $exception;
+            }
+
+            $this->keepRejection($order);
+
+            throw new OrderUpdateRejectedException($exception);
         }
 
         $this->orderRepository->setSeQuraOrder($order);
@@ -470,25 +609,6 @@ class OrderService
     }
 
     /**
-     * Gets the SeQura order.
-     *
-     * @param string $orderReference
-     *
-     * @return SeQuraOrder
-     *
-     * @throws OrderNotFoundException
-     */
-    public function getSeQuraOrder(string $orderReference): SeQuraOrder
-    {
-        $seQuraOrder = $this->orderRepository->getByOrderReference($orderReference);
-        if (!$seQuraOrder) {
-            throw new OrderNotFoundException("SeQura order with reference $orderReference is not found.", 404);
-        }
-
-        return $seQuraOrder;
-    }
-
-    /**
      * Returns the merchant the order was solicited for, in the form the proxy request expects.
      *
      * The id is untyped on the merchant, so an order whose merchant record lost it would otherwise reach the
@@ -522,10 +642,12 @@ class OrderService
      *
      * @return PaymentMethod|null
      *
-     * @throws HttpRequestException
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws DeploymentNotFoundException
+     * @throws HttpRequestException
+     * @throws OrderMerchantNotFoundException
+     * @throws OrderNotFoundException
      */
     private function getOrderPaymentMethodInfo(
         string $orderReference,
@@ -550,5 +672,25 @@ class OrderService
         }
 
         return null;
+    }
+
+    /**
+     * Records what the refused update totalled on the order as it is stored, which still holds what SeQura last
+     * accepted.
+     *
+     * @param SeQuraOrder $refused
+     *
+     * @return void
+     */
+    private function keepRejection(SeQuraOrder $refused): void
+    {
+        $stored = $this->orderRepository->getByOrderReference($refused->getReference());
+
+        if ($stored === null) {
+            return;
+        }
+
+        $stored->setRejectedOrderTotal($refused->getOrderTotalWithTax());
+        $this->orderRepository->setSeQuraOrder($stored);
     }
 }

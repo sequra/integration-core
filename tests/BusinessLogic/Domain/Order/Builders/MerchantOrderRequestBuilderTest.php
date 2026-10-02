@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Order\Builders;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
@@ -30,6 +31,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsReposit
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
 /**
@@ -73,12 +75,14 @@ class MerchantOrderRequestBuilderTest extends BaseTestCase
             new MockCredentialsRepository(),
             new MockCountryConfigurationRepository(),
             new MockPaymentMethodRepository(),
-            new MockAffiliateSettingsService(new MockAffiliateSettingsRepository())
+            new MockAffiliateSettingsService(new MockAffiliateSettingsRepository()),
+            new MockSellingCountriesService()
         );
         $this->connectionService = new MockConnectionService(
             new MockConnectionDataRepository(),
             $this->credentialsService,
-            TestServiceRegister::getService(StoreIntegrationService::class)
+            TestServiceRegister::getService(StoreIntegrationService::class),
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
         );
         $this->merchantDataProvider = new MockMerchantDataProvider();
         $this->builder = new MerchantOrderRequestBuilder(

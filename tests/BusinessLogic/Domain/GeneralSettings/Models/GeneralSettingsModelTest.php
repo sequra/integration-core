@@ -35,6 +35,7 @@ class GeneralSettingsModelTest extends BaseTestCase
         $generalSettings->setAllowFirstServicePaymentDelay(['ES']);
         $generalSettings->setAllowServiceRegistrationItems(['ES']);
         $generalSettings->setDefaultServicesEndDate('P1Y1M');
+        $generalSettings->setOrderIdentifier('increment_id');
 
         self::assertFalse($generalSettings->isShowSeQuraCheckoutAsHostedPage());
         self::assertFalse($generalSettings->isSendOrderReportsPeriodicallyToSeQura());
@@ -45,5 +46,6 @@ class GeneralSettingsModelTest extends BaseTestCase
         self::assertEquals(['ES'], $generalSettings->getAllowFirstServicePaymentDelay());
         self::assertEquals(['ES'], $generalSettings->getAllowServiceRegistrationItems());
         self::assertEquals('P1Y1M', $generalSettings->getDefaultServicesEndDate());
+        self::assertEquals('increment_id', $generalSettings->getOrderIdentifier());
     }
 }

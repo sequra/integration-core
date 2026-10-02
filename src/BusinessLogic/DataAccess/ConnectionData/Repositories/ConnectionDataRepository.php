@@ -60,6 +60,12 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
         $existingConnectionData = $this->getConnectionDataEntityByDeployment($connectionData->getDeployment());
 
         if ($existingConnectionData) {
+            // A model built from a request carries no integration id. Saving it must not lose the id
+            // the store got when its integration was registered, so the stored one is carried over.
+            if ($connectionData->getIntegrationId() === null) {
+                $connectionData->setIntegrationId($existingConnectionData->getConnectionData()->getIntegrationId());
+            }
+
             $existingConnectionData->setConnectionData($connectionData);
             $existingConnectionData->setDeployment($connectionData->getDeployment());
             $existingConnectionData->setStoreId($this->storeContext->getStoreId());

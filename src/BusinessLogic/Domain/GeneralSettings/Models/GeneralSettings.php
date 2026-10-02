@@ -68,6 +68,14 @@ class GeneralSettings
     protected $defaultServicesEndDate;
 
     /**
+     * Order identifier the integration sends to SeQura as the primary order reference.
+     * One of the values the integration publishes, null when it publishes none.
+     *
+     * @var string|null
+     */
+    protected $orderIdentifier;
+
+    /**
      * @param bool $sendOrderReportsPeriodicallyToSeQura
      * @param bool|null $showSeQuraCheckoutAsHostedPage
      * @param string[]|null $allowedIPAddresses
@@ -77,6 +85,7 @@ class GeneralSettings
      * @param string[] $allowFirstServicePaymentDelay
      * @param string[] $allowServiceRegistrationItems
      * @param string|null $defaultServicesEndDate
+     * @param string|null $orderIdentifier
      */
     public function __construct(
         bool $sendOrderReportsPeriodicallyToSeQura,
@@ -87,7 +96,8 @@ class GeneralSettings
         array $enabledForServices = [],
         array $allowFirstServicePaymentDelay = [],
         array $allowServiceRegistrationItems = [],
-        ?string $defaultServicesEndDate = null
+        ?string $defaultServicesEndDate = null,
+        ?string $orderIdentifier = null
     ) {
         $this->sendOrderReportsPeriodicallyToSeQura = $sendOrderReportsPeriodicallyToSeQura;
         $this->showSeQuraCheckoutAsHostedPage = $showSeQuraCheckoutAsHostedPage;
@@ -98,6 +108,7 @@ class GeneralSettings
         $this->setAllowFirstServicePaymentDelay($allowFirstServicePaymentDelay);
         $this->setAllowServiceRegistrationItems($allowServiceRegistrationItems);
         $this->setDefaultServicesEndDate($defaultServicesEndDate);
+        $this->orderIdentifier = $orderIdentifier;
     }
 
     /**
@@ -263,6 +274,22 @@ class GeneralSettings
     }
 
     /**
+     * @return string|null
+     */
+    public function getOrderIdentifier(): ?string
+    {
+        return $this->orderIdentifier;
+    }
+
+    /**
+     * @param string|null $orderIdentifier
+     */
+    public function setOrderIdentifier(?string $orderIdentifier): void
+    {
+        $this->orderIdentifier = $orderIdentifier;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -276,7 +303,8 @@ class GeneralSettings
             'enabledForServices' => $this->getEnabledForServices(),
             'allowFirstServicePaymentDelay' => $this->getAllowFirstServicePaymentDelay(),
             'allowServiceRegistrationItems' => $this->getAllowServiceRegistrationItems(),
-            'defaultServicesEndDate' => $this->getDefaultServicesEndDate()
+            'defaultServicesEndDate' => $this->getDefaultServicesEndDate(),
+            'orderIdentifier' => $this->getOrderIdentifier()
         ];
     }
 }

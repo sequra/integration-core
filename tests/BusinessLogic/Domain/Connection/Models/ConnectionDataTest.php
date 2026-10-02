@@ -61,6 +61,28 @@ class ConnectionDataTest extends BaseTestCase
         $this->assertSame($newDeployment, $connectionData->getDeployment());
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
+    public function testIntegrationIdDefaultsToNullAndIsCarriedInToArray(): void
+    {
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'test_merchant',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+
+        $this->assertNull($connectionData->getIntegrationId());
+        $this->assertArrayHasKey('integrationId', $connectionData->toArray()['connectionData']);
+        $this->assertNull($connectionData->toArray()['connectionData']['integrationId']);
+
+        $connectionData->setIntegrationId('integration-1');
+
+        $this->assertSame('integration-1', $connectionData->getIntegrationId());
+        $this->assertSame('integration-1', $connectionData->toArray()['connectionData']['integrationId']);
+    }
+
     public function testInvalidEnvironmentException(): void
     {
         $this->expectException(InvalidEnvironmentException::class);

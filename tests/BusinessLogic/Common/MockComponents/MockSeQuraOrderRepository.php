@@ -50,6 +50,16 @@ class MockSeQuraOrderRepository implements SeQuraOrderRepositoryInterface
     /**
      * @inheritDoc
      */
+    public function getOrderBatchByCartIds(array $cartIds): array
+    {
+        return array_values(array_filter($this->orders, static function (SeQuraOrder $order) use ($cartIds): bool {
+            return in_array($order->getCartId(), $cartIds, true);
+        }));
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getByOrderReference(string $sequraOrderReference): ?SeQuraOrder
     {
         foreach ($this->orders as $order) {
