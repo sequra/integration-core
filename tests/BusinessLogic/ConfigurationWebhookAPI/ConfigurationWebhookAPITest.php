@@ -1617,14 +1617,17 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         );
 
         //Assert
-        // A store that never saved its general settings still gets what does not
-        // depend on them: the consent given at onboarding, and the selling countries.
+        // A store that never saved its general settings is answered with the defaults,
+        // plus what does not depend on them: the consent given at onboarding, and the
+        // selling countries.
         $data = $response->toArray();
 
         self::assertTrue($response->isSuccessful());
         self::assertTrue($data['isSendStatisticalData']);
         self::assertEquals([], $data['sellingCountries']);
-        self::assertArrayNotHasKey('allowedIPAddresses', $data);
+        self::assertEquals([], $data['allowedIPAddresses']);
+        self::assertFalse($data['showSeQuraCheckoutAsHostedPage']);
+        self::assertEquals('P1Y', $data['defaultServicesEndDate']);
     }
 
     /**

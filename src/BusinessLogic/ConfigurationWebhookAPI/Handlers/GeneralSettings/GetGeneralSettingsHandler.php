@@ -90,8 +90,8 @@ class GetGeneralSettingsHandler implements TopicHandlerInterface
     {
         $generalSettings = $this->generalSettingsService->getGeneralSettings();
 
-        $excludedProducts = $generalSettings ? $generalSettings->getExcludedProducts() : [];
-        $excludedCategories = $generalSettings ? $generalSettings->getExcludedCategories() : [];
+        $excludedProducts = $generalSettings->getExcludedProducts() ?? [];
+        $excludedCategories = $generalSettings->getExcludedCategories() ?? [];
 
         $products = !empty($excludedProducts) ? $this->productService->getShopProductByIds($excludedProducts) : [];
         $categories = !empty($excludedCategories) ? $this->categoryService->getCategoriesByIds($excludedCategories) : [];
