@@ -461,6 +461,107 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     /**
      * @return void
      */
+    public function testGetAvailableWidgetForCartPageProductInCartNotSupported(): void
+    {
+        //Arrange
+        $this->mockCheckoutValidator->setCurrencyValid(true);
+        $this->mockCheckoutValidator->setAddressValid(true);
+        $this->mockCheckoutValidator->setProductValid(false);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetForCartPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1',
+                    '',
+                    ['7', '8']
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAvailableWidgetForCartPageCategoryInCartNotSupported(): void
+    {
+        //Arrange
+        $this->mockCheckoutValidator->setCurrencyValid(true);
+        $this->mockCheckoutValidator->setAddressValid(true);
+        $this->mockCheckoutValidator->setCategoryValid(false);
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetForCartPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1',
+                    '',
+                    [],
+                    ['3']
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEmpty($response->toArray());
+    }
+
+    /**
+     * An unsupported product is refused only when the cart names it: a request without the cart's
+     * products keeps checking the shopper alone.
+     *
+     * @return void
+     */
+    public function testGetAvailableWidgetForCartPageWithoutProductsChecksTheShopperOnly(): void
+    {
+        //Arrange
+        $this->mockCheckoutValidator->setCurrencyValid(true);
+        $this->mockCheckoutValidator->setAddressValid(true);
+        $this->mockCheckoutValidator->setProductValid(false);
+        $this->mockCheckoutValidator->setCategoryValid(false);
+        $this->mockWidgetSettingsService->setMockWidget(new Widget(
+            'product1',
+            'campaign',
+            'priceSel',
+            'destination',
+            'theme',
+            '0',
+            123,
+            321,
+            'altPrice',
+            'triggerSel',
+            'message',
+            'below message'
+        ));
+
+        //Act
+        $response = CheckoutAPI::get()->promotionalWidgets('1')
+            ->getAvailableWidgetForCartPage(
+                new PromotionalWidgetsCheckoutRequest(
+                    'ES',
+                    'ES',
+                    'EUR',
+                    '127.0.0.1'
+                )
+            );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertCount(1, $response->toArray());
+    }
+
+    /**
+     * @return void
+     */
     public function testGetAvailableMiniWidgetForProductListingPageCurrencyInvalid(): void
     {
         //Arrange

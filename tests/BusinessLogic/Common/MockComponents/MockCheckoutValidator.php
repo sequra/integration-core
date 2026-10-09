@@ -27,6 +27,11 @@ class MockCheckoutValidator extends CheckoutService
     private $productValid = true;
 
     /**
+     * @var bool
+     */
+    private $categoryValid = true;
+
+    /**
      * @inheritDoc
      */
     public function isIpAddressValid(string $currentIpAddress): bool
@@ -48,6 +53,14 @@ class MockCheckoutValidator extends CheckoutService
     public function isProductSupported(string $productId): bool
     {
         return $this->productValid;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isCategorySupported(string $categoryId): bool
+    {
+        return $this->categoryValid;
     }
 
     /**
@@ -78,5 +91,15 @@ class MockCheckoutValidator extends CheckoutService
     public function setProductValid(bool $valid): void
     {
         $this->productValid = $valid;
+    }
+
+    /**
+     * @param bool $valid
+     *
+     * @return void
+     */
+    public function setCategoryValid(bool $valid): void
+    {
+        $this->categoryValid = $valid;
     }
 }

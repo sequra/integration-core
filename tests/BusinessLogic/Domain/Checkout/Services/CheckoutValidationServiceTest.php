@@ -571,6 +571,99 @@ class CheckoutValidationServiceTest extends BaseTestCase
      * @throws HttpRequestException
      * @throws WrongCredentialsException
      */
+    public function testIsCartWidgetSupportedHappyPath(): void
+    {
+        $this->mockProductService->setMockProductSku('sku1');
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, ['other-sku'], ['other-category'])
+        );
+
+        self::assertTrue(
+            $this->checkoutValidationService->isCartWidgetSupported('EUR', '1.2.3.4', ['sku1', 'sku2'], ['cat1'])
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsCartWidgetSupportedFailsOnExcludedProductInCart(): void
+    {
+        $this->mockProductService->setMockProductSku('sku-excluded');
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, ['sku-excluded'], null)
+        );
+
+        self::assertFalse(
+            $this->checkoutValidationService->isCartWidgetSupported('EUR', '1.2.3.4', ['ok', 'sku-excluded'])
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsCartWidgetSupportedFailsOnExcludedCategoryInCart(): void
+    {
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, null, ['cat-excluded'])
+        );
+
+        self::assertFalse(
+            $this->checkoutValidationService->isCartWidgetSupported('EUR', '1.2.3.4', [], ['ok', 'cat-excluded'])
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsCartWidgetSupportedFailsOnCurrencyBeforeLookingAtTheCart(): void
+    {
+        self::assertFalse(
+            $this->checkoutValidationService->isCartWidgetSupported('USD', '1.2.3.4', ['sku1'], ['cat1'])
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsCartWidgetSupportedFailsOnIp(): void
+    {
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, ['10.0.0.1'], null, null)
+        );
+
+        self::assertFalse(
+            $this->checkoutValidationService->isCartWidgetSupported('EUR', '1.2.3.4', ['sku1'])
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
     public function testIsExpressCheckoutSupportedHappyPathWithCategories(): void
     {
         $this->mockGeneralSettingsService->saveGeneralSettings(
