@@ -27,6 +27,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderReques
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestDTO;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\Tracking;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\PaymentMethod;
@@ -359,6 +360,15 @@ class OrderService
             $hasChanges = true;
         }
 
+        $newTrackings = $orderUpdateData->getTrackings();
+        if (
+            $newTrackings !== null
+            && Tracking::toBatchArray($order->getTrackings()) !== Tracking::toBatchArray($newTrackings)
+        ) {
+            $order->setTrackings($newTrackings);
+            $hasChanges = true;
+        }
+
         // Only an update carrying both carts can show that a refused increase was resolved.
         $clearsRejection = $newShippedCart !== null && $newUnshippedCart !== null
             && $order->getRejectedOrderTotal() > 0;
@@ -620,7 +630,7 @@ class OrderService
             'merchant_reference' => $order->getMerchantReference()->toArray(),
             'unshipped_cart' => $order->getUnshippedCart()->toArray(),
             'shipped_cart' => $order->getShippedCart()->toArray(),
-            'trackings' => $order->getTrackings(),
+            'trackings' => Tracking::toBatchArray($order->getTrackings()),
             'delivery_method' => $order->getDeliveryMethod()->toArray(),
             'delivery_address' => $order->getDeliveryAddress()->toArray(),
             'invoice_address' => $order->getInvoiceAddress()->toArray(),
