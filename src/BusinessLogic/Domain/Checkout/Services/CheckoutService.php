@@ -223,12 +223,12 @@ class CheckoutService
 
     /**
      * Composite eligibility check for the cart-page widget: the shopper's currency and IP, then every
-     * product and category the cart holds, the same way the product-page widget checks its one product.
+     * product the cart holds, the same way the product-page widget checks its one product. A product's
+     * categories are checked with the product, so the cart's categories are not passed separately.
      *
      * @param string $currency
      * @param string $ipAddress
      * @param string[] $productIds Product references in the cart (empty array = no per-product check).
-     * @param string[] $categoryIds Category references in the cart (empty array = no per-category check).
      *
      * @return bool
      *
@@ -237,14 +237,10 @@ class CheckoutService
      * @throws HttpRequestException
      * @throws WrongCredentialsException
      */
-    public function isCartWidgetSupported(
-        string $currency,
-        string $ipAddress,
-        array $productIds = [],
-        array $categoryIds = []
-    ): bool {
+    public function isCartWidgetSupported(string $currency, string $ipAddress, array $productIds = []): bool
+    {
         return $this->isWidgetSupported($currency, $ipAddress)
-            && $this->areProductsAndCategoriesSupported($productIds, $categoryIds);
+            && $this->areProductsSupported($productIds);
     }
 
     /**
@@ -366,12 +362,46 @@ class CheckoutService
      */
     private function areProductsAndCategoriesSupported(array $productIds, array $categoryIds): bool
     {
+        return $this->areProductsSupported($productIds) && $this->areCategoriesSupported($categoryIds);
+    }
+
+    /**
+     * Returns true when every product in the cart is one SeQura may be offered for.
+     *
+     * @param string[] $productIds Product references in the cart (empty array = no per-product check).
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    private function areProductsSupported(array $productIds): bool
+    {
         foreach ($productIds as $productId) {
             if (!$this->isProductSupported($productId)) {
                 return false;
             }
         }
 
+        return true;
+    }
+
+    /**
+     * Returns true when every category in the cart is one SeQura may be offered for.
+     *
+     * @param string[] $categoryIds Category references in the cart (empty array = no per-category check).
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    private function areCategoriesSupported(array $categoryIds): bool
+    {
         foreach ($categoryIds as $categoryId) {
             if (!$this->isCategorySupported($categoryId)) {
                 return false;

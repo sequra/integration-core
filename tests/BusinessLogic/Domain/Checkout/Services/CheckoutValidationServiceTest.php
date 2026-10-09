@@ -579,7 +579,7 @@ class CheckoutValidationServiceTest extends BaseTestCase
         );
 
         self::assertTrue(
-            $this->checkoutValidationService->isCartWidgetSupported('EUR', '1.2.3.4', ['sku1', 'sku2'], ['cat1'])
+            $this->checkoutValidationService->isCartWidgetSupported('EUR', '1.2.3.4', ['sku1', 'sku2'])
         );
     }
 
@@ -611,14 +611,15 @@ class CheckoutValidationServiceTest extends BaseTestCase
      * @throws HttpRequestException
      * @throws WrongCredentialsException
      */
-    public function testIsCartWidgetSupportedFailsOnExcludedCategoryInCart(): void
+    public function testIsCartWidgetSupportedFailsOnAProductOfAnExcludedCategoryInCart(): void
     {
+        $this->mockProductService->setMockProductCategories(['cat-excluded']);
         $this->mockGeneralSettingsService->saveGeneralSettings(
             new GeneralSettings(true, null, null, null, ['cat-excluded'])
         );
 
         self::assertFalse(
-            $this->checkoutValidationService->isCartWidgetSupported('EUR', '1.2.3.4', [], ['ok', 'cat-excluded'])
+            $this->checkoutValidationService->isCartWidgetSupported('EUR', '1.2.3.4', ['sku1'])
         );
     }
 
@@ -633,7 +634,7 @@ class CheckoutValidationServiceTest extends BaseTestCase
     public function testIsCartWidgetSupportedFailsOnCurrencyBeforeLookingAtTheCart(): void
     {
         self::assertFalse(
-            $this->checkoutValidationService->isCartWidgetSupported('USD', '1.2.3.4', ['sku1'], ['cat1'])
+            $this->checkoutValidationService->isCartWidgetSupported('USD', '1.2.3.4', ['sku1'])
         );
     }
 

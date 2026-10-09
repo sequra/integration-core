@@ -57,8 +57,8 @@ class PromotionalWidgetsCheckoutController
     }
 
     /**
-     * Returns available widget for cart page, none when the cart holds a product or a category
-     * SeQura is not offered for.
+     * Returns available widget for cart page, none when the cart holds a product SeQura is not
+     * offered for.
      *
      * @param PromotionalWidgetsCheckoutRequest $request
      *
@@ -74,8 +74,7 @@ class PromotionalWidgetsCheckoutController
         $isSupported = $this->checkoutValidationService->isCartWidgetSupported(
             $request->getCurrentCurrency(),
             $request->getCurrentIpAddress(),
-            $request->getProductIds(),
-            $request->getCategoryIds()
+            $request->getProductIds()
         );
         if (!$isSupported) {
             return new GetWidgetsCheckoutResponse([]);
