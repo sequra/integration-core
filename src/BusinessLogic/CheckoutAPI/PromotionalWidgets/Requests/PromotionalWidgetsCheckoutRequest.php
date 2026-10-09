@@ -31,26 +31,40 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
      * @var string
      */
     protected $productId;
+    /**
+     * @var string[]
+     */
+    protected $productIds;
+    /**
+     * @var string[]
+     */
+    protected $categoryIds;
 
     /**
      * @param string $shippingCountry
      * @param string $currentCountry
      * @param string $currentCurrency
      * @param string $currentIpAddress
-     * @param string $productId
+     * @param string $productId The product a product page or a listing entry is about.
+     * @param string[] $productIds The products a cart holds (empty array = no per-product check).
+     * @param string[] $categoryIds The categories of the products a cart holds (empty array = no per-category check).
      */
     public function __construct(
         string $shippingCountry,
         string $currentCountry,
         string $currentCurrency = '',
         string $currentIpAddress = '',
-        string $productId = ''
+        string $productId = '',
+        array $productIds = [],
+        array $categoryIds = []
     ) {
         $this->shippingCountry = $shippingCountry;
         $this->currentCountry = $currentCountry;
         $this->currentCurrency = $currentCurrency;
         $this->currentIpAddress = $currentIpAddress;
         $this->productId = $productId;
+        $this->productIds = $productIds;
+        $this->categoryIds = $categoryIds;
     }
 
     /**
@@ -94,6 +108,22 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
     }
 
     /**
+     * @return string[]
+     */
+    public function getProductIds(): array
+    {
+        return $this->productIds;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getCategoryIds(): array
+    {
+        return $this->categoryIds;
+    }
+
+    /**
      * @param array<string> $data
      *
      * @return PromotionalWidgetsCheckoutRequest
@@ -105,7 +135,9 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
             self::getDataValue($data, 'currentCountry'),
             self::getDataValue($data, 'currentCurrency'),
             self::getDataValue($data, 'currentIpAddress'),
-            self::getDataValue($data, 'productId')
+            self::getDataValue($data, 'productId'),
+            self::getDataValue($data, 'productIds', []),
+            self::getDataValue($data, 'categoryIds', [])
         );
     }
 
@@ -119,6 +151,8 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
         $data['currentCurrency'] = $this->currentCurrency;
         $data['currentIpAddress'] = $this->currentIpAddress;
         $data['productId'] = $this->productId;
+        $data['productIds'] = $this->productIds;
+        $data['categoryIds'] = $this->categoryIds;
 
         return $data;
     }

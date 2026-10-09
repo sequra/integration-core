@@ -222,6 +222,32 @@ class CheckoutService
     }
 
     /**
+     * Composite eligibility check for the cart-page widget: the shopper's currency and IP, then every
+     * product and category the cart holds, the same way the product-page widget checks its one product.
+     *
+     * @param string $currency
+     * @param string $ipAddress
+     * @param string[] $productIds Product references in the cart (empty array = no per-product check).
+     * @param string[] $categoryIds Category references in the cart (empty array = no per-category check).
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function isCartWidgetSupported(
+        string $currency,
+        string $ipAddress,
+        array $productIds = [],
+        array $categoryIds = []
+    ): bool {
+        return $this->isWidgetSupported($currency, $ipAddress)
+            && $this->areProductsAndCategoriesSupported($productIds, $categoryIds);
+    }
+
+    /**
      * Returns true if the category is not excluded in SeQura administration.
      *
      * @param string $categoryId
