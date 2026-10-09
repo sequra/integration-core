@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking;
 
+use InvalidArgumentException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTimestampException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestDTO;
 use SeQura\Core\BusinessLogic\Utility\StringValidator;
@@ -61,22 +62,29 @@ abstract class Tracking extends OrderRequestDTO
     }
 
     /**
-     * Creates a new Tracking instance from the given array.
+     * Creates the Tracking subtype the given array's type names.
      *
      * @param mixed[] $data An array with data to create a new instance.
      *
-     * @return static A new Tracking instance.
+     * @return Tracking A new Tracking instance.
      *
      * @throws InvalidTimestampException If delivered at timestamp is invalid.
+     * @throws InvalidArgumentException If the type is not a known tracking type.
      */
     public static function fromArray(array $data): self
     {
         $type = static::getDataValue($data, 'type');
-        $reference = static::getDataValue($data, 'reference');
-        $trackingNumber = static::getDataValue($data, 'tracking_number');
-        $deliveredAt = static::getDataValue($data, 'delivered_at');
 
-        return new static($type, $reference, $trackingNumber, $deliveredAt);
+        switch ($type) {
+            case TrackingType::TYPE_POSTAL:
+                return TrackingPostal::fromArray($data);
+            case TrackingType::TYPE_PICKUP_POINT:
+                return TrackingPickupPoint::fromArray($data);
+            case TrackingType::TYPE_PICKUP_STORE:
+                return TrackingPickupStore::fromArray($data);
+            default:
+                throw new InvalidArgumentException("Unknown tracking type: $type.");
+        }
     }
 
     /**

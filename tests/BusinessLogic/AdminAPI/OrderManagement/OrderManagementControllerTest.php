@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderUpdateRejectedExcepti
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ProductItem;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\TrackingPostal;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
@@ -179,6 +180,42 @@ class OrderManagementControllerTest extends BaseTestCase
         self::assertNotNull($updateData);
         self::assertNotNull($updateData->getDeliveryAddress());
         self::assertNull($updateData->getInvoiceAddress());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateSubmitsTheTrackings(): void
+    {
+        // Act
+        AdminAPI::get()->orderManagement('1')->updateOrder(new OrderUpdateRequest(
+            'ZXCV1234',
+            null,
+            null,
+            null,
+            null,
+            [new TrackingPostal('shipment-1', 'DHL', '00340434161094042557')]
+        ));
+
+        // Assert
+        $updateData = $this->orderService->getLastUpdateData();
+        self::assertNotNull($updateData);
+        self::assertCount(1, $updateData->getTrackings());
+        self::assertEquals('00340434161094042557', $updateData->getTrackings()[0]->getTrackingNumber());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateLeavesOmittedTrackingsAlone(): void
+    {
+        // Act
+        AdminAPI::get()->orderManagement('1')->updateOrder(new OrderUpdateRequest('ZXCV1234', $this->cart(1000)));
+
+        // Assert
+        $updateData = $this->orderService->getLastUpdateData();
+        self::assertNotNull($updateData);
+        self::assertNull($updateData->getTrackings());
     }
 
     /**
