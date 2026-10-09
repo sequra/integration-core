@@ -487,35 +487,6 @@ class PromotionalWidgetsApiTest extends BaseTestCase
     }
 
     /**
-     * @return void
-     */
-    public function testGetAvailableWidgetForCartPageCategoryInCartNotSupported(): void
-    {
-        //Arrange
-        $this->mockCheckoutValidator->setCurrencyValid(true);
-        $this->mockCheckoutValidator->setAddressValid(true);
-        $this->mockCheckoutValidator->setCategoryValid(false);
-
-        //Act
-        $response = CheckoutAPI::get()->promotionalWidgets('1')
-            ->getAvailableWidgetForCartPage(
-                new PromotionalWidgetsCheckoutRequest(
-                    'ES',
-                    'ES',
-                    'EUR',
-                    '127.0.0.1',
-                    '',
-                    [],
-                    ['3']
-                )
-            );
-
-        //Assert
-        self::assertTrue($response->isSuccessful());
-        self::assertEmpty($response->toArray());
-    }
-
-    /**
      * An unsupported product is refused only when the cart names it: a request without the cart's
      * products keeps checking the shopper alone.
      *
@@ -527,7 +498,6 @@ class PromotionalWidgetsApiTest extends BaseTestCase
         $this->mockCheckoutValidator->setCurrencyValid(true);
         $this->mockCheckoutValidator->setAddressValid(true);
         $this->mockCheckoutValidator->setProductValid(false);
-        $this->mockCheckoutValidator->setCategoryValid(false);
         $this->mockWidgetSettingsService->setMockWidget(new Widget(
             'product1',
             'campaign',
