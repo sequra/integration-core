@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Order;
 
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTrackingTypeException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
@@ -65,5 +66,18 @@ class SeQuraOrderTest extends BaseTestCase
         self::assertEquals($storedOrder->getMerchantReference()->getOrderRef1(), $seQuraOrder->getMerchantReference()->getOrderRef1());
         self::assertEquals($storedOrder->getMerchantReference()->getOrderRef2(), $seQuraOrder->getMerchantReference()->getOrderRef2());
         self::assertEquals($storedOrder->getState(), $seQuraOrder->getState());
+    }
+
+    /**
+     * @return void
+     */
+    public function testOrderWithAStoredTrackingOfUnknownTypeFailsToLoad()
+    {
+        $order = json_decode(file_get_contents(__DIR__ . '/../../Common/MockObjects/SeQuraOrder.json'), true);
+        $order['order']['trackings'] = [['type' => 'drone', 'reference' => 'shipment-1']];
+
+        $this->expectException(InvalidTrackingTypeException::class);
+
+        SeQuraOrder::fromArray($order['order']);
     }
 }

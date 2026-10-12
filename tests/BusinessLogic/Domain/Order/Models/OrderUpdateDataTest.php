@@ -1,8 +1,9 @@
 <?php
 
-namespace SeQura\Core\Tests\BusinessLogic\Domain\Order;
+namespace SeQura\Core\Tests\BusinessLogic\Domain\Order\Models;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTrackingException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\TrackingPickupStore;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\TrackingPostal;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
@@ -37,5 +38,17 @@ class OrderUpdateDataTest extends BaseTestCase
         $restored = OrderUpdateData::fromArray($data->toArray());
 
         self::assertNull($restored->getTrackings());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRejectsATrackingThatIsNotATrackingInstance(): void
+    {
+        $this->expectException(InvalidTrackingException::class);
+
+        new OrderUpdateData('ZXCV1234', null, null, null, null, [
+            ['type' => 'postal', 'reference' => 'shipment-1', 'carrier' => 'DHL'],
+        ]);
     }
 }

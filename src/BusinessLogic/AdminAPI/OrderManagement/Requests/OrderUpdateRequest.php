@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\Requests;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Request\Request;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTrackingException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\Tracking;
@@ -73,6 +74,8 @@ class OrderUpdateRequest extends Request
      * @inheritDoc
      *
      * @return OrderUpdateData
+     *
+     * @throws InvalidTrackingException When a tracking is not a Tracking instance.
      */
     public function transformToDomainModel(): object
     {

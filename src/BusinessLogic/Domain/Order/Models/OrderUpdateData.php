@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\Order\Models;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTrackingException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\Tracking;
@@ -52,6 +53,8 @@ class OrderUpdateData extends DataTransferObject
      * @param Address|null $deliveryAddress
      * @param Address|null $invoiceAddress
      * @param Tracking[]|null $trackings
+     *
+     * @throws InvalidTrackingException When a tracking is not a Tracking instance.
      */
     public function __construct(
         string $orderShopReference,
@@ -66,7 +69,7 @@ class OrderUpdateData extends DataTransferObject
         $this->unshippedCart = $unshippedCart;
         $this->deliveryAddress = $deliveryAddress;
         $this->invoiceAddress = $invoiceAddress;
-        $this->trackings = $trackings;
+        $this->setTrackings($trackings);
     }
 
     /**
@@ -159,9 +162,17 @@ class OrderUpdateData extends DataTransferObject
 
     /**
      * @param Tracking[]|null $trackings
+     *
+     * @throws InvalidTrackingException When a tracking is not a Tracking instance.
      */
     public function setTrackings(?array $trackings): void
     {
+        foreach ($trackings ?? [] as $tracking) {
+            if (!$tracking instanceof Tracking) {
+                throw new InvalidTrackingException();
+            }
+        }
+
         $this->trackings = $trackings;
     }
 

@@ -2,8 +2,10 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking;
 
-use InvalidArgumentException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCodeException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTimestampException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTrackingTypeException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestDTO;
 use SeQura\Core\BusinessLogic\Utility\StringValidator;
 
@@ -17,6 +19,15 @@ use SeQura\Core\BusinessLogic\Utility\StringValidator;
  */
 abstract class Tracking extends OrderRequestDTO
 {
+    /**
+     * Tracking subtype for each known tracking type.
+     */
+    private const TYPE_CLASSES = [
+        TrackingType::TYPE_POSTAL => TrackingPostal::class,
+        TrackingType::TYPE_PICKUP_POINT => TrackingPickupPoint::class,
+        TrackingType::TYPE_PICKUP_STORE => TrackingPickupStore::class,
+    ];
+
     /**
      * @var string Tracking type.
      */
@@ -69,22 +80,32 @@ abstract class Tracking extends OrderRequestDTO
      * @return Tracking A new Tracking instance.
      *
      * @throws InvalidTimestampException If delivered at timestamp is invalid.
-     * @throws InvalidArgumentException If the type is not a known tracking type.
+     * @throws InvalidUrlException If the tracking url is invalid.
+     * @throws InvalidCodeException If a pickup operator or store code is invalid.
+     * @throws InvalidTrackingTypeException If the type is not a known tracking type.
      */
     public static function fromArray(array $data): self
     {
         $type = static::getDataValue($data, 'type');
-
-        switch ($type) {
-            case TrackingType::TYPE_POSTAL:
-                return TrackingPostal::fromArray($data);
-            case TrackingType::TYPE_PICKUP_POINT:
-                return TrackingPickupPoint::fromArray($data);
-            case TrackingType::TYPE_PICKUP_STORE:
-                return TrackingPickupStore::fromArray($data);
-            default:
-                throw new InvalidArgumentException("Unknown tracking type: $type.");
+        if (!\is_string($type) || !isset(self::TYPE_CLASSES[$type])) {
+            throw new InvalidTrackingTypeException();
         }
+
+        $class = self::TYPE_CLASSES[$type];
+
+        return $class::fromArray($data);
+    }
+
+    /**
+     * Whether the given tracking is the same subtype and carries the same data as this one.
+     *
+     * @param Tracking $other
+     *
+     * @return bool
+     */
+    public function equals(Tracking $other): bool
+    {
+        return \get_class($this) === \get_class($other) && $this->toArray() === $other->toArray();
     }
 
     /**
