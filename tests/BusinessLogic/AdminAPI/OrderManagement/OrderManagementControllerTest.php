@@ -207,6 +207,27 @@ class OrderManagementControllerTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testUpdateWithTrackingsThatAreNotTrackingInstancesFails(): void
+    {
+        // Act
+        $response = AdminAPI::get()->orderManagement('1')->updateOrder(new OrderUpdateRequest(
+            'ZXCV1234',
+            null,
+            null,
+            null,
+            null,
+            [['type' => 'postal', 'reference' => 'shipment-1', 'carrier' => 'DHL']]
+        ));
+
+        // Assert
+        self::assertFalse($response->isSuccessful());
+        self::assertEquals('general.errors.order.invalidTracking', $response->toArray()['errorCode']);
+        self::assertNull($this->orderService->getLastUpdateData());
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testUpdateLeavesOmittedTrackingsAlone(): void
     {
         // Act
