@@ -384,6 +384,7 @@ class OrderService
      * @return void
      *
      * @throws OrderNotFoundException
+     * @throws OrderMerchantNotFoundException
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws HttpApiNotFoundException
@@ -402,7 +403,7 @@ class OrderService
         }
 
         $merchantReference = new MerchantReference($shopReference, $order->getMerchantReference()->getOrderRef2());
-        $this->proxy->updateMerchantReference($order->getMerchant()->getId(), $currentReference, $merchantReference);
+        $this->proxy->updateMerchantReference($this->getOrderMerchantId($order), $currentReference, $merchantReference);
         $order->setOrderRef1($shopReference);
         $order->setMerchantReference($merchantReference);
         $this->orderRepository->setSeQuraOrder($order);

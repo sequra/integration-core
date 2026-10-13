@@ -9,7 +9,8 @@ use SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\ConfigurationWebh
  *
  * Whether SeQura may collect statistical data is configured together with the
  * general settings, while it is stored on its own. A payload that does not carry the
- * value leaves the stored one alone rather than turning the collection off.
+ * value, or carries one that is not a boolean, leaves the stored one alone rather than
+ * turning the collection off.
  *
  * @package SeQura\Core\BusinessLogic\ConfigurationWebhookAPI\Requests\GeneralSettings
  */
@@ -43,8 +44,10 @@ class SaveStatisticalDataRequest extends ConfigurationWebhookRequest
      */
     public static function fromPayload(array $payload): object
     {
+        $value = $payload['isSendStatisticalData'] ?? null;
+
         return new self(
-            \array_key_exists('isSendStatisticalData', $payload) ? (bool)$payload['isSendStatisticalData'] : null
+            $value === null ? null : filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
         );
     }
 }

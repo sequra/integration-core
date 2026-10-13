@@ -1815,6 +1815,54 @@ class ConfigurationWebhookAPITest extends BaseTestCase
      * @return void
      *
      * @throws WebhookSignatureValidationFailed
+     */
+    public function testSaveGeneralSettingsKeepsStatisticalDataForANullValue(): void
+    {
+        //Arrange
+        $this->statisticalDataService->saveStatisticalData(new StatisticalData(true));
+
+        //Act
+        ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-general-settings",
+                "sellingCountries" => [],
+                "isSendStatisticalData" => null
+            ]
+        );
+
+        //Assert
+        self::assertTrue($this->statisticalDataService->getStatisticalData()->isSendStatisticalData());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws WebhookSignatureValidationFailed
+     */
+    public function testSaveGeneralSettingsReadsStatisticalDataSentAsAString(): void
+    {
+        //Arrange
+        $this->statisticalDataService->saveStatisticalData(new StatisticalData(true));
+
+        //Act
+        ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-general-settings",
+                "sellingCountries" => [],
+                "isSendStatisticalData" => "false"
+            ]
+        );
+
+        //Assert
+        self::assertFalse($this->statisticalDataService->getStatisticalData()->isSendStatisticalData());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws WebhookSignatureValidationFailed
      * @throws \DateMalformedStringException
      */
     public function testGetGeneralSettingsReturnsOrderIdentifiersOfTheIntegration(): void

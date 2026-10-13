@@ -504,6 +504,25 @@ class OrderServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testUpdateMerchantReferenceForAnOrderWithoutMerchantId(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $order = json_decode(file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'), true);
+        $order['order']['merchant']['id'] = '';
+        $seQuraOrder = SeQuraOrder::fromArray($order['order']);
+        $seQuraOrder->setReference('sequra-ref-1234');
+        $seQuraOrder->setCartId('5678');
+        $seQuraOrder->setOrderRef1('ZXCV1234');
+        StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$seQuraOrder]);
+
+        $this->expectException(OrderMerchantNotFoundException::class);
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateMerchantReference'], ['5678', 'NEWREF99']);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testUpdateMerchantReferenceForUnknownCart(): void
     {
         $this->expectException(OrderNotFoundException::class);
