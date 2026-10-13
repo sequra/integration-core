@@ -97,7 +97,7 @@ class CheckoutService
 
         $deploymentModel = $this->deploymentsService->getDeploymentById($deployment);
 
-        return $settings->getEnvironment() === 'live' ?
+        return $settings->isLive() ?
             $deploymentModel->getLiveDeploymentURL()->getAssetsBaseUrl() . 'sequra-checkout.min.js' :
             $deploymentModel->getSandboxDeploymentURL()->getAssetsBaseUrl() . 'sequra-checkout.min.js';
     }
