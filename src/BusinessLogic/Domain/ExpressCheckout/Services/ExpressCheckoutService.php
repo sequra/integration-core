@@ -6,7 +6,6 @@ use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
-use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutSettings;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
@@ -135,7 +134,7 @@ class ExpressCheckoutService
             return false;
         }
 
-        $merchantId = $this->resolveMerchantId($shippingCountry);
+        $merchantId = $this->countryConfigurationService->getMerchantIdForCountry($shippingCountry);
         if ($merchantId === null) {
             return false;
         }
@@ -204,7 +203,9 @@ class ExpressCheckoutService
 
         if (
             $checkCountry &&
-            $this->resolveMerchantId($createOrderRequest->getDeliveryAddress()->getCountryCode()) === null
+            $this->countryConfigurationService->getMerchantIdForCountry(
+                $createOrderRequest->getDeliveryAddress()->getCountryCode()
+            ) === null
         ) {
             return null;
         }
@@ -212,27 +213,5 @@ class ExpressCheckoutService
         return $this->orderService->solicitExpressCheckoutForm(
             new PrebuiltCreateOrderRequestBuilder($createOrderRequest)
         );
-    }
-
-    /**
-     * @param string $countryCode
-     *
-     * @return ?string
-     *
-     * @throws FailedToRetrieveSellingCountriesException
-     */
-    private function resolveMerchantId(string $countryCode): ?string
-    {
-        $configurations = $this->countryConfigurationService->getCountryConfiguration() ?? [];
-        foreach ($configurations as $configuration) {
-            /**
-             * @var CountryConfiguration $configuration
-             */
-            if ($configuration->getCountryCode() === $countryCode) {
-                return $configuration->getMerchantId();
-            }
-        }
-
-        return null;
     }
 }
