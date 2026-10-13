@@ -469,6 +469,42 @@ class OrderServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testUpdateWithAChangedTrackingSendsTheNewTrackings(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrderWithTrackings();
+        $trackings = $this->trackings();
+        $trackings[1] = new TrackingPickupPoint(
+            'shipment-2',
+            'PP-779',
+            null,
+            'operator-1',
+            'store-9',
+            null,
+            'Calle Mayor 1',
+            null,
+            '28013',
+            'Madrid',
+            null,
+            'ES'
+        );
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, $trackings),
+        ]);
+
+        self::assertCount(1, $this->httpClient->getHistory());
+        $body = json_decode($this->httpClient->getLastRequest()['body'], true);
+        self::assertEquals(Tracking::toBatchArray($trackings), $body['order']['trackings']);
+        self::assertEquals(
+            Tracking::toBatchArray($trackings),
+            Tracking::toBatchArray($this->storedOrder()->getTrackings())
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testUpdateWithoutTrackingsKeepsTheStoredOnes(): void
     {
         $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
