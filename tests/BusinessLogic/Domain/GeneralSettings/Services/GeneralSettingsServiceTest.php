@@ -150,6 +150,52 @@ class GeneralSettingsServiceTest extends BaseTestCase
         self::assertEquals([], $settings->getEnabledForServices());
     }
 
+    public function testSavingWithoutAnOrderIdentifierKeepsTheStoredOne(): void
+    {
+        // Arrange
+        $this->connectionService->method('getCredentials')->willReturn([]);
+        $this->countryConfigurationService->method('getCountryConfiguration')->willReturn(null);
+        $this->saveGeneralSettings(new GeneralSettings(false, false, [], [], [], [], [], [], null, 'reference'));
+
+        // Act
+        $this->saveGeneralSettings(new GeneralSettings(true, false, [], [], []));
+
+        // Assert
+        $settings = $this->getGeneralSettings();
+        self::assertTrue($settings->isSendOrderReportsPeriodicallyToSeQura());
+        self::assertEquals('reference', $settings->getOrderIdentifier());
+    }
+
+    public function testSavingAnOrderIdentifierReplacesTheStoredOne(): void
+    {
+        // Arrange
+        $this->connectionService->method('getCredentials')->willReturn([]);
+        $this->countryConfigurationService->method('getCountryConfiguration')->willReturn(null);
+        $this->saveGeneralSettings(new GeneralSettings(false, false, [], [], [], [], [], [], null, 'reference'));
+
+        // Act
+        $this->saveGeneralSettings(new GeneralSettings(false, false, [], [], [], [], [], [], null, 'id'));
+
+        // Assert
+        self::assertEquals('id', $this->getGeneralSettings()->getOrderIdentifier());
+    }
+
+    /**
+     * @param GeneralSettings $generalSettings
+     *
+     * @return void
+     */
+    private function saveGeneralSettings(GeneralSettings $generalSettings): void
+    {
+        $service = new GeneralSettingsService(
+            $this->repository,
+            $this->connectionService,
+            $this->countryConfigurationService
+        );
+
+        StoreContext::doWithStore('1', [$service, 'saveGeneralSettings'], [$generalSettings]);
+    }
+
     /**
      * @return GeneralSettings
      */

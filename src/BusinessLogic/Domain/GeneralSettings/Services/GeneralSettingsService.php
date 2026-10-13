@@ -96,12 +96,20 @@ class GeneralSettingsService
     /**
      * Calls the repository to save the general settings to the database.
      *
+     * Settings saved without an order identifier keep the stored one, since not every
+     * caller knows about it, and leaving it out would otherwise erase the merchant's choice.
+     *
      * @param GeneralSettings $generalSettings
      *
      * @return void
      */
     public function saveGeneralSettings(GeneralSettings $generalSettings): void
     {
+        if ($generalSettings->getOrderIdentifier() === null) {
+            $storedSettings = $this->generalSettingsRepository->getGeneralSettings();
+            $generalSettings->setOrderIdentifier($storedSettings ? $storedSettings->getOrderIdentifier() : null);
+        }
+
         $this->generalSettingsRepository->setGeneralSettings($generalSettings);
     }
 
