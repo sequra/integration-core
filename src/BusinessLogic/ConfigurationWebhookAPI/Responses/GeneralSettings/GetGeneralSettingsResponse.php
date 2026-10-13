@@ -15,7 +15,7 @@ use SeQura\Core\BusinessLogic\Domain\Product\Model\ShopProduct;
 class GetGeneralSettingsResponse extends Response
 {
     /**
-     * @var GeneralSettings|null $generalSettings
+     * @var GeneralSettings $generalSettings
      */
     protected $generalSettings;
     /**
@@ -44,7 +44,7 @@ class GetGeneralSettingsResponse extends Response
     protected $isSendStatisticalData;
 
     /**
-     * @param GeneralSettings|null $generalSettings
+     * @param GeneralSettings $generalSettings
      * @param ShopProduct[] $products
      * @param Category[] $categories
      * @param string[] $sellingCountries
@@ -52,7 +52,7 @@ class GetGeneralSettingsResponse extends Response
      * @param bool $isSendStatisticalData
      */
     public function __construct(
-        ?GeneralSettings $generalSettings,
+        GeneralSettings $generalSettings,
         array $products,
         array $categories,
         array $sellingCountries,
@@ -72,7 +72,7 @@ class GetGeneralSettingsResponse extends Response
      */
     public function toArray(): array
     {
-        $response = $this->generalSettings ? $this->generalSettings->toArray() : [];
+        $response = $this->generalSettings->toArray();
 
         if (!empty($this->products)) {
             $response['excludedProducts'] = array_map(function (ShopProduct $product) {
