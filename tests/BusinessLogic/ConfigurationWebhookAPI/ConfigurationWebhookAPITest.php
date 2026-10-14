@@ -109,6 +109,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationPr
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockWidgetSettingsService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 
 /**
  * Class ConfigurationWebhookAPITest.
@@ -256,7 +257,8 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             TestServiceRegister::getService(StoreIntegrationService::class),
-            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
 
         $this->integrationStoreIntegrationService = new MockIntegrationStoreIntegrationService();

@@ -4,6 +4,8 @@ namespace SeQura\Core\Tests\BusinessLogic\Domain\Connection\Services;
 
 use DateTime;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
+use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsProxy;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Models\DeploymentURL;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
 use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
@@ -119,7 +121,8 @@ class ConnectionServiceTest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             $this->mockStoreIntegrationService,
-            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
 
         $this->mockCredentialsRepository = TestServiceRegister::getService(CredentialsRepositoryInterface::class);
@@ -327,8 +330,82 @@ class ConnectionServiceTest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             $this->mockStoreIntegrationService,
-            new MockDeploymentsRepository()
+            new MockDeploymentsRepository(),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
+
+        // Act
+        $portalBaseUrl = $connectionService->getPortalBaseUrl($this->connectionData(BaseProxy::LIVE_MODE));
+
+        // Assert
+        self::assertNull($portalBaseUrl);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalBaseUrlFetchesADeploymentThatIsNotStored(): void
+    {
+        // Arrange
+        $deploymentsRepository = new MockDeploymentsRepository();
+        $connectionService = $this->connectionServiceWithDeployments(
+            $deploymentsRepository,
+            $this->deploymentsProxy([$this->sequraDeployment('https://portal.sequra.com/')])
+        );
+
+        // Act
+        $portalBaseUrl = $connectionService->getPortalBaseUrl($this->connectionData(BaseProxy::LIVE_MODE));
+
+        // Assert
+        self::assertEquals('https://portal.sequra.com', $portalBaseUrl);
+        self::assertNotNull($deploymentsRepository->getDeploymentById('sequra'));
+    }
+
+    /**
+     * A deployment stored before deployments carried their portal URL is refreshed from the API.
+     *
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalBaseUrlRefreshesADeploymentStoredWithoutPortalUrl(): void
+    {
+        // Arrange
+        $deploymentsRepository = new MockDeploymentsRepository();
+        $deploymentsRepository->setDeployments([$this->sequraDeployment('')]);
+        $connectionService = $this->connectionServiceWithDeployments(
+            $deploymentsRepository,
+            $this->deploymentsProxy([$this->sequraDeployment('https://portal.sequra.com/')])
+        );
+
+        // Act
+        $portalBaseUrl = $connectionService->getPortalBaseUrl($this->connectionData(BaseProxy::LIVE_MODE));
+
+        // Assert
+        self::assertEquals('https://portal.sequra.com', $portalBaseUrl);
+        self::assertEquals(
+            'https://portal.sequra.com/',
+            $deploymentsRepository->getDeploymentById('sequra')->getLiveDeploymentURL()->getPortalBaseUrl()
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetPortalBaseUrlIsNullWhenTheDeploymentsCannotBeFetched(): void
+    {
+        // Arrange
+        $proxy = new class implements DeploymentsProxyInterface {
+            public function getDeployments(): array
+            {
+                throw new HttpRequestException('Unavailable');
+            }
+        };
+        $connectionService = $this->connectionServiceWithDeployments(new MockDeploymentsRepository(), $proxy);
 
         // Act
         $portalBaseUrl = $connectionService->getPortalBaseUrl($this->connectionData(BaseProxy::LIVE_MODE));
@@ -349,7 +426,8 @@ class ConnectionServiceTest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             $this->mockStoreIntegrationService,
-            new MockDeploymentsRepository()
+            new MockDeploymentsRepository(),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
         $connectionService->saveConnectionData($this->connectionData(BaseProxy::LIVE_MODE));
 
@@ -406,7 +484,8 @@ class ConnectionServiceTest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             $this->mockStoreIntegrationService,
-            $deploymentsRepository
+            $deploymentsRepository,
+            TestServiceRegister::getService(DeploymentsService::class)
         );
         $svea = new DomainConnectionData(
             BaseProxy::TEST_MODE,
@@ -473,7 +552,8 @@ class ConnectionServiceTest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             $this->mockStoreIntegrationService,
-            $deploymentsRepository
+            $deploymentsRepository,
+            TestServiceRegister::getService(DeploymentsService::class)
         );
         $svea = new DomainConnectionData(
             BaseProxy::TEST_MODE,
@@ -559,7 +639,8 @@ class ConnectionServiceTest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             $this->mockStoreIntegrationService,
-            $deploymentsRepository
+            $deploymentsRepository,
+            TestServiceRegister::getService(DeploymentsService::class)
         );
         $svea = new DomainConnectionData(
             BaseProxy::TEST_MODE,
@@ -619,7 +700,8 @@ class ConnectionServiceTest extends BaseTestCase
                 $sellingCountriesService
             ),
             $this->mockStoreIntegrationService,
-            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
     }
 
@@ -1456,6 +1538,57 @@ class ConnectionServiceTest extends BaseTestCase
             'test_merchant',
             'sequra',
             new AuthorizationCredentials('test_username', 'test_password')
+        );
+    }
+
+    /**
+     * @param MockDeploymentsRepository $deploymentsRepository
+     * @param DeploymentsProxyInterface $deploymentsProxy
+     *
+     * @return ConnectionService
+     */
+    private function connectionServiceWithDeployments(
+        MockDeploymentsRepository $deploymentsRepository,
+        DeploymentsProxyInterface $deploymentsProxy
+    ): ConnectionService {
+        return new ConnectionService(
+            TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+            TestServiceRegister::getService(CredentialsService::class),
+            $this->mockStoreIntegrationService,
+            $deploymentsRepository,
+            new DeploymentsService(
+                $deploymentsProxy,
+                $deploymentsRepository,
+                TestServiceRegister::getService(ConnectionDataRepositoryInterface::class)
+            )
+        );
+    }
+
+    /**
+     * @param Deployment[] $deployments
+     *
+     * @return MockDeploymentsProxy
+     */
+    private function deploymentsProxy(array $deployments): MockDeploymentsProxy
+    {
+        $proxy = new MockDeploymentsProxy();
+        $proxy->setMockDeployments($deployments);
+
+        return $proxy;
+    }
+
+    /**
+     * @param string $livePortalUrl
+     *
+     * @return Deployment
+     */
+    private function sequraDeployment(string $livePortalUrl): Deployment
+    {
+        return new Deployment(
+            'sequra',
+            'seQura',
+            new DeploymentURL('https://live.sequrapi.com/', 'https://live.sequracdn.com/assets/', $livePortalUrl),
+            new DeploymentURL('https://sandbox.sequrapi.com/', 'https://sandbox.sequracdn.com/assets/')
         );
     }
 }

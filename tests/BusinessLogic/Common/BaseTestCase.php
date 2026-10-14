@@ -332,7 +332,8 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
                     TestServiceRegister::getService(CredentialsService::class),
                     TestServiceRegister::getService(StoreIntegrationService::class),
-                    TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+                    TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+                    TestServiceRegister::getService(DeploymentsService::class)
                 );
             },
             AffiliateSettingsRepositoryInterface::class => function () {
@@ -733,7 +734,8 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
                     TestServiceRegister::getService(CredentialsService::class),
                     TestServiceRegister::getService(StoreIntegrationService::class),
-                    TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+                    TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+                    TestServiceRegister::getService(DeploymentsService::class)
                 );
             }
         );

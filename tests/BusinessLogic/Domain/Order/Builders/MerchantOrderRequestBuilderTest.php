@@ -33,6 +33,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockMerchantDataProvid
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockPaymentMethodRepository;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 
 /**
  * Class MerchantOrderRequestBuilderTest.
@@ -82,7 +83,8 @@ class MerchantOrderRequestBuilderTest extends BaseTestCase
             new MockConnectionDataRepository(),
             $this->credentialsService,
             TestServiceRegister::getService(StoreIntegrationService::class),
-            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
         $this->merchantDataProvider = new MockMerchantDataProvider();
         $this->builder = new MerchantOrderRequestBuilder(

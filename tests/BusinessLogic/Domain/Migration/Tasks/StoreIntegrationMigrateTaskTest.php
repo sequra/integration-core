@@ -29,6 +29,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationPr
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreIntegrationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockStoreService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 
 /**
  * Class StoreIntegrationMigrateTaskTest.
@@ -95,7 +96,8 @@ class StoreIntegrationMigrateTaskTest extends BaseTestCase
                 new MockSellingCountriesService()
             ),
             $this->storeIntegrationService,
-            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
 
         TestServiceRegister::registerService(ConnectionService::class, function () {

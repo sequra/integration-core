@@ -15,6 +15,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSellingCountriesService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 
 /**
  * Class SellingCountryServiceTest.
@@ -47,7 +48,8 @@ class SellingCountryServiceTest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             TestServiceRegister::getService(StoreIntegrationService::class),
-            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
 
         $this->sellingCountriesService = new SellingCountriesService(

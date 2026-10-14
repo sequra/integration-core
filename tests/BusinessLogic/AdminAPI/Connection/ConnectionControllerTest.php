@@ -7,6 +7,7 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsReposit
 use SeQura\Core\BusinessLogic\Domain\Deployments\Models\DeploymentURL;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
 use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\AdminAPI\AdminAPI;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\ConnectionRequest;
 use SeQura\Core\BusinessLogic\AdminAPI\Connection\Requests\OnboardingRequest;
@@ -426,7 +427,8 @@ class ConnectionControllerTest extends BaseTestCase
                 TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
                 TestServiceRegister::getService(CredentialsService::class),
                 TestServiceRegister::getService(StoreIntegrationService::class),
-                TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+                TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+                TestServiceRegister::getService(DeploymentsService::class)
             );
         });
 
@@ -574,7 +576,8 @@ class ConnectionControllerTest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             TestServiceRegister::getService(StoreIntegrationService::class),
-            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
 
         TestServiceRegister::registerService(ConnectionService::class, function () use ($mockConnectionService) {
@@ -624,7 +627,8 @@ class ConnectionControllerTest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             TestServiceRegister::getService(StoreIntegrationService::class),
-            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
         $mockConnectionService->setMockConnectedConnections([
             new ConnectionData(
@@ -679,7 +683,8 @@ class ConnectionControllerTest extends BaseTestCase
                 TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
                 TestServiceRegister::getService(CredentialsService::class),
                 TestServiceRegister::getService(StoreIntegrationService::class),
-                TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+                TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+                TestServiceRegister::getService(DeploymentsService::class)
             );
         });
         $request = new OnboardingRequest(
@@ -703,7 +708,8 @@ class ConnectionControllerTest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             TestServiceRegister::getService(StoreIntegrationService::class),
-            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
         $mockConnectionService->setMockConnectedConnections([
             new ConnectionData(
@@ -751,7 +757,8 @@ class ConnectionControllerTest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             TestServiceRegister::getService(StoreIntegrationService::class),
-            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
 
         $mockConnectionService->setThrowError(true);
