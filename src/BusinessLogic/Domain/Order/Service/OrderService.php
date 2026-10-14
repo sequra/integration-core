@@ -498,25 +498,6 @@ class OrderService
     }
 
     /**
-     * Gets the SeQura order.
-     *
-     * @param string $orderReference
-     *
-     * @return SeQuraOrder
-     *
-     * @throws OrderNotFoundException
-     */
-    public function getSeQuraOrder(string $orderReference): SeQuraOrder
-    {
-        $seQuraOrder = $this->orderRepository->getByOrderReference($orderReference);
-        if (!$seQuraOrder) {
-            throw new OrderNotFoundException("SeQura order with reference $orderReference is not found.", 404);
-        }
-
-        return $seQuraOrder;
-    }
-
-    /**
      * Sends the order to SeQura and keeps it as SeQura now holds it. An increase SeQura refuses leaves the stored
      * order as it was, with what the refused update totalled.
      *
@@ -663,6 +644,25 @@ class OrderService
         }
 
         return json_encode($object1) === json_encode($object2);
+    }
+
+    /**
+     * Gets the SeQura order.
+     *
+     * @param string $orderReference
+     *
+     * @return SeQuraOrder
+     *
+     * @throws OrderNotFoundException
+     */
+    public function getSeQuraOrder(string $orderReference): SeQuraOrder
+    {
+        $seQuraOrder = $this->orderRepository->getByOrderReference($orderReference);
+        if (!$seQuraOrder) {
+            throw new OrderNotFoundException("SeQura order with reference $orderReference is not found.", 404);
+        }
+
+        return $seQuraOrder;
     }
 
     /**
