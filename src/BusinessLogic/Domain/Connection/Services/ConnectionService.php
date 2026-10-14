@@ -9,7 +9,9 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsExcep
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
 use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
@@ -62,21 +64,29 @@ class ConnectionService
     protected $deploymentsRepository;
 
     /**
+     * @var DeploymentsService $deploymentsService
+     */
+    protected $deploymentsService;
+
+    /**
      * @param ConnectionDataRepositoryInterface $connectionDataRepository
      * @param CredentialsService $credentialsService
      * @param StoreIntegrationService $storeIntegrationService
      * @param DeploymentsRepositoryInterface $deploymentsRepository
+     * @param DeploymentsService $deploymentsService
      */
     public function __construct(
         ConnectionDataRepositoryInterface $connectionDataRepository,
         CredentialsService $credentialsService,
         StoreIntegrationService $storeIntegrationService,
-        DeploymentsRepositoryInterface $deploymentsRepository
+        DeploymentsRepositoryInterface $deploymentsRepository,
+        DeploymentsService $deploymentsService
     ) {
         $this->connectionDataRepository = $connectionDataRepository;
         $this->credentialsService = $credentialsService;
         $this->storeIntegrationService = $storeIntegrationService;
         $this->deploymentsRepository = $deploymentsRepository;
+        $this->deploymentsService = $deploymentsService;
     }
 
     /**
@@ -249,24 +259,59 @@ class ConnectionService
     }
 
     /**
+     * Returns the base URL of the SeQura portal the connection's deployment belongs to.
+     *
+     * A deployment that is not stored, or was stored before deployments carried their portal URL, is fetched
+     * from the API once, which also stores it for the next call.
+     *
      * @param ConnectionData $connection
      *
      * @return string|null
      */
     public function getPortalBaseUrl(ConnectionData $connection): ?string
     {
-        $deployment = $this->deploymentsRepository->getDeploymentById($connection->getDeployment());
+        $deploymentId = $connection->getDeployment();
+        $portalUrl = $this->getDeploymentPortalBaseUrl(
+            $this->deploymentsRepository->getDeploymentById($deploymentId),
+            $connection
+        );
 
+        if ($portalUrl === '') {
+            try {
+                foreach ($this->deploymentsService->getDeployments() as $deployment) {
+                    if ($deployment->getId() === $deploymentId) {
+                        $portalUrl = $this->getDeploymentPortalBaseUrl($deployment, $connection);
+                    }
+                }
+            } catch (HttpRequestException $exception) {
+                Logger::logWarning(
+                    'Failed to fetch the deployments to resolve the portal URL.',
+                    'Core',
+                    [new LogContextData('deployment', $deploymentId)]
+                );
+            }
+        }
+
+        return $portalUrl === '' ? null : rtrim($portalUrl, '/');
+    }
+
+    /**
+     * @param Deployment|null $deployment
+     * @param ConnectionData $connection
+     *
+     * @return string The portal base URL of the connection's environment, empty when the deployment has none.
+     */
+    private function getDeploymentPortalBaseUrl(?Deployment $deployment, ConnectionData $connection): string
+    {
         if (!$deployment) {
-            return null;
+            return '';
         }
 
         $deploymentUrl = $connection->isLive() ?
             $deployment->getLiveDeploymentURL() :
             $deployment->getSandboxDeploymentURL();
-        $portalUrl = $deploymentUrl ? $deploymentUrl->getPortalBaseUrl() : '';
 
-        return $portalUrl === '' ? null : rtrim($portalUrl, '/');
+        return $deploymentUrl ? $deploymentUrl->getPortalBaseUrl() : '';
     }
 
     /**

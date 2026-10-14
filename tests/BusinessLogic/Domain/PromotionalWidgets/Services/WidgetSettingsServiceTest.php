@@ -145,7 +145,8 @@ class WidgetSettingsServiceTest extends BaseTestCase
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
             TestServiceRegister::getService(StoreIntegrationService::class),
-            TestServiceRegister::getService(DeploymentsRepositoryInterface::class)
+            TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+            TestServiceRegister::getService(DeploymentsService::class)
         );
 
         TestServiceRegister::registerService(ConnectionService::class, function () {
