@@ -67,8 +67,8 @@ class Aspects
 
         // Every call on this instance is forwarded to the subject, so it stands in for it.
         /**
- * @var T $proxy
-*/
+         * @var T $proxy
+         */
         $proxy = $this;
 
         return $proxy;
@@ -92,8 +92,8 @@ class Aspects
 
         // Every call on this instance is forwarded to the service, so it stands in for it.
         /**
- * @var T $proxy
-*/
+         * @var T $proxy
+         */
         $proxy = $this;
 
         return $proxy;

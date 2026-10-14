@@ -28,12 +28,12 @@ interface OrderProxyInterface
      *
      * @param GetAvailablePaymentMethodsRequest $request
      *
-     * @return SeQuraPaymentMethod[]
+     * @throws HttpRequestException
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws DeploymentNotFoundException
      *
-     * @throws HttpRequestException
+     * @return SeQuraPaymentMethod[]
      */
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array;
 
@@ -42,12 +42,12 @@ interface OrderProxyInterface
      *
      * @param GetAvailablePaymentMethodsRequest $request
      *
-     * @return SeQuraPaymentMethodCategory[]
+     * @throws HttpRequestException
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws DeploymentNotFoundException
      *
-     * @throws HttpRequestException
+     * @return SeQuraPaymentMethodCategory[]
      */
     public function getAvailablePaymentMethodsInCategories(GetAvailablePaymentMethodsRequest $request): array;
 
@@ -56,9 +56,9 @@ interface OrderProxyInterface
      *
      * @param CreateOrderRequest $request
      *
-     * @return SeQuraOrder
-     *
      * @throws HttpRequestException
+     *
+     * @return SeQuraOrder
      */
     public function createOrder(CreateOrderRequest $request): SeQuraOrder;
 
@@ -109,9 +109,9 @@ interface OrderProxyInterface
      *
      * @param GetFormRequest $request
      *
-     * @return SeQuraForm
-     *
      * @throws HttpRequestException
+     *
+     * @return SeQuraForm
      */
     public function getForm(GetFormRequest $request): SeQuraForm;
 }

@@ -97,7 +97,7 @@ class CheckoutService
 
         $deploymentModel = $this->deploymentsService->getDeploymentById($deployment);
 
-        return $settings->getEnvironment() === 'live' ?
+        return $settings->isLive() ?
             $deploymentModel->getLiveDeploymentURL()->getAssetsBaseUrl() . 'sequra-checkout.min.js' :
             $deploymentModel->getSandboxDeploymentURL()->getAssetsBaseUrl() . 'sequra-checkout.min.js';
     }
@@ -160,15 +160,12 @@ class CheckoutService
             return false;
         }
 
-        $productSku = $this->productService->getProductsSkuByProductId($productId);
+        $excludedProducts = $generalSettings->getExcludedProducts() ?? [];
 
-        if ($productSku) {
-            $excludedProducts = $generalSettings->getExcludedProducts() ?? [];
+        if ($excludedProducts) {
+            $productSku = $this->productService->getProductsSkuByProductId($productId);
 
-            if (
-                $excludedProducts &&
-                \in_array($productSku, $excludedProducts, true)
-            ) {
+            if ($productSku && \in_array($productSku, $excludedProducts, true)) {
                 return false;
             }
         }
