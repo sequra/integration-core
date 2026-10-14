@@ -42,7 +42,8 @@ class GeneralSettingsResponse extends Response
             'enabledForServices' => $this->generalSettings->getEnabledForServices(),
             'allowFirstServicePaymentDelay' => $this->generalSettings->getAllowFirstServicePaymentDelay(),
             'allowServiceRegistrationItems' => $this->generalSettings->getAllowServiceRegistrationItems(),
-            'defaultServicesEndDate' => $this->generalSettings->getDefaultServicesEndDate()
+            'defaultServicesEndDate' => $this->generalSettings->getDefaultServicesEndDate(),
+            'orderIdentifier' => $this->generalSettings->getOrderIdentifier()
         ];
     }
 }
