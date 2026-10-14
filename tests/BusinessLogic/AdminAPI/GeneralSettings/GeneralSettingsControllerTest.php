@@ -145,7 +145,8 @@ class GeneralSettingsControllerTest extends BaseTestCase
             [],
             [],
             [],
-            'P1Y1M'
+            'P1Y1M',
+            'reference'
         );
 
         StoreContext::doWithStore('1', [$this->generalSettingsRepository, 'setGeneralSettings'], [$generalSettings]);
@@ -175,8 +176,25 @@ class GeneralSettingsControllerTest extends BaseTestCase
             'enabledForServices' => [],
             'allowFirstServicePaymentDelay' => [],
             'allowServiceRegistrationItems' => [],
-            'defaultServicesEndDate' => 'P1Y'
+            'defaultServicesEndDate' => 'P1Y',
+            'orderIdentifier' => null
         ], $response->toArray());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testSavedOrderIdentifierIsReadBack(): void
+    {
+        // Arrange
+        $request = new GeneralSettingsRequest(true, true, [], [], [], null, [], [], [], 'reference');
+
+        // Act
+        AdminAPI::get()->generalSettings('1')->saveGeneralSettings($request);
+        $response = AdminAPI::get()->generalSettings('1')->getGeneralSettings();
+
+        // Assert
+        self::assertEquals('reference', $response->toArray()['orderIdentifier']);
     }
 
     public function testIsSaveResponseSuccessful(): void
@@ -386,7 +404,8 @@ class GeneralSettingsControllerTest extends BaseTestCase
             'enabledForServices' => [],
             'allowFirstServicePaymentDelay' => [],
             'allowServiceRegistrationItems' => [],
-            'defaultServicesEndDate' => 'P1Y1M'
+            'defaultServicesEndDate' => 'P1Y1M',
+            'orderIdentifier' => 'reference'
         ];
     }
 
