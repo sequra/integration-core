@@ -93,7 +93,7 @@ class PromotionalWidgetsController
     }
 
     /**
-     * Verifies if string is valid JSON
+     * Verifies if string is valid JSON. Empty styles are accepted, as they are by WidgetSettingsService.
      *
      * @param string $json
      *
@@ -101,8 +101,8 @@ class PromotionalWidgetsController
      */
     private function isValidJson(string $json): bool
     {
-        if (empty($json)) {
-            return false;
+        if (trim($json) === '') {
+            return true;
         }
 
         json_decode($json, true);
