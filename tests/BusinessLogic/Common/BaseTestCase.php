@@ -453,7 +453,8 @@ class BaseTestCase extends TestCase
             },
             ConnectionController::class => function () {
                 return new ConnectionController(
-                    TestServiceRegister::getService(ConnectionService::class)
+                    TestServiceRegister::getService(ConnectionService::class),
+                    TestServiceRegister::getService(StatisticalDataService::class)
                 );
             },
             DisconnectController::class => function () {

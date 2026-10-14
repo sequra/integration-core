@@ -16,6 +16,8 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentExc
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
 use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
@@ -33,11 +35,18 @@ class ConnectionController
     protected $connectionService;
 
     /**
-     * @param ConnectionService $connectionService
+     * @var StatisticalDataService
      */
-    public function __construct(ConnectionService $connectionService)
+    protected $statisticalDataService;
+
+    /**
+     * @param ConnectionService $connectionService
+     * @param StatisticalDataService $statisticalDataService
+     */
+    public function __construct(ConnectionService $connectionService, StatisticalDataService $statisticalDataService)
     {
         $this->connectionService = $connectionService;
+        $this->statisticalDataService = $statisticalDataService;
     }
 
     /**
@@ -143,6 +152,12 @@ class ConnectionController
             return new ConnectionValidationResponse(false, 'merchantId');
         } catch (WrongCredentialsException $e) {
             return new ConnectionValidationResponse(false, $e->getMessage());
+        }
+
+        // The merchant manages the statistical-data consent in the SeQura portal; a store that has
+        // never stored one starts with it given
+        if ($this->statisticalDataService->getStatisticalData() === null) {
+            $this->statisticalDataService->saveStatisticalData(new StatisticalData(true));
         }
 
         return new SuccessfulConnectionResponse(

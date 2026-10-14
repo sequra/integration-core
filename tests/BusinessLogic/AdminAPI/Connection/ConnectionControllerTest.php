@@ -22,6 +22,8 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
 use SeQura\Core\Infrastructure\Http\HttpClient;
@@ -701,9 +703,77 @@ class ConnectionControllerTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testConnectLeavesTheStatisticalDataUnset(): void
+    public function testConnectStoresTheStatisticalDataConsentByDefault(): void
     {
         // Arrange
+        $this->registerConnectedSeQuraDeployment();
+
+        // Act
+        $response = AdminAPI::get()->connection('1')->connect($this->onboardingRequest());
+
+        // Assert
+        self::assertTrue($response->isSuccessful());
+        $statisticalData = StoreContext::doWithStore('1', [$this->statisticalDataRepository, 'getStatisticalData']);
+        self::assertNotNull($statisticalData);
+        self::assertTrue($statisticalData->isSendStatisticalData());
+        self::assertNotNull(
+            StoreContext::doWithStore('1', [TestServiceRegister::getService(SendReportRepositoryInterface::class), 'getSendReport'])
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testConnectKeepsTheStoredStatisticalDataConsent(): void
+    {
+        // Arrange
+        $this->registerConnectedSeQuraDeployment();
+        StoreContext::doWithStore('1', [$this->statisticalDataRepository, 'setStatisticalData'], [new StatisticalData(false)]);
+
+        // Act
+        AdminAPI::get()->connection('1')->connect($this->onboardingRequest());
+
+        // Assert
+        self::assertFalse(
+            StoreContext::doWithStore('1', [$this->statisticalDataRepository, 'getStatisticalData'])->isSendStatisticalData()
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testConnectWithoutConnectingAnythingStoresNoStatisticalDataConsent(): void
+    {
+        // Arrange
+        TestServiceRegister::registerService(ConnectionService::class, function () {
+            return new ConnectionService(
+                TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
+                TestServiceRegister::getService(CredentialsService::class),
+                TestServiceRegister::getService(StoreIntegrationService::class),
+                TestServiceRegister::getService(DeploymentsRepositoryInterface::class),
+                TestServiceRegister::getService(DeploymentsService::class)
+            );
+        });
+        $request = new OnboardingRequest(
+            [new ConnectionRequest(BaseProxy::TEST_MODE, 'test', '', '', 'sequra')]
+        );
+
+        // Act
+        AdminAPI::get()->connection('1')->connect($request);
+
+        // Assert
+        self::assertNull(
+            StoreContext::doWithStore('1', [$this->statisticalDataRepository, 'getStatisticalData'])
+        );
+    }
+
+    /**
+     * Makes the connection service answer that the seQura deployment was connected.
+     *
+     * @return void
+     */
+    private function registerConnectedSeQuraDeployment(): void
+    {
         $mockConnectionService = new MockConnectionService(
             TestServiceRegister::getService(ConnectionDataRepositoryInterface::class),
             TestServiceRegister::getService(CredentialsService::class),
@@ -723,27 +793,15 @@ class ConnectionControllerTest extends BaseTestCase
         TestServiceRegister::registerService(ConnectionService::class, function () use ($mockConnectionService) {
             return $mockConnectionService;
         });
-        $request = new OnboardingRequest(
-            [
-                new ConnectionRequest(BaseProxy::TEST_MODE, 'test', '', '', 'svea'),
-                new ConnectionRequest(BaseProxy::TEST_MODE, 'test', 'test_username', 'test_password', 'sequra')
-            ]
-        );
+    }
 
-        // Act
-        $response = AdminAPI::get()->connection('1')->connect($request);
-
-        // Assert
-        self::assertEquals(
-            [
-                'isValid' => true,
-                'portalUrl' => 'https://portal-sandbox.sequra.com/development/store-integrations',
-                'portalUrls' => ['sequra' => 'https://portal-sandbox.sequra.com/development/store-integrations']
-            ],
-            $response->toArray()
-        );
-        self::assertNull(
-            StoreContext::doWithStore('1', [$this->statisticalDataRepository, 'getStatisticalData'])
+    /**
+     * @return OnboardingRequest
+     */
+    private function onboardingRequest(): OnboardingRequest
+    {
+        return new OnboardingRequest(
+            [new ConnectionRequest(BaseProxy::TEST_MODE, 'test', 'test_username', 'test_password', 'sequra')]
         );
     }
 
