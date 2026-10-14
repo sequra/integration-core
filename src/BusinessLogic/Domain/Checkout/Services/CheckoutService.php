@@ -12,6 +12,7 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -56,6 +57,12 @@ class CheckoutService
      * @var bool
      */
     public static $generalSettingsFetched = false;
+    /**
+     * Store the cached general settings belong to.
+     *
+     * @var string|null
+     */
+    private static $generalSettingsStoreId = null;
 
     /**
      * @param GeneralSettingsService $generalSettingsService
@@ -409,7 +416,7 @@ class CheckoutService
     }
 
     /**
-     * Caches GeneralSettings across multiple calls within the same HTTP request.
+     * Caches GeneralSettings across multiple calls within the same HTTP request, for the active store only.
      *
      * @return GeneralSettings
      *
@@ -420,12 +427,19 @@ class CheckoutService
      */
     private function getGeneralSettings(): GeneralSettings
     {
-        if (self::$generalSettingsFetched && self::$generalSettings !== null) {
+        $storeId = StoreContext::getInstance()->getStoreId();
+
+        if (
+            self::$generalSettingsFetched &&
+            self::$generalSettings !== null &&
+            self::$generalSettingsStoreId === $storeId
+        ) {
             return self::$generalSettings;
         }
 
         self::$generalSettings = $this->generalSettingsService->getGeneralSettings();
         self::$generalSettingsFetched = true;
+        self::$generalSettingsStoreId = $storeId;
 
         return self::$generalSettings;
     }

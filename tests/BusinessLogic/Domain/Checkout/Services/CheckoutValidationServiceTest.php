@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Checkout\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
+use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
@@ -123,6 +124,39 @@ class CheckoutValidationServiceTest extends BaseTestCase
     public function testCurrencySupported(): void
     {
         self::assertTrue($this->checkoutValidationService->isCurrencySupported('EUR'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws WrongCredentialsException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     */
+    public function testGeneralSettingsAreNotReusedForAnotherStore(): void
+    {
+        // Arrange
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, ['9.9.9.9'], null, null)
+        );
+        $isValidForFirstStore = StoreContext::doWithStore(
+            '1',
+            [$this->checkoutValidationService, 'isIpAddressValid'],
+            ['1.1.1.1']
+        );
+        $this->mockGeneralSettingsService->saveGeneralSettings(new GeneralSettings(true, null, [], null, null));
+
+        // Act
+        $isValidForSecondStore = StoreContext::doWithStore(
+            '2',
+            [$this->checkoutValidationService, 'isIpAddressValid'],
+            ['1.1.1.1']
+        );
+
+        // Assert
+        self::assertFalse($isValidForFirstStore);
+        self::assertTrue($isValidForSecondStore);
     }
 
     /**
