@@ -9,6 +9,7 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsExcep
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
 use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
@@ -100,10 +101,13 @@ class ConnectionService
      * @throws PaymentMethodNotFoundException
      * @throws CapabilitiesEmptyException
      * @throws InvalidUrlException
+     * @throws EmptyCountryConfigurationParameterException when a credential carries no merchant reference for a
+     * country the shop sells in. Its deployment is not connected; the other deployments are.
      */
     public function connect(array $connections): array
     {
         $errors = [];
+        $emptyCountryConfigurationException = null;
         $connected = [];
 
         foreach ($connections as $connectionData) {
@@ -128,11 +132,24 @@ class ConnectionService
                 $connected[] = $connectionData;
             } catch (WrongCredentialsException $exception) {
                 $errors[] = $connectionData->getDeployment();
+            } catch (EmptyCountryConfigurationParameterException $exception) {
+                // A credential without a merchant reference fails its own deployment only, so the
+                // deployment is left unconnected while the others are still processed
+                Logger::logWarning(
+                    'Deployment not connected because a credential carries no merchant reference.',
+                    'Core',
+                    [new LogContextData('deployment', $connectionData->getDeployment())]
+                );
+                $emptyCountryConfigurationException = $emptyCountryConfigurationException ?? $exception;
             }
         }
 
         if (!empty($errors)) {
             throw new WrongCredentialsException(null, $errors);
+        }
+
+        if ($emptyCountryConfigurationException) {
+            throw $emptyCountryConfigurationException;
         }
 
         return $connected;

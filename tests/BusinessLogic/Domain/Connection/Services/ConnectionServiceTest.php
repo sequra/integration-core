@@ -26,6 +26,8 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundEx
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\CredentialsRequest;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
@@ -1167,6 +1169,67 @@ class ConnectionServiceTest extends BaseTestCase
         // Assert
         self::assertEquals(
             [new CountryConfiguration('ES', 'logeecom_es'), new CountryConfiguration('SE', 'logeecom_se')],
+            $this->mockCountryConfigurationRepository->getCountryConfiguration()
+        );
+    }
+
+    /**
+     * A credential without a merchant reference for a country the shop sells in fails its own deployment
+     * only: the other deployments of the request are still connected.
+     *
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws CapabilitiesEmptyException
+     * @throws HttpRequestException
+     * @throws InvalidEnvironmentException
+     * @throws PaymentMethodNotFoundException
+     * @throws WrongCredentialsException
+     * @throws InvalidUrlException
+     */
+    public function testConnectFailsOnlyTheDeploymentWithAnEmptyMerchantReference(): void
+    {
+        // Arrange
+        $this->mockConnectionProxy = new class extends MockConnectionProxy {
+            public function getCredentials(CredentialsRequest $request): array
+            {
+                $deployment = $request->getConnectionData()->getDeployment();
+
+                return array_values(array_filter(
+                    parent::getCredentials($request),
+                    static function (Credentials $credentials) use ($deployment) {
+                        return $credentials->getDeployment() === $deployment;
+                    }
+                ));
+            }
+        };
+        $connectionService = $this->connectionServiceSellingIn(['ES', 'SE']);
+        $this->mockConnectionProxy->setMockCredentials([
+            new Credentials('', 'ES', 'EUR', 'assetsKey1', [], 'sequra'),
+            new Credentials('logeecom_se', 'SE', 'SEK', 'assetsKey2', [], 'svea'),
+        ]);
+        $exception = null;
+
+        // Act
+        try {
+            $connectionService->connect([
+                $this->connectionData(BaseProxy::TEST_MODE),
+                new DomainConnectionData(
+                    BaseProxy::TEST_MODE,
+                    'logeecom_se',
+                    'svea',
+                    new AuthorizationCredentials('test_username', 'test_password')
+                ),
+            ]);
+        } catch (EmptyCountryConfigurationParameterException $exception) {
+        }
+
+        // Assert
+        self::assertNotNull($exception);
+        self::assertNull($connectionService->getConnectionDataByDeployment('sequra'));
+        self::assertNotNull($connectionService->getConnectionDataByDeployment('svea'));
+        self::assertEquals(
+            [new CountryConfiguration('SE', 'logeecom_se')],
             $this->mockCountryConfigurationRepository->getCountryConfiguration()
         );
     }
