@@ -31,7 +31,8 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
     public function getByShopReference(string $shopOrderReference): ?SeQuraOrder
     {
         $filter = new QueryFilter();
-        $filter->where('orderRef1', Operators::EQUALS, $shopOrderReference);
+        $filter->where('orderRef1', Operators::EQUALS, $shopOrderReference)
+            ->orderBy('id', QueryFilter::ORDER_DESC);
 
         /**
          * @var SeQuraOrder|null $result
@@ -57,7 +58,8 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
     public function getByCartId(string $cartId): ?SeQuraOrder
     {
         $filter = new QueryFilter();
-        $filter->where('cartId', Operators::EQUALS, $cartId);
+        $filter->where('cartId', Operators::EQUALS, $cartId)
+            ->orderBy('id', QueryFilter::ORDER_DESC);
 
         /**
          * @var SeQuraOrder|null $result

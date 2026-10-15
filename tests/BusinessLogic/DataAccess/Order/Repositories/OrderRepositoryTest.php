@@ -68,4 +68,62 @@ class OrderRepositoryTest extends BaseTestCase
         $result = $this->repository->select();
         self::assertCount(0, $result);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetByCartIdReturnsLatestOrderOfTheCart(): void
+    {
+        // arrange
+        $this->repository->save($this->order('old-ref', 'cart-1', ''));
+        $this->repository->save($this->order('new-ref', 'cart-1', ''));
+        $this->repository->save($this->order('other-ref', 'cart-2', ''));
+
+        // act
+        $result = $this->seQuraOrderRepository->getByCartId('cart-1');
+
+        // assert
+        self::assertNotNull($result);
+        self::assertEquals('new-ref', $result->getReference());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetByShopReferenceReturnsLatestOrderOfTheShopOrder(): void
+    {
+        // arrange
+        $this->repository->save($this->order('old-ref', 'cart-1', 'shop-1'));
+        $this->repository->save($this->order('new-ref', 'cart-1', 'shop-1'));
+        $this->repository->save($this->order('other-ref', 'cart-2', 'shop-2'));
+
+        // act
+        $result = $this->seQuraOrderRepository->getByShopReference('shop-1');
+
+        // assert
+        self::assertNotNull($result);
+        self::assertEquals('new-ref', $result->getReference());
+    }
+
+    /**
+     * @param string $reference
+     * @param string $cartId
+     * @param string $shopReference
+     *
+     * @return SeQuraOrder
+     *
+     * @throws Exception
+     */
+    private function order(string $reference, string $cartId, string $shopReference): SeQuraOrder
+    {
+        $data = json_decode(
+            file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'),
+            true
+        );
+
+        return SeQuraOrder::fromArray($data['order'])
+            ->setReference($reference)
+            ->setCartId($cartId)
+            ->setOrderRef1($shopReference);
+    }
 }
