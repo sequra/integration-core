@@ -25,6 +25,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\OtherPayment
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ProductItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Merchant;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Options;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Platform;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
@@ -986,6 +987,24 @@ class OrderServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testResolicitingWithPartialMerchantOptionsContinuesTheExistingOrder(): void
+    {
+        // Arrange
+        $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
+        $proxy->expects(self::once())->method('createOrder');
+        $service = $this->serviceWithProxy($proxy);
+        $service->solicitFor($this->withPartialMerchantOptions($this->builderFor(2, 'load-1')));
+
+        // Act
+        $order = $service->solicitFor($this->withPartialMerchantOptions($this->builderFor(2, 'load-2')));
+
+        // Assert
+        self::assertEquals('ref-a', $order->getReference());
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testResolicitingAChangedCartKeepsTheReplacedOrder(): void
     {
         // Arrange
@@ -1164,6 +1183,24 @@ class OrderServiceTest extends BaseTestCase
                 : new Merchant('testMerchantId', 'https://shop.test/?order=' . $shopOrderId, ['order' => $shopOrderId]),
             $shopOrderId === null ? null : new MerchantReference($shopOrderId)
         ));
+
+        return $builder;
+    }
+
+    /**
+     * Sets a merchant whose options leave some flags unset, which the stored order reads back as false.
+     *
+     * @param MockCreateOrderRequestBuilder $builder
+     *
+     * @return MockCreateOrderRequestBuilder
+     *
+     * @throws Exception
+     */
+    private function withPartialMerchantOptions(MockCreateOrderRequestBuilder $builder): MockCreateOrderRequestBuilder
+    {
+        $builder->build()->setMerchant(
+            new Merchant('testMerchantId', null, null, null, null, null, null, null, null, null, new Options(true))
+        );
 
         return $builder;
     }

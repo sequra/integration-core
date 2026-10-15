@@ -19,6 +19,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequ
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestDTO;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
@@ -451,19 +452,31 @@ class OrderService
      */
     private function getComparablePayload(SeQuraOrder $order): array
     {
-        $cart = $order->getUnshippedCart()->toArray();
-        $customer = $order->getCustomer()->toArray();
+        $cart = $this->asStored($order->getUnshippedCart());
+        $customer = $this->asStored($order->getCustomer());
         unset($cart['updated_at'], $customer['updated_at'], $customer['ip_number'], $customer['user_agent']);
 
         return [
-            'merchant' => $order->getMerchant()->toArray(),
+            'merchant' => $this->asStored($order->getMerchant()),
             'merchant_reference' => array_filter($order->toArray()['merchant_reference']),
             'cart' => $cart,
-            'delivery_method' => $order->getDeliveryMethod()->toArray(),
-            'delivery_address' => $order->getDeliveryAddress()->toArray(),
-            'invoice_address' => $order->getInvoiceAddress()->toArray(),
+            'delivery_method' => $this->asStored($order->getDeliveryMethod()),
+            'delivery_address' => $this->asStored($order->getDeliveryAddress()),
+            'invoice_address' => $this->asStored($order->getInvoiceAddress()),
             'customer' => $customer,
         ];
+    }
+
+    /**
+     * The data as it reads back from storage, which fills in defaults for the values a request leaves unset.
+     *
+     * @param OrderRequestDTO $data
+     *
+     * @return array<string, mixed>
+     */
+    private function asStored(OrderRequestDTO $data): array
+    {
+        return $data::fromArray($data->toArray())->toArray();
     }
 
     /**
