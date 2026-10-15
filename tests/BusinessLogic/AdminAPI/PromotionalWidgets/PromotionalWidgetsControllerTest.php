@@ -120,6 +120,36 @@ class PromotionalWidgetsControllerTest extends BaseTestCase
         self::assertEquals($settings->transformToDomainModel(), $savedSettings);
     }
 
+    public function testSetSettingsEmptyStyles()
+    {
+        // arrange
+        $settings = new WidgetSettingsRequest(
+            false,
+            true,
+            true,
+            '',
+            '.price',
+            '.location',
+            '.cart-price',
+            '.cart-location',
+            'sp1',
+            'pp3',
+            '.listing-price',
+            '.listing-location',
+            '.alt-price-test',
+            '.alt-trigger-test',
+            ['selForTarget' => 'target', 'product' => 'i1', 'displayWidget' => 'true', 'widgetStyles' => '']
+        );
+
+        // act
+        $response = AdminAPI::get()->widgetConfiguration('store1')->setWidgetSettings($settings);
+
+        // assert
+        self::assertTrue($response->isSuccessful());
+        $savedSettings = StoreContext::doWithStore('store1', [$this->widgetSettingsRepository, 'getWidgetSettings']);
+        self::assertEquals($settings->transformToDomainModel(), $savedSettings);
+    }
+
     public function testSetSettingsInvalidJson()
     {
         // arrange

@@ -19,9 +19,9 @@ class ConfigurationWebhookAPI
      *
      * @param string $storeId
      *
-     * @return Aspects
+     * @return ConfigurationWebhookController
      */
-    public static function configurationHandler(string $storeId = ''): Aspects
+    public static function configurationHandler(string $storeId = ''): object
     {
         return Aspects
             ::run(new ErrorHandlingAspect())

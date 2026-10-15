@@ -12,7 +12,10 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\CredentialsRequest;
 use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
@@ -51,24 +54,32 @@ class CredentialsService
     protected $affiliateSettingsService;
 
     /**
+     * @var SellingCountriesServiceInterface
+     */
+    protected $sellingCountriesService;
+
+    /**
      * @param ConnectionProxyInterface $connectionProxy
      * @param CredentialsRepositoryInterface $credentialsRepository
      * @param CountryConfigurationRepositoryInterface $countryConfigurationRepository
      * @param PaymentMethodRepositoryInterface $paymentMethodRepository
      * @param AffiliateSettingsService $affiliateSettingsService
+     * @param SellingCountriesServiceInterface $sellingCountriesService
      */
     public function __construct(
         ConnectionProxyInterface $connectionProxy,
         CredentialsRepositoryInterface $credentialsRepository,
         CountryConfigurationRepositoryInterface $countryConfigurationRepository,
         PaymentMethodRepositoryInterface $paymentMethodRepository,
-        AffiliateSettingsService $affiliateSettingsService
+        AffiliateSettingsService $affiliateSettingsService,
+        SellingCountriesServiceInterface $sellingCountriesService
     ) {
         $this->connectionProxy = $connectionProxy;
         $this->credentialsRepository = $credentialsRepository;
         $this->countryConfigurationRepository = $countryConfigurationRepository;
         $this->paymentMethodRepository = $paymentMethodRepository;
         $this->affiliateSettingsService = $affiliateSettingsService;
+        $this->sellingCountriesService = $sellingCountriesService;
     }
 
     /**
@@ -158,6 +169,41 @@ class CredentialsService
         }
 
         $this->countryConfigurationRepository->setCountryConfiguration($countryConfigurations);
+    }
+
+    /**
+     * Enables every country the credentials sell in and the shop sells in too, leaving the
+     * countries already configured as they are. The merchant narrows them in the portal.
+     *
+     * @param Credentials[] $credentials
+     *
+     * @return void
+     * @throws EmptyCountryConfigurationParameterException
+     */
+    public function enableSellingCountries(array $credentials): void
+    {
+        $countryConfigurations = $this->countryConfigurationRepository->getCountryConfiguration() ?? [];
+        $shopCountries = $this->sellingCountriesService->getSellingCountries();
+
+        $configuredCountries = array_map(static function (CountryConfiguration $configuration) {
+            return $configuration->getCountryCode();
+        }, $countryConfigurations);
+
+        $added = false;
+        foreach ($credentials as $credential) {
+            $country = $credential->getCountry();
+            if (!\in_array($country, $shopCountries, true) || \in_array($country, $configuredCountries, true)) {
+                continue;
+            }
+
+            $countryConfigurations[] = new CountryConfiguration($country, $credential->getMerchantId());
+            $configuredCountries[] = $country;
+            $added = true;
+        }
+
+        if ($added) {
+            $this->countryConfigurationRepository->setCountryConfiguration($countryConfigurations);
+        }
     }
 
     /**

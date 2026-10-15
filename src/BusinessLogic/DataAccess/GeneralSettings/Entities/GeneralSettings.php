@@ -39,6 +39,7 @@ class GeneralSettings extends Entity
         $generalSettings = $data['generalSettings'] ?? [];
         $this->storeId = $data['storeId'] ?? '';
         $defaultServicesEndDate = self::getArrayValue($generalSettings, 'defaultServicesEndDate', null);
+        $orderIdentifier = self::getArrayValue($generalSettings, 'orderIdentifier', null);
         $this->generalSettings = new DomainGeneralSettings(
             (bool)self::getArrayValue($generalSettings, 'sendOrderReportsPeriodicallyToSeQura', false),
             (bool)self::getArrayValue($generalSettings, 'showSeQuraCheckoutAsHostedPage', null),
@@ -48,7 +49,8 @@ class GeneralSettings extends Entity
             self::getDataValue($generalSettings, 'enabledForServices', []),
             self::getDataValue($generalSettings, 'allowFirstServicePaymentDelay', []),
             self::getDataValue($generalSettings, 'allowServiceRegistrationItems', []),
-            \is_string($defaultServicesEndDate) ? $defaultServicesEndDate : null
+            \is_string($defaultServicesEndDate) ? $defaultServicesEndDate : null,
+            \is_string($orderIdentifier) ? $orderIdentifier : null
         );
     }
 
@@ -69,6 +71,7 @@ class GeneralSettings extends Entity
             'allowFirstServicePaymentDelay' => $this->generalSettings->getAllowFirstServicePaymentDelay(),
             'allowServiceRegistrationItems' => $this->generalSettings->getAllowServiceRegistrationItems(),
             'defaultServicesEndDate' => $this->generalSettings->getDefaultServicesEndDate(),
+            'orderIdentifier' => $this->generalSettings->getOrderIdentifier(),
         ];
 
         return $data;

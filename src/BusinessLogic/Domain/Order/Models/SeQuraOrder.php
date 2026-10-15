@@ -50,7 +50,8 @@ class SeQuraOrder extends Entity
         'customer',
         'platform',
         'gui',
-        'paymentMethod'
+        'paymentMethod',
+        'rejectedOrderTotal'
     ];
 
     /**
@@ -132,6 +133,11 @@ class SeQuraOrder extends Entity
      * @var PaymentMethod|null Payment method
      */
     protected $paymentMethod;
+
+    /**
+     * @var int What the refused update totalled, in minor units, 0 once SeQura holds what the shop has
+     */
+    protected $rejectedOrderTotal = 0;
 
     /**
      * @inheritDoc
@@ -594,5 +600,40 @@ class SeQuraOrder extends Entity
     public function setPaymentMethod(?PaymentMethod $paymentMethod): void
     {
         $this->paymentMethod = $paymentMethod;
+    }
+
+    /**
+     * Returns what both carts total, in minor units.
+     *
+     * @return int
+     */
+    public function getOrderTotalWithTax(): int
+    {
+        return ($this->shippedCart ? $this->shippedCart->getOrderTotalWithTax() : 0)
+            + ($this->unshippedCart ? $this->unshippedCart->getOrderTotalWithTax() : 0);
+    }
+
+    /**
+     * Returns what the update SeQura refused totalled, in minor units, or 0 when it accepted the last one.
+     *
+     * @return int
+     */
+    public function getRejectedOrderTotal(): int
+    {
+        return $this->rejectedOrderTotal;
+    }
+
+    /**
+     * Sets what the update SeQura refused totalled, in minor units.
+     *
+     * @param int $rejectedOrderTotal
+     *
+     * @return SeQuraOrder
+     */
+    public function setRejectedOrderTotal(int $rejectedOrderTotal): SeQuraOrder
+    {
+        $this->rejectedOrderTotal = $rejectedOrderTotal;
+
+        return $this;
     }
 }

@@ -7,6 +7,8 @@ use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRet
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\SellingCountry;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
+use SeQura\Core\Infrastructure\Logger\Logger;
 
 /**
  * Class CountryConfigurationService
@@ -58,7 +60,9 @@ class CountryConfigurationService
             }
         }
 
-        return $configuredCountries;
+        // Re-indexed: unset leaves gaps in the keys, and every caller passes this on to
+        // json_encode, which turns a gapped array into an object instead of a list.
+        return array_values($configuredCountries);
     }
 
     /**
@@ -75,6 +79,32 @@ class CountryConfigurationService
         return array_map(static function (CountryConfiguration $configuration) {
             return $configuration->getCountryCode();
         }, $configurations);
+    }
+
+    /**
+     * Returns the merchant id configured for the given country, or null when the country has no
+     * configuration or is no longer a selling country.
+     *
+     * Not to be confused with CredentialsService::getMerchantIdByCountryCode(), which resolves the
+     * merchant from the stored credentials and throws when it cannot.
+     *
+     * @param string $countryCode ISO country code.
+     *
+     * @return string|null
+     *
+     * @throws FailedToRetrieveSellingCountriesException
+     */
+    public function getMerchantIdForCountry(string $countryCode): ?string
+    {
+        $configurations = $this->getCountryConfiguration() ?? [];
+
+        foreach ($configurations as $configuration) {
+            if ($configuration->getCountryCode() === $countryCode) {
+                return $configuration->getMerchantId();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -111,7 +141,41 @@ class CountryConfigurationService
         }, $countriesCodes);
         $countryConfiguration = array_filter($countryConfiguration);
 
+        $this->logCountriesThatCannotBeSoldIn($countriesCodes, $countryConfiguration);
+
         $this->saveCountryConfiguration($countryConfiguration);
+    }
+
+    /**
+     * Records the countries that were asked for but cannot be sold in: they either have
+     * no merchant of their own or the store does not sell in them. Saving them is not
+     * possible, and without a record of it the store looks unconfigured for no reason.
+     *
+     * @param string[] $countriesCodes
+     * @param CountryConfiguration[] $countryConfiguration
+     *
+     * @return void
+     */
+    private function logCountriesThatCannotBeSoldIn(array $countriesCodes, array $countryConfiguration): void
+    {
+        $savedCodes = array_map(static function (CountryConfiguration $configuration) {
+            return $configuration->getCountryCode();
+        }, $countryConfiguration);
+
+        $skippedCodes = array_diff($countriesCodes, $savedCodes);
+
+        if (empty($skippedCodes)) {
+            return;
+        }
+
+        Logger::logWarning(
+            'Countries were left out of the country configuration: the store has no merchant selling in them.',
+            'Core',
+            [
+                new LogContextData('skippedCountries', implode(',', $skippedCodes)),
+                new LogContextData('savedCountries', implode(',', $savedCodes)),
+            ]
+        );
     }
 
     /**

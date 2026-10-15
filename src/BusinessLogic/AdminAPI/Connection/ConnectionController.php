@@ -19,6 +19,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFo
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
+use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
@@ -55,9 +56,12 @@ class ConnectionController
      */
     public function getOnboardingData(): OnboardingDataResponse
     {
+        $connections = $this->connectionService->getAllConnectionData();
+
         return new OnboardingDataResponse(
-            $this->connectionService->getAllConnectionData(),
-            $this->statisticalDataService->getStatisticalData()
+            $connections,
+            $this->connectionService->getPortalUrl($connections),
+            $this->connectionService->getPortalUrlsByDeployment($connections)
         );
     }
 
@@ -131,21 +135,35 @@ class ConnectionController
      * @throws InvalidEnvironmentException
      * @throws PaymentMethodNotFoundException
      * @throws CapabilitiesEmptyException
+     * @throws InvalidUrlException
+     * @throws \Exception
      */
     public function connect(OnboardingRequest $onboardingRequest): Response
     {
+        $onboardingData = $onboardingRequest->transformToDomainModel();
+
         try {
-            $this->connectionService->connect($onboardingRequest->transformToDomainModel()->getConnections());
-            $this->statisticalDataService->saveStatisticalData(
-                new StatisticalData($onboardingRequest->transformToDomainModel()->isSendStatisticalData())
-            );
+            $connected = $this->connectionService->connect($onboardingData->getConnections());
+
+            if (empty($connected)) {
+                return new ConnectionValidationResponse(false, 'username/password');
+            }
         } catch (BadMerchantIdException $e) {
             return new ConnectionValidationResponse(false, 'merchantId');
         } catch (WrongCredentialsException $e) {
             return new ConnectionValidationResponse(false, $e->getMessage());
         }
 
-        return new SuccessfulConnectionResponse();
+        // The merchant manages the statistical-data consent in the SeQura portal; a store that has
+        // never stored one starts with it given
+        if ($this->statisticalDataService->getStatisticalData() === null) {
+            $this->statisticalDataService->saveStatisticalData(new StatisticalData(true));
+        }
+
+        return new SuccessfulConnectionResponse(
+            $this->connectionService->getPortalUrl($connected),
+            $this->connectionService->getPortalUrlsByDeployment($connected)
+        );
     }
 
     /**
@@ -155,6 +173,7 @@ class ConnectionController
      *
      * @throws CapabilitiesEmptyException
      * @throws InvalidEnvironmentException
+     * @throws InvalidUrlException
      */
     public function reRegisterWebhooks(ReRegisterWebhookRequest $reRegisterWebhookRequest): Response
     {

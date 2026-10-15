@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundEx
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -83,6 +84,25 @@ interface OrderProxyInterface
      * @throws HttpRequestException
      */
     public function updateOrder(UpdateOrderRequest $request): bool;
+
+    /**
+     * Changes the references an existing order is known by on the SeQura API.
+     *
+     * @param string $merchantId
+     * @param string $shopOrderReference The reference SeQura knows the order by now.
+     * @param MerchantReference $merchantReference The references the order is known by from now on.
+     *
+     * @return void
+     *
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws HttpRequestException when SeQura does not accept the change
+     */
+    public function updateMerchantReference(
+        string $merchantId,
+        string $shopOrderReference,
+        MerchantReference $merchantReference
+    ): void;
 
     /**
      * Gets the user verification form.

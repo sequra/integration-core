@@ -6,19 +6,22 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdExceptio
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
  * Class CheckoutService
  *
  * Shared eligibility checks used by all storefront flows (promotional widgets,
- * Express Checkout, etc.) — IP allowance, supported currency, product/category
- * eligibility against GeneralSettings.
+ * Express Checkout, solicitation, etc.) — IP allowance, supported currency, product/category
+ * eligibility against GeneralSettings, and shipping country against the saved country
+ * configuration.
  *
  * @package SeQura\Core\BusinessLogic\Domain\Checkout\Services
  */
@@ -43,30 +46,43 @@ class CheckoutService
      */
     protected $deploymentsService;
     /**
-     * @var ?GeneralSettings
+     * @var CountryConfigurationService
+     */
+    protected $countryConfigurationService;
+    /**
+     * @var GeneralSettings|null
      */
     public static $generalSettings = null;
     /**
      * @var bool
      */
     public static $generalSettingsFetched = false;
+    /**
+     * Store the cached general settings belong to.
+     *
+     * @var string|null
+     */
+    private static $generalSettingsStoreId = null;
 
     /**
      * @param GeneralSettingsService $generalSettingsService
      * @param ProductServiceInterface $productService
      * @param ConnectionService $connectionService
      * @param DeploymentsService $deploymentsService
+     * @param CountryConfigurationService $countryConfigurationService
      */
     public function __construct(
         GeneralSettingsService $generalSettingsService,
         ProductServiceInterface $productService,
         ConnectionService $connectionService,
-        DeploymentsService $deploymentsService
+        DeploymentsService $deploymentsService,
+        CountryConfigurationService $countryConfigurationService
     ) {
         $this->generalSettingsService = $generalSettingsService;
         $this->productService = $productService;
         $this->connectionService = $connectionService;
         $this->deploymentsService = $deploymentsService;
+        $this->countryConfigurationService = $countryConfigurationService;
     }
 
     /**
@@ -88,7 +104,7 @@ class CheckoutService
 
         $deploymentModel = $this->deploymentsService->getDeploymentById($deployment);
 
-        return $settings->getEnvironment() === 'live' ?
+        return $settings->isLive() ?
             $deploymentModel->getLiveDeploymentURL()->getAssetsBaseUrl() . 'sequra-checkout.min.js' :
             $deploymentModel->getSandboxDeploymentURL()->getAssetsBaseUrl() . 'sequra-checkout.min.js';
     }
@@ -108,10 +124,6 @@ class CheckoutService
     public function isIpAddressValid(string $currentIpAddress): bool
     {
         $generalSettings = $this->getGeneralSettings();
-
-        if (!$generalSettings) {
-            return true;
-        }
 
         $allowedIPAddresses = $generalSettings->getAllowedIPAddresses() ?? [];
 
@@ -151,23 +163,16 @@ class CheckoutService
 
         $generalSettings = $this->getGeneralSettings();
 
-        if (!$generalSettings) {
-            return true;
-        }
-
         if (empty($generalSettings->getEnabledForServices()) && $this->productService->isProductVirtual($productId)) {
             return false;
         }
 
-        $productSku = $this->productService->getProductsSkuByProductId($productId);
+        $excludedProducts = $generalSettings->getExcludedProducts() ?? [];
 
-        if ($productSku) {
-            $excludedProducts = $generalSettings->getExcludedProducts() ?? [];
+        if ($excludedProducts) {
+            $productSku = $this->productService->getProductsSkuByProductId($productId);
 
-            if (
-                $excludedProducts &&
-                \in_array($productSku, $excludedProducts, true)
-            ) {
+            if ($productSku && \in_array($productSku, $excludedProducts, true)) {
                 return false;
             }
         }
@@ -221,6 +226,28 @@ class CheckoutService
     }
 
     /**
+     * Composite eligibility check for the cart-page widget: the shopper's currency and IP, then every
+     * product the cart holds, the same way the product-page widget checks its one product. A product's
+     * categories are checked with the product, so the cart's categories are not passed separately.
+     *
+     * @param string $currency
+     * @param string $ipAddress
+     * @param string[] $productIds Product references in the cart (empty array = no per-product check).
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function isCartWidgetSupported(string $currency, string $ipAddress, array $productIds = []): bool
+    {
+        return $this->isWidgetSupported($currency, $ipAddress)
+            && $this->areProductsSupported($productIds);
+    }
+
+    /**
      * Returns true if the category is not excluded in SeQura administration.
      *
      * @param string $categoryId
@@ -240,10 +267,6 @@ class CheckoutService
         }
 
         $generalSettings = $this->getGeneralSettings();
-
-        if (!$generalSettings) {
-            return true;
-        }
 
         $excludedCategories = $generalSettings->getExcludedCategories() ?? [];
 
@@ -279,12 +302,110 @@ class CheckoutService
             return false;
         }
 
+        return $this->areProductsAndCategoriesSupported($productIds, $categoryIds);
+    }
+
+    /**
+     * Composite eligibility check for the solicitation (regular checkout) flow.
+     *
+     * Mirrors the guard chain the host platforms used to run themselves before calling
+     * CheckoutAPI::solicitation(): the shipping country must map to a configured merchant, and the
+     * cart must satisfy the GeneralSettings IP allowlist and product/category exclusions.
+     *
+     * Deliberately does not gate on currency: SeQura sells in non-EUR markets and the host guards
+     * this replaces never checked it.
+     *
+     * @param string $shippingCountry ISO country code of the order's delivery address.
+     * @param string $ipAddress IP address of the storefront customer. Empty skips the IP guard.
+     * @param string[] $productIds Product references in the cart (empty array = no per-product check).
+     * @param string[] $categoryIds Category references in the cart (empty array = no per-category check).
+     * @param bool $checkCountry When false, the shipping country guard is skipped. For hosts that
+     * resolve the merchant themselves.
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function isSolicitationSupported(
+        string $shippingCountry,
+        string $ipAddress = '',
+        array $productIds = [],
+        array $categoryIds = [],
+        bool $checkCountry = true
+    ): bool {
+        if (
+            $checkCountry &&
+            $this->countryConfigurationService->getMerchantIdForCountry($shippingCountry) === null
+        ) {
+            return false;
+        }
+
+        // IP address was not provided, skip IP validation.
+        if ($ipAddress !== '' && !$this->isIpAddressValid($ipAddress)) {
+            return false;
+        }
+
+        return $this->areProductsAndCategoriesSupported($productIds, $categoryIds);
+    }
+
+    /**
+     * Returns true when every product and every category in the cart is one SeQura may be offered for.
+     *
+     * @param string[] $productIds Product references in the cart (empty array = no per-product check).
+     * @param string[] $categoryIds Category references in the cart (empty array = no per-category check).
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    private function areProductsAndCategoriesSupported(array $productIds, array $categoryIds): bool
+    {
+        return $this->areProductsSupported($productIds) && $this->areCategoriesSupported($categoryIds);
+    }
+
+    /**
+     * Returns true when every product in the cart is one SeQura may be offered for.
+     *
+     * @param string[] $productIds Product references in the cart (empty array = no per-product check).
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    private function areProductsSupported(array $productIds): bool
+    {
         foreach ($productIds as $productId) {
             if (!$this->isProductSupported($productId)) {
                 return false;
             }
         }
 
+        return true;
+    }
+
+    /**
+     * Returns true when every category in the cart is one SeQura may be offered for.
+     *
+     * @param string[] $categoryIds Category references in the cart (empty array = no per-category check).
+     *
+     * @return bool
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    private function areCategoriesSupported(array $categoryIds): bool
+    {
         foreach ($categoryIds as $categoryId) {
             if (!$this->isCategorySupported($categoryId)) {
                 return false;
@@ -295,23 +416,30 @@ class CheckoutService
     }
 
     /**
-     * Caches GeneralSettings across multiple calls within the same HTTP request.
+     * Caches GeneralSettings across multiple calls within the same HTTP request, for the active store only.
      *
-     * @return ?GeneralSettings
+     * @return GeneralSettings
      *
      * @throws BadMerchantIdException
      * @throws WrongCredentialsException
      * @throws FailedToRetrieveSellingCountriesException
      * @throws HttpRequestException
      */
-    private function getGeneralSettings(): ?GeneralSettings
+    private function getGeneralSettings(): GeneralSettings
     {
-        if (self::$generalSettingsFetched) {
+        $storeId = StoreContext::getInstance()->getStoreId();
+
+        if (
+            self::$generalSettingsFetched &&
+            self::$generalSettings !== null &&
+            self::$generalSettingsStoreId === $storeId
+        ) {
             return self::$generalSettings;
         }
 
         self::$generalSettings = $this->generalSettingsService->getGeneralSettings();
         self::$generalSettingsFetched = true;
+        self::$generalSettingsStoreId = $storeId;
 
         return self::$generalSettings;
     }
