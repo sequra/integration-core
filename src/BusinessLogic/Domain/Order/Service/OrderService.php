@@ -513,7 +513,10 @@ class OrderService
      */
     protected function areObjectsEqual($object1, $object2): bool
     {
-        if (method_exists($object1, 'toArray') && method_exists($object2, 'toArray')) {
+        if (
+            \is_object($object1) && \is_object($object2)
+            && method_exists($object1, 'toArray') && method_exists($object2, 'toArray')
+        ) {
             return json_encode($object1->toArray()) === json_encode($object2->toArray());
         }
 
