@@ -469,7 +469,8 @@ class OrderService
         unset($cart['updated_at'], $customer['updated_at'], $customer['ip_number'], $customer['user_agent']);
 
         return [
-            'merchant_id' => (string)$order->getMerchant()->getId(),
+            'merchant' => $order->getMerchant()->toArray(),
+            'merchant_reference' => array_filter($order->toArray()['merchant_reference']),
             'cart' => $cart,
             'delivery_method' => $order->getDeliveryMethod()->toArray(),
             'delivery_address' => $order->getDeliveryAddress()->toArray(),

@@ -1023,6 +1023,42 @@ class OrderServiceTest extends BaseTestCase
     }
 
     /**
+     * @throws Exception
+     */
+    public function testSolicitingForTheShopOrderCreatedFromTheCartSolicitsANewOne(): void
+    {
+        // Arrange
+        $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
+        $proxy->expects(self::exactly(2))->method('createOrder');
+        $service = $this->serviceWithProxy($proxy);
+        $service->solicitFor($this->builderFor(2));
+
+        // Act
+        $order = $service->solicitFor($this->builderFor(2, null, 'testUName', 'laptop', 'shop-order-1'));
+
+        // Assert
+        self::assertEquals('ref-b', $order->getReference());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testReloadingTheShopOrderPaymentPageContinuesTheExistingOrder(): void
+    {
+        // Arrange
+        $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
+        $proxy->expects(self::once())->method('createOrder');
+        $service = $this->serviceWithProxy($proxy);
+        $service->solicitFor($this->builderFor(2, null, 'testUName', 'laptop', 'shop-order-1'));
+
+        // Act
+        $order = $service->solicitFor($this->builderFor(2, null, 'testUName', 'laptop', 'shop-order-1'));
+
+        // Assert
+        self::assertEquals('ref-a', $order->getReference());
+    }
+
+    /**
      * @dataProvider settledStates
      *
      * @param string $state
@@ -1113,6 +1149,7 @@ class OrderServiceTest extends BaseTestCase
      * @param string|null $updatedAt
      * @param string $uname
      * @param string $device
+     * @param string|null $shopOrderId
      *
      * @return MockCreateOrderRequestBuilder
      *
@@ -1122,7 +1159,8 @@ class OrderServiceTest extends BaseTestCase
         int $quantity,
         ?string $updatedAt = null,
         string $uname = 'testUName',
-        string $device = 'laptop'
+        string $device = 'laptop',
+        ?string $shopOrderId = null
     ): MockCreateOrderRequestBuilder {
         $address = new Address('company', 'line1', 'line2', '08001', 'Barcelona', 'ES');
         $builder = new MockCreateOrderRequestBuilder();
@@ -1148,7 +1186,10 @@ class OrderServiceTest extends BaseTestCase
             $address,
             $address,
             new Gui(Gui::ALLOWED_VALUES['desktop']),
-            new Merchant('testMerchantId')
+            $shopOrderId === null
+                ? new Merchant('testMerchantId')
+                : new Merchant('testMerchantId', 'https://shop.test/?order=' . $shopOrderId, ['order' => $shopOrderId]),
+            $shopOrderId === null ? null : new MerchantReference($shopOrderId)
         ));
 
         return $builder;
