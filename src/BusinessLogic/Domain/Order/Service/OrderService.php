@@ -466,7 +466,7 @@ class OrderService
     {
         $cart = $order->getUnshippedCart()->toArray();
         $customer = $order->getCustomer()->toArray();
-        unset($cart['updated_at'], $customer['updated_at']);
+        unset($cart['updated_at'], $customer['updated_at'], $customer['ip_number'], $customer['user_agent']);
 
         return [
             'merchant_id' => (string)$order->getMerchant()->getId(),

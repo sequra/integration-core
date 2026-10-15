@@ -989,6 +989,24 @@ class OrderServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testResolicitingFromAnotherDeviceContinuesTheExistingOrder(): void
+    {
+        // Arrange
+        $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
+        $proxy->expects(self::once())->method('createOrder');
+        $service = $this->serviceWithProxy($proxy);
+        $service->solicitFor($this->builderFor(2, null, 'testUName', 'laptop'));
+
+        // Act
+        $order = $service->solicitFor($this->builderFor(2, null, 'testUName', 'phone'));
+
+        // Assert
+        self::assertEquals('ref-a', $order->getReference());
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testResolicitingAChangedCartKeepsTheReplacedOrder(): void
     {
         // Arrange
@@ -1094,6 +1112,7 @@ class OrderServiceTest extends BaseTestCase
      * @param int $quantity
      * @param string|null $updatedAt
      * @param string $uname
+     * @param string $device
      *
      * @return MockCreateOrderRequestBuilder
      *
@@ -1102,7 +1121,8 @@ class OrderServiceTest extends BaseTestCase
     private function builderFor(
         int $quantity,
         ?string $updatedAt = null,
-        string $uname = 'testUName'
+        string $uname = 'testUName',
+        string $device = 'laptop'
     ): MockCreateOrderRequestBuilder {
         $address = new Address('company', 'line1', 'line2', '08001', 'Barcelona', 'ES');
         $builder = new MockCreateOrderRequestBuilder();
@@ -1120,8 +1140,8 @@ class OrderServiceTest extends BaseTestCase
             Customer::fromArray([
                 'email' => 'shopper@test.test',
                 'language_code' => 'es',
-                'ip_number' => '127.0.0.1',
-                'user_agent' => 'agent',
+                'ip_number' => 'ip-of-' . $device,
+                'user_agent' => 'agent-of-' . $device,
                 'updated_at' => $updatedAt,
             ]),
             new Platform('testName', 'testVersion', $uname, 'testDbName', 'testDbVersion'),
