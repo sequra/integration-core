@@ -10,6 +10,7 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundEx
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidOrderStateException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderMerchantNotFoundException;
@@ -122,6 +123,7 @@ class OrderService
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws InvalidUrlException
+     * @throws InvalidCartItemsException
      */
     public function solicitFor(CreateOrderRequestBuilder $builder): SeQuraOrder
     {
@@ -438,29 +440,15 @@ class OrderService
      * @param CreateOrderRequest $request
      *
      * @return bool
+     *
+     * @throws InvalidCartItemsException
      */
     protected function isReusableFor(SeQuraOrder $order, CreateOrderRequest $request): bool
     {
-        if ($order->getState() === OrderRequestStates::CANCELLED) {
-            return false;
-        }
-
-        $merchant = $request->getMerchant();
-
-        return $merchant !== null
-            && (string)$order->getMerchant()->getId() === (string)$merchant->getId()
-            && $this->getComparablePayload(
-                $order->getUnshippedCart()->toArray(),
-                $order->getDeliveryMethod()->toArray(),
-                $order->getDeliveryAddress()->toArray(),
-                $order->getInvoiceAddress()->toArray(),
-                $order->getCustomer()->toArray()
-            ) === $this->getComparablePayload(
-                $request->getCart()->toArray(),
-                $request->getDeliveryMethod()->toArray(),
-                $request->getDeliveryAddress()->toArray(),
-                $request->getInvoiceAddress()->toArray(),
-                $request->getCustomer()->toArray()
+        return $order->getState() !== OrderRequestStates::CANCELLED
+            && $this->areObjectsEqual(
+                $this->getComparablePayload($order),
+                $this->getComparablePayload($request->toSequraOrderInstance($order->getReference()))
             );
     }
 
@@ -468,48 +456,24 @@ class OrderService
      * The order data the shopper agrees to pay for, without the timestamps every page load refreshes. The platform
      * and gui sections are left out too: the same shop answers from several servers and devices.
      *
-     * @param array<string, mixed> $cart
-     * @param array<string, mixed> $deliveryMethod
-     * @param array<string, mixed> $deliveryAddress
-     * @param array<string, mixed> $invoiceAddress
-     * @param array<string, mixed> $customer
+     * @param SeQuraOrder $order
      *
      * @return array<string, mixed>
      */
-    private function getComparablePayload(
-        array $cart,
-        array $deliveryMethod,
-        array $deliveryAddress,
-        array $invoiceAddress,
-        array $customer
-    ): array {
+    private function getComparablePayload(SeQuraOrder $order): array
+    {
+        $cart = $order->getUnshippedCart()->toArray();
+        $customer = $order->getCustomer()->toArray();
         unset($cart['updated_at'], $customer['updated_at']);
 
-        return $this->sortKeysRecursively([
+        return [
+            'merchant_id' => (string)$order->getMerchant()->getId(),
             'cart' => $cart,
-            'delivery_method' => $deliveryMethod,
-            'delivery_address' => $deliveryAddress,
-            'invoice_address' => $invoiceAddress,
+            'delivery_method' => $order->getDeliveryMethod()->toArray(),
+            'delivery_address' => $order->getDeliveryAddress()->toArray(),
+            'invoice_address' => $order->getInvoiceAddress()->toArray(),
             'customer' => $customer,
-        ]);
-    }
-
-    /**
-     * @param array<mixed> $data
-     *
-     * @return array<mixed>
-     */
-    private function sortKeysRecursively(array $data): array
-    {
-        foreach ($data as $key => $value) {
-            if (\is_array($value)) {
-                $data[$key] = $this->sortKeysRecursively($value);
-            }
-        }
-
-        ksort($data);
-
-        return $data;
+        ];
     }
 
     /**

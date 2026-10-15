@@ -1092,9 +1092,22 @@ class OrderServiceTest extends BaseTestCase
         $builder = new MockCreateOrderRequestBuilder();
         $builder->setMockOrderRequest(new CreateOrderRequest(
             '',
-            new Cart('EUR', false, [new ProductItem('sku-1', 'Product', 1000, $quantity, 1000 * $quantity, false)], 'cart-1', null, $updatedAt),
+            new Cart(
+                'EUR',
+                false,
+                [new ProductItem('sku-1', 'Product', 1000, $quantity, 1000 * $quantity, false)],
+                'cart-1',
+                null,
+                $updatedAt
+            ),
             new DeliveryMethod('standard'),
-            new Customer('shopper@test.test', 'es', '127.0.0.1', 'agent', null, null, null, null, null, null, null, null, null, $updatedAt),
+            Customer::fromArray([
+                'email' => 'shopper@test.test',
+                'language_code' => 'es',
+                'ip_number' => '127.0.0.1',
+                'user_agent' => 'agent',
+                'updated_at' => $updatedAt,
+            ]),
             new Platform('testName', 'testVersion', $uname, 'testDbName', 'testDbVersion'),
             $address,
             $address,
