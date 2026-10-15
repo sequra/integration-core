@@ -84,11 +84,22 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
 
     public function setSeQuraOrder(SeQuraOrder $order): void
     {
-        $savedOrder = $this->getByOrderReference($order->getReference());
+        $filter = new QueryFilter();
+        $filter->where('reference', Operators::EQUALS, $order->getReference());
+
+        /**
+         * @var SeQuraOrder[] $savedOrders
+         */
+        $savedOrders = $this->repository->select($filter);
+        $savedOrder = array_shift($savedOrders);
         if (!$savedOrder) {
             $this->repository->save($order);
 
             return;
+        }
+
+        foreach ($savedOrders as $duplicatedOrder) {
+            $this->repository->delete($duplicatedOrder);
         }
 
         $order->setId($savedOrder->getId());

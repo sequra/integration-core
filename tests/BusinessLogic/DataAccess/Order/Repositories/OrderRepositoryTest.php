@@ -10,6 +10,8 @@ use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderReposi
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
+use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
+use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\TestRepositoryRegistry;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -103,6 +105,23 @@ class OrderRepositoryTest extends BaseTestCase
         // assert
         self::assertNotNull($result);
         self::assertEquals('new-ref', $result->getReference());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testSetSeQuraOrderKeepsASingleOrderPerReference(): void
+    {
+        $this->repository->save($this->order('ref-a', 'cart-1', ''));
+        $this->repository->save($this->order('ref-a', 'cart-1', ''));
+        $this->repository->save($this->order('ref-b', 'cart-1', ''));
+
+        $this->seQuraOrderRepository->setSeQuraOrder($this->order('ref-a', 'cart-1', 'shop-1'));
+
+        $orders = $this->repository->select((new QueryFilter())->where('reference', Operators::EQUALS, 'ref-a'));
+        self::assertCount(1, $orders);
+        self::assertEquals('shop-1', $orders[0]->getOrderRef1());
+        self::assertNotNull($this->seQuraOrderRepository->getByOrderReference('ref-b'));
     }
 
     /**
