@@ -141,8 +141,6 @@ class OrderService
             return $existingOrder;
         }
 
-        // A replaced order is kept: SeQura leaves it running once the shopper is past the solicited state, and a
-        // webhook for it must still find it.
         $order = $this->proxy->createOrder($createOrderRequest);
         $this->orderRepository->setSeQuraOrder($order);
 
@@ -432,10 +430,6 @@ class OrderService
     }
 
     /**
-     * Whether the shopper can continue the attempt on the existing order instead of soliciting a new one. Reloading
-     * the payment page mid-payment must not start over, as SeQura issues a new order once the shopper is past the
-     * solicited state and both could then be approved.
-     *
      * @param SeQuraOrder $order
      * @param CreateOrderRequest $request
      *
@@ -445,19 +439,12 @@ class OrderService
      */
     protected function isReusableFor(SeQuraOrder $order, CreateOrderRequest $request): bool
     {
-        $settledStates = [OrderRequestStates::CANCELLED, OrderRequestStates::ON_HOLD, OrderRequestStates::CONFIRMED];
-
-        return !\in_array($order->getState(), $settledStates, true)
-            && $this->areObjectsEqual(
-                $this->getComparablePayload($order),
-                $this->getComparablePayload($request->toSequraOrderInstance($order->getReference()))
-            );
+        return !\in_array($order->getState(), OrderRequestStates::SETTLED_STATES, true)
+            && json_encode($this->getComparablePayload($order))
+            === json_encode($this->getComparablePayload($request->toSequraOrderInstance($order->getReference())));
     }
 
     /**
-     * The order data the shopper agrees to pay for, without the timestamps every page load refreshes. The platform
-     * and gui sections are left out too: the same shop answers from several servers and devices.
-     *
      * @param SeQuraOrder $order
      *
      * @return array<string, mixed>
@@ -514,10 +501,7 @@ class OrderService
      */
     protected function areObjectsEqual($object1, $object2): bool
     {
-        if (
-            \is_object($object1) && \is_object($object2)
-            && method_exists($object1, 'toArray') && method_exists($object2, 'toArray')
-        ) {
+        if (method_exists($object1, 'toArray') && method_exists($object2, 'toArray')) {
             return json_encode($object1->toArray()) === json_encode($object2->toArray());
         }
 

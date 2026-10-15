@@ -77,9 +77,9 @@ class OrderRepositoryTest extends BaseTestCase
     public function testGetByCartIdReturnsLatestOrderOfTheCart(): void
     {
         // arrange
-        $this->repository->save($this->order('old-ref', 'cart-1', ''));
-        $this->repository->save($this->order('new-ref', 'cart-1', ''));
-        $this->repository->save($this->order('other-ref', 'cart-2', ''));
+        $this->repository->save($this->order('old-ref', 'cart-1'));
+        $this->repository->save($this->order('new-ref', 'cart-1'));
+        $this->repository->save($this->order('other-ref', 'cart-2'));
 
         // act
         $result = $this->seQuraOrderRepository->getByCartId('cart-1');
@@ -112,9 +112,9 @@ class OrderRepositoryTest extends BaseTestCase
      */
     public function testSetSeQuraOrderKeepsASingleOrderPerReference(): void
     {
-        $this->repository->save($this->order('ref-a', 'cart-1', ''));
-        $this->repository->save($this->order('ref-a', 'cart-1', ''));
-        $this->repository->save($this->order('ref-b', 'cart-1', ''));
+        $this->repository->save($this->order('ref-a', 'cart-1'));
+        $this->repository->save($this->order('ref-a', 'cart-1'));
+        $this->repository->save($this->order('ref-b', 'cart-1'));
 
         $this->seQuraOrderRepository->setSeQuraOrder($this->order('ref-a', 'cart-1', 'shop-1'));
 
@@ -133,7 +133,7 @@ class OrderRepositoryTest extends BaseTestCase
      *
      * @throws Exception
      */
-    private function order(string $reference, string $cartId, string $shopReference): SeQuraOrder
+    private function order(string $reference, string $cartId, string $shopReference = ''): SeQuraOrder
     {
         $data = json_decode(
             file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'),

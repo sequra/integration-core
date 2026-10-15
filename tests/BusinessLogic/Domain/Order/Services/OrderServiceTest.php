@@ -45,9 +45,6 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSeQuraOrderRepository;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
-use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\TestRepositoryRegistry;
-use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
-use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class OrderServiceTest extends BaseTestCase
@@ -977,28 +974,10 @@ class OrderServiceTest extends BaseTestCase
         $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
         $proxy->expects(self::once())->method('createOrder');
         $service = $this->serviceWithProxy($proxy);
-        $service->solicitFor($this->builderFor(2, '2026-10-15 10:00:00', 'web-server-1'));
+        $service->solicitFor($this->builderFor(2, 'load-1'));
 
         // Act
-        $order = $service->solicitFor($this->builderFor(2, '2026-10-15 10:05:00', 'web-server-2'));
-
-        // Assert
-        self::assertEquals('ref-a', $order->getReference());
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testResolicitingFromAnotherDeviceContinuesTheExistingOrder(): void
-    {
-        // Arrange
-        $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
-        $proxy->expects(self::once())->method('createOrder');
-        $service = $this->serviceWithProxy($proxy);
-        $service->solicitFor($this->builderFor(2, null, 'testUName', 'laptop'));
-
-        // Act
-        $order = $service->solicitFor($this->builderFor(2, null, 'testUName', 'phone'));
+        $order = $service->solicitFor($this->builderFor(2, 'load-2'));
 
         // Assert
         self::assertEquals('ref-a', $order->getReference());
@@ -1034,7 +1013,7 @@ class OrderServiceTest extends BaseTestCase
         $service->solicitFor($this->builderFor(2));
 
         // Act
-        $order = $service->solicitFor($this->builderFor(2, null, 'testUName', 'laptop', 'shop-order-1'));
+        $order = $service->solicitFor($this->builderFor(2, 'load-1', 'shop-order-1'));
 
         // Assert
         self::assertEquals('ref-b', $order->getReference());
@@ -1049,10 +1028,10 @@ class OrderServiceTest extends BaseTestCase
         $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
         $proxy->expects(self::once())->method('createOrder');
         $service = $this->serviceWithProxy($proxy);
-        $service->solicitFor($this->builderFor(2, null, 'testUName', 'laptop', 'shop-order-1'));
+        $service->solicitFor($this->builderFor(2, 'load-1', 'shop-order-1'));
 
         // Act
-        $order = $service->solicitFor($this->builderFor(2, null, 'testUName', 'laptop', 'shop-order-1'));
+        $order = $service->solicitFor($this->builderFor(2, 'load-2', 'shop-order-1'));
 
         // Assert
         self::assertEquals('ref-a', $order->getReference());
@@ -1093,11 +1072,9 @@ class OrderServiceTest extends BaseTestCase
         $service->solicitFor($this->builderFor(3));
 
         // Assert
-        $orders = TestRepositoryRegistry::getRepository(SeQuraOrder::getClassName())->select(
-            (new QueryFilter())->where('cartId', Operators::EQUALS, 'cart-1')
-        );
-        self::assertCount(1, $orders);
-        self::assertEquals(3, $orders[0]->getUnshippedCart()->getItems()[0]->getQuantity());
+        $order = $this->orderRepository->getByCartId('cart-1');
+        self::assertEquals('ref-a', $order->getReference());
+        self::assertEquals(3, $order->getUnshippedCart()->getItems()[0]->getQuantity());
     }
 
     /**
@@ -1146,9 +1123,7 @@ class OrderServiceTest extends BaseTestCase
 
     /**
      * @param int $quantity
-     * @param string|null $updatedAt
-     * @param string $uname
-     * @param string $device
+     * @param string $pageLoad
      * @param string|null $shopOrderId
      *
      * @return MockCreateOrderRequestBuilder
@@ -1157,9 +1132,7 @@ class OrderServiceTest extends BaseTestCase
      */
     private function builderFor(
         int $quantity,
-        ?string $updatedAt = null,
-        string $uname = 'testUName',
-        string $device = 'laptop',
+        string $pageLoad = 'load-1',
         ?string $shopOrderId = null
     ): MockCreateOrderRequestBuilder {
         $address = new Address('company', 'line1', 'line2', '08001', 'Barcelona', 'ES');
@@ -1172,17 +1145,17 @@ class OrderServiceTest extends BaseTestCase
                 [new ProductItem('sku-1', 'Product', 1000, $quantity, 1000 * $quantity, false)],
                 'cart-1',
                 null,
-                $updatedAt
+                'time-of-' . $pageLoad
             ),
             new DeliveryMethod('standard'),
             Customer::fromArray([
                 'email' => 'shopper@test.test',
                 'language_code' => 'es',
-                'ip_number' => 'ip-of-' . $device,
-                'user_agent' => 'agent-of-' . $device,
-                'updated_at' => $updatedAt,
+                'ip_number' => 'ip-of-' . $pageLoad,
+                'user_agent' => 'agent-of-' . $pageLoad,
+                'updated_at' => 'time-of-' . $pageLoad,
             ]),
-            new Platform('testName', 'testVersion', $uname, 'testDbName', 'testDbVersion'),
+            new Platform('testName', 'testVersion', 'server-of-' . $pageLoad, 'testDbName', 'testDbVersion'),
             $address,
             $address,
             new Gui(Gui::ALLOWED_VALUES['desktop']),
