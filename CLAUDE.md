@@ -72,3 +72,49 @@ Tests are split into two PHPUnit suites: `tests/Infrastructure` and `tests/Busin
 
 - Match PSR-12 (`.phpcs.xml.dist`) and keep PHPStan level 6 clean before considering a change done; run `./bin/phpcs` and `./bin/phpstan`.
 - New feature work typically touches three places: a `Domain/<Feature>` service + contracts, a `DataAccess/<Feature>` repository (if persisted), and a registration block in `BootstrapComponent`. API-exposed features also need a controller under the relevant `*API` facade and a method on the facade class.
+
+## Git workflow
+
+Three rules. They bind every agent session, not just one.
+
+### 1. One worktree per session
+
+Never run two write-capable sessions in the same working tree. A working tree has one HEAD and one index, so another session's `git checkout` silently moves where your next commit lands.
+
+Claim a worktree before the first write:
+
+```bash
+git fetch origin
+git worktree add ../integration-core-<task> -b <branch> origin/master
+cd ../integration-core-<task>
+./setup.sh                 # .env from .env.sample, git hooks, and this worktree's own container
+./bin/composer install     # vendor/ is gitignored, so each worktree needs its own
+```
+
+Docker Compose names the project after the checkout directory, so each worktree gets its own `php` container mounting its own code, and the `bin/` wrappers run inside it. Never run a worktree's gates from another checkout's container: they would test the other checkout's code.
+
+Read-only sessions may share the primary checkout, but only while they stay read-only. Move into a worktree before the first write.
+
+Release the worktree once its PR merges:
+
+```bash
+cd ../integration-core-<task> && docker compose down
+cd - && git worktree remove ../integration-core-<task>
+```
+
+Never remove a worktree that holds another live session's uncommitted work.
+
+### 2. Always branch and open a PR
+
+No direct commits to `master`. Open the PR with the `sq-git:open-pr` skill; its body follows `.github/PULL_REQUEST_TEMPLATE.md`. Agents stop at opening the PR and merge only when the operator explicitly asks.
+
+### 3. Assert HEAD in the same command as the commit and the push
+
+A HEAD read in an earlier step is stale by the time you commit: another session, a rebase or the operator can move it in between. Check it in the same command:
+
+```bash
+test "$(git symbolic-ref --short HEAD)" = <branch> && git commit -F <message-file>
+test "$(git symbolic-ref --short HEAD)" = <branch> && git push -u origin HEAD
+```
+
+Never `git push origin <hardcoded-branch-name>`: it pushes that local ref wherever HEAD points, and reports "Everything up-to-date" when the ref has not moved, so a misplaced commit fails silently. `git push origin HEAD:master` is not a fix either: from the wrong branch it drags that branch's commits onto `master`.
