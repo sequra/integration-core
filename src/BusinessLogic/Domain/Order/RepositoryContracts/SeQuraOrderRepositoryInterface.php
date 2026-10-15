@@ -12,7 +12,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 interface SeQuraOrderRepositoryInterface
 {
     /**
-     * Gets Sequra order by shop order reference
+     * Gets the latest Sequra order by shop order reference
      *
      * @param string $shopOrderReference
      *
@@ -30,7 +30,8 @@ interface SeQuraOrderRepositoryInterface
     public function getOrderBatchByShopReferences(array $shopOrderReferences): array;
 
     /**
-     * Gets Sequra order by shop cart/quote reference
+     * Gets the latest Sequra order by shop cart/quote reference. A cart keeps the orders it was solicited for before,
+     * as SeQura may still approve them.
      *
      * @param string $cartId
      *

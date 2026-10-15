@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\DataAccess\Order\Repositories;
 
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
+use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
@@ -31,7 +32,8 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
     public function getByShopReference(string $shopOrderReference): ?SeQuraOrder
     {
         $filter = new QueryFilter();
-        $filter->where('orderRef1', Operators::EQUALS, $shopOrderReference);
+        $filter->where('orderRef1', Operators::EQUALS, $shopOrderReference)
+            ->orderBy('id', QueryFilter::ORDER_DESC);
 
         /**
          * @var SeQuraOrder|null $result
@@ -57,7 +59,8 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
     public function getByCartId(string $cartId): ?SeQuraOrder
     {
         $filter = new QueryFilter();
-        $filter->where('cartId', Operators::EQUALS, $cartId);
+        $filter->where('cartId', Operators::EQUALS, $cartId)
+            ->orderBy('id', QueryFilter::ORDER_DESC);
 
         /**
          * @var SeQuraOrder|null $result
@@ -69,24 +72,29 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
 
     public function getByOrderReference(string $sequraOrderReference): ?SeQuraOrder
     {
-        $filter = new QueryFilter();
-        $filter->where('reference', Operators::EQUALS, $sequraOrderReference);
-
         /**
          * @var SeQuraOrder|null $result
          */
-        $result = $this->repository->selectOne($filter);
+        $result = $this->repository->selectOne($this->referenceFilter($sequraOrderReference));
 
         return $result;
     }
 
     public function setSeQuraOrder(SeQuraOrder $order): void
     {
-        $savedOrder = $this->getByOrderReference($order->getReference());
+        /**
+         * @var SeQuraOrder[] $savedOrders
+         */
+        $savedOrders = $this->repository->select($this->referenceFilter($order->getReference()));
+        $savedOrder = array_shift($savedOrders);
         if (!$savedOrder) {
             $this->repository->save($order);
 
             return;
+        }
+
+        foreach ($savedOrders as $duplicatedOrder) {
+            $this->repository->delete($duplicatedOrder);
         }
 
         $order->setId($savedOrder->getId());
@@ -111,5 +119,17 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         foreach ($allEntities as $entity) {
             $this->repository->delete($entity);
         }
+    }
+
+    /**
+     * @param string $sequraOrderReference
+     *
+     * @return QueryFilter
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    private function referenceFilter(string $sequraOrderReference): QueryFilter
+    {
+        return (new QueryFilter())->where('reference', Operators::EQUALS, $sequraOrderReference);
     }
 }

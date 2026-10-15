@@ -177,6 +177,8 @@ class Customer extends OrderRequestDTO
      */
     public static function fromArray(array $data): Customer
     {
+        $vehicle = self::getDataValue($data, 'vehicle', null);
+
         return new self(
             self::getDataValue($data, 'email'),
             self::getDataValue($data, 'language_code'),
@@ -195,7 +197,7 @@ class Customer extends OrderRequestDTO
             self::getDataValue($data, 'rating', null),
             self::getDataValue($data, 'nin_control', null),
             self::getDataValue($data, 'previous_orders', null),
-            self::getDataValue($data, 'vehicle', null),
+            $vehicle ? Vehicle::fromArray($vehicle) : null,
             self::getDataValue($data, 'logged_in', 'unknown')
         );
     }

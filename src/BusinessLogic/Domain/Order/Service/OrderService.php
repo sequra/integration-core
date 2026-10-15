@@ -10,6 +10,7 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundEx
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidOrderStateException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderMerchantNotFoundException;
@@ -18,6 +19,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequ
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestDTO;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
@@ -122,6 +124,7 @@ class OrderService
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws InvalidUrlException
+     * @throws InvalidCartItemsException
      */
     public function solicitFor(CreateOrderRequestBuilder $builder): SeQuraOrder
     {
@@ -135,8 +138,8 @@ class OrderService
         }
 
         $existingOrder = $this->getExistingOrderFor($createOrderRequest);
-        if ($existingOrder) {
-            $this->orderRepository->deleteOrder($existingOrder);
+        if ($existingOrder && $this->isReusableFor($existingOrder, $createOrderRequest)) {
+            return $existingOrder;
         }
 
         $order = $this->proxy->createOrder($createOrderRequest);
@@ -425,6 +428,55 @@ class OrderService
         }
 
         return $existingOrder;
+    }
+
+    /**
+     * @param SeQuraOrder $order
+     * @param CreateOrderRequest $request
+     *
+     * @return bool
+     *
+     * @throws InvalidCartItemsException
+     */
+    protected function isReusableFor(SeQuraOrder $order, CreateOrderRequest $request): bool
+    {
+        return !\in_array($order->getState(), OrderRequestStates::SETTLED_STATES, true)
+            && json_encode($this->getComparablePayload($order))
+            === json_encode($this->getComparablePayload($request->toSequraOrderInstance($order->getReference())));
+    }
+
+    /**
+     * @param SeQuraOrder $order
+     *
+     * @return array<string, mixed>
+     */
+    private function getComparablePayload(SeQuraOrder $order): array
+    {
+        $cart = $this->asStored($order->getUnshippedCart());
+        $customer = $this->asStored($order->getCustomer());
+        unset($cart['updated_at'], $customer['updated_at'], $customer['ip_number'], $customer['user_agent']);
+
+        return [
+            'merchant' => $this->asStored($order->getMerchant()),
+            'merchant_reference' => array_filter($order->toArray()['merchant_reference']),
+            'cart' => $cart,
+            'delivery_method' => $this->asStored($order->getDeliveryMethod()),
+            'delivery_address' => $this->asStored($order->getDeliveryAddress()),
+            'invoice_address' => $this->asStored($order->getInvoiceAddress()),
+            'customer' => $customer,
+        ];
+    }
+
+    /**
+     * The data as it reads back from storage, which fills in defaults for the values a request leaves unset.
+     *
+     * @param OrderRequestDTO $data
+     *
+     * @return array<string, mixed>
+     */
+    private function asStored(OrderRequestDTO $data): array
+    {
+        return $data::fromArray($data->toArray())->toArray();
     }
 
     /**
