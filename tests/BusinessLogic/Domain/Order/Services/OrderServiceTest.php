@@ -25,6 +25,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\OtherPayment
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Item\ProductItem;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Merchant;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Platform;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
@@ -44,6 +45,10 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockOrderCreation;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockSeQuraOrderRepository;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
+use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\TestRepositoryRegistry;
+use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
+use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class OrderServiceTest extends BaseTestCase
 {
@@ -961,6 +966,143 @@ class OrderServiceTest extends BaseTestCase
             $this->merchantOrderBuilder,
             TestServiceRegister::getService(OrderCreationInterface::class)
         );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testResolicitingAnUnchangedCartContinuesTheExistingOrderWithoutCallingTheApi(): void
+    {
+        // Arrange
+        $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
+        $proxy->expects(self::once())->method('createOrder');
+        $service = $this->serviceWithProxy($proxy);
+        $service->solicitFor($this->builderFor(2, '2026-10-15 10:00:00', 'web-server-1'));
+
+        // Act
+        $order = $service->solicitFor($this->builderFor(2, '2026-10-15 10:05:00', 'web-server-2'));
+
+        // Assert
+        self::assertEquals('ref-a', $order->getReference());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testResolicitingAChangedCartKeepsTheReplacedOrder(): void
+    {
+        // Arrange
+        $service = $this->serviceWithProxy($this->proxyReturningReferences(['ref-a', 'ref-b']));
+        $service->solicitFor($this->builderFor(2));
+
+        // Act
+        $order = $service->solicitFor($this->builderFor(3));
+
+        // Assert
+        self::assertEquals('ref-b', $order->getReference());
+        self::assertNotNull($this->orderRepository->getByOrderReference('ref-a'));
+        self::assertEquals('ref-b', $this->orderRepository->getByCartId('cart-1')->getReference());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testResolicitingACancelledOrderSolicitsANewOne(): void
+    {
+        // Arrange
+        $service = $this->serviceWithProxy($this->proxyReturningReferences(['ref-a', 'ref-b']));
+        $cancelledOrder = $service->solicitFor($this->builderFor(2));
+        $cancelledOrder->setState(OrderRequestStates::CANCELLED);
+        $this->orderRepository->setSeQuraOrder($cancelledOrder);
+
+        // Act
+        $order = $service->solicitFor($this->builderFor(2));
+
+        // Assert
+        self::assertEquals('ref-b', $order->getReference());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testResolicitingAChangedCartUpdatesTheOrderWhenSeQuraReusesIt(): void
+    {
+        // Arrange
+        $service = $this->serviceWithProxy($this->proxyReturningReferences(['ref-a', 'ref-a']));
+        $service->solicitFor($this->builderFor(2));
+
+        // Act
+        $service->solicitFor($this->builderFor(3));
+
+        // Assert
+        $orders = TestRepositoryRegistry::getRepository(SeQuraOrder::getClassName())->select(
+            (new QueryFilter())->where('cartId', Operators::EQUALS, 'cart-1')
+        );
+        self::assertCount(1, $orders);
+        self::assertEquals(3, $orders[0]->getUnshippedCart()->getItems()[0]->getQuantity());
+    }
+
+    /**
+     * @param string[] $references
+     *
+     * @return OrderProxyInterface&MockObject
+     */
+    private function proxyReturningReferences(array $references): OrderProxyInterface
+    {
+        $proxy = $this->createMock(OrderProxyInterface::class);
+        $proxy->method('createOrder')->willReturnCallback(
+            static function (CreateOrderRequest $request) use (&$references) {
+                return $request->toSequraOrderInstance(array_shift($references));
+            }
+        );
+
+        return $proxy;
+    }
+
+    /**
+     * @param OrderProxyInterface $proxy
+     *
+     * @return OrderService
+     */
+    private function serviceWithProxy(OrderProxyInterface $proxy): OrderService
+    {
+        return new OrderService(
+            $proxy,
+            $this->orderRepository,
+            $this->merchantOrderBuilder,
+            TestServiceRegister::getService(OrderCreationInterface::class)
+        );
+    }
+
+    /**
+     * @param int $quantity
+     * @param string|null $updatedAt
+     * @param string $uname
+     *
+     * @return MockCreateOrderRequestBuilder
+     *
+     * @throws Exception
+     */
+    private function builderFor(
+        int $quantity,
+        ?string $updatedAt = null,
+        string $uname = 'testUName'
+    ): MockCreateOrderRequestBuilder {
+        $address = new Address('company', 'line1', 'line2', '08001', 'Barcelona', 'ES');
+        $builder = new MockCreateOrderRequestBuilder();
+        $builder->setMockOrderRequest(new CreateOrderRequest(
+            '',
+            new Cart('EUR', false, [new ProductItem('sku-1', 'Product', 1000, $quantity, 1000 * $quantity, false)], 'cart-1', null, $updatedAt),
+            new DeliveryMethod('standard'),
+            new Customer('shopper@test.test', 'es', '127.0.0.1', 'agent', null, null, null, null, null, null, null, null, null, $updatedAt),
+            new Platform('testName', 'testVersion', $uname, 'testDbName', 'testDbVersion'),
+            $address,
+            $address,
+            new Gui(Gui::ALLOWED_VALUES['desktop']),
+            new Merchant('testMerchantId')
+        ));
+
+        return $builder;
     }
 
     /**
