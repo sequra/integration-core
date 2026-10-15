@@ -1005,15 +1005,19 @@ class OrderServiceTest extends BaseTestCase
     }
 
     /**
+     * @dataProvider settledStates
+     *
+     * @param string $state
+     *
      * @throws Exception
      */
-    public function testResolicitingACancelledOrderSolicitsANewOne(): void
+    public function testResolicitingASettledOrderSolicitsANewOne(string $state): void
     {
         // Arrange
         $service = $this->serviceWithProxy($this->proxyReturningReferences(['ref-a', 'ref-b']));
-        $cancelledOrder = $service->solicitFor($this->builderFor(2));
-        $cancelledOrder->setState(OrderRequestStates::CANCELLED);
-        $this->orderRepository->setSeQuraOrder($cancelledOrder);
+        $settledOrder = $service->solicitFor($this->builderFor(2));
+        $settledOrder->setState($state);
+        $this->orderRepository->setSeQuraOrder($settledOrder);
 
         // Act
         $order = $service->solicitFor($this->builderFor(2));
@@ -1040,6 +1044,18 @@ class OrderServiceTest extends BaseTestCase
         );
         self::assertCount(1, $orders);
         self::assertEquals(3, $orders[0]->getUnshippedCart()->getItems()[0]->getQuantity());
+    }
+
+    /**
+     * @return string[][]
+     */
+    public function settledStates(): array
+    {
+        return [
+            'cancelled' => [OrderRequestStates::CANCELLED],
+            'on hold' => [OrderRequestStates::ON_HOLD],
+            'confirmed' => [OrderRequestStates::CONFIRMED],
+        ];
     }
 
     /**

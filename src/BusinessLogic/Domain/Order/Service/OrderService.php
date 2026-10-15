@@ -445,7 +445,9 @@ class OrderService
      */
     protected function isReusableFor(SeQuraOrder $order, CreateOrderRequest $request): bool
     {
-        return $order->getState() !== OrderRequestStates::CANCELLED
+        $settledStates = [OrderRequestStates::CANCELLED, OrderRequestStates::ON_HOLD, OrderRequestStates::CONFIRMED];
+
+        return !\in_array($order->getState(), $settledStates, true)
             && $this->areObjectsEqual(
                 $this->getComparablePayload($order),
                 $this->getComparablePayload($request->toSequraOrderInstance($order->getReference()))
