@@ -1005,6 +1005,28 @@ class OrderServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testResolicitingWithAddedVehicleDataSolicitsANewOne(): void
+    {
+        // Arrange
+        $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
+        $proxy->expects(self::exactly(2))->method('createOrder');
+        $service = $this->serviceWithProxy($proxy);
+        $service->solicitFor($this->builderFor(2));
+
+        // Act
+        $order = $service->solicitFor($this->builderFor(2, 'load-1', null, ['plaque' => '1234ABC']));
+
+        // Assert
+        self::assertEquals('ref-b', $order->getReference());
+        self::assertEquals(
+            '1234ABC',
+            $this->orderRepository->getByOrderReference('ref-b')->getCustomer()->getVehicle()->getPlaque()
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testResolicitingAChangedCartKeepsTheReplacedOrder(): void
     {
         // Arrange
@@ -1144,6 +1166,7 @@ class OrderServiceTest extends BaseTestCase
      * @param int $quantity
      * @param string $pageLoad
      * @param string|null $shopOrderId
+     * @param mixed[]|null $vehicle
      *
      * @return MockCreateOrderRequestBuilder
      *
@@ -1152,7 +1175,8 @@ class OrderServiceTest extends BaseTestCase
     private function builderFor(
         int $quantity,
         string $pageLoad = 'load-1',
-        ?string $shopOrderId = null
+        ?string $shopOrderId = null,
+        ?array $vehicle = null
     ): MockCreateOrderRequestBuilder {
         $address = new Address('company', 'line1', 'line2', '08001', 'Barcelona', 'ES');
         $builder = new MockCreateOrderRequestBuilder();
@@ -1173,6 +1197,7 @@ class OrderServiceTest extends BaseTestCase
                 'ip_number' => 'ip-of-' . $pageLoad,
                 'user_agent' => 'agent-of-' . $pageLoad,
                 'updated_at' => 'time-of-' . $pageLoad,
+                'vehicle' => $vehicle,
             ]),
             new Platform('testName', 'testVersion', 'server-of-' . $pageLoad, 'testDbName', 'testDbVersion'),
             $address,
