@@ -361,8 +361,11 @@ class OrderService
         }
 
         $newTrackings = $orderUpdateData->getTrackings();
-        if ($newTrackings !== null && !$this->areTrackingsEqual($order->getTrackings(), $newTrackings)) {
-            $order->setTrackings(array_values($newTrackings));
+        if (
+            $newTrackings !== null
+            && Tracking::toBatchArray($order->getTrackings()) !== Tracking::toBatchArray($newTrackings)
+        ) {
+            $order->setTrackings($newTrackings);
             $hasChanges = true;
         }
 
@@ -670,31 +673,6 @@ class OrderService
         }
 
         return $seQuraOrder;
-    }
-
-    /**
-     * Checks if both lists hold equal trackings in the same order, whatever their keys.
-     *
-     * @param Tracking[] $trackings1
-     * @param Tracking[] $trackings2
-     *
-     * @return bool
-     */
-    protected function areTrackingsEqual(array $trackings1, array $trackings2): bool
-    {
-        $trackings1 = array_values($trackings1);
-        $trackings2 = array_values($trackings2);
-        if (\count($trackings1) !== \count($trackings2)) {
-            return false;
-        }
-
-        foreach ($trackings1 as $index => $tracking) {
-            if (!$tracking->equals($trackings2[$index])) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**

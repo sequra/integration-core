@@ -43,6 +43,20 @@ class OrderUpdateDataTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testTrackingsKeyedByShipmentSerializeAsAList(): void
+    {
+        $data = new OrderUpdateData('ZXCV1234', null, null, null, null, [
+            3 => new TrackingPostal('shipment-1', 'DHL', '00340434161094042557'),
+            7 => new TrackingPickupStore('shipment-2', null, null, 'operator-1', 'store-9'),
+        ]);
+
+        self::assertSame([0, 1], array_keys($data->getTrackings()));
+        self::assertStringStartsWith('[', json_encode($data->toArray()['trackings']));
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testRejectsATrackingThatIsNotATrackingInstance(): void
     {
         $this->expectException(InvalidTrackingException::class);

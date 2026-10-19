@@ -3,11 +3,14 @@
 namespace SeQura\Core\BusinessLogic\Domain\OrderReport\Models;
 
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCodeException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidDateException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidDurationException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidServiceEndTimeException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTimestampException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTrackingTypeException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Customer;
@@ -210,6 +213,9 @@ class OrderReport extends OrderRequestDTO
      * @throws InvalidQuantityException
      * @throws InvalidServiceEndTimeException
      * @throws InvalidTimestampException
+     * @throws InvalidCodeException
+     * @throws InvalidTrackingTypeException
+     * @throws InvalidUrlException
      */
     public static function fromArray(array $data): self
     {

@@ -173,7 +173,7 @@ class OrderUpdateData extends DataTransferObject
             }
         }
 
-        $this->trackings = $trackings;
+        $this->trackings = $trackings !== null ? array_values($trackings) : null;
     }
 
     /**

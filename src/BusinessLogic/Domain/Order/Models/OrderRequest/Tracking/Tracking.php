@@ -14,9 +14,6 @@ use SeQura\Core\BusinessLogic\Utility\StringValidator;
  *
  * @package SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking
  */
-/**
- * @phpstan-consistent-constructor
- */
 abstract class Tracking extends OrderRequestDTO
 {
     /**
@@ -94,18 +91,6 @@ abstract class Tracking extends OrderRequestDTO
         $class = self::TYPE_CLASSES[$type];
 
         return $class::fromArray($data);
-    }
-
-    /**
-     * Whether the given tracking is the same subtype and carries the same data as this one.
-     *
-     * @param Tracking $other
-     *
-     * @return bool
-     */
-    public function equals(Tracking $other): bool
-    {
-        return \get_class($this) === \get_class($other) && $this->toArray() === $other->toArray();
     }
 
     /**

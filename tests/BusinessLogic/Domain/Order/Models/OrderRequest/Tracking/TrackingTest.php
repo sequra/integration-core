@@ -65,35 +65,4 @@ class TrackingTest extends BaseTestCase
 
         Tracking::fromArray(['type' => ['postal'], 'reference' => 'shipment-1', 'carrier' => 'DHL']);
     }
-
-    /**
-     * @throws Exception
-     */
-    public function testTrackingsWithTheSameDataAreEqual(): void
-    {
-        $tracking = new TrackingPostal('shipment-1', 'DHL', '00340434161094042557');
-
-        self::assertTrue($tracking->equals(new TrackingPostal('shipment-1', 'DHL', '00340434161094042557')));
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testTrackingsWithDifferentDataAreNotEqual(): void
-    {
-        $tracking = new TrackingPostal('shipment-1', 'DHL', '00340434161094042557');
-
-        self::assertFalse($tracking->equals(new TrackingPostal('shipment-1', 'DHL', '00340434161094042558')));
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testTrackingsOfDifferentSubtypesAreNotEqual(): void
-    {
-        $pickupPoint = new TrackingPickupPoint('shipment-1', null, null, 'operator-1', 'store-9');
-        $pickupStore = new TrackingPickupStore('shipment-1', null, null, 'operator-1', 'store-9');
-
-        self::assertFalse($pickupPoint->equals($pickupStore));
-    }
 }
