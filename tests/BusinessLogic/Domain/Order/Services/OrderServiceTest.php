@@ -1440,7 +1440,8 @@ class OrderServiceTest extends BaseTestCase
             $proxy,
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
     }
 
