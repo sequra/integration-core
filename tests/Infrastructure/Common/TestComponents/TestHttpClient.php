@@ -176,7 +176,7 @@ class TestHttpClient extends HttpClient
      */
     public function getHistory(): array
     {
-        return $this->history;
+        return $this->history ?? [];
     }
 
     /**

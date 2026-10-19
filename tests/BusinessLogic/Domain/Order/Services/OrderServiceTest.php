@@ -30,6 +30,9 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Options;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Platform;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\Tracking;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\TrackingPickupPoint;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\TrackingPostal;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -429,6 +432,146 @@ class OrderServiceTest extends BaseTestCase
         ]);
 
         self::assertNotEquals(0, $this->storedOrder()->getRejectedOrderTotal());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithOnlyNewTrackingsSendsThemToSeQura(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrder();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, $this->trackings()),
+        ]);
+
+        $request = $this->httpClient->getLastRequest();
+        self::assertStringContainsString('orders/ZXCV1234', $request['url']);
+        $body = json_decode($request['body'], true);
+        self::assertEquals(Tracking::toBatchArray($this->trackings()), $body['order']['trackings']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithTheStoredTrackingsSendsNothing(): void
+    {
+        $this->storeConfirmedOrderWithTrackings();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, $this->trackings()),
+        ]);
+
+        self::assertEmpty($this->httpClient->getHistory());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithAChangedTrackingSendsTheNewTrackings(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrderWithTrackings();
+        $trackings = $this->trackings();
+        $trackings[1] = new TrackingPickupPoint(
+            'shipment-2',
+            'PP-779',
+            null,
+            'operator-1',
+            'store-9',
+            null,
+            'Calle Mayor 1',
+            null,
+            '28013',
+            'Madrid',
+            null,
+            'ES'
+        );
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, $trackings),
+        ]);
+
+        self::assertCount(1, $this->httpClient->getHistory());
+        $body = json_decode($this->httpClient->getLastRequest()['body'], true);
+        self::assertEquals(Tracking::toBatchArray($trackings), $body['order']['trackings']);
+        self::assertEquals(
+            Tracking::toBatchArray($trackings),
+            Tracking::toBatchArray($this->storedOrder()->getTrackings())
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithoutTrackingsKeepsTheStoredOnes(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrderWithTrackings();
+        $address = $this->getOrderUpdateData()->getDeliveryAddress()->toArray();
+        $address['city'] = 'Elsewhere';
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, Address::fromArray($address), null),
+        ]);
+
+        $body = json_decode($this->httpClient->getLastRequest()['body'], true);
+        self::assertEquals(Tracking::toBatchArray($this->trackings()), $body['order']['trackings']);
+        self::assertEquals(
+            Tracking::toBatchArray($this->trackings()),
+            Tracking::toBatchArray($this->storedOrder()->getTrackings())
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithTheStoredTrackingsUnderOtherKeysSendsNothing(): void
+    {
+        $this->storeConfirmedOrderWithTrackings();
+        $trackings = $this->trackings();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, [5 => $trackings[0], 9 => $trackings[1]]),
+        ]);
+
+        self::assertEmpty($this->httpClient->getHistory());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateSendsTrackingsUnderOtherKeysAsAList(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrder();
+        $trackings = $this->trackings();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, [5 => $trackings[0], 9 => $trackings[1]]),
+        ]);
+
+        $body = json_decode($this->httpClient->getLastRequest()['body'], true);
+        self::assertEquals(Tracking::toBatchArray($trackings), $body['order']['trackings']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateStoresTheNewTrackings(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrder();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, $this->trackings()),
+        ]);
+
+        $stored = $this->storedOrder()->getTrackings();
+        self::assertInstanceOf(TrackingPostal::class, $stored[0]);
+        self::assertInstanceOf(TrackingPickupPoint::class, $stored[1]);
+        self::assertEquals(Tracking::toBatchArray($this->trackings()), Tracking::toBatchArray($stored));
     }
 
     /**
@@ -1578,6 +1721,50 @@ class OrderServiceTest extends BaseTestCase
         $seQuraOrder->setState('confirmed');
 
         StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$seQuraOrder]);
+    }
+
+    /**
+     * Stores the mock order as confirmed, already carrying the mock trackings.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    private function storeConfirmedOrderWithTrackings(): void
+    {
+        $this->storeConfirmedOrder();
+        $order = $this->storedOrder();
+        $order->setTrackings($this->trackings());
+
+        StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$order]);
+    }
+
+    /**
+     * A postal and a pickup point tracking, so both subtypes have to survive the round trip.
+     *
+     * @return Tracking[]
+     *
+     * @throws Exception
+     */
+    private function trackings(): array
+    {
+        return [
+            new TrackingPostal('shipment-1', 'DHL', '00340434161094042557', null, 'https://dhl.example/track/1'),
+            new TrackingPickupPoint(
+                'shipment-2',
+                'PP-778',
+                null,
+                'operator-1',
+                'store-9',
+                null,
+                'Calle Mayor 1',
+                null,
+                '28013',
+                'Madrid',
+                null,
+                'ES'
+            ),
+        ];
     }
 
     /**

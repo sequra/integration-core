@@ -2,7 +2,10 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking;
 
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCodeException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTimestampException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTrackingTypeException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestDTO;
 use SeQura\Core\BusinessLogic\Utility\StringValidator;
 
@@ -11,11 +14,17 @@ use SeQura\Core\BusinessLogic\Utility\StringValidator;
  *
  * @package SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking
  */
-/**
- * @phpstan-consistent-constructor
- */
 abstract class Tracking extends OrderRequestDTO
 {
+    /**
+     * Tracking subtype for each known tracking type.
+     */
+    private const TYPE_CLASSES = [
+        TrackingType::TYPE_POSTAL => TrackingPostal::class,
+        TrackingType::TYPE_PICKUP_POINT => TrackingPickupPoint::class,
+        TrackingType::TYPE_PICKUP_STORE => TrackingPickupStore::class,
+    ];
+
     /**
      * @var string Tracking type.
      */
@@ -61,22 +70,27 @@ abstract class Tracking extends OrderRequestDTO
     }
 
     /**
-     * Creates a new Tracking instance from the given array.
+     * Creates the Tracking subtype the given array's type names.
      *
      * @param mixed[] $data An array with data to create a new instance.
      *
-     * @return static A new Tracking instance.
+     * @return Tracking A new Tracking instance.
      *
      * @throws InvalidTimestampException If delivered at timestamp is invalid.
+     * @throws InvalidUrlException If the tracking url is invalid.
+     * @throws InvalidCodeException If a pickup operator or store code is invalid.
+     * @throws InvalidTrackingTypeException If the type is not a known tracking type.
      */
     public static function fromArray(array $data): self
     {
         $type = static::getDataValue($data, 'type');
-        $reference = static::getDataValue($data, 'reference');
-        $trackingNumber = static::getDataValue($data, 'tracking_number');
-        $deliveredAt = static::getDataValue($data, 'delivered_at');
+        if (!\is_string($type) || !isset(self::TYPE_CLASSES[$type])) {
+            throw new InvalidTrackingTypeException();
+        }
 
-        return new static($type, $reference, $trackingNumber, $deliveredAt);
+        $class = self::TYPE_CLASSES[$type];
+
+        return $class::fromArray($data);
     }
 
     /**
