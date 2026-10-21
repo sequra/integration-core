@@ -5,6 +5,7 @@ namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponent
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\UpdateOrderRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -51,6 +52,10 @@ class MockOrderProxy implements OrderProxyInterface
      * @var GetAvailablePaymentMethodsRequest|null
      */
     private $lastPaymentMethodsInCategoriesRequest;
+    /**
+     * @var int
+     */
+    private $createOrderCallCount = 0;
 
     /**
      * @param ?SeQuraOrder $order
@@ -100,6 +105,17 @@ class MockOrderProxy implements OrderProxyInterface
         return $this->getFormCallCount;
     }
 
+    /**
+     * Number of times createOrder() was called. Used to assert that an eligibility guard
+     * short-circuited before any solicitation was sent.
+     *
+     * @return int
+     */
+    public function getCreateOrderCallCount(): int
+    {
+        return $this->createOrderCallCount;
+    }
+
     public function getAvailablePaymentMethods(GetAvailablePaymentMethodsRequest $request): array
     {
         return $this->availablePaymentMethods;
@@ -122,6 +138,8 @@ class MockOrderProxy implements OrderProxyInterface
 
     public function createOrder(CreateOrderRequest $request): SeQuraOrder
     {
+        $this->createOrderCallCount++;
+
         if ($this->createOrderException !== null) {
             throw $this->createOrderException;
         }
@@ -137,6 +155,13 @@ class MockOrderProxy implements OrderProxyInterface
     public function updateOrder(UpdateOrderRequest $request): bool
     {
         return true;
+    }
+
+    public function updateMerchantReference(
+        string $merchantId,
+        string $shopOrderReference,
+        MerchantReference $merchantReference
+    ): void {
     }
 
     public function getForm(GetFormRequest $request): SeQuraForm

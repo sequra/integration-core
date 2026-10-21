@@ -31,26 +31,33 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
      * @var string
      */
     protected $productId;
+    /**
+     * @var string[]
+     */
+    protected $productIds;
 
     /**
      * @param string $shippingCountry
      * @param string $currentCountry
      * @param string $currentCurrency
      * @param string $currentIpAddress
-     * @param string $productId
+     * @param string $productId The product a product page or a listing entry is about.
+     * @param string[] $productIds The products a cart holds (empty array = no per-product check).
      */
     public function __construct(
         string $shippingCountry,
         string $currentCountry,
         string $currentCurrency = '',
         string $currentIpAddress = '',
-        string $productId = ''
+        string $productId = '',
+        array $productIds = []
     ) {
         $this->shippingCountry = $shippingCountry;
         $this->currentCountry = $currentCountry;
         $this->currentCurrency = $currentCurrency;
         $this->currentIpAddress = $currentIpAddress;
         $this->productId = $productId;
+        $this->productIds = $productIds;
     }
 
     /**
@@ -94,6 +101,14 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
     }
 
     /**
+     * @return string[]
+     */
+    public function getProductIds(): array
+    {
+        return $this->productIds;
+    }
+
+    /**
      * @param array<string> $data
      *
      * @return PromotionalWidgetsCheckoutRequest
@@ -105,7 +120,8 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
             self::getDataValue($data, 'currentCountry'),
             self::getDataValue($data, 'currentCurrency'),
             self::getDataValue($data, 'currentIpAddress'),
-            self::getDataValue($data, 'productId')
+            self::getDataValue($data, 'productId'),
+            self::getDataValue($data, 'productIds', [])
         );
     }
 
@@ -119,6 +135,7 @@ class PromotionalWidgetsCheckoutRequest extends DataTransferObject
         $data['currentCurrency'] = $this->currentCurrency;
         $data['currentIpAddress'] = $this->currentIpAddress;
         $data['productId'] = $this->productId;
+        $data['productIds'] = $this->productIds;
 
         return $data;
     }

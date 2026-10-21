@@ -14,12 +14,12 @@ use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusMappi
 trait SaveOrderStatusSettingsRequestTrait
 {
     /**
-     * @var string[]
+     * @var array<int, array<string, string>>
      */
     protected $orderStatusMappings;
 
     /**
-     * @param string[] $orderStatusMappings
+     * @param array<int, array<string, string>> $orderStatusMappings
      */
     public function __construct(array $orderStatusMappings)
     {

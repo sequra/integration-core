@@ -3,11 +3,15 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Checkout\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
+use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\SellingCountriesService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
@@ -15,6 +19,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Product\ProductServiceInterface
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCountryConfigurationService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockGeneralSettingsService;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockProductService;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -40,6 +45,11 @@ class CheckoutValidationServiceTest extends BaseTestCase
      * @var MockProductService
      */
     private $mockProductService;
+
+    /**
+     * @var MockCountryConfigurationService
+     */
+    private $mockCountryConfigurationService;
 
     /**
      * @return void
@@ -78,6 +88,22 @@ class CheckoutValidationServiceTest extends BaseTestCase
             }
         );
 
+        $this->mockCountryConfigurationService = new MockCountryConfigurationService(
+            TestServiceRegister::getService(CountryConfigurationRepositoryInterface::class),
+            TestServiceRegister::getService(SellingCountriesService::class)
+        );
+
+        TestServiceRegister::registerService(
+            CountryConfigurationService::class,
+            function () {
+                return $this->mockCountryConfigurationService;
+            }
+        );
+
+        $this->mockCountryConfigurationService->saveCountryConfiguration([
+            new CountryConfiguration('ES', 'merchant1'),
+        ]);
+
         CheckoutService::$generalSettingsFetched = false;
         CheckoutService::$generalSettings = null;
 
@@ -98,6 +124,39 @@ class CheckoutValidationServiceTest extends BaseTestCase
     public function testCurrencySupported(): void
     {
         self::assertTrue($this->checkoutValidationService->isCurrencySupported('EUR'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws WrongCredentialsException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     */
+    public function testGeneralSettingsAreNotReusedForAnotherStore(): void
+    {
+        // Arrange
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, ['9.9.9.9'], null, null)
+        );
+        $isValidForFirstStore = StoreContext::doWithStore(
+            '1',
+            [$this->checkoutValidationService, 'isIpAddressValid'],
+            ['1.1.1.1']
+        );
+        $this->mockGeneralSettingsService->saveGeneralSettings(new GeneralSettings(true, null, [], null, null));
+
+        // Act
+        $isValidForSecondStore = StoreContext::doWithStore(
+            '2',
+            [$this->checkoutValidationService, 'isIpAddressValid'],
+            ['1.1.1.1']
+        );
+
+        // Assert
+        self::assertFalse($isValidForFirstStore);
+        self::assertTrue($isValidForSecondStore);
     }
 
     /**
@@ -206,10 +265,10 @@ class CheckoutValidationServiceTest extends BaseTestCase
     public function dataProviderIsProductSupportedForVirtualProduct(): array
     {
         return [
-            // No general settings
+            // No general settings stored: the defaults, which enable no service selling
             [
                 null,
-                true,
+                false,
             ],
             // No service selling enabled
             [
@@ -546,6 +605,100 @@ class CheckoutValidationServiceTest extends BaseTestCase
      * @throws HttpRequestException
      * @throws WrongCredentialsException
      */
+    public function testIsCartWidgetSupportedHappyPath(): void
+    {
+        $this->mockProductService->setMockProductSku('sku1');
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, ['other-sku'], ['other-category'])
+        );
+
+        self::assertTrue(
+            $this->checkoutValidationService->isCartWidgetSupported('EUR', '1.2.3.4', ['sku1', 'sku2'])
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsCartWidgetSupportedFailsOnExcludedProductInCart(): void
+    {
+        $this->mockProductService->setMockProductSku('sku-excluded');
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, ['sku-excluded'], null)
+        );
+
+        self::assertFalse(
+            $this->checkoutValidationService->isCartWidgetSupported('EUR', '1.2.3.4', ['ok', 'sku-excluded'])
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsCartWidgetSupportedFailsOnAProductOfAnExcludedCategoryInCart(): void
+    {
+        $this->mockProductService->setMockProductCategories(['cat-excluded']);
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, null, ['cat-excluded'])
+        );
+
+        self::assertFalse(
+            $this->checkoutValidationService->isCartWidgetSupported('EUR', '1.2.3.4', ['sku1'])
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsCartWidgetSupportedFailsOnCurrencyBeforeLookingAtTheCart(): void
+    {
+        self::assertFalse(
+            $this->checkoutValidationService->isCartWidgetSupported('USD', '1.2.3.4', ['sku1'])
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsCartWidgetSupportedFailsOnIp(): void
+    {
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, ['10.0.0.1'], null, null)
+        );
+
+        self::assertFalse(
+            $this->checkoutValidationService->isCartWidgetSupported('EUR', '1.2.3.4', ['sku1'])
+        );
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
     public function testIsExpressCheckoutSupportedHappyPathWithCategories(): void
     {
         $this->mockGeneralSettingsService->saveGeneralSettings(
@@ -615,5 +768,145 @@ class CheckoutValidationServiceTest extends BaseTestCase
         );
 
         self::assertTrue($this->checkoutValidationService->isCategorySupported('cat1'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsSolicitationSupportedHappyPath(): void
+    {
+        self::assertTrue($this->checkoutValidationService->isSolicitationSupported('ES'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsSolicitationSupportedWhenNoGeneralSettingsSaved(): void
+    {
+        // No general settings persisted must not restrict an otherwise configured country.
+        self::assertTrue($this->checkoutValidationService->isSolicitationSupported('ES', '1.2.3.4'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsSolicitationNotSupportedWhenShippingCountryNotConfigured(): void
+    {
+        self::assertFalse($this->checkoutValidationService->isSolicitationSupported('FR'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsSolicitationNotSupportedWhenNoCountryConfigurationSaved(): void
+    {
+        $this->mockCountryConfigurationService->saveCountryConfiguration([]);
+
+        self::assertFalse($this->checkoutValidationService->isSolicitationSupported('ES'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsSolicitationSupportedSkipsCountryCheckWhenDisabled(): void
+    {
+        self::assertTrue($this->checkoutValidationService->isSolicitationSupported('FR', '', [], [], false));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsSolicitationNotSupportedWhenIpAddressNotAllowed(): void
+    {
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, ['9.9.9.9'], null, null)
+        );
+
+        self::assertFalse($this->checkoutValidationService->isSolicitationSupported('ES', '1.2.3.4'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsSolicitationSupportedWhenIpAddressNotProvided(): void
+    {
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, ['9.9.9.9'], null, null)
+        );
+
+        // No IP supplied by the host: the allowlist guard is skipped rather than denying outright.
+        self::assertTrue($this->checkoutValidationService->isSolicitationSupported('ES'));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsSolicitationNotSupportedWhenProductExcluded(): void
+    {
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, ['excluded-sku'], null)
+        );
+        $this->mockProductService->setMockProductSku('excluded-sku');
+
+        self::assertFalse($this->checkoutValidationService->isSolicitationSupported('ES', '', ['p1']));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws BadMerchantIdException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function testIsSolicitationNotSupportedWhenCategoryExcluded(): void
+    {
+        $this->mockGeneralSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, null, ['cat-excluded'])
+        );
+
+        self::assertFalse(
+            $this->checkoutValidationService->isSolicitationSupported('ES', '', [], ['cat-excluded'])
+        );
     }
 }

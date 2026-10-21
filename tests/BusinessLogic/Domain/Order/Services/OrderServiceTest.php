@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Order\Services;
 
+use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
 use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
@@ -12,6 +13,7 @@ use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderMerchantNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderUpdateRejectedException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
@@ -28,6 +30,9 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Options;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Platform;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\Tracking;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\TrackingPickupPoint;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\TrackingPostal;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -36,6 +41,8 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\Http\HttpResponse;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockCreateOrderRequestBuilder;
@@ -50,6 +57,11 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 class OrderServiceTest extends BaseTestCase
 {
+    /**
+     * The reason SeQura gives for an increase it will not finance.
+     */
+    private const UPSELL_REFUSAL = 'Order sequra-ref-1234 cannot upsell from 478.48 (original value) to 603.59';
+
     /**
      * @var OrderService
      */
@@ -100,7 +112,8 @@ class OrderServiceTest extends BaseTestCase
             TestServiceRegister::getService(OrderProxyInterface::class),
             TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
         $this->orderRepository = TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class);
     }
@@ -116,7 +129,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         $expectedSeQuraOrder = (new MockCreateOrderRequestBuilder())->build()->toSequraOrderInstance('testOrderRef');
@@ -228,6 +242,35 @@ class OrderServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testGetOrderBatchByCartIds(): void
+    {
+        // Arrange
+        foreach (['1', '2', '3'] as $ref) {
+            $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
+            $array = json_decode($order, true);
+            $seQuraOrder = SeQuraOrder::fromArray($array['order']);
+            $seQuraOrder->setReference($ref);
+            $seQuraOrder->setCartId('cart-' . $ref);
+            $seQuraOrder->setOrderRef1('shop-' . $ref);
+            $seQuraOrder->setState('approved');
+
+            StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$seQuraOrder]);
+        }
+
+        // Act
+        $response = $this->orderRepository->getOrderBatchByCartIds(['cart-1', 'cart-3', 'cart-unknown']);
+
+        // Assert
+        $cartIds = array_map(static function (SeQuraOrder $order): string {
+            return $order->getCartId();
+        }, $response);
+        sort($cartIds);
+        self::assertEquals(['cart-1', 'cart-3'], $cartIds);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testIsUpdateResponseSuccessful(): void
     {
         // Arrange
@@ -263,6 +306,379 @@ class OrderServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testUpdateSeQuraRefusesCarriesTheReasonSeQuraGave(): void
+    {
+        $this->refuseNextUpdate();
+        $this->storeConfirmedOrder();
+
+        $exception = $this->updateIgnoringRejection($this->getOrderUpdateData());
+
+        self::assertNotNull($exception);
+        self::assertEquals(403, $exception->getCode());
+        self::assertEquals(OrderUpdateRejectedException::ERROR_CODE, $exception->getTranslatableLabel()->getCode());
+        self::assertEquals(self::UPSELL_REFUSAL, $exception->getTranslatableLabel()->getMessage());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateSeQuraRefusesKeepsWhatItHoldsAndWhatTheRefusedUpdateTotalled(): void
+    {
+        $this->refuseNextUpdate();
+        $this->storeConfirmedOrder();
+        $before = $this->storedOrder();
+        $update = $this->getOrderUpdateData();
+
+        $this->updateIgnoringRejection($update);
+
+        $stored = $this->storedOrder();
+        self::assertEquals($before->getShippedCart()->toArray(), $stored->getShippedCart()->toArray());
+        self::assertEquals($before->getUnshippedCart()->toArray(), $stored->getUnshippedCart()->toArray());
+        self::assertEquals(
+            $update->getShippedCart()->getOrderTotalWithTax() + $update->getUnshippedCart()->getOrderTotalWithTax(),
+            $stored->getRejectedOrderTotal()
+        );
+        self::assertNotEquals(0, $stored->getRejectedOrderTotal());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateSeQuraAcceptsClearsTheRejection(): void
+    {
+        $this->refuseNextUpdate();
+        $this->storeConfirmedOrder();
+        $this->updateIgnoringRejection($this->getOrderUpdateData());
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [$this->getOrderUpdateData()]);
+
+        self::assertEquals(0, $this->storedOrder()->getRejectedOrderTotal());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMatchingWhatSeQuraHoldsClearsTheRejectionWithoutSendingAnything(): void
+    {
+        $this->refuseNextUpdate();
+        $this->storeConfirmedOrder();
+        $this->updateIgnoringRejection($this->getOrderUpdateData());
+        $sent = \count($this->httpClient->getHistory());
+        $held = $this->storedOrder();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', $held->getShippedCart(), $held->getUnshippedCart(), null, null),
+        ]);
+
+        self::assertEquals(0, $this->storedOrder()->getRejectedOrderTotal());
+        self::assertCount($sent, $this->httpClient->getHistory());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateSeQuraForbidsForAnotherReasonIsNotARejection(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(403, [], json_encode([
+            'errors' => ['You do not have access to this URL'],
+        ]))]);
+        $this->storeConfirmedOrder();
+        $exception = null;
+
+        try {
+            StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [$this->getOrderUpdateData()]);
+        } catch (HttpApiInvalidUrlParameterException $exception) {
+        }
+
+        self::assertNotNull($exception);
+        self::assertNotInstanceOf(OrderUpdateRejectedException::class, $exception);
+        self::assertEquals(0, $this->storedOrder()->getRejectedOrderTotal());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithoutTheCartsSeQuraAcceptsKeepsTheRejection(): void
+    {
+        $this->refuseNextUpdate();
+        $this->storeConfirmedOrder();
+        $this->updateIgnoringRejection($this->getOrderUpdateData());
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $rejected = $this->storedOrder()->getRejectedOrderTotal();
+        $address = $this->getOrderUpdateData()->getDeliveryAddress()->toArray();
+        $address['city'] = 'Elsewhere';
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, Address::fromArray($address), null),
+        ]);
+
+        $stored = $this->storedOrder();
+        self::assertEquals('Elsewhere', $stored->getDeliveryAddress()->getCity());
+        self::assertEquals($rejected, $stored->getRejectedOrderTotal());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithoutTheCartsAndNothingChangedKeepsTheRejection(): void
+    {
+        $this->refuseNextUpdate();
+        $this->storeConfirmedOrder();
+        $this->updateIgnoringRejection($this->getOrderUpdateData());
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null),
+        ]);
+
+        self::assertNotEquals(0, $this->storedOrder()->getRejectedOrderTotal());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithOnlyNewTrackingsSendsThemToSeQura(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrder();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, $this->trackings()),
+        ]);
+
+        $request = $this->httpClient->getLastRequest();
+        self::assertStringContainsString('orders/ZXCV1234', $request['url']);
+        $body = json_decode($request['body'], true);
+        self::assertEquals(Tracking::toBatchArray($this->trackings()), $body['order']['trackings']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithTheStoredTrackingsSendsNothing(): void
+    {
+        $this->storeConfirmedOrderWithTrackings();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, $this->trackings()),
+        ]);
+
+        self::assertEmpty($this->httpClient->getHistory());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithAChangedTrackingSendsTheNewTrackings(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrderWithTrackings();
+        $trackings = $this->trackings();
+        $trackings[1] = new TrackingPickupPoint(
+            'shipment-2',
+            'PP-779',
+            null,
+            'operator-1',
+            'store-9',
+            null,
+            'Calle Mayor 1',
+            null,
+            '28013',
+            'Madrid',
+            null,
+            'ES'
+        );
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, $trackings),
+        ]);
+
+        self::assertCount(1, $this->httpClient->getHistory());
+        $body = json_decode($this->httpClient->getLastRequest()['body'], true);
+        self::assertEquals(Tracking::toBatchArray($trackings), $body['order']['trackings']);
+        self::assertEquals(
+            Tracking::toBatchArray($trackings),
+            Tracking::toBatchArray($this->storedOrder()->getTrackings())
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithoutTrackingsKeepsTheStoredOnes(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrderWithTrackings();
+        $address = $this->getOrderUpdateData()->getDeliveryAddress()->toArray();
+        $address['city'] = 'Elsewhere';
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, Address::fromArray($address), null),
+        ]);
+
+        $body = json_decode($this->httpClient->getLastRequest()['body'], true);
+        self::assertEquals(Tracking::toBatchArray($this->trackings()), $body['order']['trackings']);
+        self::assertEquals(
+            Tracking::toBatchArray($this->trackings()),
+            Tracking::toBatchArray($this->storedOrder()->getTrackings())
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWithTheStoredTrackingsUnderOtherKeysSendsNothing(): void
+    {
+        $this->storeConfirmedOrderWithTrackings();
+        $trackings = $this->trackings();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, [5 => $trackings[0], 9 => $trackings[1]]),
+        ]);
+
+        self::assertEmpty($this->httpClient->getHistory());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateSendsTrackingsUnderOtherKeysAsAList(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrder();
+        $trackings = $this->trackings();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, [5 => $trackings[0], 9 => $trackings[1]]),
+        ]);
+
+        $body = json_decode($this->httpClient->getLastRequest()['body'], true);
+        self::assertEquals(Tracking::toBatchArray($trackings), $body['order']['trackings']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateStoresTheNewTrackings(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrder();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [
+            new OrderUpdateData('ZXCV1234', null, null, null, null, $this->trackings()),
+        ]);
+
+        $stored = $this->storedOrder()->getTrackings();
+        self::assertInstanceOf(TrackingPostal::class, $stored[0]);
+        self::assertInstanceOf(TrackingPickupPoint::class, $stored[1]);
+        self::assertEquals(Tracking::toBatchArray($this->trackings()), Tracking::toBatchArray($stored));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceTellsSeQuraAndKeepsTheOrderUnderTheNewReference(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $this->storeConfirmedOrder();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateMerchantReference'], ['5678', 'NEWREF99']);
+
+        $lastRequest = $this->httpClient->getLastRequest();
+        self::assertStringContainsString('merchants/logeecom/orders/ZXCV1234/merchant_reference', $lastRequest['url']);
+        self::assertEquals(
+            ['merchant_reference' => ['order_ref_1' => 'NEWREF99', 'order_ref_2' => '0080-1234-4343-5353']],
+            json_decode($lastRequest['body'], true)
+        );
+
+        $stored = StoreContext::doWithStore('1', [$this->orderRepository, 'getByShopReference'], ['NEWREF99']);
+        self::assertNotNull($stored);
+        self::assertEquals('NEWREF99', $stored->getOrderRef1());
+        self::assertEquals('NEWREF99', $stored->getMerchantReference()->getOrderRef1());
+        self::assertEquals('0080-1234-4343-5353', $stored->getMerchantReference()->getOrderRef2());
+        self::assertNull(StoreContext::doWithStore('1', [$this->orderRepository, 'getByShopReference'], ['ZXCV1234']));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceSendsNothingForTheReferenceSeQuraAlreadyHas(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(404, [], '')]);
+        $this->storeConfirmedOrder();
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateMerchantReference'], ['5678', 'ZXCV1234']);
+
+        $stored = StoreContext::doWithStore('1', [$this->orderRepository, 'getByCartId'], ['5678']);
+        self::assertEquals('ZXCV1234', $stored->getOrderRef1());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceSendsNothingForAnOrderWithoutAShopReference(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(404, [], '')]);
+        $this->storeConfirmedOrder('');
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateMerchantReference'], ['5678', 'NEWREF99']);
+
+        $stored = StoreContext::doWithStore('1', [$this->orderRepository, 'getByCartId'], ['5678']);
+        self::assertEquals('', $stored->getOrderRef1());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceKeepsTheOldReferenceWhenSeQuraRefuses(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(404, [], '')]);
+        $this->storeConfirmedOrder();
+        $exception = null;
+
+        try {
+            StoreContext::doWithStore('1', [$this->orderService, 'updateMerchantReference'], ['5678', 'NEWREF99']);
+        } catch (HttpApiNotFoundException $exception) {
+        }
+
+        self::assertNotNull($exception);
+        $stored = StoreContext::doWithStore('1', [$this->orderRepository, 'getByCartId'], ['5678']);
+        self::assertEquals('ZXCV1234', $stored->getOrderRef1());
+        self::assertEquals('ZXCV1234', $stored->getMerchantReference()->getOrderRef1());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceForAnOrderWithoutMerchantId(): void
+    {
+        $this->httpClient->setMockResponses([new HttpResponse(204, [], '')]);
+        $order = json_decode(file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'), true);
+        $order['order']['merchant']['id'] = '';
+        $seQuraOrder = SeQuraOrder::fromArray($order['order']);
+        $seQuraOrder->setReference('sequra-ref-1234');
+        $seQuraOrder->setCartId('5678');
+        $seQuraOrder->setOrderRef1('ZXCV1234');
+        StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$seQuraOrder]);
+
+        $this->expectException(OrderMerchantNotFoundException::class);
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateMerchantReference'], ['5678', 'NEWREF99']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateMerchantReferenceForUnknownCart(): void
+    {
+        $this->expectException(OrderNotFoundException::class);
+
+        StoreContext::doWithStore('1', [$this->orderService, 'updateMerchantReference'], ['5678', 'NEWREF99']);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testOrderCreation(): void
     {
         $this->orderProxy = new MockOrderProxy();
@@ -272,7 +688,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            $this->shopOrderCreator
+            $this->shopOrderCreator,
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
@@ -321,7 +738,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            $this->shopOrderCreator
+            $this->shopOrderCreator,
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         $array = json_decode(file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'), true);
@@ -362,7 +780,8 @@ class OrderServiceTest extends BaseTestCase
             TestServiceRegister::getService(OrderProxyInterface::class),
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            $this->shopOrderCreator
+            $this->shopOrderCreator,
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
@@ -401,7 +820,8 @@ class OrderServiceTest extends BaseTestCase
             TestServiceRegister::getService(OrderProxyInterface::class),
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            $this->shopOrderCreator
+            $this->shopOrderCreator,
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
@@ -641,7 +1061,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         $builder = new MockCreateOrderRequestBuilder();
@@ -672,7 +1093,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         // Act
@@ -702,7 +1124,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             new MockSeQuraOrderRepository(),
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         // Assert
@@ -735,7 +1158,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             new MockSeQuraOrderRepository(),
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
 
         // Assert
@@ -962,7 +1386,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderProxy,
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
     }
 
@@ -1158,7 +1583,8 @@ class OrderServiceTest extends BaseTestCase
             $proxy,
             $this->orderRepository,
             $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class)
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
         );
     }
 
@@ -1228,6 +1654,117 @@ class OrderServiceTest extends BaseTestCase
         );
 
         return $builder;
+    }
+
+    /**
+     * SeQura refuses the next update, the way it refuses an increase it will not finance.
+     *
+     * @return void
+     */
+    private function refuseNextUpdate(): void
+    {
+        $this->httpClient->setMockResponses([
+            new HttpResponse(403, [], json_encode(['errors' => [self::UPSELL_REFUSAL]])),
+        ]);
+    }
+
+    /**
+     * Sends the update and returns the refusal instead of throwing it.
+     *
+     * @param OrderUpdateData $orderUpdateData
+     *
+     * @return OrderUpdateRejectedException|null
+     *
+     * @throws Exception
+     */
+    private function updateIgnoringRejection(OrderUpdateData $orderUpdateData): ?OrderUpdateRejectedException
+    {
+        try {
+            StoreContext::doWithStore('1', [$this->orderService, 'updateOrder'], [$orderUpdateData]);
+        } catch (OrderUpdateRejectedException $exception) {
+            return $exception;
+        }
+
+        return null;
+    }
+
+    /**
+     * The mock order as it is stored now.
+     *
+     * @return SeQuraOrder
+     *
+     * @throws Exception
+     */
+    private function storedOrder(): SeQuraOrder
+    {
+        return StoreContext::doWithStore('1', [$this->orderRepository, 'getByCartId'], ['5678']);
+    }
+
+    /**
+     * Stores the mock order as confirmed for cart 5678, known to the shop by the given reference.
+     *
+     * @param string $shopReference
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    private function storeConfirmedOrder(string $shopReference = 'ZXCV1234'): void
+    {
+        $order = json_decode(file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'), true);
+        $order['order']['merchant_reference']['order_ref_1'] = $shopReference;
+
+        $seQuraOrder = SeQuraOrder::fromArray($order['order']);
+        $seQuraOrder->setReference('sequra-ref-1234');
+        $seQuraOrder->setCartId('5678');
+        $seQuraOrder->setOrderRef1($shopReference);
+        $seQuraOrder->setState('confirmed');
+
+        StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$seQuraOrder]);
+    }
+
+    /**
+     * Stores the mock order as confirmed, already carrying the mock trackings.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    private function storeConfirmedOrderWithTrackings(): void
+    {
+        $this->storeConfirmedOrder();
+        $order = $this->storedOrder();
+        $order->setTrackings($this->trackings());
+
+        StoreContext::doWithStore('1', [$this->orderRepository, 'setSeQuraOrder'], [$order]);
+    }
+
+    /**
+     * A postal and a pickup point tracking, so both subtypes have to survive the round trip.
+     *
+     * @return Tracking[]
+     *
+     * @throws Exception
+     */
+    private function trackings(): array
+    {
+        return [
+            new TrackingPostal('shipment-1', 'DHL', '00340434161094042557', null, 'https://dhl.example/track/1'),
+            new TrackingPickupPoint(
+                'shipment-2',
+                'PP-778',
+                null,
+                'operator-1',
+                'store-9',
+                null,
+                'Calle Mayor 1',
+                null,
+                '28013',
+                'Madrid',
+                null,
+                'ES'
+            ),
+        ];
     }
 
     /**

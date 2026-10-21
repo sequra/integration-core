@@ -3,8 +3,10 @@
 namespace SeQura\Core\BusinessLogic\Domain\Order\Models;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidTrackingException;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Address;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\Tracking;
 use SeQura\Core\Infrastructure\Data\DataTransferObject;
 
 /**
@@ -40,19 +42,34 @@ class OrderUpdateData extends DataTransferObject
     protected $invoiceAddress;
 
     /**
+     * @var Tracking[]|null
+     */
+    protected $trackings;
+
+    /**
      * @param string $orderShopReference
      * @param Cart|null $shippedCart
      * @param Cart|null $unshippedCart
      * @param Address|null $deliveryAddress
      * @param Address|null $invoiceAddress
+     * @param Tracking[]|null $trackings
+     *
+     * @throws InvalidTrackingException When a tracking is not a Tracking instance.
      */
-    public function __construct(string $orderShopReference, ?Cart $shippedCart, ?Cart $unshippedCart, ?Address $deliveryAddress, ?Address $invoiceAddress)
-    {
+    public function __construct(
+        string $orderShopReference,
+        ?Cart $shippedCart,
+        ?Cart $unshippedCart,
+        ?Address $deliveryAddress,
+        ?Address $invoiceAddress,
+        ?array $trackings = null
+    ) {
         $this->orderShopReference = $orderShopReference;
         $this->shippedCart = $shippedCart;
         $this->unshippedCart = $unshippedCart;
         $this->deliveryAddress = $deliveryAddress;
         $this->invoiceAddress = $invoiceAddress;
+        $this->setTrackings($trackings);
     }
 
     /**
@@ -136,6 +153,30 @@ class OrderUpdateData extends DataTransferObject
     }
 
     /**
+     * @return Tracking[]|null
+     */
+    public function getTrackings(): ?array
+    {
+        return $this->trackings;
+    }
+
+    /**
+     * @param Tracking[]|null $trackings
+     *
+     * @throws InvalidTrackingException When a tracking is not a Tracking instance.
+     */
+    public function setTrackings(?array $trackings): void
+    {
+        foreach ($trackings ?? [] as $tracking) {
+            if (!$tracking instanceof Tracking) {
+                throw new InvalidTrackingException();
+            }
+        }
+
+        $this->trackings = $trackings !== null ? array_values($trackings) : null;
+    }
+
+    /**
      * Create a OrderUpdateData instance from an array.
      *
      * @param mixed[] $data
@@ -150,13 +191,15 @@ class OrderUpdateData extends DataTransferObject
         $unshippedCart = self::getDataValue($data, 'unshipped_cart', null);
         $deliveryAddress = self::getDataValue($data, 'delivery_address', null);
         $invoiceAddress = self::getDataValue($data, 'invoice_address', null);
+        $trackings = self::getDataValue($data, 'trackings', null);
 
         return new self(
             self::getDataValue($data, 'order_shop_reference'),
             $shippedCart ? Cart::fromArray($shippedCart) : null,
             $unshippedCart ? Cart::fromArray($unshippedCart) : null,
             $deliveryAddress ? Address::fromArray($deliveryAddress) : null,
-            $invoiceAddress ? Address::fromArray($invoiceAddress) : null
+            $invoiceAddress ? Address::fromArray($invoiceAddress) : null,
+            $trackings !== null ? Tracking::fromBatch($trackings) : null
         );
     }
 
@@ -170,6 +213,7 @@ class OrderUpdateData extends DataTransferObject
         $data['unshipped_cart'] = $this->unshippedCart ? $this->unshippedCart->toArray() : null;
         $data['delivery_address'] = $this->deliveryAddress ? $this->deliveryAddress->toArray() : null;
         $data['invoice_address'] = $this->invoiceAddress ? $this->invoiceAddress->toArray() : null;
+        $data['trackings'] = $this->trackings !== null ? Tracking::toBatchArray($this->trackings) : null;
 
         return $data;
     }

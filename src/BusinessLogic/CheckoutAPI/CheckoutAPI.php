@@ -28,7 +28,7 @@ class CheckoutAPI
     /**
      * Gets an CheckoutAPI instance.
      *
-     * @return Aspects
+     * @return CheckoutAPI
      */
     public static function get(): object
     {

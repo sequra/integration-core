@@ -47,16 +47,17 @@ class GeneralSettingsService
     }
 
     /**
-     * Retrieves general settings from the database via general settings repository.
+     * Returns the general settings of the store: the stored ones, or the defaults while none
+     * are stored. The three service lists come from the merchant's contract rather than from
+     * the stored settings, so they are derived from the credentials either way.
+     *
+     * @return GeneralSettings
      *
      * @throws FailedToRetrieveSellingCountriesException|BadMerchantIdException|HttpRequestException|WrongCredentialsException
      */
-    public function getGeneralSettings(): ?GeneralSettings
+    public function getGeneralSettings(): GeneralSettings
     {
-        $generalSettings = $this->generalSettingsRepository->getGeneralSettings();
-        if (!$generalSettings) {
-            return null;
-        }
+        $generalSettings = $this->generalSettingsRepository->getGeneralSettings() ?? $this->getDefaultGeneralSettings();
         $enabledForServices = [];
         $allowFirstServicePaymentDelay = [];
         $allowServiceRegistrationItems = [];
@@ -95,12 +96,30 @@ class GeneralSettingsService
     /**
      * Calls the repository to save the general settings to the database.
      *
+     * Settings saved without an order identifier keep the stored one, since not every
+     * caller knows about it, and leaving it out would otherwise erase the merchant's choice.
+     *
      * @param GeneralSettings $generalSettings
      *
      * @return void
      */
     public function saveGeneralSettings(GeneralSettings $generalSettings): void
     {
+        if ($generalSettings->getOrderIdentifier() === null) {
+            $storedSettings = $this->generalSettingsRepository->getGeneralSettings();
+            $generalSettings->setOrderIdentifier($storedSettings ? $storedSettings->getOrderIdentifier() : null);
+        }
+
         $this->generalSettingsRepository->setGeneralSettings($generalSettings);
+    }
+
+    /**
+     * Returns what a store answers with before anything is stored for it.
+     *
+     * @return GeneralSettings
+     */
+    protected function getDefaultGeneralSettings(): GeneralSettings
+    {
+        return new GeneralSettings(false, false, [], [], []);
     }
 }

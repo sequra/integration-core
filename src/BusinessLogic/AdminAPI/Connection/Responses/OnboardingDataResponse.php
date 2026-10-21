@@ -4,7 +4,6 @@ namespace SeQura\Core\BusinessLogic\AdminAPI\Connection\Responses;
 
 use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
-use SeQura\Core\BusinessLogic\Domain\StatisticalData\Models\StatisticalData;
 
 /**
  * Class OnboardingDataResponse
@@ -19,18 +18,25 @@ class OnboardingDataResponse extends Response
     protected $connectionData;
 
     /**
-     * @var StatisticalData
+     * @var string|null
      */
-    protected $statisticalData;
+    protected $portalUrl;
+
+    /**
+     * @var array<string, string|null>
+     */
+    protected $portalUrls;
 
     /**
      * @param ConnectionData[] $connectionData
-     * @param StatisticalData|null $statisticalData
+     * @param string|null $portalUrl URL of the SeQura portal the store is connected to
+     * @param array<string, string|null> $portalUrls Portal URL of each connection, keyed by its deployment
      */
-    public function __construct(array $connectionData, ?StatisticalData $statisticalData)
+    public function __construct(array $connectionData, ?string $portalUrl = null, array $portalUrls = [])
     {
         $this->connectionData = $connectionData;
-        $this->statisticalData = $statisticalData;
+        $this->portalUrl = $portalUrl;
+        $this->portalUrls = $portalUrls;
     }
 
     /**
@@ -42,7 +48,8 @@ class OnboardingDataResponse extends Response
             return [];
         }
 
-        $response['sendStatisticalData'] = $this->statisticalData && $this->statisticalData->isSendStatisticalData();
+        $response['portalUrl'] = $this->portalUrl;
+        $response['portalUrls'] = $this->portalUrls;
 
         foreach ($this->connectionData as $connectionData) {
             $response['environment'] = $connectionData->getEnvironment();

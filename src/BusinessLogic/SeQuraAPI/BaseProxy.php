@@ -99,7 +99,7 @@ class BaseProxy
      */
     public static function resolveApiBaseUrl(ConnectionData $connectionData, Deployment $deployment): string
     {
-        return $connectionData->getEnvironment() === self::LIVE_MODE ?
+        return $connectionData->isLive() ?
             $deployment->getLiveDeploymentURL()->getApiBaseUrl() :
             (self::getSandboxApiBaseUrlOverride() ?: $deployment->getSandboxDeploymentURL()->getApiBaseUrl());
     }
