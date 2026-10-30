@@ -132,6 +132,8 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Listeners\OrderCleanupTickListener;
+use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Listeners\TickEventListener;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
@@ -179,6 +181,7 @@ use SeQura\Core\BusinessLogic\Webhook\Validator\WebhookValidator;
 use SeQura\Core\BusinessLogic\WebhookAPI\Controller\WebhookController;
 use SeQura\Core\Infrastructure\BootstrapComponent as BaseBootstrapComponent;
 use SeQura\Core\Infrastructure\Configuration\Configuration;
+use SeQura\Core\Infrastructure\Configuration\ConfigurationManager;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\ServiceRegister;
@@ -444,6 +447,17 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(StatisticalDataRepositoryInterface::class),
                     ServiceRegister::getService(SendReportRepositoryInterface::class),
                     ServiceRegister::getService(TimeProvider::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            OrderCleanupService::class,
+            static function () {
+                return new OrderCleanupService(
+                    RepositoryRegistry::getRepository(SeQuraOrder::getClassName()),
+                    ServiceRegister::getService(TimeProvider::class),
+                    ServiceRegister::getService(ConfigurationManager::CLASS_NAME)
                 );
             }
         );
@@ -1122,6 +1136,7 @@ class BootstrapComponent extends BaseBootstrapComponent
         parent::initEvents();
 
         EventBus::getInstance()->when(TickEvent::class, TickEventListener::class . '::handle');
+        EventBus::getInstance()->when(TickEvent::class, OrderCleanupTickListener::class . '::handle');
 
         /**
          * @var QueueItemStateTransitionEventBus $queueBus

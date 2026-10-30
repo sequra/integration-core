@@ -126,6 +126,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
@@ -380,6 +381,13 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(StatisticalDataRepositoryInterface::class),
                     TestServiceRegister::getService(SendReportRepositoryInterface::class),
                     TestServiceRegister::getService(TimeProvider::class)
+                );
+            },
+            OrderCleanupService::class => static function () {
+                return new OrderCleanupService(
+                    TestRepositoryRegistry::getRepository(SeQuraOrder::getClassName()),
+                    TestServiceRegister::getService(TimeProvider::class),
+                    TestServiceRegister::getService(ConfigurationManager::class)
                 );
             },
             CountryConfigurationService::class => static function () {

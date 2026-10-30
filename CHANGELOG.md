@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+# [Unreleased]
+## Added
+- Daily cleanup of stale solicitations. `OrderCleanupService::cleanup()` deletes the `SeQuraOrder` rows that never became a shop order (no `orderRef1`) whose unshipped cart was last updated a day ago or earlier, or carries no update time. A cart update time that cannot be parsed keeps the row and is logged. Rows are read in batches of 500 and each batch is deleted with one `deleteWhere()` when the repository implements `ConditionallyDeletes`, one `delete()` per row otherwise. Nothing runs until the host schedules it: `OrderCleanupService::schedule($firstRunTimestamp)` stores the first run as the global configuration value `orderCleanupNextRun` and keeps an existing schedule unless `$overwrite` is `true`. From then on `OrderCleanupTickListener` enqueues an `OrderCleanupTask` (queue `order-cleanup`, low priority, no store context) on the first task runner tick after the scheduled time, moves the next run one day ahead, and skips the tick while an earlier cleanup task is still queued or running.
+
 # [v6.0.0](https://github.com/sequra/integration-core/tree/v6.0.0)
 ## Added
 - `ConnectionData` carries the id the SeQura portal gave the store's integration (`getIntegrationId()` / `setIntegrationId()`, a last optional constructor argument, `integrationId` in `toArray()`). Connecting and re-registering webhooks record it, and `ConnectionService::getPortalUrl()` then links to the settings page of the store's own integration instead of the list of integrations. A connection stored before the id was kept, or one whose registration was skipped, has none and still gets the list link. `ConnectionDataRepository::setConnectionData()` keeps the stored id when the model it is given carries none, so saving credentials through `saveConnectionData()` does not take the link away.
