@@ -38,8 +38,8 @@ class OrderCleanupTickListener
             return;
         }
 
-        $cleanupService->advanceNextRun();
         static::getQueueService()->enqueue(static::QUEUE_NAME, new OrderCleanupTask(), '', Priority::LOW);
+        $cleanupService->advanceNextRun();
     }
 
     /**

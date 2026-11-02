@@ -91,7 +91,7 @@ class OrderCleanupTickListenerTest extends BaseTestCase
         self::assertSame(OrderCleanupTask::getClassName(), $queueItems[0]->getTaskType());
         self::assertSame(OrderCleanupTickListener::QUEUE_NAME, $queueItems[0]->getQueueName());
         self::assertSame(Priority::LOW, $queueItems[0]->getPriority());
-        self::assertSame($this->now + 86400, $this->cleanupService->getNextRun());
+        self::assertSame($this->now - 60 + 86400, $this->cleanupService->getNextRun());
     }
 
     /**

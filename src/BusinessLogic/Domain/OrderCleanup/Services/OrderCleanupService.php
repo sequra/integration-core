@@ -33,6 +33,16 @@ class OrderCleanupService
     protected const BATCH_SIZE = 500;
 
     /**
+     * How many days a solicitation is kept after its cart was last updated.
+     */
+    protected const RETENTION_DAYS = 7;
+
+    /**
+     * Seconds between two cleanup runs.
+     */
+    protected const RUN_INTERVAL = 86400;
+
+    /**
      * @var RepositoryInterface
      */
     protected $orderRepository;
@@ -63,8 +73,8 @@ class OrderCleanupService
     }
 
     /**
-     * Deletes the solicitations without a shop order whose cart was last updated a day ago or earlier,
-     * or carries no update time at all.
+     * Deletes the solicitations without a shop order whose cart was last updated RETENTION_DAYS days ago or
+     * earlier, or carries no update time at all.
      *
      * The solicitations without a shop order reference are read in id order, once for an empty and once for
      * a missing reference, so every row is read once whatever is deleted along the way.
@@ -77,7 +87,9 @@ class OrderCleanupService
      */
     public function cleanup(?callable $afterEachBatch = null): int
     {
-        $cutoff = $this->timeProvider->getCurrentLocalTime()->modify('-1 day')->getTimestamp();
+        $cutoff = $this->timeProvider->getCurrentLocalTime()
+            ->modify('-' . static::RETENTION_DAYS . ' days')
+            ->getTimestamp();
         $deleted = 0;
 
         foreach ([Operators::EQUALS, Operators::NULL] as $orderRef1Operator) {
@@ -96,7 +108,7 @@ class OrderCleanupService
                     return $this->isStale($order, $cutoff);
                 }));
 
-                $this->deleteOrders($staleOrders);
+                $this->deleteOrders($staleOrders, $orderRef1Operator);
                 $deleted += \count($staleOrders);
                 if ($afterEachBatch !== null) {
                     $afterEachBatch();
@@ -157,7 +169,8 @@ class OrderCleanupService
     }
 
     /**
-     * Moves the next cleanup run one day ahead of now.
+     * Moves the next cleanup run to the first scheduled time of day that is still ahead of now, so the run keeps
+     * the time the host scheduled even after ticks came late or the task runner was down for a while.
      *
      * @return void
      *
@@ -165,11 +178,13 @@ class OrderCleanupService
      */
     public function advanceNextRun(): void
     {
-        $this->configurationManager->saveConfigValue(
-            static::NEXT_RUN_CONFIG_KEY,
-            $this->timeProvider->getCurrentLocalTime()->modify('+1 day')->getTimestamp(),
-            false
-        );
+        $now = $this->timeProvider->getCurrentLocalTime()->getTimestamp();
+        $nextRun = $this->getNextRun() ?? $now;
+        while ($nextRun <= $now) {
+            $nextRun += static::RUN_INTERVAL;
+        }
+
+        $this->configurationManager->saveConfigValue(static::NEXT_RUN_CONFIG_KEY, $nextRun, false);
     }
 
     /**
@@ -229,13 +244,17 @@ class OrderCleanupService
     /**
      * Deletes the given solicitations with one statement when the repository supports it, one by one otherwise.
      *
+     * The statement repeats the shop order reference condition the solicitations were read with, so one that
+     * became a shop order since it was read is kept.
+     *
      * @param SeQuraOrder[] $orders
+     * @param string $orderRef1Operator Operators::EQUALS or Operators::NULL, as the orders were read with.
      *
      * @return void
      *
      * @throws QueryFilterInvalidParamException
      */
-    protected function deleteOrders(array $orders): void
+    protected function deleteOrders(array $orders, string $orderRef1Operator): void
     {
         if (empty($orders)) {
             return;
@@ -245,7 +264,11 @@ class OrderCleanupService
             $ids = array_map(function (SeQuraOrder $order) {
                 return $order->getId();
             }, $orders);
-            $this->orderRepository->deleteWhere((new QueryFilter())->where('id', Operators::IN, $ids));
+            $this->orderRepository->deleteWhere(
+                (new QueryFilter())
+                    ->where('id', Operators::IN, $ids)
+                    ->where('orderRef1', $orderRef1Operator, $orderRef1Operator === Operators::EQUALS ? '' : null)
+            );
 
             return;
         }

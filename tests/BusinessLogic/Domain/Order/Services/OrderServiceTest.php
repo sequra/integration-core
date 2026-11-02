@@ -1430,6 +1430,40 @@ class OrderServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testResolicitingAnUnchangedCartWithTheSameUpdateTimeWritesNothing(): void
+    {
+        // Arrange
+        $repository = new class extends MockSeQuraOrderRepository {
+            /**
+             * @var int
+             */
+            public $writes = 0;
+
+            public function setSeQuraOrder(SeQuraOrder $order): void
+            {
+                $this->writes++;
+                parent::setSeQuraOrder($order);
+            }
+        };
+        $service = new OrderService(
+            $this->proxyReturningReferences(['ref-a', 'ref-b']),
+            $repository,
+            $this->merchantOrderBuilder,
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class)
+        );
+        $service->solicitFor($this->builderFor(2, 'load-1'));
+
+        // Act
+        $service->solicitFor($this->builderFor(2, 'load-1'));
+
+        // Assert
+        self::assertSame(1, $repository->writes);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testResolicitingWithPartialMerchantOptionsContinuesTheExistingOrder(): void
     {
         // Arrange

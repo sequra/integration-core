@@ -156,8 +156,10 @@ class OrderService
         if ($existingOrder && $this->isReusableFor($existingOrder, $createOrderRequest)) {
             // The cart's update time is left out of the comparison, so the stored one is refreshed here;
             // otherwise a reused solicitation keeps its first time and the order cleanup sees it as stale.
-            $existingOrder->setUnshippedCart($createOrderRequest->getCart());
-            $this->orderRepository->setSeQuraOrder($existingOrder);
+            if ($existingOrder->getUnshippedCart()->getUpdatedAt() !== $createOrderRequest->getCart()->getUpdatedAt()) {
+                $existingOrder->setUnshippedCart($createOrderRequest->getCart());
+                $this->orderRepository->setSeQuraOrder($existingOrder);
+            }
 
             return $existingOrder;
         }
