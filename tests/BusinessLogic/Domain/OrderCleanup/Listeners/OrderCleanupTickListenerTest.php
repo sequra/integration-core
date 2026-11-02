@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Listeners\OrderCleanupTickList
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Tasks\OrderCleanupTask;
 use SeQura\Core\Infrastructure\ORM\Interfaces\QueueItemRepository;
+use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Priority;
 use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
 use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
@@ -89,6 +90,7 @@ class OrderCleanupTickListenerTest extends BaseTestCase
         self::assertCount(1, $queueItems);
         self::assertSame(OrderCleanupTask::getClassName(), $queueItems[0]->getTaskType());
         self::assertSame(OrderCleanupTickListener::QUEUE_NAME, $queueItems[0]->getQueueName());
+        self::assertSame(Priority::LOW, $queueItems[0]->getPriority());
         self::assertSame($this->now + 86400, $this->cleanupService->getNextRun());
     }
 

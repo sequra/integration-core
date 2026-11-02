@@ -5,7 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 # [Unreleased]
 ## Added
-- Daily cleanup of stale solicitations. `OrderCleanupService::cleanup()` deletes the `SeQuraOrder` rows that never became a shop order (no `orderRef1`) whose unshipped cart was last updated a day ago or earlier, or carries no update time. A cart update time that cannot be parsed keeps the row and is logged. Rows are read in batches of 500 and each batch is deleted with one `deleteWhere()` when the repository implements `ConditionallyDeletes`, one `delete()` per row otherwise. Nothing runs until the host schedules it: `OrderCleanupService::schedule($firstRunTimestamp)` stores the first run as the global configuration value `orderCleanupNextRun` and keeps an existing schedule unless `$overwrite` is `true`. From then on `OrderCleanupTickListener` enqueues an `OrderCleanupTask` (queue `order-cleanup`, low priority, no store context) on the first task runner tick after the scheduled time, moves the next run one day ahead, and skips the tick while an earlier cleanup task is still queued or running.
+- Daily cleanup of stale solicitations: `SeQuraOrder` rows that never became a shop order (no `orderRef1`) whose cart was last updated a day ago or earlier, or carries no update time. Nothing runs until the host calls `OrderCleanupService::schedule($firstRunTimestamp)`; from then on `OrderCleanupTickListener` enqueues an `OrderCleanupTask` on the first task runner tick after the scheduled time, once a day, and skips the tick while an earlier cleanup is still queued or running. Repositories implementing `ConditionallyDeletes` delete each batch with one statement.
+
+## Changed
+- Re-soliciting an unchanged cart (the reused order of `OrderService::solicitFor()`) now stores the cart's current update time, so the daily cleanup does not take an in-flight solicitation for a stale one.
 
 # [v6.0.0](https://github.com/sequra/integration-core/tree/v6.0.0)
 ## Added

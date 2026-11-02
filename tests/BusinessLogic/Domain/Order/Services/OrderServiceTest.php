@@ -1412,6 +1412,24 @@ class OrderServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testResolicitingAnUnchangedCartRefreshesTheStoredCartUpdateTime(): void
+    {
+        // Arrange
+        $service = $this->serviceWithProxy($this->proxyReturningReferences(['ref-a', 'ref-b']));
+        $service->solicitFor($this->builderFor(2, 'load-1'));
+
+        // Act
+        $service->solicitFor($this->builderFor(2, 'load-2'));
+
+        // Assert
+        $stored = $this->orderRepository->getByOrderReference('ref-a');
+        self::assertNotNull($stored);
+        self::assertEquals('time-of-load-2', $stored->getUnshippedCart()->getUpdatedAt());
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testResolicitingWithPartialMerchantOptionsContinuesTheExistingOrder(): void
     {
         // Arrange

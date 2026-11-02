@@ -66,29 +66,43 @@ class OrderCleanupService
      * Deletes the solicitations without a shop order whose cart was last updated a day ago or earlier,
      * or carries no update time at all.
      *
+     * The solicitations without a shop order reference are read in id order, once for an empty and once for
+     * a missing reference, so every row is read once whatever is deleted along the way.
+     *
+     * @param callable|null $afterEachBatch Called after every batch, e.g. to report that the task is alive.
+     *
      * @return int Number of deleted solicitations.
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function cleanup(): int
+    public function cleanup(?callable $afterEachBatch = null): int
     {
         $cutoff = $this->timeProvider->getCurrentLocalTime()->modify('-1 day')->getTimestamp();
         $deleted = 0;
-        $offset = 0;
 
-        do {
-            /**
-             * @var SeQuraOrder[] $orders
-             */
-            $orders = $this->orderRepository->select($this->getSolicitationsFilter($offset));
-            $staleOrders = array_filter($orders, function (SeQuraOrder $order) use ($cutoff) {
-                return $this->isStale($order, $cutoff);
-            });
+        foreach ([Operators::EQUALS, Operators::NULL] as $orderRef1Operator) {
+            $lastId = 0;
+            do {
+                /**
+                 * @var SeQuraOrder[] $orders
+                 */
+                $orders = $this->orderRepository->select($this->getSolicitationsFilter($orderRef1Operator, $lastId));
+                if (empty($orders)) {
+                    break;
+                }
 
-            $this->deleteOrders($staleOrders);
-            $deleted += \count($staleOrders);
-            $offset += \count($orders) - \count($staleOrders);
-        } while (\count($orders) === static::BATCH_SIZE);
+                $lastId = (int)\end($orders)->getId();
+                $staleOrders = \array_values(\array_filter($orders, function (SeQuraOrder $order) use ($cutoff) {
+                    return $this->isStale($order, $cutoff);
+                }));
+
+                $this->deleteOrders($staleOrders);
+                $deleted += \count($staleOrders);
+                if ($afterEachBatch !== null) {
+                    $afterEachBatch();
+                }
+            } while (\count($orders) === static::BATCH_SIZE);
+        }
 
         Logger::logInfo("Order cleanup deleted $deleted stale solicitations.");
 
@@ -159,22 +173,23 @@ class OrderCleanupService
     }
 
     /**
-     * Returns the filter selecting one batch of solicitations that have no shop order.
+     * Returns the filter selecting the next batch of solicitations with an empty (EQUALS) or a missing (NULL)
+     * shop order reference after the given id.
      *
-     * @param int $offset
+     * @param string $orderRef1Operator Operators::EQUALS or Operators::NULL.
+     * @param int $afterId
      *
      * @return QueryFilter
      *
      * @throws QueryFilterInvalidParamException
      */
-    protected function getSolicitationsFilter(int $offset): QueryFilter
+    protected function getSolicitationsFilter(string $orderRef1Operator, int $afterId): QueryFilter
     {
         return (new QueryFilter())
-            ->where('orderRef1', Operators::NULL)
-            ->orWhere('orderRef1', Operators::EQUALS, '')
+            ->where('orderRef1', $orderRef1Operator, $orderRef1Operator === Operators::EQUALS ? '' : null)
+            ->where('id', Operators::GREATER_THAN, $afterId)
             ->orderBy('id')
-            ->setLimit(static::BATCH_SIZE)
-            ->setOffset($offset);
+            ->setLimit(static::BATCH_SIZE);
     }
 
     /**
@@ -229,7 +244,7 @@ class OrderCleanupService
         if ($this->orderRepository instanceof ConditionallyDeletes) {
             $ids = array_map(function (SeQuraOrder $order) {
                 return $order->getId();
-            }, array_values($orders));
+            }, $orders);
             $this->orderRepository->deleteWhere((new QueryFilter())->where('id', Operators::IN, $ids));
 
             return;

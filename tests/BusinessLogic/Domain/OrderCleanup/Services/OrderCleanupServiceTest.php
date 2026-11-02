@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\Infrastructure\Configuration\ConfigurationManager;
+use SeQura\Core\Infrastructure\ORM\Entity;
 use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
@@ -49,6 +50,11 @@ class OrderCleanupServiceTest extends BaseTestCase
      * @var int
      */
     private $nextId = 1;
+
+    /**
+     * @var mixed[]|null
+     */
+    private static $orderData;
 
     protected function setUp(): void
     {
@@ -205,6 +211,44 @@ class OrderCleanupServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testCallsBackAfterEachBatch(): void
+    {
+        for ($i = 0; $i < 501; $i++) {
+            $this->storeSolicitation('2026-10-28 03:00:00');
+        }
+        $batches = 0;
+
+        $this->service->cleanup(function () use (&$batches) {
+            $batches++;
+        });
+
+        self::assertSame(2, $batches);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testFinishesWhenTheRepositoryDeletesNothing(): void
+    {
+        $repository = new class extends MemoryRepository {
+            public function delete(Entity $entity)
+            {
+                return false;
+            }
+        };
+        $repository->setEntityClass(SeQuraOrder::getClassName());
+        for ($i = 0; $i < 501; $i++) {
+            $repository->save($this->solicitation('2026-10-28 03:00:00'));
+        }
+
+        $this->createService($repository)->cleanup();
+
+        self::assertCount(501, $repository->select());
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testDeletesEachBatchWithOneConditionalDelete(): void
     {
         $repository = $this->createMock(MemoryRepositoryWithConditionalDelete::class);
@@ -212,7 +256,7 @@ class OrderCleanupServiceTest extends BaseTestCase
             $this->solicitation('2026-10-28 03:00:00', '', 11),
             $this->solicitation('2026-10-30 02:00:00', '', 12),
             $this->solicitation(null, '', 13),
-        ]);
+        ], []);
         $repository->expects(self::never())->method('delete');
         $repository->expects(self::once())
             ->method('deleteWhere')
@@ -230,7 +274,10 @@ class OrderCleanupServiceTest extends BaseTestCase
     {
         $stale = $this->solicitation('2026-10-28 03:00:00', '', 21);
         $repository = $this->createMock(MemoryRepository::class);
-        $repository->method('select')->willReturn([$stale, $this->solicitation('2026-10-30 02:00:00', '', 22)]);
+        $repository->method('select')->willReturnOnConsecutiveCalls(
+            [$stale, $this->solicitation('2026-10-30 02:00:00', '', 22)],
+            []
+        );
         $repository->expects(self::once())->method('delete')->with($stale);
 
         $deleted = $this->createService($repository)->cleanup();
@@ -344,8 +391,11 @@ class OrderCleanupServiceTest extends BaseTestCase
      */
     private function solicitation(?string $cartUpdatedAt, string $orderRef1 = '', ?int $id = null): SeQuraOrder
     {
-        $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
-        $seQuraOrder = SeQuraOrder::fromArray(json_decode($order, true)['order']);
+        if (self::$orderData === null) {
+            $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
+            self::$orderData = json_decode($order, true)['order'];
+        }
+        $seQuraOrder = SeQuraOrder::fromArray(self::$orderData);
         $seQuraOrder->setReference('sequra-ref-' . $this->nextId++);
         $seQuraOrder->setOrderRef1($orderRef1);
         $seQuraOrder->setUnshippedCart(new Cart('EUR', false, [], null, null, $cartUpdatedAt));

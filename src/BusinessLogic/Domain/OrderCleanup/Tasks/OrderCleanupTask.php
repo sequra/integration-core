@@ -5,7 +5,6 @@ namespace SeQura\Core\BusinessLogic\Domain\OrderCleanup\Tasks;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use SeQura\Core\Infrastructure\ServiceRegister;
-use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Priority;
 use SeQura\Core\Infrastructure\TaskExecution\Task;
 
 /**
@@ -34,20 +33,14 @@ class OrderCleanupTask extends Task
 
     /**
      * @inheritDoc
-     */
-    public function getPriority(): int
-    {
-        return Priority::LOW;
-    }
-
-    /**
-     * @inheritDoc
      *
      * @throws QueryFilterInvalidParamException
      */
     public function execute(): void
     {
-        $this->getOrderCleanupService()->cleanup();
+        $this->getOrderCleanupService()->cleanup(function () {
+            $this->reportAlive();
+        });
         $this->reportProgress(100);
     }
 
