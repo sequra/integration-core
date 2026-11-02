@@ -4,12 +4,15 @@ namespace SeQura\Core\BusinessLogic\Domain\OrderCleanup\Listeners;
 
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Tasks\OrderCleanupTask;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
+use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Priority;
 use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
 use SeQura\Core\Infrastructure\TaskExecution\QueueService;
+use Throwable;
 
 /**
  * Class OrderCleanupTickListener
@@ -26,12 +29,31 @@ class OrderCleanupTickListener
     public const QUEUE_NAME = 'order-cleanup';
 
     /**
+     * Enqueues the cleanup when it is due. A failure is logged and never leaves the tick, so it cannot keep the
+     * task runner from waking up again.
+     *
+     * @return void
+     */
+    public static function handle(): void
+    {
+        try {
+            static::enqueueWhenDue();
+        } catch (Throwable $exception) {
+            Logger::logError(
+                'Order cleanup could not be enqueued.',
+                'Core',
+                [new LogContextData('error', $exception->getMessage())]
+            );
+        }
+    }
+
+    /**
      * @return void
      *
      * @throws QueryFilterInvalidParamException
      * @throws QueueStorageUnavailableException
      */
-    public static function handle(): void
+    protected static function enqueueWhenDue(): void
     {
         $cleanupService = static::getOrderCleanupService();
         if (!$cleanupService->isDue() || static::isCleanupPending()) {

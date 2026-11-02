@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\OrderCleanup\Services;
 
 use DateTime;
+use DateTimeZone;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
@@ -292,6 +293,7 @@ class OrderCleanupServiceTest extends BaseTestCase
         $repository = $this->createMock(MemoryRepository::class);
         $repository->method('select')->willReturnOnConsecutiveCalls(
             [$stale, $this->solicitation('2026-10-30 02:00:00', '', 22)],
+            [$stale],
             []
         );
         $repository->expects(self::once())->method('delete')->with($stale);
@@ -370,6 +372,59 @@ class OrderCleanupServiceTest extends BaseTestCase
         $this->service->advanceNextRun();
 
         self::assertSame((new DateTime('2026-10-31 02:30:00'))->getTimestamp(), $this->service->getNextRun());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testKeepsTheScheduledLocalTimeAcrossADaylightSavingChange(): void
+    {
+        $madridTime = new class extends TestTimeProvider {
+            public function getCurrentLocalTime(): DateTime
+            {
+                return parent::getCurrentLocalTime()->setTimezone(new DateTimeZone('Europe/Madrid'));
+            }
+        };
+        $madridTime->setCurrentLocalTime(new DateTime('2026-10-26 12:00:00', new DateTimeZone('Europe/Madrid')));
+        $service = new OrderCleanupService(
+            $this->orderRepository,
+            $madridTime,
+            TestServiceRegister::getService(ConfigurationManager::class)
+        );
+        $service->schedule((new DateTime('2026-10-24 03:00:00', new DateTimeZone('Europe/Madrid')))->getTimestamp());
+
+        $service->advanceNextRun();
+
+        self::assertSame(
+            (new DateTime('2026-10-27 03:00:00', new DateTimeZone('Europe/Madrid')))->getTimestamp(),
+            $service->getNextRun()
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testKeepsASolicitationThatBecameAShopOrderSinceItWasReadWithoutConditionalDelete(): void
+    {
+        $repository = new class extends MemoryRepository {
+            public function select(?QueryFilter $filter = null)
+            {
+                $orders = parent::select($filter);
+                foreach ($orders as $order) {
+                    $converted = clone $order;
+                    $converted->setOrderRef1('000000123');
+                    $this->update($converted);
+                }
+
+                return $orders;
+            }
+        };
+        $repository->setEntityClass(SeQuraOrder::getClassName());
+        $repository->save($this->solicitation('2026-10-20 03:00:00'));
+
+        $this->createService($repository)->cleanup();
+
+        self::assertCount(1, TestRepositoryRegistry::getRepository(SeQuraOrder::getClassName())->select());
     }
 
     /**

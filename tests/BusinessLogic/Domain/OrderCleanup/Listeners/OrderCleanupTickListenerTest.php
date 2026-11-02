@@ -4,15 +4,18 @@ namespace SeQura\Core\Tests\BusinessLogic\Domain\OrderCleanup\Listeners;
 
 use DateTime;
 use Exception;
+use RuntimeException;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Listeners\OrderCleanupTickListener;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Tasks\OrderCleanupTask;
+use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
 use SeQura\Core\Infrastructure\ORM\Interfaces\QueueItemRepository;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Priority;
 use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
 use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestShopLogger;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\TestRepositoryRegistry;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Utility\TestTimeProvider;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -121,6 +124,27 @@ class OrderCleanupTickListenerTest extends BaseTestCase
         OrderCleanupTickListener::handle();
 
         self::assertCount(2, $this->queueRepository->select());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testLogsAFailureInsteadOfLettingItLeaveTheTick(): void
+    {
+        $logger = new TestShopLogger();
+        TestServiceRegister::registerService(ShopLoggerAdapter::CLASS_NAME, static function () use ($logger) {
+            return $logger;
+        });
+        $failingService = $this->createMock(OrderCleanupService::class);
+        $failingService->method('isDue')->willThrowException(new RuntimeException('storage unavailable'));
+        TestServiceRegister::registerService(OrderCleanupService::class, static function () use ($failingService) {
+            return $failingService;
+        });
+
+        OrderCleanupTickListener::handle();
+
+        self::assertTrue($logger->isMessageContainedInLog('Order cleanup could not be enqueued.'));
+        self::assertEmpty($this->queueRepository->select());
     }
 
     /**

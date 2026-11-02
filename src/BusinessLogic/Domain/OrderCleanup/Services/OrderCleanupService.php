@@ -38,11 +38,6 @@ class OrderCleanupService
     protected const RETENTION_DAYS = 7;
 
     /**
-     * Seconds between two cleanup runs.
-     */
-    protected const RUN_INTERVAL = 86400;
-
-    /**
      * @var RepositoryInterface
      */
     protected $orderRepository;
@@ -170,7 +165,8 @@ class OrderCleanupService
 
     /**
      * Moves the next cleanup run to the first scheduled time of day that is still ahead of now, so the run keeps
-     * the time the host scheduled even after ticks came late or the task runner was down for a while.
+     * the time the host scheduled even after ticks came late, the task runner was down for a while or the clock
+     * changed for daylight saving time.
      *
      * @return void
      *
@@ -178,13 +174,13 @@ class OrderCleanupService
      */
     public function advanceNextRun(): void
     {
-        $now = $this->timeProvider->getCurrentLocalTime()->getTimestamp();
-        $nextRun = $this->getNextRun() ?? $now;
+        $now = $this->timeProvider->getCurrentLocalTime();
+        $nextRun = (clone $now)->setTimestamp($this->getNextRun() ?? $now->getTimestamp());
         while ($nextRun <= $now) {
-            $nextRun += static::RUN_INTERVAL;
+            $nextRun->modify('+1 day');
         }
 
-        $this->configurationManager->saveConfigValue(static::NEXT_RUN_CONFIG_KEY, $nextRun, false);
+        $this->configurationManager->saveConfigValue(static::NEXT_RUN_CONFIG_KEY, $nextRun->getTimestamp(), false);
     }
 
     /**
@@ -244,8 +240,9 @@ class OrderCleanupService
     /**
      * Deletes the given solicitations with one statement when the repository supports it, one by one otherwise.
      *
-     * The statement repeats the shop order reference condition the solicitations were read with, so one that
-     * became a shop order since it was read is kept.
+     * The delete repeats the shop order reference condition the solicitations were read with, so one that
+     * became a shop order since it was read is kept. Without a conditional delete the solicitations are read
+     * again with that condition and only those are deleted.
      *
      * @param SeQuraOrder[] $orders
      * @param string $orderRef1Operator Operators::EQUALS or Operators::NULL, as the orders were read with.
@@ -260,20 +257,20 @@ class OrderCleanupService
             return;
         }
 
+        $ids = array_map(function (SeQuraOrder $order) {
+            return $order->getId();
+        }, $orders);
+        $filter = (new QueryFilter())
+            ->where('id', Operators::IN, $ids)
+            ->where('orderRef1', $orderRef1Operator, $orderRef1Operator === Operators::EQUALS ? '' : null);
+
         if ($this->orderRepository instanceof ConditionallyDeletes) {
-            $ids = array_map(function (SeQuraOrder $order) {
-                return $order->getId();
-            }, $orders);
-            $this->orderRepository->deleteWhere(
-                (new QueryFilter())
-                    ->where('id', Operators::IN, $ids)
-                    ->where('orderRef1', $orderRef1Operator, $orderRef1Operator === Operators::EQUALS ? '' : null)
-            );
+            $this->orderRepository->deleteWhere($filter);
 
             return;
         }
 
-        foreach ($orders as $order) {
+        foreach ($this->orderRepository->select($filter) as $order) {
             $this->orderRepository->delete($order);
         }
     }
