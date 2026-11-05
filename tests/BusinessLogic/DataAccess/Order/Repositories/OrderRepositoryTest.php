@@ -13,6 +13,7 @@ use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MemoryRepositoryWithConditionalDelete;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\TestRepositoryRegistry;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
@@ -122,6 +123,74 @@ class OrderRepositoryTest extends BaseTestCase
         self::assertCount(1, $orders);
         self::assertEquals('shop-1', $orders[0]->getOrderRef1());
         self::assertNotNull($this->seQuraOrderRepository->getByOrderReference('ref-b'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetsUnlinkedOrdersAfterTheGivenIdInIdOrder(): void
+    {
+        $this->repository->save($this->order('ref-1', 'cart-1'));
+        $this->repository->save($this->order('ref-2', 'cart-2', 'shop-2'));
+        $this->repository->save($this->order('ref-3', 'cart-3'));
+        $this->repository->save($this->order('ref-4', 'cart-4'));
+        $this->repository->save($this->order('ref-5', 'cart-5'));
+        $firstId = (int)$this->seQuraOrderRepository->getByOrderReference('ref-1')->getId();
+
+        $orders = $this->seQuraOrderRepository->getUnlinkedOrdersAfter($firstId, 2);
+
+        self::assertSame(['ref-3', 'ref-4'], array_map(static function (SeQuraOrder $order) {
+            return $order->getReference();
+        }, $orders));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testDeletesOnlyTheGivenOrdersThatAreStillUnlinked(): void
+    {
+        $this->repository->save($this->order('ref-1', 'cart-1'));
+        $this->repository->save($this->order('ref-2', 'cart-2'));
+        $this->repository->save($this->order('ref-3', 'cart-3'));
+        $ids = array_map(function (string $reference) {
+            return (int)$this->seQuraOrderRepository->getByOrderReference($reference)->getId();
+        }, ['ref-1', 'ref-2']);
+        $this->seQuraOrderRepository->setSeQuraOrder($this->order('ref-2', 'cart-2', 'shop-2'));
+
+        $this->seQuraOrderRepository->deleteUnlinkedOrders($ids);
+
+        self::assertNull($this->seQuraOrderRepository->getByOrderReference('ref-1'));
+        self::assertNotNull($this->seQuraOrderRepository->getByOrderReference('ref-2'));
+        self::assertNotNull($this->seQuraOrderRepository->getByOrderReference('ref-3'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testDeletesUnlinkedOrdersWithOneConditionalDeletePerCondition(): void
+    {
+        $repository = $this->createMock(MemoryRepositoryWithConditionalDelete::class);
+        $repository->expects(self::never())->method('delete');
+        $repository->expects(self::exactly(2))->method('deleteWhere');
+
+        (new SeQuraOrderRepository($repository))->deleteUnlinkedOrders([11, 13]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testKeepsAnOrderLinkedSinceItWasReadWithAConditionalDelete(): void
+    {
+        $repository = new MemoryRepositoryWithConditionalDelete();
+        $repository->setEntityClass(SeQuraOrder::getClassName());
+        $orderRepository = new SeQuraOrderRepository($repository);
+        $repository->save($this->order('ref-1', 'cart-1'));
+        $id = (int)$orderRepository->getByOrderReference('ref-1')->getId();
+        $orderRepository->setSeQuraOrder($this->order('ref-1', 'cart-1', 'shop-1'));
+
+        $orderRepository->deleteUnlinkedOrders([$id]);
+
+        self::assertNotNull($orderRepository->getByOrderReference('ref-1'));
     }
 
     /**

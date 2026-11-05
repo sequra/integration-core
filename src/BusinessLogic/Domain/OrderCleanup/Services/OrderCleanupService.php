@@ -2,16 +2,11 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services;
 
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
-use SeQura\Core\Infrastructure\Configuration\ConfigurationManager;
-use SeQura\Core\Infrastructure\Logger\LogContextData;
-use SeQura\Core\Infrastructure\Logger\Logger;
-use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
-use SeQura\Core\Infrastructure\ORM\Interfaces\ConditionallyDeletes;
-use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
-use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
-use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
-use SeQura\Core\Infrastructure\Utility\TimeProvider;
+use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderCleanup\RepositoryContracts\OrderCleanupScheduleRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 
 /**
  * Class OrderCleanupService
@@ -23,95 +18,82 @@ use SeQura\Core\Infrastructure\Utility\TimeProvider;
 class OrderCleanupService
 {
     /**
-     * Name of the global configuration value holding the timestamp of the next cleanup run.
-     */
-    public const NEXT_RUN_CONFIG_KEY = 'orderCleanupNextRun';
-
-    /**
      * How many solicitations are read and deleted at once.
      */
     protected const BATCH_SIZE = 500;
 
     /**
-     * How many days a solicitation is kept after its cart was last updated.
+     * How many days a solicitation is kept after it was last solicited.
      */
     protected const RETENTION_DAYS = 7;
 
     /**
-     * @var RepositoryInterface
+     * @var SeQuraOrderRepositoryInterface
      */
     protected $orderRepository;
 
     /**
-     * @var TimeProvider
+     * @var OrderCleanupScheduleRepositoryInterface
      */
-    protected $timeProvider;
+    protected $scheduleRepository;
 
     /**
-     * @var ConfigurationManager
+     * @var ClockInterface
      */
-    protected $configurationManager;
+    protected $clock;
 
     /**
-     * @param RepositoryInterface $orderRepository Repository of the SeQuraOrder entity.
-     * @param TimeProvider $timeProvider
-     * @param ConfigurationManager $configurationManager
+     * @param SeQuraOrderRepositoryInterface $orderRepository
+     * @param OrderCleanupScheduleRepositoryInterface $scheduleRepository
+     * @param ClockInterface $clock
      */
     public function __construct(
-        RepositoryInterface $orderRepository,
-        TimeProvider $timeProvider,
-        ConfigurationManager $configurationManager
+        SeQuraOrderRepositoryInterface $orderRepository,
+        OrderCleanupScheduleRepositoryInterface $scheduleRepository,
+        ClockInterface $clock
     ) {
         $this->orderRepository = $orderRepository;
-        $this->timeProvider = $timeProvider;
-        $this->configurationManager = $configurationManager;
+        $this->scheduleRepository = $scheduleRepository;
+        $this->clock = $clock;
     }
 
     /**
-     * Deletes the solicitations without a shop order whose cart was last updated RETENTION_DAYS days ago or
-     * earlier, or carries no update time at all.
+     * Deletes the solicitations without a shop order that were last solicited RETENTION_DAYS days ago or earlier.
      *
-     * The solicitations without a shop order reference are read in id order, once for an empty and once for
-     * a missing reference, so every row is read once whatever is deleted along the way.
+     * A solicitation SeQura already settled is kept, and so is one whose solicitation time is unknown: an order
+     * stored before that time was kept falls back to its cart's update time, and is kept when that is missing
+     * or unreadable too, so nothing is deleted on a guess.
      *
      * @param callable|null $afterEachBatch Called after every batch, e.g. to report that the task is alive.
      *
      * @return int Number of deleted solicitations.
-     *
-     * @throws QueryFilterInvalidParamException
      */
     public function cleanup(?callable $afterEachBatch = null): int
     {
-        $cutoff = $this->timeProvider->getCurrentLocalTime()
-            ->modify('-' . static::RETENTION_DAYS . ' days')
-            ->getTimestamp();
+        $cutoff = $this->clock->now()->modify('-' . static::RETENTION_DAYS . ' days')->getTimestamp();
         $deleted = 0;
+        $lastId = 0;
 
-        foreach ([Operators::EQUALS, Operators::NULL] as $orderRef1Operator) {
-            $lastId = 0;
-            do {
-                /**
-                 * @var SeQuraOrder[] $orders
-                 */
-                $orders = $this->orderRepository->select($this->getSolicitationsFilter($orderRef1Operator, $lastId));
-                if (empty($orders)) {
-                    break;
+        do {
+            $orders = $this->orderRepository->getUnlinkedOrdersAfter($lastId, static::BATCH_SIZE);
+            if (empty($orders)) {
+                break;
+            }
+
+            $lastId = (int)\end($orders)->getId();
+            $staleIds = [];
+            foreach ($orders as $order) {
+                if ($this->isStale($order, $cutoff)) {
+                    $staleIds[] = (int)$order->getId();
                 }
+            }
 
-                $lastId = (int)\end($orders)->getId();
-                $staleOrders = \array_values(\array_filter($orders, function (SeQuraOrder $order) use ($cutoff) {
-                    return $this->isStale($order, $cutoff);
-                }));
-
-                $this->deleteOrders($staleOrders, $orderRef1Operator);
-                $deleted += \count($staleOrders);
-                if ($afterEachBatch !== null) {
-                    $afterEachBatch();
-                }
-            } while (\count($orders) === static::BATCH_SIZE);
-        }
-
-        Logger::logInfo("Order cleanup deleted $deleted stale solicitations.");
+            $this->orderRepository->deleteUnlinkedOrders($staleIds);
+            $deleted += \count($staleIds);
+            if ($afterEachBatch !== null) {
+                $afterEachBatch();
+            }
+        } while (\count($orders) === static::BATCH_SIZE);
 
         return $deleted;
     }
@@ -123,8 +105,6 @@ class OrderCleanupService
      * @param bool $overwrite
      *
      * @return void
-     *
-     * @throws QueryFilterInvalidParamException
      */
     public function schedule(int $firstRunTimestamp, bool $overwrite = false): void
     {
@@ -132,81 +112,51 @@ class OrderCleanupService
             return;
         }
 
-        $this->configurationManager->saveConfigValue(static::NEXT_RUN_CONFIG_KEY, $firstRunTimestamp, false);
+        $this->scheduleRepository->setNextRun($firstRunTimestamp);
     }
 
     /**
      * Returns the timestamp of the next cleanup run, or null when the cleanup was never scheduled.
      *
      * @return int|null
-     *
-     * @throws QueryFilterInvalidParamException
      */
     public function getNextRun(): ?int
     {
-        $nextRun = $this->configurationManager->getConfigValue(static::NEXT_RUN_CONFIG_KEY, null, false);
-
-        return is_numeric($nextRun) ? (int)$nextRun : null;
+        return $this->scheduleRepository->getNextRun();
     }
 
     /**
      * Whether the cleanup is scheduled and its next run time has come.
      *
      * @return bool
-     *
-     * @throws QueryFilterInvalidParamException
      */
     public function isDue(): bool
     {
         $nextRun = $this->getNextRun();
 
-        return $nextRun !== null && $nextRun <= $this->timeProvider->getCurrentLocalTime()->getTimestamp();
+        return $nextRun !== null && $nextRun <= $this->clock->now()->getTimestamp();
     }
 
     /**
-     * Moves the next cleanup run to the first scheduled time of day that is still ahead of now, so the run keeps
-     * the time the host scheduled even after ticks came late, the task runner was down for a while or the clock
-     * changed for daylight saving time.
+     * Moves the next cleanup run a day ahead, as many times as it takes to get past now, so ticks that came late
+     * or a task runner that was down do not shift the scheduled time of day. Days are counted in the timezone of
+     * the time the clock returns, PHP's default timezone unless the host sets another.
      *
      * @return void
-     *
-     * @throws QueryFilterInvalidParamException
      */
     public function advanceNextRun(): void
     {
-        $now = $this->timeProvider->getCurrentLocalTime();
+        $now = $this->clock->now();
         $nextRun = (clone $now)->setTimestamp($this->getNextRun() ?? $now->getTimestamp());
         while ($nextRun <= $now) {
             $nextRun->modify('+1 day');
         }
 
-        $this->configurationManager->saveConfigValue(static::NEXT_RUN_CONFIG_KEY, $nextRun->getTimestamp(), false);
+        $this->scheduleRepository->setNextRun($nextRun->getTimestamp());
     }
 
     /**
-     * Returns the filter selecting the next batch of solicitations with an empty (EQUALS) or a missing (NULL)
-     * shop order reference after the given id.
-     *
-     * @param string $orderRef1Operator Operators::EQUALS or Operators::NULL.
-     * @param int $afterId
-     *
-     * @return QueryFilter
-     *
-     * @throws QueryFilterInvalidParamException
-     */
-    protected function getSolicitationsFilter(string $orderRef1Operator, int $afterId): QueryFilter
-    {
-        return (new QueryFilter())
-            ->where('orderRef1', $orderRef1Operator, $orderRef1Operator === Operators::EQUALS ? '' : null)
-            ->where('id', Operators::GREATER_THAN, $afterId)
-            ->orderBy('id')
-            ->setLimit(static::BATCH_SIZE);
-    }
-
-    /**
-     * Whether the solicitation's cart was last updated at or before the cutoff, or carries no update time.
-     *
-     * A time that cannot be parsed keeps the solicitation, so nothing is deleted on a guess.
+     * Whether the solicitation is still unsettled and was last solicited at or before the cutoff.
      *
      * @param SeQuraOrder $order
      * @param int $cutoff
@@ -215,63 +165,36 @@ class OrderCleanupService
      */
     protected function isStale(SeQuraOrder $order, int $cutoff): bool
     {
-        $updatedAt = $order->getUnshippedCart()->getUpdatedAt();
-        if ($updatedAt === null || $updatedAt === '') {
-            return true;
-        }
-
-        $updatedAtTimestamp = strtotime($updatedAt);
-        if ($updatedAtTimestamp === false) {
-            Logger::logWarning(
-                'Order cleanup kept a solicitation with an unreadable cart update time.',
-                'Core',
-                [
-                    new LogContextData('reference', $order->getReference()),
-                    new LogContextData('updatedAt', $updatedAt),
-                ]
-            );
-
+        if (\in_array($order->getState(), OrderRequestStates::SETTLED_STATES, true)) {
             return false;
         }
 
-        return $updatedAtTimestamp <= $cutoff;
+        $solicitedAt = $this->getSolicitationTime($order);
+
+        return $solicitedAt !== null && $solicitedAt <= $cutoff;
     }
 
     /**
-     * Deletes the given solicitations with one statement when the repository supports it, one by one otherwise.
+     * Returns when the order was last solicited, falling back to its cart's update time for an order stored
+     * before the solicitation time was kept, or null when neither is known.
      *
-     * The delete repeats the shop order reference condition the solicitations were read with, so one that
-     * became a shop order since it was read is kept. Without a conditional delete the solicitations are read
-     * again with that condition and only those are deleted.
+     * @param SeQuraOrder $order
      *
-     * @param SeQuraOrder[] $orders
-     * @param string $orderRef1Operator Operators::EQUALS or Operators::NULL, as the orders were read with.
-     *
-     * @return void
-     *
-     * @throws QueryFilterInvalidParamException
+     * @return int|null
      */
-    protected function deleteOrders(array $orders, string $orderRef1Operator): void
+    protected function getSolicitationTime(SeQuraOrder $order): ?int
     {
-        if (empty($orders)) {
-            return;
+        if ($order->getSolicitedAt() !== null) {
+            return $order->getSolicitedAt();
         }
 
-        $ids = array_map(function (SeQuraOrder $order) {
-            return $order->getId();
-        }, $orders);
-        $filter = (new QueryFilter())
-            ->where('id', Operators::IN, $ids)
-            ->where('orderRef1', $orderRef1Operator, $orderRef1Operator === Operators::EQUALS ? '' : null);
-
-        if ($this->orderRepository instanceof ConditionallyDeletes) {
-            $this->orderRepository->deleteWhere($filter);
-
-            return;
+        $updatedAt = $order->getUnshippedCart()->getUpdatedAt();
+        if ($updatedAt === null || $updatedAt === '') {
+            return null;
         }
 
-        foreach ($this->orderRepository->select($filter) as $order) {
-            $this->orderRepository->delete($order);
-        }
+        $updatedAtTimestamp = strtotime($updatedAt);
+
+        return $updatedAtTimestamp === false ? null : $updatedAtTimestamp;
     }
 }

@@ -3,22 +3,14 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\OrderCleanup\Services;
 
 use DateTime;
-use DateTimeZone;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
+use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
-use SeQura\Core\Infrastructure\Configuration\ConfigurationManager;
-use SeQura\Core\Infrastructure\ORM\Entity;
-use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
-use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
-use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
-use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MemoryRepositoryWithConditionalDelete;
-use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestShopLogger;
-use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\MemoryRepository;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\TestRepositoryRegistry;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Utility\TestTimeProvider;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -33,11 +25,6 @@ class OrderCleanupServiceTest extends BaseTestCase
     private const NOW = '2026-10-30 03:00:00';
 
     /**
-     * @var TestTimeProvider
-     */
-    private $timeProvider;
-
-    /**
      * @var RepositoryInterface
      */
     private $orderRepository;
@@ -50,7 +37,7 @@ class OrderCleanupServiceTest extends BaseTestCase
     /**
      * @var int
      */
-    private $nextId = 1;
+    private $nextReference = 1;
 
     /**
      * @var mixed[]|null
@@ -61,22 +48,35 @@ class OrderCleanupServiceTest extends BaseTestCase
     {
         parent::setUp();
 
-        $this->timeProvider = new TestTimeProvider();
-        $this->timeProvider->setCurrentLocalTime(new DateTime(self::NOW));
-        TestServiceRegister::registerService(TimeProvider::class, function () {
-            return $this->timeProvider;
+        $timeProvider = new TestTimeProvider();
+        $timeProvider->setCurrentLocalTime(new DateTime(self::NOW));
+        TestServiceRegister::registerService(TimeProvider::class, static function () use ($timeProvider) {
+            return $timeProvider;
         });
 
         $this->orderRepository = TestRepositoryRegistry::getRepository(SeQuraOrder::getClassName());
-        $this->service = $this->createService($this->orderRepository);
+        $this->service = TestServiceRegister::getService(OrderCleanupService::class);
     }
 
     /**
      * @throws Exception
      */
-    public function testDeletesASolicitationLastUpdatedMoreThanSevenDaysAgo(): void
+    public function testDeletesASolicitationSolicitedMoreThanSevenDaysAgo(): void
     {
-        $this->storeSolicitation('2026-10-20 03:00:00');
+        $this->store($this->solicitation('2026-10-20 03:00:00'));
+
+        $deleted = $this->service->cleanup();
+
+        self::assertSame(1, $deleted);
+        self::assertEmpty($this->orderRepository->select());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testDeletesASolicitationSolicitedExactlySevenDaysAgo(): void
+    {
+        $this->store($this->solicitation('2026-10-23 03:00:00'));
 
         $this->service->cleanup();
 
@@ -86,21 +86,9 @@ class OrderCleanupServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testDeletesASolicitationLastUpdatedExactlySevenDaysAgo(): void
+    public function testKeepsASolicitationSolicitedSixDaysAgo(): void
     {
-        $this->storeSolicitation('2026-10-23 03:00:00');
-
-        $this->service->cleanup();
-
-        self::assertEmpty($this->orderRepository->select());
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testKeepsASolicitationUpdatedSixDaysAgo(): void
-    {
-        $this->storeSolicitation('2026-10-24 03:00:00');
+        $this->store($this->solicitation('2026-10-24 03:00:00'));
 
         $this->service->cleanup();
 
@@ -110,9 +98,9 @@ class OrderCleanupServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testKeepsASolicitationUpdatedAnHourAgo(): void
+    public function testKeepsAFreshSolicitationOfACartLastUpdatedLongAgo(): void
     {
-        $this->storeSolicitation('2026-10-30 02:00:00');
+        $this->store($this->solicitation('2026-10-30 02:00:00', '2026-10-01 00:00:00'));
 
         $this->service->cleanup();
 
@@ -122,36 +110,23 @@ class OrderCleanupServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testDeletesASolicitationWithoutACartUpdateTime(): void
+    public function testKeepsAFreshSolicitationWhoseCartHasNoUpdateTime(): void
     {
-        $this->storeSolicitation(null);
+        $this->store($this->solicitation('2026-10-30 02:00:00', null));
 
         $this->service->cleanup();
 
-        self::assertEmpty($this->orderRepository->select());
+        self::assertCount(1, $this->orderRepository->select());
     }
 
     /**
      * @throws Exception
      */
-    public function testKeepsAnOrderWithAShopOrderReferenceWhateverItsAge(): void
+    public function testFallsBackToTheCartUpdateTimeForAnOrderStoredWithoutASolicitationTime(): void
     {
-        $this->storeSolicitation('2020-01-01 00:00:00', '000000123');
-        $this->storeSolicitation(null, '000000124');
-
-        $this->service->cleanup();
-
-        self::assertCount(2, $this->orderRepository->select());
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testReadsBothTheShopAndTheIsoTimestampFormats(): void
-    {
-        $this->storeSolicitation('2026-10-20 03:00:00');
-        $this->storeSolicitation('2026-10-20T03:00:00+00:00');
-        $this->storeSolicitation('2026-10-30T02:00:00+00:00');
+        $this->store($this->solicitation(null, '2026-10-20 03:00:00'));
+        $this->store($this->solicitation(null, '2026-10-20T03:00:00+00:00'));
+        $this->store($this->solicitation(null, '2026-10-30T02:00:00+00:00'));
 
         $deleted = $this->service->cleanup();
 
@@ -162,29 +137,54 @@ class OrderCleanupServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testKeepsAndLogsASolicitationWithAnUnreadableCartUpdateTime(): void
+    public function testKeepsAnOrderWithoutAnySolicitationOrCartUpdateTime(): void
     {
-        $logger = $this->useTestLogger();
-        $this->storeSolicitation('not a date');
+        $this->store($this->solicitation(null, null));
+        $this->store($this->solicitation(null, ''));
 
-        $deleted = $this->service->cleanup();
+        $this->service->cleanup();
 
-        self::assertSame(0, $deleted);
-        self::assertCount(1, $this->orderRepository->select());
-        self::assertTrue($logger->isMessageContainedInLog('unreadable cart update time'));
+        self::assertCount(2, $this->orderRepository->select());
     }
 
     /**
      * @throws Exception
      */
-    public function testLogsTheNumberOfDeletedSolicitations(): void
+    public function testKeepsAnOrderWithoutASolicitationTimeAndAnUnreadableCartUpdateTime(): void
     {
-        $logger = $this->useTestLogger();
-        $this->storeSolicitation('2026-10-20 03:00:00');
+        $this->store($this->solicitation(null, 'not a date'));
+
+        $deleted = $this->service->cleanup();
+
+        self::assertSame(0, $deleted);
+        self::assertCount(1, $this->orderRepository->select());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testKeepsAnOrderWithAShopOrderReferenceWhateverItsAge(): void
+    {
+        $this->store($this->solicitation('2020-01-01 00:00:00')->setOrderRef1('000000123'));
 
         $this->service->cleanup();
 
-        self::assertTrue($logger->isMessageContainedInLog('Order cleanup deleted 1 stale solicitations.'));
+        self::assertCount(1, $this->orderRepository->select());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testKeepsAnOrderSeQuraSettledWithoutAShopOrderReference(): void
+    {
+        foreach (OrderRequestStates::SETTLED_STATES as $state) {
+            $this->store($this->solicitation('2026-10-01 00:00:00')->setState($state));
+        }
+
+        $deleted = $this->service->cleanup();
+
+        self::assertSame(0, $deleted);
+        self::assertCount(\count(OrderRequestStates::SETTLED_STATES), $this->orderRepository->select());
     }
 
     /**
@@ -193,10 +193,10 @@ class OrderCleanupServiceTest extends BaseTestCase
     public function testCleansUpMoreThanOneBatch(): void
     {
         for ($i = 0; $i < 550; $i++) {
-            $this->storeSolicitation('2026-10-20 03:00:00');
+            $this->store($this->solicitation('2026-10-20 03:00:00'));
         }
         for ($i = 0; $i < 50; $i++) {
-            $this->storeSolicitation('2026-10-30 02:00:00');
+            $this->store($this->solicitation('2026-10-30 02:00:00'));
         }
 
         $deleted = $this->service->cleanup();
@@ -211,9 +211,9 @@ class OrderCleanupServiceTest extends BaseTestCase
     public function testReachesStaleSolicitationsBehindAFullBatchOfFreshOnes(): void
     {
         for ($i = 0; $i < 500; $i++) {
-            $this->storeSolicitation('2026-10-30 02:00:00');
+            $this->store($this->solicitation('2026-10-30 02:00:00'));
         }
-        $this->storeSolicitation('2026-10-20 03:00:00');
+        $this->store($this->solicitation('2026-10-20 03:00:00'));
 
         $deleted = $this->service->cleanup();
 
@@ -227,7 +227,7 @@ class OrderCleanupServiceTest extends BaseTestCase
     public function testCallsBackAfterEachBatch(): void
     {
         for ($i = 0; $i < 501; $i++) {
-            $this->storeSolicitation('2026-10-20 03:00:00');
+            $this->store($this->solicitation('2026-10-20 03:00:00'));
         }
         $batches = 0;
 
@@ -236,71 +236,6 @@ class OrderCleanupServiceTest extends BaseTestCase
         });
 
         self::assertSame(2, $batches);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testFinishesWhenTheRepositoryDeletesNothing(): void
-    {
-        $repository = new class extends MemoryRepository {
-            public function delete(Entity $entity)
-            {
-                return false;
-            }
-        };
-        $repository->setEntityClass(SeQuraOrder::getClassName());
-        for ($i = 0; $i < 501; $i++) {
-            $repository->save($this->solicitation('2026-10-20 03:00:00'));
-        }
-
-        $this->createService($repository)->cleanup();
-
-        self::assertCount(501, $repository->select());
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testDeletesEachBatchWithOneConditionalDelete(): void
-    {
-        $repository = $this->createMock(MemoryRepositoryWithConditionalDelete::class);
-        $repository->method('select')->willReturnOnConsecutiveCalls([
-            $this->solicitation('2026-10-20 03:00:00', '', 11),
-            $this->solicitation('2026-10-30 02:00:00', '', 12),
-            $this->solicitation(null, '', 13),
-        ], []);
-        $repository->expects(self::never())->method('delete');
-        $repository->expects(self::once())
-            ->method('deleteWhere')
-            ->with(
-                (new QueryFilter())
-                    ->where('id', Operators::IN, [11, 13])
-                    ->where('orderRef1', Operators::EQUALS, '')
-            );
-
-        $deleted = $this->createService($repository)->cleanup();
-
-        self::assertSame(2, $deleted);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testDeletesOneByOneWhenTheRepositoryHasNoConditionalDelete(): void
-    {
-        $stale = $this->solicitation('2026-10-20 03:00:00', '', 21);
-        $repository = $this->createMock(MemoryRepository::class);
-        $repository->method('select')->willReturnOnConsecutiveCalls(
-            [$stale, $this->solicitation('2026-10-30 02:00:00', '', 22)],
-            [$stale],
-            []
-        );
-        $repository->expects(self::once())->method('delete')->with($stale);
-
-        $deleted = $this->createService($repository)->cleanup();
-
-        self::assertSame(1, $deleted);
     }
 
     /**
@@ -375,141 +310,36 @@ class OrderCleanupServiceTest extends BaseTestCase
     }
 
     /**
-     * @throws Exception
-     */
-    public function testKeepsTheScheduledLocalTimeAcrossADaylightSavingChange(): void
-    {
-        $madridTime = new class extends TestTimeProvider {
-            public function getCurrentLocalTime(): DateTime
-            {
-                return parent::getCurrentLocalTime()->setTimezone(new DateTimeZone('Europe/Madrid'));
-            }
-        };
-        $madridTime->setCurrentLocalTime(new DateTime('2026-10-26 12:00:00', new DateTimeZone('Europe/Madrid')));
-        $service = new OrderCleanupService(
-            $this->orderRepository,
-            $madridTime,
-            TestServiceRegister::getService(ConfigurationManager::class)
-        );
-        $service->schedule((new DateTime('2026-10-24 03:00:00', new DateTimeZone('Europe/Madrid')))->getTimestamp());
-
-        $service->advanceNextRun();
-
-        self::assertSame(
-            (new DateTime('2026-10-27 03:00:00', new DateTimeZone('Europe/Madrid')))->getTimestamp(),
-            $service->getNextRun()
-        );
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testKeepsASolicitationThatBecameAShopOrderSinceItWasReadWithoutConditionalDelete(): void
-    {
-        $repository = new class extends MemoryRepository {
-            public function select(?QueryFilter $filter = null)
-            {
-                $orders = parent::select($filter);
-                foreach ($orders as $order) {
-                    $converted = clone $order;
-                    $converted->setOrderRef1('000000123');
-                    $this->update($converted);
-                }
-
-                return $orders;
-            }
-        };
-        $repository->setEntityClass(SeQuraOrder::getClassName());
-        $repository->save($this->solicitation('2026-10-20 03:00:00'));
-
-        $this->createService($repository)->cleanup();
-
-        self::assertCount(1, TestRepositoryRegistry::getRepository(SeQuraOrder::getClassName())->select());
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testKeepsASolicitationThatBecameAShopOrderSinceItWasRead(): void
-    {
-        $repository = new class extends MemoryRepositoryWithConditionalDelete {
-            public function select(?QueryFilter $filter = null)
-            {
-                $orders = parent::select($filter);
-                foreach ($orders as $order) {
-                    $converted = clone $order;
-                    $converted->setOrderRef1('000000123');
-                    $this->update($converted);
-                }
-
-                return $orders;
-            }
-        };
-        $repository->setEntityClass(SeQuraOrder::getClassName());
-        $repository->save($this->solicitation('2026-10-20 03:00:00'));
-
-        $this->createService($repository)->cleanup();
-
-        self::assertCount(1, TestRepositoryRegistry::getRepository(SeQuraOrder::getClassName())->select());
-    }
-
-    /**
-     * @return TestShopLogger
-     */
-    private function useTestLogger(): TestShopLogger
-    {
-        $logger = new TestShopLogger();
-        TestServiceRegister::registerService(ShopLoggerAdapter::CLASS_NAME, static function () use ($logger) {
-            return $logger;
-        });
-
-        return $logger;
-    }
-
-    /**
-     * @param RepositoryInterface $repository
-     *
-     * @return OrderCleanupService
-     */
-    private function createService(RepositoryInterface $repository): OrderCleanupService
-    {
-        return new OrderCleanupService(
-            $repository,
-            $this->timeProvider,
-            TestServiceRegister::getService(ConfigurationManager::class)
-        );
-    }
-
-    /**
-     * @param string|null $cartUpdatedAt
-     * @param string $orderRef1
+     * @param SeQuraOrder $order
      *
      * @return void
      */
-    private function storeSolicitation(?string $cartUpdatedAt, string $orderRef1 = ''): void
+    private function store(SeQuraOrder $order): void
     {
-        $this->orderRepository->save($this->solicitation($cartUpdatedAt, $orderRef1));
+        $this->orderRepository->save($order);
     }
 
     /**
+     * @param string|null $solicitedAt
      * @param string|null $cartUpdatedAt
-     * @param string $orderRef1
-     * @param int|null $id
      *
      * @return SeQuraOrder
+     *
+     * @throws Exception
      */
-    private function solicitation(?string $cartUpdatedAt, string $orderRef1 = '', ?int $id = null): SeQuraOrder
+    private function solicitation(?string $solicitedAt, ?string $cartUpdatedAt = '2026-10-01 00:00:00'): SeQuraOrder
     {
         if (self::$orderData === null) {
             $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
             self::$orderData = json_decode($order, true)['order'];
         }
         $seQuraOrder = SeQuraOrder::fromArray(self::$orderData);
-        $seQuraOrder->setReference('sequra-ref-' . $this->nextId++);
-        $seQuraOrder->setOrderRef1($orderRef1);
+        $seQuraOrder->setReference('sequra-ref-' . $this->nextReference++);
+        $seQuraOrder->setOrderRef1('');
+        $seQuraOrder->setState('');
         $seQuraOrder->setUnshippedCart(new Cart('EUR', false, [], null, null, $cartUpdatedAt));
-        if ($id !== null) {
-            $seQuraOrder->setId($id);
+        if ($solicitedAt !== null) {
+            $seQuraOrder->setSolicitedAt((new DateTime($solicitedAt))->getTimestamp());
         }
 
         return $seQuraOrder;

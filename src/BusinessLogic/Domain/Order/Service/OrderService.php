@@ -38,6 +38,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethodCategory;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException;
@@ -54,6 +55,11 @@ class OrderService
      * Product codes for installment payments category.
      */
     private const INSTALLMENT_METHOD_CODES = ['pp3', 'pp6', 'pp9'];
+    /**
+     * Seconds a reused order keeps its solicitation time before reusing it stores the current one, so checkout
+     * page loads do not write the order every time.
+     */
+    protected const SOLICITATION_REFRESH_INTERVAL = 3600;
     /**
      * @var OrderProxyInterface
      */
@@ -74,6 +80,10 @@ class OrderService
      * @var MerchantOrderRequestBuilder
      */
     protected $merchantOrderRequestBuilder;
+    /**
+     * @var ClockInterface
+     */
+    protected $clock;
 
     /**
      * @param OrderProxyInterface $proxy
@@ -81,19 +91,22 @@ class OrderService
      * @param MerchantOrderRequestBuilder $merchantOrderRequestBuilder
      * @param OrderCreationInterface $shopOrderCreator
      * @param CheckoutService $checkoutService
+     * @param ClockInterface $clock
      */
     public function __construct(
         OrderProxyInterface $proxy,
         SeQuraOrderRepositoryInterface $orderRepository,
         MerchantOrderRequestBuilder $merchantOrderRequestBuilder,
         OrderCreationInterface $shopOrderCreator,
-        CheckoutService $checkoutService
+        CheckoutService $checkoutService,
+        ClockInterface $clock
     ) {
         $this->proxy = $proxy;
         $this->orderRepository = $orderRepository;
         $this->merchantOrderRequestBuilder = $merchantOrderRequestBuilder;
         $this->shopOrderCreator = $shopOrderCreator;
         $this->checkoutService = $checkoutService;
+        $this->clock = $clock;
     }
 
     /**
@@ -153,11 +166,11 @@ class OrderService
         }
 
         $existingOrder = $this->getExistingOrderFor($createOrderRequest);
+        $now = $this->clock->now()->getTimestamp();
         if ($existingOrder && $this->isReusableFor($existingOrder, $createOrderRequest)) {
-            // The cart's update time is left out of the comparison, so the stored one is refreshed here;
-            // otherwise a reused solicitation keeps its first time and the order cleanup sees it as stale.
-            if ($existingOrder->getUnshippedCart()->getUpdatedAt() !== $createOrderRequest->getCart()->getUpdatedAt()) {
-                $existingOrder->setUnshippedCart($createOrderRequest->getCart());
+            $solicitedAt = $existingOrder->getSolicitedAt();
+            if ($solicitedAt === null || $solicitedAt <= $now - static::SOLICITATION_REFRESH_INTERVAL) {
+                $existingOrder->setSolicitedAt($now);
                 $this->orderRepository->setSeQuraOrder($existingOrder);
             }
 
@@ -165,6 +178,7 @@ class OrderService
         }
 
         $order = $this->proxy->createOrder($createOrderRequest);
+        $order->setSolicitedAt($now);
         $this->orderRepository->setSeQuraOrder($order);
 
         return $order;

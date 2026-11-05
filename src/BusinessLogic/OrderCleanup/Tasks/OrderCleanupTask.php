@@ -3,6 +3,7 @@
 namespace SeQura\Core\BusinessLogic\OrderCleanup\Tasks;
 
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
+use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Task;
@@ -38,9 +39,10 @@ class OrderCleanupTask extends Task
      */
     public function execute(): void
     {
-        $this->getOrderCleanupService()->cleanup(function () {
+        $deleted = $this->getOrderCleanupService()->cleanup(function () {
             $this->reportAlive();
         });
+        Logger::logInfo("Order cleanup deleted $deleted stale solicitations.");
         $this->reportProgress(100);
     }
 

@@ -51,7 +51,8 @@ class SeQuraOrder extends Entity
         'platform',
         'gui',
         'paymentMethod',
-        'rejectedOrderTotal'
+        'rejectedOrderTotal',
+        'solicitedAt'
     ];
 
     /**
@@ -138,6 +139,11 @@ class SeQuraOrder extends Entity
      * @var int What the refused update totalled, in minor units, 0 once SeQura holds what the shop has
      */
     protected $rejectedOrderTotal = 0;
+
+    /**
+     * @var int|null When the order was last solicited, as a timestamp, or null for an order stored before it was kept
+     */
+    protected $solicitedAt;
 
     /**
      * @inheritDoc
@@ -633,6 +639,30 @@ class SeQuraOrder extends Entity
     public function setRejectedOrderTotal(int $rejectedOrderTotal): SeQuraOrder
     {
         $this->rejectedOrderTotal = $rejectedOrderTotal;
+
+        return $this;
+    }
+
+    /**
+     * Returns when the order was last solicited, as a timestamp, or null for an order stored before it was kept.
+     *
+     * @return int|null
+     */
+    public function getSolicitedAt(): ?int
+    {
+        return $this->solicitedAt;
+    }
+
+    /**
+     * Sets when the order was last solicited, as a timestamp.
+     *
+     * @param int $solicitedAt
+     *
+     * @return SeQuraOrder
+     */
+    public function setSolicitedAt(int $solicitedAt): SeQuraOrder
+    {
+        $this->solicitedAt = $solicitedAt;
 
         return $this;
     }

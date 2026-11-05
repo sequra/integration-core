@@ -66,6 +66,7 @@ use SeQura\Core\BusinessLogic\DataAccess\ExpressCheckout\Repositories\ExpressChe
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
+use SeQura\Core\BusinessLogic\DataAccess\OrderCleanup\Repositories\OrderCleanupScheduleRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusSettings;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
 use SeQura\Core\BusinessLogic\DataAccess\PaymentMethod\Repositories\PaymentMethodRepository;
@@ -132,7 +133,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
-use SeQura\Core\BusinessLogic\OrderCleanup\Listeners\OrderCleanupTickListener;
+use SeQura\Core\BusinessLogic\Domain\OrderCleanup\RepositoryContracts\OrderCleanupScheduleRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Listeners\TickEventListener;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
@@ -152,10 +153,13 @@ use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataSer
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\ProxyContracts\StoreIntegrationsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\BusinessLogic\Domain\UIState\Services\UIStateService;
 use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\ConfigurationWebhookValidationService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\OrderStatusProvider;
+use SeQura\Core\BusinessLogic\OrderCleanup\Listeners\OrderCleanupTickListener;
+use SeQura\Core\BusinessLogic\Providers\Clock\Clock;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
@@ -291,6 +295,15 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            OrderCleanupScheduleRepositoryInterface::class,
+            static function () {
+                return new OrderCleanupScheduleRepository(
+                    ServiceRegister::getService(ConfigurationManager::CLASS_NAME)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             WidgetSettingsRepositoryInterface::class,
             static function () {
                 return new WidgetSettingsRepository(
@@ -396,6 +409,10 @@ class BootstrapComponent extends BaseBootstrapComponent
             return new StoreIdProvider();
         });
 
+        ServiceRegister::registerService(ClockInterface::class, static function () {
+            return new Clock(ServiceRegister::getService(TimeProvider::class));
+        });
+
         ServiceRegister::registerService(
             QueueNameProviderInterface::class,
             static function () {
@@ -455,9 +472,9 @@ class BootstrapComponent extends BaseBootstrapComponent
             OrderCleanupService::class,
             static function () {
                 return new OrderCleanupService(
-                    RepositoryRegistry::getRepository(SeQuraOrder::getClassName()),
-                    ServiceRegister::getService(TimeProvider::class),
-                    ServiceRegister::getService(ConfigurationManager::CLASS_NAME)
+                    ServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
+                    ServiceRegister::getService(OrderCleanupScheduleRepositoryInterface::class),
+                    ServiceRegister::getService(ClockInterface::class)
                 );
             }
         );
@@ -619,7 +636,8 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
                     ServiceRegister::getService(MerchantOrderRequestBuilder::class),
                     ServiceRegister::getService(OrderCreationInterface::class),
-                    ServiceRegister::getService(CheckoutService::class)
+                    ServiceRegister::getService(CheckoutService::class),
+                    ServiceRegister::getService(ClockInterface::class)
                 );
             }
         );

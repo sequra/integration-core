@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\DataAccess\Order\Repositories;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use SeQura\Core\Infrastructure\ORM\Interfaces\ConditionallyDeletes;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
@@ -16,6 +17,11 @@ use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
  */
 class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
 {
+    /**
+     * Operators matching an empty and a missing shop order reference.
+     */
+    private const UNLINKED_OPERATORS = [Operators::EQUALS, Operators::NULL];
+
     /**
      * @var RepositoryInterface SeQuraOrder repository.
      */
@@ -132,6 +138,75 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
         foreach ($allEntities as $entity) {
             $this->repository->delete($entity);
         }
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * An order without a shop order reference stores it either empty or missing, so both are read and merged.
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function getUnlinkedOrdersAfter(int $afterId, int $limit): array
+    {
+        $orders = [];
+        foreach (self::UNLINKED_OPERATORS as $operator) {
+            $filter = $this->unlinkedFilter($operator)
+                ->where('id', Operators::GREATER_THAN, $afterId)
+                ->orderBy('id')
+                ->setLimit($limit);
+
+            /**
+             * @var SeQuraOrder[] $batch
+             */
+            $batch = $this->repository->select($filter);
+            $orders = array_merge($orders, $batch);
+        }
+
+        usort($orders, static function (SeQuraOrder $first, SeQuraOrder $second) {
+            return (int)$first->getId() <=> (int)$second->getId();
+        });
+
+        return \array_slice($orders, 0, $limit);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * The shop order reference is part of the delete condition, so an order linked since it was read is kept.
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteUnlinkedOrders(array $ids): void
+    {
+        if (empty($ids)) {
+            return;
+        }
+
+        foreach (self::UNLINKED_OPERATORS as $operator) {
+            $filter = $this->unlinkedFilter($operator)->where('id', Operators::IN, $ids);
+            if ($this->repository instanceof ConditionallyDeletes) {
+                $this->repository->deleteWhere($filter);
+
+                continue;
+            }
+
+            foreach ($this->repository->select($filter) as $order) {
+                $this->repository->delete($order);
+            }
+        }
+    }
+
+    /**
+     * @param string $operator Operators::EQUALS for an empty shop order reference, Operators::NULL for a missing one.
+     *
+     * @return QueryFilter
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    private function unlinkedFilter(string $operator): QueryFilter
+    {
+        return (new QueryFilter())->where('orderRef1', $operator, $operator === Operators::EQUALS ? '' : null);
     }
 
     /**

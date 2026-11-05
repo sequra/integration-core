@@ -5,10 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 # [Unreleased]
 ## Added
-- Daily cleanup of stale solicitations: `SeQuraOrder` rows that never became a shop order (no `orderRef1`) whose cart was last updated 7 days ago or earlier, or carries no update time. Nothing runs until the host calls `OrderCleanupService::schedule($firstRunTimestamp)`; from then on `OrderCleanupTickListener` enqueues an `OrderCleanupTask` on the first task runner tick after the scheduled time and moves the next run to the same time of the following day, skipping the tick while an earlier cleanup is still queued or running. Repositories implementing `ConditionallyDeletes` delete each batch with one statement.
+- Daily cleanup of stale solicitations: `SeQuraOrder` rows that never became a shop order (no `orderRef1`), that SeQura has not settled (not `confirmed`, `on_hold` or `cancelled`) and that were last solicited 7 days ago or earlier. Nothing runs until the host calls `OrderCleanupService::schedule($firstRunTimestamp)`. From then on `OrderCleanup\Listeners\OrderCleanupTickListener` moves the next run a day ahead on the first task runner tick after the scheduled time and enqueues an `OrderCleanup\Tasks\OrderCleanupTask`, unless an earlier cleanup is still queued or running, in which case that day's run is skipped. Days are counted in PHP's default timezone. Repositories implementing `ConditionallyDeletes` delete each batch with one statement per condition.
+- `SeQuraOrder::getSolicitedAt()` / `setSolicitedAt()`: when the order was last solicited, kept in the order's stored data (no new index). `OrderService::solicitFor()` sets it on a new solicitation and, at most once an hour, when it reuses an existing one. An order stored before this release has none; the cleanup then falls back to its cart's `updated_at` and keeps the order when that is missing or unreadable.
+- `ClockInterface` (`Domain\Time`), implemented by `Providers\Clock\Clock` on top of `TimeProvider`.
+- `SeQuraOrderRepositoryInterface::getUnlinkedOrdersAfter()` and `deleteUnlinkedOrders()`, and `OrderCleanupScheduleRepositoryInterface`.
 
 ## Changed
-- Re-soliciting an unchanged cart (the reused order of `OrderService::solicitFor()`) now stores the cart's current update time when it changed, so the daily cleanup does not take an in-flight solicitation for a stale one.
+- `OrderService` takes a `ClockInterface` as its last constructor argument.
 
 # [v6.0.0](https://github.com/sequra/integration-core/tree/v6.0.0)
 ## Added

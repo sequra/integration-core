@@ -81,4 +81,23 @@ interface SeQuraOrderRepositoryInterface
      * @return void
      */
     public function deleteAllOrders(): void;
+
+    /**
+     * Gets the next orders without a shop order reference whose id is greater than the given one, in id order.
+     *
+     * @param int $afterId
+     * @param int $limit
+     *
+     * @return SeQuraOrder[]
+     */
+    public function getUnlinkedOrdersAfter(int $afterId, int $limit): array;
+
+    /**
+     * Deletes the orders with the given ids that still have no shop order reference.
+     *
+     * @param int[] $ids
+     *
+     * @return void
+     */
+    public function deleteUnlinkedOrders(array $ids): void;
 }
