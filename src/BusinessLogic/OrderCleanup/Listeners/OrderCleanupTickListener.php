@@ -48,20 +48,27 @@ class OrderCleanupTickListener
     }
 
     /**
+     * Moves the next run ahead before anything else, so a tick that comes while the cleanup is enqueued sees it
+     * is not due, and a run skipped because an earlier cleanup is still queued or running stays skipped instead
+     * of starting right after that cleanup ends.
+     *
      * @return void
      *
-     * @throws QueryFilterInvalidParamException
      * @throws QueueStorageUnavailableException
      */
     protected static function enqueueWhenDue(): void
     {
         $cleanupService = static::getOrderCleanupService();
-        if (!$cleanupService->isDue() || static::isCleanupPending()) {
+        if (!$cleanupService->isDue()) {
+            return;
+        }
+
+        $cleanupService->advanceNextRun();
+        if (static::isCleanupPending()) {
             return;
         }
 
         static::getQueueService()->enqueue(static::QUEUE_NAME, new OrderCleanupTask(), '', Priority::LOW);
-        $cleanupService->advanceNextRun();
     }
 
     /**

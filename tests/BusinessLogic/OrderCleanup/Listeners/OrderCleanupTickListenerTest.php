@@ -5,8 +5,8 @@ namespace SeQura\Core\Tests\BusinessLogic\OrderCleanup\Listeners;
 use DateTime;
 use Exception;
 use RuntimeException;
-use SeQura\Core\BusinessLogic\OrderCleanup\Listeners\OrderCleanupTickListener;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
+use SeQura\Core\BusinessLogic\OrderCleanup\Listeners\OrderCleanupTickListener;
 use SeQura\Core\BusinessLogic\OrderCleanup\Tasks\OrderCleanupTask;
 use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
 use SeQura\Core\Infrastructure\ORM\Interfaces\QueueItemRepository;
@@ -100,7 +100,7 @@ class OrderCleanupTickListenerTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testEnqueuesNothingWhileAnEarlierCleanupIsStillQueued(): void
+    public function testSkipsTheRunWhileAnEarlierCleanupIsStillQueued(): void
     {
         $this->cleanupService->schedule($this->now - 60);
         $this->enqueueCleanup();
@@ -108,7 +108,36 @@ class OrderCleanupTickListenerTest extends BaseTestCase
         OrderCleanupTickListener::handle();
 
         self::assertCount(1, $this->queueRepository->select());
-        self::assertSame($this->now - 60, $this->cleanupService->getNextRun());
+        self::assertSame($this->now - 60 + 86400, $this->cleanupService->getNextRun());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testDoesNotRunASkippedCleanupOnceTheEarlierOneFinishes(): void
+    {
+        $this->cleanupService->schedule($this->now - 60);
+        $earlier = $this->enqueueCleanup();
+        OrderCleanupTickListener::handle();
+        $earlier->setStatus(QueueItem::COMPLETED);
+        $this->queueRepository->update($earlier);
+
+        OrderCleanupTickListener::handle();
+
+        self::assertCount(1, $this->queueRepository->select());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testEnqueuesOnceWhenTheSameDueRunTicksTwice(): void
+    {
+        $this->cleanupService->schedule($this->now - 60);
+
+        OrderCleanupTickListener::handle();
+        OrderCleanupTickListener::handle();
+
+        self::assertCount(1, $this->queueRepository->select());
     }
 
     /**
