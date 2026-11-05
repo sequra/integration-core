@@ -36,6 +36,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\Tracking
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
@@ -113,7 +114,8 @@ class OrderServiceTest extends BaseTestCase
             TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
             $this->merchantOrderBuilder,
             TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
         $this->orderRepository = TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class);
     }
@@ -130,7 +132,8 @@ class OrderServiceTest extends BaseTestCase
             TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
             $this->merchantOrderBuilder,
             TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
 
         $expectedSeQuraOrder = (new MockCreateOrderRequestBuilder())->build()->toSequraOrderInstance('testOrderRef');
@@ -689,7 +692,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderRepository,
             $this->merchantOrderBuilder,
             $this->shopOrderCreator,
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
 
         $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
@@ -739,7 +743,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderRepository,
             $this->merchantOrderBuilder,
             $this->shopOrderCreator,
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
 
         $array = json_decode(file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json'), true);
@@ -781,7 +786,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderRepository,
             $this->merchantOrderBuilder,
             $this->shopOrderCreator,
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
 
         $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
@@ -821,7 +827,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderRepository,
             $this->merchantOrderBuilder,
             $this->shopOrderCreator,
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
 
         $order = file_get_contents(__DIR__ . '/../../../Common/MockObjects/SeQuraOrder.json');
@@ -1062,7 +1069,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderRepository,
             $this->merchantOrderBuilder,
             TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
 
         $builder = new MockCreateOrderRequestBuilder();
@@ -1094,7 +1102,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderRepository,
             $this->merchantOrderBuilder,
             TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
 
         // Act
@@ -1125,7 +1134,8 @@ class OrderServiceTest extends BaseTestCase
             new MockSeQuraOrderRepository(),
             $this->merchantOrderBuilder,
             TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
 
         // Assert
@@ -1159,7 +1169,8 @@ class OrderServiceTest extends BaseTestCase
             new MockSeQuraOrderRepository(),
             $this->merchantOrderBuilder,
             TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
 
         // Assert
@@ -1387,7 +1398,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderRepository,
             $this->merchantOrderBuilder,
             TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
     }
 
@@ -1407,6 +1419,76 @@ class OrderServiceTest extends BaseTestCase
 
         // Assert
         self::assertEquals('ref-a', $order->getReference());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testSolicitingStoresTheSolicitationTime(): void
+    {
+        // Arrange
+        $service = $this->serviceAt(
+            $this->proxyReturningReferences(['ref-a']),
+            $this->orderRepository,
+            '2026-10-30 03:00:00'
+        );
+
+        // Act
+        $service->solicitFor($this->builderFor(2, 'load-1'));
+
+        // Assert
+        $stored = $this->orderRepository->getByOrderReference('ref-a');
+        self::assertNotNull($stored);
+        self::assertSame((new DateTime('2026-10-30 03:00:00'))->getTimestamp(), $stored->getSolicitedAt());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testReusingAnOrderSolicitedOverAnHourAgoStoresTheCurrentTimeAndKeepsTheStoredCart(): void
+    {
+        // Arrange
+        $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
+        $this->serviceAt($proxy, $this->orderRepository, '2026-10-20 03:00:00')
+            ->solicitFor($this->builderFor(2, 'load-1'));
+
+        // Act
+        $this->serviceAt($proxy, $this->orderRepository, '2026-10-30 03:00:00')
+            ->solicitFor($this->builderFor(2, 'load-2'));
+
+        // Assert
+        $stored = $this->orderRepository->getByOrderReference('ref-a');
+        self::assertNotNull($stored);
+        self::assertSame((new DateTime('2026-10-30 03:00:00'))->getTimestamp(), $stored->getSolicitedAt());
+        self::assertEquals('time-of-load-1', $stored->getUnshippedCart()->getUpdatedAt());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testReusingAnOrderSolicitedWithinTheHourWritesNothing(): void
+    {
+        // Arrange
+        $repository = new class extends MockSeQuraOrderRepository {
+            /**
+             * @var int
+             */
+            public $writes = 0;
+
+            public function setSeQuraOrder(SeQuraOrder $order): void
+            {
+                $this->writes++;
+                parent::setSeQuraOrder($order);
+            }
+        };
+        $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
+        $this->serviceAt($proxy, $repository, '2026-10-30 03:00:00')->solicitFor($this->builderFor(2, 'load-1'));
+
+        // Act
+        $this->serviceAt($proxy, $repository, '2026-10-30 03:59:59')->solicitFor($this->builderFor(2, 'load-2'));
+
+        // Assert
+        self::assertSame(1, $repository->writes);
     }
 
     /**
@@ -1574,6 +1656,33 @@ class OrderServiceTest extends BaseTestCase
 
     /**
      * @param OrderProxyInterface $proxy
+     * @param SeQuraOrderRepositoryInterface $repository
+     * @param string $now
+     *
+     * @return OrderService
+     */
+    private function serviceAt(
+        OrderProxyInterface $proxy,
+        SeQuraOrderRepositoryInterface $repository,
+        string $now
+    ): OrderService {
+        $clock = $this->createMock(ClockInterface::class);
+        $clock->method('now')->willReturnCallback(static function () use ($now) {
+            return new DateTime($now);
+        });
+
+        return new OrderService(
+            $proxy,
+            $repository,
+            $this->merchantOrderBuilder,
+            TestServiceRegister::getService(OrderCreationInterface::class),
+            TestServiceRegister::getService(CheckoutService::class),
+            $clock
+        );
+    }
+
+    /**
+     * @param OrderProxyInterface $proxy
      *
      * @return OrderService
      */
@@ -1584,7 +1693,8 @@ class OrderServiceTest extends BaseTestCase
             $this->orderRepository,
             $this->merchantOrderBuilder,
             TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
     }
 

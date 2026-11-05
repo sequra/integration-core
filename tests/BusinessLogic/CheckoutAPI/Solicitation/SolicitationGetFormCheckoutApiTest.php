@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation;
 
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use phpDocumentor\Reflection\Types\Self_;
 use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Requests\SolicitationRequest;
@@ -77,7 +78,8 @@ class SolicitationGetFormCheckoutApiTest extends BaseTestCase
                     $this->orderRepository,
                     $this->merchantOrderBuilder,
                     $this->shopOrderCreation,
-                    TestServiceRegister::getService(CheckoutService::class)
+                    TestServiceRegister::getService(CheckoutService::class),
+                    TestServiceRegister::getService(ClockInterface::class)
                 );
             }
         );

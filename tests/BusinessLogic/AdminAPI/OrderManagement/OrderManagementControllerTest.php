@@ -17,6 +17,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\Tests\BusinessLogic\AdminAPI\OrderManagement\MockComponents\MockOrderService;
@@ -44,7 +45,8 @@ class OrderManagementControllerTest extends BaseTestCase
             TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
             TestServiceRegister::getService(MerchantOrderRequestBuilder::class),
             TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
         $this->orderService->setUpdatedOrder($this->seQuraOrder());
 

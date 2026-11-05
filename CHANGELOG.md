@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+# [Unreleased]
+## Added
+- Daily cleanup of stale solicitations: `SeQuraOrder` rows that never became a shop order (no `orderRef1`), that SeQura has not settled (not `confirmed`, `on_hold` or `cancelled`) and that were last solicited 7 days ago or earlier. Nothing runs until the host calls `OrderCleanupService::schedule($firstRunTimestamp)`. From then on `OrderCleanup\Listeners\OrderCleanupTickListener` moves the next run a day ahead on the first task runner tick after the scheduled time and enqueues an `OrderCleanup\Tasks\OrderCleanupTask`, unless an earlier cleanup is still queued or running, in which case that day's run is skipped. Days are counted in PHP's default timezone. Repositories implementing `ConditionallyDeletes` delete each batch with one statement per condition.
+- `SeQuraOrder::getSolicitedAt()` / `setSolicitedAt()`: when the order was last solicited, kept in the order's stored data (no new index). `OrderService::solicitFor()` sets it on a new solicitation and, at most once an hour, when it reuses an existing one. An order stored before this release has none; the cleanup then falls back to its cart's `updated_at` and keeps the order when that is missing or unreadable.
+- `ClockInterface` (`Domain\Time`), implemented by `Providers\Clock\Clock` on top of `TimeProvider`.
+- `SeQuraOrderRepositoryInterface::getUnlinkedOrdersAfter()` and `deleteUnlinkedOrders()`, and `OrderCleanupScheduleRepositoryInterface`.
+
+## Changed
+- `OrderService` takes a `ClockInterface` as its last constructor argument.
+
 # [v6.0.0](https://github.com/sequra/integration-core/tree/v6.0.0)
 ## Added
 - `ConnectionData` carries the id the SeQura portal gave the store's integration (`getIntegrationId()` / `setIntegrationId()`, a last optional constructor argument, `integrationId` in `toArray()`). Connecting and re-registering webhooks record it, and `ConnectionService::getPortalUrl()` then links to the settings page of the store's own integration instead of the list of integrations. A connection stored before the id was kept, or one whose registration was skipped, has none and still gets the list link. `ConnectionDataRepository::setConnectionData()` keeps the stored id when the model it is given carries none, so saving credentials through `saveConnectionData()` does not take the link away.

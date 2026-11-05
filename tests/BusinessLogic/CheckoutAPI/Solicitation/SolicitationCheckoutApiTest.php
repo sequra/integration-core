@@ -23,6 +23,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderReposi
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockCreateOrderRequestBuilder;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockOrderProxy;
@@ -98,7 +99,8 @@ class SolicitationCheckoutApiTest extends BaseTestCase
                     $this->orderRepository,
                     $this->merchantOrderBuilder,
                     $this->shopOrderCreation,
-                    TestServiceRegister::getService(CheckoutService::class)
+                    TestServiceRegister::getService(CheckoutService::class),
+                    TestServiceRegister::getService(ClockInterface::class)
                 );
             }
         );

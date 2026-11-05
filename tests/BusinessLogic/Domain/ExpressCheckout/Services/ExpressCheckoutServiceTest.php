@@ -33,6 +33,7 @@ use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockCreateOrderRequestBuilder;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockOrderProxy;
@@ -502,7 +503,8 @@ class ExpressCheckoutServiceTest extends BaseTestCase
             new MockSeQuraOrderRepository(),
             $merchantOrderBuilder,
             TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
 
         TestServiceRegister::registerService(OrderService::class, static function () use ($orderService) {
@@ -544,7 +546,8 @@ class ExpressCheckoutServiceTest extends BaseTestCase
                 TestServiceRegister::getService(MerchantDataProviderInterface::class)
             ),
             TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
         TestServiceRegister::registerService(OrderService::class, static function () use ($orderService) {
             return $orderService;
@@ -585,7 +588,8 @@ class ExpressCheckoutServiceTest extends BaseTestCase
                 TestServiceRegister::getService(MerchantDataProviderInterface::class)
             ),
             TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class)
+            TestServiceRegister::getService(CheckoutService::class),
+            TestServiceRegister::getService(ClockInterface::class)
         );
         TestServiceRegister::registerService(OrderService::class, static function () use ($orderService) {
             return $orderService;

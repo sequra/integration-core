@@ -63,6 +63,7 @@ use SeQura\Core\BusinessLogic\DataAccess\ExpressCheckout\Repositories\ExpressChe
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Entities\GeneralSettings;
 use SeQura\Core\BusinessLogic\DataAccess\GeneralSettings\Repositories\GeneralSettingsRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Order\Repositories\SeQuraOrderRepository;
+use SeQura\Core\BusinessLogic\DataAccess\OrderCleanup\Repositories\OrderCleanupScheduleRepository;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Entities\OrderStatusSettings;
 use SeQura\Core\BusinessLogic\DataAccess\OrderSettings\Repositories\OrderStatusMappingRepository;
 use SeQura\Core\BusinessLogic\DataAccess\PaymentMethod\Entities\PaymentMethod;
@@ -126,6 +127,8 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\Domain\OrderCleanup\RepositoryContracts\OrderCleanupScheduleRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
@@ -143,9 +146,11 @@ use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataSer
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\ProxyContracts\StoreIntegrationsProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\BusinessLogic\Domain\UIState\Services\UIStateService;
 use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\ConfigurationWebhookValidationService;
+use SeQura\Core\BusinessLogic\Providers\Clock\Clock;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
@@ -311,7 +316,8 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
                     TestServiceRegister::getService(MerchantOrderRequestBuilder::class),
                     TestServiceRegister::getService(OrderCreationInterface::class),
-                    TestServiceRegister::getService(CheckoutService::class)
+                    TestServiceRegister::getService(CheckoutService::class),
+                    TestServiceRegister::getService(ClockInterface::class)
                 );
             },
             OrderReportService::class => static function () {
@@ -380,6 +386,13 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(StatisticalDataRepositoryInterface::class),
                     TestServiceRegister::getService(SendReportRepositoryInterface::class),
                     TestServiceRegister::getService(TimeProvider::class)
+                );
+            },
+            OrderCleanupService::class => static function () {
+                return new OrderCleanupService(
+                    TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
+                    TestServiceRegister::getService(OrderCleanupScheduleRepositoryInterface::class),
+                    TestServiceRegister::getService(ClockInterface::class)
                 );
             },
             CountryConfigurationService::class => static function () {
@@ -680,6 +693,13 @@ class BaseTestCase extends TestCase
         );
 
         TestServiceRegister::registerService(
+            ClockInterface::class,
+            static function () {
+                return new Clock(TestServiceRegister::getService(TimeProvider::class));
+            }
+        );
+
+        TestServiceRegister::registerService(
             WebhookValidator::class,
             static function () {
                 return new WebhookValidator();
@@ -842,6 +862,15 @@ class BaseTestCase extends TestCase
             static function () {
                 return new SeQuraOrderRepository(
                     TestRepositoryRegistry::getRepository(SeQuraOrder::getClassName())
+                );
+            }
+        );
+
+        TestServiceRegister::registerService(
+            OrderCleanupScheduleRepositoryInterface::class,
+            static function () {
+                return new OrderCleanupScheduleRepository(
+                    TestServiceRegister::getService(ConfigurationManager::class)
                 );
             }
         );
