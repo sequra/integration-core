@@ -1,13 +1,13 @@
 <?php
 
-namespace SeQura\Core\Tests\BusinessLogic\Domain\OrderCleanup\Listeners;
+namespace SeQura\Core\Tests\BusinessLogic\OrderCleanup\Listeners;
 
 use DateTime;
 use Exception;
 use RuntimeException;
-use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Listeners\OrderCleanupTickListener;
+use SeQura\Core\BusinessLogic\OrderCleanup\Listeners\OrderCleanupTickListener;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
-use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Tasks\OrderCleanupTask;
+use SeQura\Core\BusinessLogic\OrderCleanup\Tasks\OrderCleanupTask;
 use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
 use SeQura\Core\Infrastructure\ORM\Interfaces\QueueItemRepository;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Priority;
@@ -23,7 +23,7 @@ use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 /**
  * Class OrderCleanupTickListenerTest
  *
- * @package SeQura\Core\Tests\BusinessLogic\Domain\OrderCleanup\Listeners
+ * @package SeQura\Core\Tests\BusinessLogic\OrderCleanup\Listeners
  */
 class OrderCleanupTickListenerTest extends BaseTestCase
 {

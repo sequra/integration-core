@@ -1,10 +1,10 @@
 <?php
 
-namespace SeQura\Core\Tests\BusinessLogic\Domain\OrderCleanup\Tasks;
+namespace SeQura\Core\Tests\BusinessLogic\OrderCleanup\Tasks;
 
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
-use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Tasks\OrderCleanupTask;
+use SeQura\Core\BusinessLogic\OrderCleanup\Tasks\OrderCleanupTask;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -12,7 +12,7 @@ use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 /**
  * Class OrderCleanupTaskTest
  *
- * @package SeQura\Core\Tests\BusinessLogic\Domain\OrderCleanup\Tasks
+ * @package SeQura\Core\Tests\BusinessLogic\OrderCleanup\Tasks
  */
 class OrderCleanupTaskTest extends BaseTestCase
 {

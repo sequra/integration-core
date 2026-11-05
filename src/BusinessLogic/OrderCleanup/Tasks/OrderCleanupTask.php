@@ -1,6 +1,6 @@
 <?php
 
-namespace SeQura\Core\BusinessLogic\Domain\OrderCleanup\Tasks;
+namespace SeQura\Core\BusinessLogic\OrderCleanup\Tasks;
 
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
@@ -12,7 +12,7 @@ use SeQura\Core\Infrastructure\TaskExecution\Task;
  *
  * Runs the cleanup of stale solicitations. The solicitations are not store-scoped, so the task needs no context.
  *
- * @package SeQura\Core\BusinessLogic\Domain\OrderCleanup\Tasks
+ * @package SeQura\Core\BusinessLogic\OrderCleanup\Tasks
  */
 class OrderCleanupTask extends Task
 {

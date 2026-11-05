@@ -1,9 +1,9 @@
 <?php
 
-namespace SeQura\Core\BusinessLogic\Domain\OrderCleanup\Listeners;
+namespace SeQura\Core\BusinessLogic\OrderCleanup\Listeners;
 
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
-use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Tasks\OrderCleanupTask;
+use SeQura\Core\BusinessLogic\OrderCleanup\Tasks\OrderCleanupTask;
 use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
@@ -19,7 +19,7 @@ use Throwable;
  *
  * Enqueues the order cleanup once a day, after a host has scheduled it.
  *
- * @package SeQura\Core\BusinessLogic\Domain\OrderCleanup\Listeners
+ * @package SeQura\Core\BusinessLogic\OrderCleanup\Listeners
  */
 class OrderCleanupTickListener
 {
