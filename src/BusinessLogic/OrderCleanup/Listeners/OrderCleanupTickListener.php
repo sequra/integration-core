@@ -6,7 +6,6 @@ use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\BusinessLogic\OrderCleanup\Tasks\OrderCleanupTask;
 use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
-use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Priority;
