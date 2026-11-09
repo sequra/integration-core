@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\DuplicatedExpressCheckoutPageException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutButtonStyleException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageConfigException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidTermsAndConditionsUrlException;
 
 /**
  * Class ExpressCheckoutSettings
@@ -37,18 +38,29 @@ class ExpressCheckoutSettings
     protected $buttonStyle;
 
     /**
+     * @var string|null
+     */
+    protected $termsAndConditionsUrl;
+
+    /**
      * @param ExpressCheckoutPageConfig[] $expressCheckoutConfigs
      * @param string|null $buttonStyle
+     * @param string|null $termsAndConditionsUrl
      *
      * @throws InvalidExpressCheckoutPageConfigException When an entry is not an ExpressCheckoutPageConfig.
      * @throws DuplicatedExpressCheckoutPageException When two entries reference the same page.
      * @throws InvalidExpressCheckoutButtonStyleException When the style is not a JSON object within the size limit.
+     * @throws InvalidTermsAndConditionsUrlException When the URL is not an absolute http or https URL.
      */
-    public function __construct(array $expressCheckoutConfigs = [], ?string $buttonStyle = null)
-    {
+    public function __construct(
+        array $expressCheckoutConfigs = [],
+        ?string $buttonStyle = null,
+        ?string $termsAndConditionsUrl = null
+    ) {
         $this->validateConfigs($expressCheckoutConfigs);
         $this->expressCheckoutConfigs = array_values($expressCheckoutConfigs);
         $this->buttonStyle = $this->normalizeButtonStyle($buttonStyle);
+        $this->termsAndConditionsUrl = $this->normalizeTermsAndConditionsUrl($termsAndConditionsUrl);
     }
 
     /**
@@ -65,6 +77,14 @@ class ExpressCheckoutSettings
     public function getButtonStyle(): ?string
     {
         return $this->buttonStyle;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTermsAndConditionsUrl(): ?string
+    {
+        return $this->termsAndConditionsUrl;
     }
 
     /**
@@ -93,6 +113,7 @@ class ExpressCheckoutSettings
                 return $config->toArray();
             }, $this->expressCheckoutConfigs),
             'buttonStyle' => $this->buttonStyle,
+            'termsAndConditionsUrl' => $this->termsAndConditionsUrl,
         ];
     }
 
@@ -147,5 +168,34 @@ class ExpressCheckoutSettings
         }
 
         return $buttonStyle;
+    }
+
+    /**
+     * @param string|null $termsAndConditionsUrl
+     *
+     * @return string|null
+     *
+     * @throws InvalidTermsAndConditionsUrlException
+     */
+    private function normalizeTermsAndConditionsUrl(?string $termsAndConditionsUrl): ?string
+    {
+        $url = trim((string) $termsAndConditionsUrl);
+        if ($url === '') {
+            return null;
+        }
+
+        $label = '[\p{L}\p{N}](?:[\p{L}\p{N}-]*[\p{L}\p{N}])?';
+        $pattern = '#^https?://(?:[^/?\#@\s]*@)?(?:\[([0-9a-f:.]+)\]|' . $label . '(?:\.' . $label . ')*)'
+            . '(?::(\d{0,5}))?(?:[/?\#]|$)#iu';
+        if (
+            preg_match('/[\s\x00-\x1F\x7F]/u', $url) !== 0
+            || preg_match($pattern, $url, $matches) !== 1
+            || (int) ($matches[2] ?? 0) > 65535
+            || (($matches[1] ?? '') !== '' && filter_var($matches[1], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false)
+        ) {
+            throw new InvalidTermsAndConditionsUrlException();
+        }
+
+        return $url;
     }
 }
