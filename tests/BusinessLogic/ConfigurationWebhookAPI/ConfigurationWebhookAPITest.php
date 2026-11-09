@@ -2490,6 +2490,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             'availablePages' => ['product', 'cart', 'mini-cart'],
             'expressCheckoutConfigs' => [],
             'buttonStyle' => null,
+            'termsAndConditionsUrl' => null,
         ], $response->toArray());
     }
 
@@ -2527,6 +2528,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 ['page' => 'mini-cart', 'enabled' => true],
             ],
             'buttonStyle' => null,
+            'termsAndConditionsUrl' => null,
         ], $response->toArray());
     }
 
@@ -2745,6 +2747,7 @@ class ConfigurationWebhookAPITest extends BaseTestCase
                 ['page' => 'product', 'enabled' => true],
             ],
             'buttonStyle' => $buttonStyle,
+            'termsAndConditionsUrl' => null,
         ], $response->toArray());
     }
 
@@ -2983,5 +2986,73 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         self::assertSame('https://shop.example.com/terms', $persisted->getTermsAndConditionsUrl());
         self::assertTrue($persisted->isPageEnabled(ExpressCheckoutPage::cart()->getPage()));
         self::assertFalse($persisted->isPageEnabled(ExpressCheckoutPage::product()->getPage()));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testExpressCheckoutTermsAndConditionsUrlRoundTripsThroughGetResponse(): void
+    {
+        //Arrange
+        ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-express-checkout-settings",
+                "expressCheckoutConfigs" => [
+                    ['page' => 'product', 'enabled' => true],
+                ],
+                "termsAndConditionsUrl" => 'https://españa-shop.es/términos',
+            ]
+        );
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-express-checkout-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertEquals([
+            'availablePages' => ['product', 'cart', 'mini-cart'],
+            'expressCheckoutConfigs' => [
+                ['page' => 'product', 'enabled' => true],
+            ],
+            'buttonStyle' => null,
+            'termsAndConditionsUrl' => 'https://españa-shop.es/términos',
+        ], $response->toArray());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws InvalidEnvironmentException
+     */
+    public function testGetExpressCheckoutSettingsReturnsANullTermsAndConditionsUrlWhenUnset(): void
+    {
+        //Arrange
+        $this->expressCheckoutSettingsService->saveExpressCheckoutSettings(new ExpressCheckoutSettings(
+            [new ExpressCheckoutPageConfig(ExpressCheckoutPage::cart(), true)],
+            '{"backgroundColor":"#123456"}'
+        ));
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "get-express-checkout-settings"
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        self::assertArrayHasKey('termsAndConditionsUrl', $response->toArray());
+        self::assertNull($response->toArray()['termsAndConditionsUrl']);
     }
 }
