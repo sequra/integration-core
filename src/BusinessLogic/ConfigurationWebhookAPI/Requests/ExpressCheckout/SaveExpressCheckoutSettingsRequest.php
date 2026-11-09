@@ -7,6 +7,7 @@ use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\DuplicatedExpres
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutButtonStyleException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageConfigException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidTermsAndConditionsUrlException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPageConfig;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutSettings;
 
@@ -28,13 +29,23 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
     protected $buttonStyle;
 
     /**
+     * @var string|null
+     */
+    protected $termsAndConditionsUrl;
+
+    /**
      * @param ExpressCheckoutPageConfig[] $expressCheckoutConfigs
      * @param string|null $buttonStyle
+     * @param string|null $termsAndConditionsUrl
      */
-    public function __construct(array $expressCheckoutConfigs, ?string $buttonStyle = null)
-    {
+    public function __construct(
+        array $expressCheckoutConfigs,
+        ?string $buttonStyle = null,
+        ?string $termsAndConditionsUrl = null
+    ) {
         $this->expressCheckoutConfigs = $expressCheckoutConfigs;
         $this->buttonStyle = $buttonStyle;
+        $this->termsAndConditionsUrl = $termsAndConditionsUrl;
     }
 
     /**
@@ -44,6 +55,7 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
      *
      * @throws InvalidExpressCheckoutPageException
      * @throws InvalidExpressCheckoutButtonStyleException
+     * @throws InvalidTermsAndConditionsUrlException
      */
     public static function fromPayload(array $payload): object
     {
@@ -62,7 +74,13 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
             throw new InvalidExpressCheckoutButtonStyleException();
         }
 
-        return new self($configs, $buttonStyle);
+        $termsAndConditionsUrl = $payload['termsAndConditionsUrl'] ?? null;
+
+        if ($termsAndConditionsUrl !== null && !\is_string($termsAndConditionsUrl)) {
+            throw new InvalidTermsAndConditionsUrlException();
+        }
+
+        return new self($configs, $buttonStyle, $termsAndConditionsUrl);
     }
 
     /**
@@ -71,9 +89,14 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
      * @throws DuplicatedExpressCheckoutPageException
      * @throws InvalidExpressCheckoutPageConfigException
      * @throws InvalidExpressCheckoutButtonStyleException
+     * @throws InvalidTermsAndConditionsUrlException
      */
     public function transformToDomainModel(): ExpressCheckoutSettings
     {
-        return new ExpressCheckoutSettings($this->expressCheckoutConfigs, $this->buttonStyle);
+        return new ExpressCheckoutSettings(
+            $this->expressCheckoutConfigs,
+            $this->buttonStyle,
+            $this->termsAndConditionsUrl
+        );
     }
 }

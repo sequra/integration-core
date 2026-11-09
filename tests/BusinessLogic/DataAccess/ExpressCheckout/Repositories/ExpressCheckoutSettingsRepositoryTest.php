@@ -299,6 +299,57 @@ class ExpressCheckoutSettingsRepositoryTest extends BaseTestCase
     }
 
     /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testSetExpressCheckoutSettingsRoundTripsTheTermsAndConditionsUrl(): void
+    {
+        // Arrange
+        $settings = new ExpressCheckoutSettings(
+            [new ExpressCheckoutPageConfig(ExpressCheckoutPage::product(), true)],
+            null,
+            'https://shop.example.com/terms'
+        );
+
+        // Act
+        StoreContext::doWithStore('1', [$this->repository, 'setExpressCheckoutSettings'], [$settings]);
+        $loaded = StoreContext::doWithStore('1', [$this->repository, 'getExpressCheckoutSettings']);
+
+        // Assert
+        self::assertNotNull($loaded);
+        self::assertSame('https://shop.example.com/terms', $loaded->getTermsAndConditionsUrl());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function testGetExpressCheckoutSettingsToleratesLegacyRowWithoutTermsAndConditionsUrl(): void
+    {
+        // Arrange
+        $entity = new ExpressCheckoutSettingsEntity();
+        $entity->inflate([
+            'storeId' => '1',
+            'expressCheckoutSettings' => [
+                'expressCheckoutConfigs' => [['page' => 'cart', 'enabled' => true]],
+                'buttonStyle' => '{"backgroundColor":"#123456"}',
+            ],
+        ]);
+        TestRepositoryRegistry::getRepository(ExpressCheckoutSettingsEntity::getClassName())->save($entity);
+
+        // Act
+        $loaded = StoreContext::doWithStore('1', [$this->repository, 'getExpressCheckoutSettings']);
+
+        // Assert
+        self::assertNotNull($loaded);
+        self::assertNull($loaded->getTermsAndConditionsUrl());
+        self::assertSame('{"backgroundColor":"#123456"}', $loaded->getButtonStyle());
+        self::assertTrue($loaded->isPageEnabled(ExpressCheckoutPage::cart()->getPage()));
+    }
+
+    /**
      * @param string $storeId
      *
      * @return ExpressCheckoutSettingsEntity[]
