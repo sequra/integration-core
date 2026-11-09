@@ -69,23 +69,21 @@ class ExpressCheckoutSettings extends Entity
         // validates means the row was corrupted or hand-edited. Dropping just the
         // style keeps the page configs readable: the button falls back to its
         // default look instead of every read of this row failing.
-        try {
-            new DomainExpressCheckoutSettings([], $buttonStyle);
-        } catch (InvalidExpressCheckoutButtonStyleException $exception) {
-            $buttonStyle = null;
-        }
+        while (true) {
+            try {
+                $this->expressCheckoutSettings = new DomainExpressCheckoutSettings(
+                    $configs,
+                    $buttonStyle,
+                    $termsAndConditionsUrl
+                );
 
-        try {
-            new DomainExpressCheckoutSettings([], null, $termsAndConditionsUrl);
-        } catch (InvalidTermsAndConditionsUrlException $exception) {
-            $termsAndConditionsUrl = null;
+                return;
+            } catch (InvalidExpressCheckoutButtonStyleException $exception) {
+                $buttonStyle = null;
+            } catch (InvalidTermsAndConditionsUrlException $exception) {
+                $termsAndConditionsUrl = null;
+            }
         }
-
-        $this->expressCheckoutSettings = new DomainExpressCheckoutSettings(
-            $configs,
-            $buttonStyle,
-            $termsAndConditionsUrl
-        );
     }
 
     /**
