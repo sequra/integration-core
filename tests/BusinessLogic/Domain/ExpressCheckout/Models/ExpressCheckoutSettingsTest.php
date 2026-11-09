@@ -349,6 +349,7 @@ class ExpressCheckoutSettingsTest extends TestCase
             'javascript scheme' => ['javascript:alert(1)'],
             'data scheme' => ['data:text/html,<b>x</b>'],
             'ftp scheme' => ['ftp://shop.example.com/terms'],
+            'long s in scheme' => ['httpſ://shop.example.com/terms'],
             'mailto scheme' => ['mailto:legal@shop.example.com'],
             'relative path' => ['/terms'],
             'scheme only' => ['https://'],

@@ -185,7 +185,7 @@ class ExpressCheckoutSettings
         }
 
         $label = '[\p{L}\p{N}](?:[\p{L}\p{N}-]*[\p{L}\p{N}])?';
-        $pattern = '#^https?://(?:[^/?\#@\s]*@)?(?:\[([0-9a-f:.]+)\]|' . $label . '(?:\.' . $label . ')*)'
+        $pattern = '#^(?-i:[hH][tT][tT][pP][sS]?)://(?:[^/?\#@\s]*@)?(?:\[([0-9a-f:.]+)\]|' . $label . '(?:\.' . $label . ')*)'
             . '(?::(\d{0,5}))?(?:[/?\#]|$)#iu';
         if (
             preg_match('/[\s\x00-\x1F\x7F]/u', $url) !== 0
