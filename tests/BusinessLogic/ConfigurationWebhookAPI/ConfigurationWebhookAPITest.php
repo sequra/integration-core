@@ -51,6 +51,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountri
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo\StoreInfoServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreIntegration\StoreIntegrationServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Log\Model\Log;
+use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderStatus\Models\OrderStatus;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusMapping;
@@ -2875,6 +2876,90 @@ class ConfigurationWebhookAPITest extends BaseTestCase
         self::assertNull($persisted->getButtonStyle());
         self::assertTrue($persisted->isPageEnabled(ExpressCheckoutPage::product()->getPage()));
         self::assertFalse($persisted->isPageEnabled(ExpressCheckoutPage::cart()->getPage()));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testSaveExpressCheckoutSettingsLeavesTheTermsAndConditionsUrlNullWhenNothingIsStoredAndTheKeyIsMissing(): void
+    {
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler()->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-express-checkout-settings",
+                "expressCheckoutConfigs" => [
+                    ['page' => 'product', 'enabled' => true],
+                ],
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        $persisted = $this->expressCheckoutSettingsService->getExpressCheckoutSettings();
+        self::assertNotNull($persisted);
+        self::assertNull($persisted->getTermsAndConditionsUrl());
+        self::assertTrue($persisted->isPageEnabled(ExpressCheckoutPage::product()->getPage()));
+    }
+
+    /**
+     * @return void
+     *
+     * @throws DuplicatedExpressCheckoutPageException
+     * @throws InvalidExpressCheckoutPageConfigException
+     * @throws InvalidEnvironmentException
+     */
+    public function testSaveExpressCheckoutSettingsKeepsEachStoresOwnTermsAndConditionsUrlWhenTheKeyIsMissing(): void
+    {
+        //Arrange
+        $repository = TestServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class);
+        TestServiceRegister::registerService(ExpressCheckoutService::class, function () use ($repository) {
+            return new ExpressCheckoutService(
+                $repository,
+                TestServiceRegister::getService(CheckoutService::class),
+                TestServiceRegister::getService(CountryConfigurationService::class),
+                TestServiceRegister::getService(PaymentMethodsService::class),
+                TestServiceRegister::getService(OrderService::class)
+            );
+        });
+        StoreContext::doWithStore('storeA', function () use ($repository) {
+            $repository->setExpressCheckoutSettings(new ExpressCheckoutSettings(
+                [new ExpressCheckoutPageConfig(ExpressCheckoutPage::cart(), true)],
+                null,
+                'https://store-a.example.com/terms'
+            ));
+        });
+        StoreContext::doWithStore('storeB', function () use ($repository) {
+            $repository->setExpressCheckoutSettings(new ExpressCheckoutSettings(
+                [new ExpressCheckoutPageConfig(ExpressCheckoutPage::cart(), true)],
+                null,
+                'https://store-b.example.com/terms'
+            ));
+        });
+
+        //Act
+        $response = ConfigurationWebhookAPI::configurationHandler('storeB')->handleRequest(
+            $this->signature,
+            [
+                "topic" => "save-express-checkout-settings",
+                "expressCheckoutConfigs" => [
+                    ['page' => 'product', 'enabled' => true],
+                ],
+            ]
+        );
+
+        //Assert
+        self::assertTrue($response->isSuccessful());
+        $storeA = StoreContext::doWithStore('storeA', [$repository, 'getExpressCheckoutSettings']);
+        $storeB = StoreContext::doWithStore('storeB', [$repository, 'getExpressCheckoutSettings']);
+        self::assertNotNull($storeA);
+        self::assertNotNull($storeB);
+        self::assertSame('https://store-a.example.com/terms', $storeA->getTermsAndConditionsUrl());
+        self::assertTrue($storeA->isPageEnabled(ExpressCheckoutPage::cart()->getPage()));
+        self::assertSame('https://store-b.example.com/terms', $storeB->getTermsAndConditionsUrl());
+        self::assertTrue($storeB->isPageEnabled(ExpressCheckoutPage::product()->getPage()));
     }
 
     /**
