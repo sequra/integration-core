@@ -34,26 +34,18 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
     protected $termsAndConditionsUrl;
 
     /**
-     * @var bool
-     */
-    protected $hasTermsAndConditionsUrl;
-
-    /**
      * @param ExpressCheckoutPageConfig[] $expressCheckoutConfigs
      * @param string|null $buttonStyle
      * @param string|null $termsAndConditionsUrl
-     * @param bool $hasTermsAndConditionsUrl
      */
     public function __construct(
         array $expressCheckoutConfigs,
         ?string $buttonStyle = null,
-        ?string $termsAndConditionsUrl = null,
-        bool $hasTermsAndConditionsUrl = false
+        ?string $termsAndConditionsUrl = null
     ) {
         $this->expressCheckoutConfigs = $expressCheckoutConfigs;
         $this->buttonStyle = $buttonStyle;
         $this->termsAndConditionsUrl = $termsAndConditionsUrl;
-        $this->hasTermsAndConditionsUrl = $hasTermsAndConditionsUrl;
     }
 
     /**
@@ -88,25 +80,10 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
             throw new InvalidTermsAndConditionsUrlException();
         }
 
-        return new self(
-            $configs,
-            $buttonStyle,
-            $termsAndConditionsUrl,
-            \array_key_exists('termsAndConditionsUrl', $payload)
-        );
+        return new self($configs, $buttonStyle, $termsAndConditionsUrl);
     }
 
     /**
-     * @return bool
-     */
-    public function hasTermsAndConditionsUrl(): bool
-    {
-        return $this->hasTermsAndConditionsUrl;
-    }
-
-    /**
-     * @param string|null $storedTermsAndConditionsUrl
-     *
      * @return ExpressCheckoutSettings
      *
      * @throws DuplicatedExpressCheckoutPageException
@@ -114,12 +91,12 @@ class SaveExpressCheckoutSettingsRequest extends ConfigurationWebhookRequest
      * @throws InvalidExpressCheckoutButtonStyleException
      * @throws InvalidTermsAndConditionsUrlException
      */
-    public function transformToDomainModel(?string $storedTermsAndConditionsUrl = null): ExpressCheckoutSettings
+    public function transformToDomainModel(): ExpressCheckoutSettings
     {
         return new ExpressCheckoutSettings(
             $this->expressCheckoutConfigs,
             $this->buttonStyle,
-            $this->hasTermsAndConditionsUrl ? $this->termsAndConditionsUrl : $storedTermsAndConditionsUrl
+            $this->termsAndConditionsUrl
         );
     }
 }

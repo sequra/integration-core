@@ -46,17 +46,13 @@ class SaveExpressCheckoutSettingsHandler implements TopicHandlerInterface
      */
     public function handle(array $payload): Response
     {
-        $request = SaveExpressCheckoutSettingsRequest::fromPayload($payload);
-        $storedTermsAndConditionsUrl = null;
-
-        if (!$request->hasTermsAndConditionsUrl()) {
+        if (!\array_key_exists('termsAndConditionsUrl', $payload)) {
             $storedSettings = $this->expressCheckoutService->getExpressCheckoutSettings();
-            $storedTermsAndConditionsUrl = $storedSettings ? $storedSettings->getTermsAndConditionsUrl() : null;
+            $payload['termsAndConditionsUrl'] = $storedSettings ? $storedSettings->getTermsAndConditionsUrl() : null;
         }
 
-        $this->expressCheckoutService->saveExpressCheckoutSettings(
-            $request->transformToDomainModel($storedTermsAndConditionsUrl)
-        );
+        $request = SaveExpressCheckoutSettingsRequest::fromPayload($payload);
+        $this->expressCheckoutService->saveExpressCheckoutSettings($request->transformToDomainModel());
 
         return new SaveExpressCheckoutSettingsResponse();
     }
