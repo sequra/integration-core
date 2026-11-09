@@ -10,6 +10,7 @@ use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\DuplicatedExpres
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutButtonStyleException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageConfigException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidTermsAndConditionsUrlException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
 
 /**
@@ -41,11 +42,21 @@ class SaveExpressCheckoutSettingsHandler implements TopicHandlerInterface
      * @throws DuplicatedExpressCheckoutPageException
      * @throws InvalidExpressCheckoutPageConfigException
      * @throws InvalidExpressCheckoutButtonStyleException
+     * @throws InvalidTermsAndConditionsUrlException
      */
     public function handle(array $payload): Response
     {
         $request = SaveExpressCheckoutSettingsRequest::fromPayload($payload);
-        $this->expressCheckoutService->saveExpressCheckoutSettings($request->transformToDomainModel());
+        $storedTermsAndConditionsUrl = null;
+
+        if (!$request->hasTermsAndConditionsUrl()) {
+            $storedSettings = $this->expressCheckoutService->getExpressCheckoutSettings();
+            $storedTermsAndConditionsUrl = $storedSettings ? $storedSettings->getTermsAndConditionsUrl() : null;
+        }
+
+        $this->expressCheckoutService->saveExpressCheckoutSettings(
+            $request->transformToDomainModel($storedTermsAndConditionsUrl)
+        );
 
         return new SaveExpressCheckoutSettingsResponse();
     }
