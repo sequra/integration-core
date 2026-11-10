@@ -45,6 +45,9 @@ class GetExpressCheckoutSettingsResponse extends Response
         $buttonStyle = $this->expressCheckoutSettings
             ? $this->expressCheckoutSettings->getButtonStyle()
             : null;
+        $termsAndConditionsUrl = $this->expressCheckoutSettings
+            ? $this->expressCheckoutSettings->getTermsAndConditionsUrl()
+            : null;
 
         return [
             'availablePages' => array_map(static function (ExpressCheckoutPage $page) {
@@ -54,6 +57,7 @@ class GetExpressCheckoutSettingsResponse extends Response
                 return $config->toArray();
             }, $configs),
             'buttonStyle' => $buttonStyle,
+            'termsAndConditionsUrl' => $termsAndConditionsUrl,
         ];
     }
 }

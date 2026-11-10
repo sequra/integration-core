@@ -6,6 +6,7 @@ use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\DuplicatedExpres
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutButtonStyleException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageConfigException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutPageException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidTermsAndConditionsUrlException;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutPageConfig;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutSettings as DomainExpressCheckoutSettings;
 use SeQura\Core\Infrastructure\ORM\Configuration\EntityConfiguration;
@@ -59,14 +60,29 @@ class ExpressCheckoutSettings extends Entity
             $buttonStyle = null;
         }
 
+        $termsAndConditionsUrl = static::getDataValue($expressCheckoutSettings, 'termsAndConditionsUrl', null);
+        if (!\is_string($termsAndConditionsUrl)) {
+            $termsAndConditionsUrl = null;
+        }
+
         // A style is rejected when it is written, so a stored one that no longer
         // validates means the row was corrupted or hand-edited. Dropping just the
         // style keeps the page configs readable: the button falls back to its
         // default look instead of every read of this row failing.
-        try {
-            $this->expressCheckoutSettings = new DomainExpressCheckoutSettings($configs, $buttonStyle);
-        } catch (InvalidExpressCheckoutButtonStyleException $exception) {
-            $this->expressCheckoutSettings = new DomainExpressCheckoutSettings($configs);
+        while (true) {
+            try {
+                $this->expressCheckoutSettings = new DomainExpressCheckoutSettings(
+                    $configs,
+                    $buttonStyle,
+                    $termsAndConditionsUrl
+                );
+
+                return;
+            } catch (InvalidExpressCheckoutButtonStyleException $exception) {
+                $buttonStyle = null;
+            } catch (InvalidTermsAndConditionsUrlException $exception) {
+                $termsAndConditionsUrl = null;
+            }
         }
     }
 
