@@ -18,6 +18,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockCreateOrderRequestBuilder;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockOrderProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
@@ -77,7 +78,8 @@ class SolicitationGetFormCheckoutApiTest extends BaseTestCase
                     $this->orderRepository,
                     $this->merchantOrderBuilder,
                     $this->shopOrderCreation,
-                    TestServiceRegister::getService(CheckoutService::class)
+                    TestServiceRegister::getService(CheckoutService::class),
+                    TestServiceRegister::getService(ClockInterface::class)
                 );
             }
         );

@@ -38,6 +38,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethodCategory;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException;
@@ -54,6 +55,11 @@ class OrderService
      * Product codes for installment payments category.
      */
     private const INSTALLMENT_METHOD_CODES = ['pp3', 'pp6', 'pp9'];
+    /**
+     * Seconds after its solicitation during which an order is reused. It is well below
+     * OrderCleanupService::RETENTION_DAYS, so an order is never reused while the cleanup may delete it.
+     */
+    protected const SOLICITATION_REUSE_INTERVAL = 86400;
     /**
      * @var OrderProxyInterface
      */
@@ -74,6 +80,10 @@ class OrderService
      * @var MerchantOrderRequestBuilder
      */
     protected $merchantOrderRequestBuilder;
+    /**
+     * @var ClockInterface
+     */
+    protected $clock;
 
     /**
      * @param OrderProxyInterface $proxy
@@ -81,19 +91,22 @@ class OrderService
      * @param MerchantOrderRequestBuilder $merchantOrderRequestBuilder
      * @param OrderCreationInterface $shopOrderCreator
      * @param CheckoutService $checkoutService
+     * @param ClockInterface $clock
      */
     public function __construct(
         OrderProxyInterface $proxy,
         SeQuraOrderRepositoryInterface $orderRepository,
         MerchantOrderRequestBuilder $merchantOrderRequestBuilder,
         OrderCreationInterface $shopOrderCreator,
-        CheckoutService $checkoutService
+        CheckoutService $checkoutService,
+        ClockInterface $clock
     ) {
         $this->proxy = $proxy;
         $this->orderRepository = $orderRepository;
         $this->merchantOrderRequestBuilder = $merchantOrderRequestBuilder;
         $this->shopOrderCreator = $shopOrderCreator;
         $this->checkoutService = $checkoutService;
+        $this->clock = $clock;
     }
 
     /**
@@ -158,6 +171,7 @@ class OrderService
         }
 
         $order = $this->proxy->createOrder($createOrderRequest);
+        $order->setSolicitedAt($this->clock->now()->getTimestamp());
         $this->orderRepository->setSeQuraOrder($order);
 
         return $order;
@@ -165,8 +179,10 @@ class OrderService
 
     /**
      * Solicits the order only for a cart SeQura may be offered for, so an ineligible cart costs no
-     * HTTP call. The shipping country and the shopper's IP are read off the built order itself:
-     * the builder is what knows them, and the guard then cannot disagree with what is solicited.
+     * HTTP call. The products and categories are checked first, since they do not need the order,
+     * so a cart they exclude costs no build. The shipping country and the shopper's IP are read off
+     * the built order itself: the builder is what knows them, and the guard then cannot disagree
+     * with what is solicited.
      *
      * @param CreateOrderRequestBuilder $builder
      * @param string[] $productIds Product references in the cart (empty array = no per-product check).
@@ -190,13 +206,17 @@ class OrderService
         array $categoryIds = [],
         bool $checkCountry = true
     ): ?SeQuraOrder {
+        if (!$this->checkoutService->areProductsAndCategoriesSupported($productIds, $categoryIds)) {
+            return null;
+        }
+
         $createOrderRequest = $builder->build();
 
         $isSupported = $this->checkoutService->isSolicitationSupported(
             $createOrderRequest->getDeliveryAddress()->getCountryCode(),
             $createOrderRequest->getCustomer()->getIpNumber(),
-            $productIds,
-            $categoryIds,
+            [],
+            [],
             $checkCountry
         );
 
@@ -575,7 +595,11 @@ class OrderService
      */
     protected function isReusableFor(SeQuraOrder $order, CreateOrderRequest $request): bool
     {
-        return !\in_array($order->getState(), OrderRequestStates::SETTLED_STATES, true)
+        $solicitedAt = $order->getSolicitedAt();
+
+        return $solicitedAt !== null
+            && $solicitedAt > $this->clock->now()->getTimestamp() - static::SOLICITATION_REUSE_INTERVAL
+            && !\in_array($order->getState(), OrderRequestStates::SETTLED_STATES, true)
             && json_encode($this->getComparablePayload($order))
             === json_encode($this->getComparablePayload($request->toSequraOrderInstance($order->getReference())));
     }

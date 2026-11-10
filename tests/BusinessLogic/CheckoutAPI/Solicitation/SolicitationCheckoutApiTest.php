@@ -23,6 +23,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderReposi
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraCost;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockCreateOrderRequestBuilder;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockOrderProxy;
@@ -98,7 +99,8 @@ class SolicitationCheckoutApiTest extends BaseTestCase
                     $this->orderRepository,
                     $this->merchantOrderBuilder,
                     $this->shopOrderCreation,
-                    TestServiceRegister::getService(CheckoutService::class)
+                    TestServiceRegister::getService(CheckoutService::class),
+                    TestServiceRegister::getService(ClockInterface::class)
                 );
             }
         );
@@ -332,6 +334,22 @@ class SolicitationCheckoutApiTest extends BaseTestCase
         self::assertTrue($response->isSuccessful(), json_encode($response->toArray(), JSON_PRETTY_PRINT));
         self::assertNull($response->getSolicitedOrder());
         self::assertSame(0, $this->orderProxy->getCreateOrderCallCount());
+    }
+
+    public function testSolicitationDoesNotBuildTheOrderRequestWhenAProductIsExcluded()
+    {
+        // Arrange
+        $this->generalSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, ['excluded-sku'], null)
+        );
+        $this->productService->setMockProductSku('excluded-sku');
+        $builder = new MockCreateOrderRequestBuilder();
+
+        // Act
+        CheckoutAPI::get()->solicitation('test1')->solicitFor(new SolicitationRequest($builder, ['p1']));
+
+        // Assert
+        self::assertSame(0, $builder->getBuildCallCount());
     }
 
     public function testSolicitationBuildsTheOrderRequestOnlyOnce()

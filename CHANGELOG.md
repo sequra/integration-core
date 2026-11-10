@@ -3,6 +3,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+# [Unreleased]
+## Added
+- Daily cleanup of stale solicitations: `SeQuraOrder` rows that never became a shop order (no `orderRef1`), that SeQura has not settled (not `confirmed`, `on_hold` or `cancelled`) and that were last solicited 7 days ago or earlier. Nothing runs until the host calls `OrderCleanupService::schedule($firstRunTimestamp)`. From then on, on the first task runner tick after the scheduled time, `OrderCleanup\Listeners\OrderCleanupTickListener` moves the next run ahead until it is past now and enqueues an `OrderCleanup\Tasks\OrderCleanupTask`, unless an earlier cleanup is still queued or running, in which case that day's run is skipped. When enqueueing fails, the next run is moved back so a later tick tries again. Runs are 24 hours apart, so across a daylight saving change the local time of day moves by an hour. Orders are deleted only through repositories implementing `ConditionallyDeletes`, one statement per condition; on any other repository the cleanup reads and deletes nothing and the task logs that it was skipped.
+- `SeQuraOrder::getSolicitedAt()` / `setSolicitedAt()`: when the order was last solicited, kept in the order's stored data (no new index). `OrderService::solicitFor()` sets it on a new solicitation. An order stored before this release has none; the cleanup then falls back to its cart's `updated_at` and keeps the order when that is missing or unreadable.
+- `ClockInterface` (`Domain\Time`), implemented by `Providers\Clock\Clock` on top of `TimeProvider`.
+- `OrderCleanupScheduleRepositoryInterface`.
+
+## Changed
+- `OrderService` takes a `ClockInterface` as its last constructor argument.
+- `SeQuraOrderRepositoryInterface` has three new methods, `getUnlinkedOrdersAfter()`, `canDeleteUnlinkedOrders()` and `deleteUnlinkedOrders()`, which every implementation of it must add.
+- `BootstrapComponent::initEvents()` registers `OrderCleanupTickListener` for `TickEvent`, ahead of `TickEventListener`. A host that replaces the `TickEvent` handlers must keep it, and must run it with the storage context the order and configuration repositories need, or the cleanup never runs.
+- The cleanup pages through `SeQuraOrder` rows with `id >`, `id <` and `id IN` conditions, so a host's `ConditionallyDeletes` repository must honour the operator of a condition on `id`. A repository that treats every `id` condition as an equality finds nothing to clean up.
+- `OrderService::solicitFor()` reuses an existing order only within 24 hours of its solicitation, and reusing writes nothing. An older order, or one stored before this release, is solicited again.
+
 # [v6.0.0](https://github.com/sequra/integration-core/tree/v6.0.0)
 ## Added
 - `ConnectionData` carries the id the SeQura portal gave the store's integration (`getIntegrationId()` / `setIntegrationId()`, a last optional constructor argument, `integrationId` in `toArray()`). Connecting and re-registering webhooks record it, and `ConnectionService::getPortalUrl()` then links to the settings page of the store's own integration instead of the list of integrations. A connection stored before the id was kept, or one whose registration was skipped, has none and still gets the list link. `ConnectionDataRepository::setConnectionData()` keeps the stored id when the model it is given carries none, so saving credentials through `saveConnectionData()` does not take the link away.
