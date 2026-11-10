@@ -113,6 +113,14 @@ class MockSeQuraOrderRepository implements SeQuraOrderRepositoryInterface
     /**
      * @inheritDoc
      */
+    public function canDeleteUnlinkedOrders(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function deleteUnlinkedOrders(array $ids): void
     {
     }

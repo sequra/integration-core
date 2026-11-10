@@ -62,14 +62,20 @@ class OrderCleanupService
      *
      * A solicitation SeQura already settled is kept, and so is one whose solicitation time is unknown: an order
      * stored before that time was kept falls back to its cart's update time, and is kept when that is missing
-     * or unreadable too, so nothing is deleted on a guess.
+     * or unreadable too, so nothing is deleted on a guess. Nothing is read or deleted when the order storage cannot
+     * delete by condition.
      *
      * @param callable|null $afterEachBatch Called after every batch, e.g. to report that the task is alive.
      *
-     * @return int Number of deleted solicitations.
+     * @return int Number of stale solicitations sent for deletion. One linked to a shop order since it was read is
+     * kept, but still counted.
      */
     public function cleanup(?callable $afterEachBatch = null): int
     {
+        if (!$this->canCleanup()) {
+            return 0;
+        }
+
         $cutoff = $this->clock->now()->modify('-' . static::RETENTION_DAYS . ' days')->getTimestamp();
         $deleted = 0;
         $lastId = 0;
@@ -96,6 +102,17 @@ class OrderCleanupService
         } while (\count($orders) === static::BATCH_SIZE);
 
         return $deleted;
+    }
+
+    /**
+     * Whether the order storage can delete stale solicitations safely, i.e. on the condition that they are still
+     * not linked to a shop order.
+     *
+     * @return bool
+     */
+    public function canCleanup(): bool
+    {
+        return $this->orderRepository->canDeleteUnlinkedOrders();
     }
 
     /**

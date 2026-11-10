@@ -14,6 +14,7 @@ use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MemoryRepositoryWithConditionalDelete;
+use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\MemoryStorage;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\TestRepositoryRegistry;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
 
@@ -147,6 +148,48 @@ class OrderRepositoryTest extends BaseTestCase
     /**
      * @throws Exception
      */
+    public function testGetsUnlinkedOrdersStoredWithAnEmptyOrAMissingShopReferenceInIdOrder(): void
+    {
+        $this->repository->save($this->order('ref-1', 'cart-1'));
+        $this->saveWithoutShopReference($this->repository, $this->order('ref-2', 'cart-2'));
+        $this->repository->save($this->order('ref-3', 'cart-3'));
+        $this->saveWithoutShopReference($this->repository, $this->order('ref-4', 'cart-4'));
+        $this->repository->save($this->order('ref-5', 'cart-5', 'shop-5'));
+
+        $orders = $this->seQuraOrderRepository->getUnlinkedOrdersAfter(0, 3);
+
+        self::assertSame(['ref-1', 'ref-2', 'ref-3'], array_map(static function (SeQuraOrder $order) {
+            return $order->getReference();
+        }, $orders));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testDeletesUnlinkedOrdersStoredWithAMissingShopReference(): void
+    {
+        $repository = new MemoryRepositoryWithConditionalDelete();
+        $repository->setEntityClass(SeQuraOrder::getClassName());
+        $orderRepository = new SeQuraOrderRepository($repository);
+        $id = $this->saveWithoutShopReference($repository, $this->order('ref-1', 'cart-1'));
+
+        $orderRepository->deleteUnlinkedOrders([$id]);
+
+        self::assertNull($orderRepository->getByOrderReference('ref-1'));
+    }
+
+    public function testCanDeleteUnlinkedOrdersOnlyWithAConditionalDelete(): void
+    {
+        $repository = new MemoryRepositoryWithConditionalDelete();
+        $repository->setEntityClass(SeQuraOrder::getClassName());
+
+        self::assertTrue((new SeQuraOrderRepository($repository))->canDeleteUnlinkedOrders());
+        self::assertFalse($this->seQuraOrderRepository->canDeleteUnlinkedOrders());
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testDeletesOnlyTheGivenOrdersThatAreStillUnlinked(): void
     {
         $repository = new MemoryRepositoryWithConditionalDelete();
@@ -207,6 +250,22 @@ class OrderRepositoryTest extends BaseTestCase
         $orderRepository->deleteUnlinkedOrders([$id]);
 
         self::assertNotNull($orderRepository->getByOrderReference('ref-1'));
+    }
+
+    /**
+     * Saves the order as a storage that keeps a missing shop order reference as null in its index.
+     *
+     * @param RepositoryInterface $repository
+     * @param SeQuraOrder $order
+     *
+     * @return int
+     */
+    private function saveWithoutShopReference(RepositoryInterface $repository, SeQuraOrder $order): int
+    {
+        $id = (int)$repository->save($order);
+        MemoryStorage::$storage[$id]['index_3'] = null;
+
+        return $id;
     }
 
     /**

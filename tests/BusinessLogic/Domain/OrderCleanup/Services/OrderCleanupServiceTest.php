@@ -3,11 +3,15 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\OrderCleanup\Services;
 
 use DateTime;
+use DateTimeZone;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Cart;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
+use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderCleanup\RepositoryContracts\OrderCleanupScheduleRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
@@ -74,6 +78,25 @@ class OrderCleanupServiceTest extends BaseTestCase
 
         self::assertSame(1, $deleted);
         self::assertEmpty($this->orderRepository->select());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testReadsAndDeletesNothingWhenTheOrderStorageCannotDeleteByCondition(): void
+    {
+        $orderRepository = $this->createMock(SeQuraOrderRepositoryInterface::class);
+        $orderRepository->method('canDeleteUnlinkedOrders')->willReturn(false);
+        $orderRepository->expects(self::never())->method('getUnlinkedOrdersAfter');
+        $orderRepository->expects(self::never())->method('deleteUnlinkedOrders');
+        $service = new OrderCleanupService(
+            $orderRepository,
+            TestServiceRegister::getService(OrderCleanupScheduleRepositoryInterface::class),
+            TestServiceRegister::getService(ClockInterface::class)
+        );
+
+        self::assertFalse($service->canCleanup());
+        self::assertSame(0, $service->cleanup());
     }
 
     /**
@@ -312,6 +335,28 @@ class OrderCleanupServiceTest extends BaseTestCase
         $this->service->advanceNextRun();
 
         self::assertSame((new DateTime('2026-10-31 02:30:00'))->getTimestamp(), $this->service->getNextRun());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testKeepsTheLocalTimeOfDayWhenAdvancingAcrossADaylightSavingChange(): void
+    {
+        $timezone = new DateTimeZone('Europe/Madrid');
+        $clock = $this->createMock(ClockInterface::class);
+        $clock->method('now')->willReturnCallback(static function () use ($timezone) {
+            return new DateTime('2026-10-25 04:00:00', $timezone);
+        });
+        $service = new OrderCleanupService(
+            TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
+            TestServiceRegister::getService(OrderCleanupScheduleRepositoryInterface::class),
+            $clock
+        );
+        $service->schedule((new DateTime('2026-10-24 03:00:00', $timezone))->getTimestamp());
+
+        $service->advanceNextRun();
+
+        self::assertSame((new DateTime('2026-10-26 03:00:00', $timezone))->getTimestamp(), $service->getNextRun());
     }
 
     /**

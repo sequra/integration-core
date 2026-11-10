@@ -93,6 +93,13 @@ interface SeQuraOrderRepositoryInterface
     public function getUnlinkedOrdersAfter(int $afterId, int $limit): array;
 
     /**
+     * Whether the storage can delete orders on the condition that they still have no shop order reference.
+     *
+     * @return bool
+     */
+    public function canDeleteUnlinkedOrders(): bool;
+
+    /**
      * Deletes the orders with the given ids that still have no shop order reference, or none at all when the storage
      * cannot check that at the moment it deletes.
      *

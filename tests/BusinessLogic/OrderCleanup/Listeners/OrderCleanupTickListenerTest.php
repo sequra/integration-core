@@ -195,6 +195,24 @@ class OrderCleanupTickListenerTest extends BaseTestCase
     }
 
     /**
+     * @throws Exception
+     */
+    public function testKeepsTheRunDueWhenCheckingForAPendingCleanupFails(): void
+    {
+        $this->cleanupService->schedule($this->now - 60);
+        $failingQueue = $this->createMock(QueueService::class);
+        $failingQueue->method('findLatestByType')->willThrowException(new RuntimeException('storage unavailable'));
+        $failingQueue->expects(self::never())->method('enqueue');
+        TestServiceRegister::registerService(QueueService::class, static function () use ($failingQueue) {
+            return $failingQueue;
+        });
+
+        OrderCleanupTickListener::handle();
+
+        self::assertSame($this->now - 60, $this->cleanupService->getNextRun());
+    }
+
+    /**
      * @return QueueItem
      *
      * @throws Exception

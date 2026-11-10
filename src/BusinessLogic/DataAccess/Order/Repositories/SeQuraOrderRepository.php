@@ -172,6 +172,14 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
 
     /**
      * @inheritDoc
+     */
+    public function canDeleteUnlinkedOrders(): bool
+    {
+        return $this->repository instanceof ConditionallyDeletes;
+    }
+
+    /**
+     * @inheritDoc
      *
      * The shop order reference is part of the delete condition, so an order linked since it was read is kept.
      * Nothing is deleted when the storage cannot delete by condition, since a delete by id would also remove an

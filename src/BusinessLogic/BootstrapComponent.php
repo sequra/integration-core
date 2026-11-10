@@ -1153,8 +1153,8 @@ class BootstrapComponent extends BaseBootstrapComponent
     {
         parent::initEvents();
 
-        EventBus::getInstance()->when(TickEvent::class, TickEventListener::class . '::handle');
         EventBus::getInstance()->when(TickEvent::class, OrderCleanupTickListener::class . '::handle');
+        EventBus::getInstance()->when(TickEvent::class, TickEventListener::class . '::handle');
 
         /**
          * @var QueueItemStateTransitionEventBus $queueBus

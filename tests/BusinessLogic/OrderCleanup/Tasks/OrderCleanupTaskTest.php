@@ -34,6 +34,7 @@ class OrderCleanupTaskTest extends BaseTestCase
     public function testRunsTheCleanup(): void
     {
         $cleanupService = $this->createMock(OrderCleanupService::class);
+        $cleanupService->method('canCleanup')->willReturn(true);
         $cleanupService->expects(self::once())->method('cleanup')->with(self::isType('callable'))->willReturn(0);
         TestServiceRegister::registerService(OrderCleanupService::class, static function () use ($cleanupService) {
             return $cleanupService;
@@ -52,6 +53,7 @@ class OrderCleanupTaskTest extends BaseTestCase
             return $logger;
         });
         $cleanupService = $this->createMock(OrderCleanupService::class);
+        $cleanupService->method('canCleanup')->willReturn(true);
         $cleanupService->method('cleanup')->willReturn(3);
         TestServiceRegister::registerService(OrderCleanupService::class, static function () use ($cleanupService) {
             return $cleanupService;
@@ -59,6 +61,29 @@ class OrderCleanupTaskTest extends BaseTestCase
 
         (new OrderCleanupTask())->execute();
 
-        self::assertTrue($logger->isMessageContainedInLog('Order cleanup deleted 3 stale solicitations.'));
+        self::assertTrue($logger->isMessageContainedInLog('Order cleanup deleted up to 3 stale solicitations.'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testLogsASkippedCleanupWhenTheOrderStorageCannotDeleteByCondition(): void
+    {
+        $logger = new TestShopLogger();
+        TestServiceRegister::registerService(ShopLoggerAdapter::CLASS_NAME, static function () use ($logger) {
+            return $logger;
+        });
+        $cleanupService = $this->createMock(OrderCleanupService::class);
+        $cleanupService->method('canCleanup')->willReturn(false);
+        $cleanupService->expects(self::never())->method('cleanup');
+        TestServiceRegister::registerService(OrderCleanupService::class, static function () use ($cleanupService) {
+            return $cleanupService;
+        });
+
+        (new OrderCleanupTask())->execute();
+
+        self::assertTrue(
+            $logger->isMessageContainedInLog('Order cleanup skipped: the order storage cannot delete by condition.')
+        );
     }
 }
