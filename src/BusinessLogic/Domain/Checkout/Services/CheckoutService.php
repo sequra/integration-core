@@ -364,7 +364,7 @@ class CheckoutService
      * @throws HttpRequestException
      * @throws WrongCredentialsException
      */
-    private function areProductsAndCategoriesSupported(array $productIds, array $categoryIds): bool
+    public function areProductsAndCategoriesSupported(array $productIds, array $categoryIds): bool
     {
         return $this->areProductsSupported($productIds) && $this->areCategoriesSupported($categoryIds);
     }

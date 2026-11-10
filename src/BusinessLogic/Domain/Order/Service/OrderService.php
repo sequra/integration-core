@@ -179,8 +179,10 @@ class OrderService
 
     /**
      * Solicits the order only for a cart SeQura may be offered for, so an ineligible cart costs no
-     * HTTP call. The shipping country and the shopper's IP are read off the built order itself:
-     * the builder is what knows them, and the guard then cannot disagree with what is solicited.
+     * HTTP call. The products and categories are checked first, since they do not need the order,
+     * so a cart they exclude costs no build. The shipping country and the shopper's IP are read off
+     * the built order itself: the builder is what knows them, and the guard then cannot disagree
+     * with what is solicited.
      *
      * @param CreateOrderRequestBuilder $builder
      * @param string[] $productIds Product references in the cart (empty array = no per-product check).
@@ -204,13 +206,17 @@ class OrderService
         array $categoryIds = [],
         bool $checkCountry = true
     ): ?SeQuraOrder {
+        if (!$this->checkoutService->areProductsAndCategoriesSupported($productIds, $categoryIds)) {
+            return null;
+        }
+
         $createOrderRequest = $builder->build();
 
         $isSupported = $this->checkoutService->isSolicitationSupported(
             $createOrderRequest->getDeliveryAddress()->getCountryCode(),
             $createOrderRequest->getCustomer()->getIpNumber(),
-            $productIds,
-            $categoryIds,
+            [],
+            [],
             $checkCountry
         );
 

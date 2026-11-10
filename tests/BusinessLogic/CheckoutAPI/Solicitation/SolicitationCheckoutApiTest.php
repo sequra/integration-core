@@ -336,6 +336,22 @@ class SolicitationCheckoutApiTest extends BaseTestCase
         self::assertSame(0, $this->orderProxy->getCreateOrderCallCount());
     }
 
+    public function testSolicitationDoesNotBuildTheOrderRequestWhenAProductIsExcluded()
+    {
+        // Arrange
+        $this->generalSettingsService->saveGeneralSettings(
+            new GeneralSettings(true, null, null, ['excluded-sku'], null)
+        );
+        $this->productService->setMockProductSku('excluded-sku');
+        $builder = new MockCreateOrderRequestBuilder();
+
+        // Act
+        CheckoutAPI::get()->solicitation('test1')->solicitFor(new SolicitationRequest($builder, ['p1']));
+
+        // Assert
+        self::assertSame(0, $builder->getBuildCallCount());
+    }
+
     public function testSolicitationBuildsTheOrderRequestOnlyOnce()
     {
         // Arrange
