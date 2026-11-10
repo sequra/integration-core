@@ -292,48 +292,47 @@ class OrderCleanupServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testIsNotDueBeforeItIsScheduled(): void
+    public function testClaimsNoRunBeforeItIsScheduled(): void
     {
+        self::assertNull($this->service->claimDueRun());
         self::assertNull($this->service->getNextRun());
-        self::assertFalse($this->service->isDue());
     }
 
     /**
      * @throws Exception
      */
-    public function testIsDueOnceTheScheduledTimeHasCome(): void
+    public function testClaimsNoRunBeforeTheScheduledTime(): void
     {
         $now = (new DateTime(self::NOW))->getTimestamp();
-
         $this->service->schedule($now + 1);
-        self::assertFalse($this->service->isDue());
 
-        $this->service->schedule($now, true);
-        self::assertTrue($this->service->isDue());
+        self::assertNull($this->service->claimDueRun());
+        self::assertSame($now + 1, $this->service->getNextRun());
     }
 
     /**
      * @throws Exception
      */
-    public function testAdvancesTheNextRunToTheScheduledTimeOfTheNextDay(): void
+    public function testClaimsTheDueRunAndMovesTheNextOneARunIntervalAhead(): void
     {
-        $this->service->schedule((new DateTime('2026-10-30 02:30:00'))->getTimestamp());
+        $dueRun = (new DateTime('2026-10-30 02:30:00'))->getTimestamp();
+        $this->service->schedule($dueRun);
 
-        $this->service->advanceNextRun();
-
-        self::assertSame((new DateTime('2026-10-31 02:30:00'))->getTimestamp(), $this->service->getNextRun());
+        self::assertSame($dueRun, $this->service->claimDueRun());
+        self::assertSame($dueRun + 86400, $this->service->getNextRun());
     }
 
     /**
      * @throws Exception
      */
-    public function testKeepsTheScheduledTimeOfDayAfterMissedRuns(): void
+    public function testMovesTheNextRunByWholeRunIntervalsAfterMissedRuns(): void
     {
-        $this->service->schedule((new DateTime('2026-10-26 02:30:00'))->getTimestamp());
+        $dueRun = (new DateTime('2026-10-26 02:30:00'))->getTimestamp();
+        $this->service->schedule($dueRun);
 
-        $this->service->advanceNextRun();
+        $this->service->claimDueRun();
 
-        self::assertSame((new DateTime('2026-10-31 02:30:00'))->getTimestamp(), $this->service->getNextRun());
+        self::assertSame($dueRun + 5 * 86400, $this->service->getNextRun());
     }
 
     /**
@@ -355,9 +354,9 @@ class OrderCleanupServiceTest extends BaseTestCase
         $scheduledRun = (new DateTime('2026-03-28 02:30:00', $timezone))->getTimestamp();
         $service->schedule($scheduledRun);
 
-        self::assertSame($scheduledRun, $service->advanceNextRun());
+        self::assertSame($scheduledRun, $service->claimDueRun());
         $now = new DateTime('2026-11-02 04:00:00', $timezone);
-        $service->advanceNextRun();
+        $service->claimDueRun();
 
         $nextRun = (new DateTime('@' . $service->getNextRun()))->setTimezone($timezone);
         self::assertSame('2026-11-03 02:30', $nextRun->format('Y-m-d H:i'));

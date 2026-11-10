@@ -58,11 +58,11 @@ class OrderCleanupTickListener
     protected static function enqueueWhenDue(): void
     {
         $cleanupService = static::getOrderCleanupService();
-        if (!$cleanupService->isDue()) {
+        $dueRun = $cleanupService->claimDueRun();
+        if ($dueRun === null) {
             return;
         }
 
-        $dueRun = $cleanupService->advanceNextRun();
         try {
             if (!static::isCleanupPending()) {
                 static::getQueueService()->enqueue(static::QUEUE_NAME, new OrderCleanupTask(), '', Priority::LOW);

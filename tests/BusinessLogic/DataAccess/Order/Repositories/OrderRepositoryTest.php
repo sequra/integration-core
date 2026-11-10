@@ -142,9 +142,7 @@ class OrderRepositoryTest extends BaseTestCase
 
         $orders = $this->seQuraOrderRepository->getUnlinkedOrdersAfter($firstId, 2);
 
-        self::assertSame(['ref-3', 'ref-4'], array_map(static function (SeQuraOrder $order) {
-            return $order->getReference();
-        }, $orders));
+        self::assertSame(['ref-3', 'ref-4'], $this->references($orders));
     }
 
     /**
@@ -160,9 +158,7 @@ class OrderRepositoryTest extends BaseTestCase
 
         $orders = $this->seQuraOrderRepository->getUnlinkedOrdersAfter(0, 3);
 
-        self::assertSame(['ref-1', 'ref-2', 'ref-3'], array_map(static function (SeQuraOrder $order) {
-            return $order->getReference();
-        }, $orders));
+        self::assertSame(['ref-1', 'ref-2', 'ref-3'], $this->references($orders));
     }
 
     /**
@@ -184,9 +180,7 @@ class OrderRepositoryTest extends BaseTestCase
 
         $orders = (new SeQuraOrderRepository($repository))->getUnlinkedOrdersAfter(0, 2);
 
-        self::assertSame(['ref-1', 'ref-2'], array_map(static function (SeQuraOrder $order) {
-            return $order->getReference();
-        }, $orders));
+        self::assertSame(['ref-1', 'ref-2'], $this->references($orders));
         self::assertCount(2, $filters);
         self::assertContains(
             [Operators::LESS_THAN, $secondId],
@@ -279,6 +273,18 @@ class OrderRepositoryTest extends BaseTestCase
         MemoryStorage::$storage[$id]['index_' . IndexHelper::mapFieldsToIndexes($order)['orderRef1']] = null;
 
         return $id;
+    }
+
+    /**
+     * @param SeQuraOrder[] $orders
+     *
+     * @return string[]
+     */
+    private function references(array $orders): array
+    {
+        return array_map(static function (SeQuraOrder $order) {
+            return $order->getReference();
+        }, $orders);
     }
 
     /**

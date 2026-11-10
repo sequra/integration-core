@@ -137,36 +137,26 @@ class OrderCleanupService
     }
 
     /**
-     * Whether the cleanup is scheduled and its next run time has come.
+     * When the cleanup is scheduled and its next run time has come, moves the next run ahead by whole RUN_INTERVALs
+     * until it is past now and returns the run that was due. Ticks that came late or a task runner that was down
+     * do not shift the run time. Runs are a fixed number of seconds apart, so the local time of day moves by an
+     * hour across a daylight saving change, but never drifts.
      *
-     * @return bool
+     * @return int|null The run that was due, or null when no run is due.
      */
-    public function isDue(): bool
-    {
-        $nextRun = $this->getNextRun();
-
-        return $nextRun !== null && $nextRun <= $this->clock->now()->getTimestamp();
-    }
-
-    /**
-     * Moves the next cleanup run ahead by whole RUN_INTERVALs until it is past now, so ticks that came late or a
-     * task runner that was down do not shift the run time. Runs are a fixed number of seconds apart, so the local
-     * time of day moves by an hour across a daylight saving change, but never drifts.
-     *
-     * @return int The next run it replaced, or now when the cleanup was not scheduled.
-     */
-    public function advanceNextRun(): int
+    public function claimDueRun(): ?int
     {
         $now = $this->clock->now()->getTimestamp();
-        $replacedRun = $this->getNextRun() ?? $now;
-        $nextRun = $replacedRun;
-        if ($nextRun <= $now) {
-            $nextRun += (\intdiv($now - $nextRun, static::RUN_INTERVAL) + 1) * static::RUN_INTERVAL;
+        $dueRun = $this->getNextRun();
+        if ($dueRun === null || $dueRun > $now) {
+            return null;
         }
 
-        $this->scheduleRepository->setNextRun($nextRun);
+        $this->scheduleRepository->setNextRun(
+            $dueRun + (\intdiv($now - $dueRun, static::RUN_INTERVAL) + 1) * static::RUN_INTERVAL
+        );
 
-        return $replacedRun;
+        return $dueRun;
     }
 
     /**

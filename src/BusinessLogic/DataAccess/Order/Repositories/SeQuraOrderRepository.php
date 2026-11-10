@@ -145,7 +145,7 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
      *
      * An order without a shop order reference stores it either empty or missing, so both are read and merged.
      * Once one read fills the limit, the next one only looks below its last id, as nothing above it can make the
-     * limit, so a storage without an index on the shop order reference does not scan the rest of the table.
+     * limit, so on a storage without an index on the shop order reference it does not scan the rest of the table.
      *
      * @throws QueryFilterInvalidParamException
      */
