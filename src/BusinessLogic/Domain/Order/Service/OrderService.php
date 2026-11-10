@@ -56,10 +56,10 @@ class OrderService
      */
     private const INSTALLMENT_METHOD_CODES = ['pp3', 'pp6', 'pp9'];
     /**
-     * Seconds a reused order keeps its solicitation time before reusing it stores the current one, so checkout
-     * page loads do not write the order every time.
+     * Seconds after its solicitation during which an order is reused. It is well below the days the cleanup keeps
+     * a solicitation, so an order is never reused while the cleanup may delete it, and reusing writes nothing.
      */
-    protected const SOLICITATION_REFRESH_INTERVAL = 3600;
+    protected const SOLICITATION_REUSE_INTERVAL = 86400;
     /**
      * @var OrderProxyInterface
      */
@@ -166,19 +166,12 @@ class OrderService
         }
 
         $existingOrder = $this->getExistingOrderFor($createOrderRequest);
-        $now = $this->clock->now()->getTimestamp();
         if ($existingOrder && $this->isReusableFor($existingOrder, $createOrderRequest)) {
-            $solicitedAt = $existingOrder->getSolicitedAt();
-            if ($solicitedAt === null || $solicitedAt <= $now - static::SOLICITATION_REFRESH_INTERVAL) {
-                $existingOrder->setSolicitedAt($now);
-                $this->orderRepository->setSeQuraOrder($existingOrder);
-            }
-
             return $existingOrder;
         }
 
         $order = $this->proxy->createOrder($createOrderRequest);
-        $order->setSolicitedAt($now);
+        $order->setSolicitedAt($this->clock->now()->getTimestamp());
         $this->orderRepository->setSeQuraOrder($order);
 
         return $order;
@@ -596,7 +589,11 @@ class OrderService
      */
     protected function isReusableFor(SeQuraOrder $order, CreateOrderRequest $request): bool
     {
-        return !\in_array($order->getState(), OrderRequestStates::SETTLED_STATES, true)
+        $solicitedAt = $order->getSolicitedAt();
+
+        return $solicitedAt !== null
+            && $solicitedAt > $this->clock->now()->getTimestamp() - static::SOLICITATION_REUSE_INTERVAL
+            && !\in_array($order->getState(), OrderRequestStates::SETTLED_STATES, true)
             && json_encode($this->getComparablePayload($order))
             === json_encode($this->getComparablePayload($request->toSequraOrderInstance($order->getReference())));
     }

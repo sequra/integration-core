@@ -7,7 +7,6 @@ use SeQura\Core\BusinessLogic\OrderCleanup\Tasks\OrderCleanupTask;
 use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\ServiceRegister;
-use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Priority;
 use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
 use SeQura\Core\Infrastructure\TaskExecution\QueueService;
@@ -49,11 +48,12 @@ class OrderCleanupTickListener
     /**
      * Moves the next run ahead before anything else, so a tick that comes while the cleanup is enqueued sees it
      * is not due, and a run skipped because an earlier cleanup is still queued or running stays skipped instead
-     * of starting right after that cleanup ends.
+     * of starting right after that cleanup ends. When enqueueing fails, the next run is moved back, so a later
+     * tick tries again.
      *
      * @return void
      *
-     * @throws QueueStorageUnavailableException
+     * @throws Throwable
      */
     protected static function enqueueWhenDue(): void
     {
@@ -62,12 +62,17 @@ class OrderCleanupTickListener
             return;
         }
 
+        $dueRun = (int)$cleanupService->getNextRun();
         $cleanupService->advanceNextRun();
-        if (static::isCleanupPending()) {
-            return;
-        }
+        try {
+            if (!static::isCleanupPending()) {
+                static::getQueueService()->enqueue(static::QUEUE_NAME, new OrderCleanupTask(), '', Priority::LOW);
+            }
+        } catch (Throwable $exception) {
+            $cleanupService->schedule($dueRun, true);
 
-        static::getQueueService()->enqueue(static::QUEUE_NAME, new OrderCleanupTask(), '', Priority::LOW);
+            throw $exception;
+        }
     }
 
     /**

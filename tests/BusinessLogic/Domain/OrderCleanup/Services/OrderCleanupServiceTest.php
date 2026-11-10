@@ -11,6 +11,7 @@ use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MemoryRepositoryWithConditionalDelete;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\TestRepositoryRegistry;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Utility\TestTimeProvider;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -54,6 +55,10 @@ class OrderCleanupServiceTest extends BaseTestCase
             return $timeProvider;
         });
 
+        TestRepositoryRegistry::registerRepository(
+            SeQuraOrder::getClassName(),
+            MemoryRepositoryWithConditionalDelete::getClassName()
+        );
         $this->orderRepository = TestRepositoryRegistry::getRepository(SeQuraOrder::getClassName());
         $this->service = TestServiceRegister::getService(OrderCleanupService::class);
     }

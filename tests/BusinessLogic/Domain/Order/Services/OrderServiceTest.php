@@ -1445,28 +1445,7 @@ class OrderServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testReusingAnOrderSolicitedOverAnHourAgoStoresTheCurrentTimeAndKeepsTheStoredCart(): void
-    {
-        // Arrange
-        $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
-        $this->serviceAt($proxy, $this->orderRepository, '2026-10-20 03:00:00')
-            ->solicitFor($this->builderFor(2, 'load-1'));
-
-        // Act
-        $this->serviceAt($proxy, $this->orderRepository, '2026-10-30 03:00:00')
-            ->solicitFor($this->builderFor(2, 'load-2'));
-
-        // Assert
-        $stored = $this->orderRepository->getByOrderReference('ref-a');
-        self::assertNotNull($stored);
-        self::assertSame((new DateTime('2026-10-30 03:00:00'))->getTimestamp(), $stored->getSolicitedAt());
-        self::assertEquals('time-of-load-1', $stored->getUnshippedCart()->getUpdatedAt());
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testReusingAnOrderSolicitedWithinTheHourWritesNothing(): void
+    public function testReusingAnOrderSolicitedWithinADayWritesNothing(): void
     {
         // Arrange
         $repository = new class extends MockSeQuraOrderRepository {
@@ -1485,10 +1464,55 @@ class OrderServiceTest extends BaseTestCase
         $this->serviceAt($proxy, $repository, '2026-10-30 03:00:00')->solicitFor($this->builderFor(2, 'load-1'));
 
         // Act
-        $this->serviceAt($proxy, $repository, '2026-10-30 03:59:59')->solicitFor($this->builderFor(2, 'load-2'));
+        $order = $this->serviceAt($proxy, $repository, '2026-10-31 02:59:59')
+            ->solicitFor($this->builderFor(2, 'load-2'));
 
         // Assert
+        self::assertEquals('ref-a', $order->getReference());
         self::assertSame(1, $repository->writes);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testSolicitsAgainOnceTheOrderWasSolicitedADayAgo(): void
+    {
+        // Arrange
+        $proxy = $this->proxyReturningReferences(['ref-a', 'ref-b']);
+        $this->serviceAt($proxy, $this->orderRepository, '2026-10-30 03:00:00')
+            ->solicitFor($this->builderFor(2, 'load-1'));
+
+        // Act
+        $order = $this->serviceAt($proxy, $this->orderRepository, '2026-10-31 03:00:00')
+            ->solicitFor($this->builderFor(2, 'load-2'));
+
+        // Assert
+        self::assertEquals('ref-b', $order->getReference());
+        $previous = $this->orderRepository->getByOrderReference('ref-a');
+        self::assertNotNull($previous);
+        self::assertSame((new DateTime('2026-10-30 03:00:00'))->getTimestamp(), $previous->getSolicitedAt());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testSolicitsAgainForAnOrderStoredWithoutASolicitationTime(): void
+    {
+        // Arrange
+        $this->orderRepository->setSeQuraOrder(
+            $this->builderFor(2, 'load-1')->build()->toSequraOrderInstance('ref-legacy')
+        );
+        $service = $this->serviceAt(
+            $this->proxyReturningReferences(['ref-a']),
+            $this->orderRepository,
+            '2026-10-30 03:00:00'
+        );
+
+        // Act
+        $order = $service->solicitFor($this->builderFor(2, 'load-2'));
+
+        // Assert
+        self::assertEquals('ref-a', $order->getReference());
     }
 
     /**

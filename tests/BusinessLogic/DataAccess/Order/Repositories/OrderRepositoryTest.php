@@ -149,19 +149,35 @@ class OrderRepositoryTest extends BaseTestCase
      */
     public function testDeletesOnlyTheGivenOrdersThatAreStillUnlinked(): void
     {
-        $this->repository->save($this->order('ref-1', 'cart-1'));
-        $this->repository->save($this->order('ref-2', 'cart-2'));
-        $this->repository->save($this->order('ref-3', 'cart-3'));
-        $ids = array_map(function (string $reference) {
-            return (int)$this->seQuraOrderRepository->getByOrderReference($reference)->getId();
+        $repository = new MemoryRepositoryWithConditionalDelete();
+        $repository->setEntityClass(SeQuraOrder::getClassName());
+        $orderRepository = new SeQuraOrderRepository($repository);
+        $repository->save($this->order('ref-1', 'cart-1'));
+        $repository->save($this->order('ref-2', 'cart-2'));
+        $repository->save($this->order('ref-3', 'cart-3'));
+        $ids = array_map(static function (string $reference) use ($orderRepository) {
+            return (int)$orderRepository->getByOrderReference($reference)->getId();
         }, ['ref-1', 'ref-2']);
-        $this->seQuraOrderRepository->setSeQuraOrder($this->order('ref-2', 'cart-2', 'shop-2'));
+        $orderRepository->setSeQuraOrder($this->order('ref-2', 'cart-2', 'shop-2'));
 
-        $this->seQuraOrderRepository->deleteUnlinkedOrders($ids);
+        $orderRepository->deleteUnlinkedOrders($ids);
 
-        self::assertNull($this->seQuraOrderRepository->getByOrderReference('ref-1'));
-        self::assertNotNull($this->seQuraOrderRepository->getByOrderReference('ref-2'));
-        self::assertNotNull($this->seQuraOrderRepository->getByOrderReference('ref-3'));
+        self::assertNull($orderRepository->getByOrderReference('ref-1'));
+        self::assertNotNull($orderRepository->getByOrderReference('ref-2'));
+        self::assertNotNull($orderRepository->getByOrderReference('ref-3'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testDeletesNothingWhenTheStorageCannotDeleteByCondition(): void
+    {
+        $this->repository->save($this->order('ref-1', 'cart-1'));
+        $id = (int)$this->seQuraOrderRepository->getByOrderReference('ref-1')->getId();
+
+        $this->seQuraOrderRepository->deleteUnlinkedOrders([$id]);
+
+        self::assertNotNull($this->seQuraOrderRepository->getByOrderReference('ref-1'));
     }
 
     /**

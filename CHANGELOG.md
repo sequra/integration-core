@@ -5,13 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 # [Unreleased]
 ## Added
-- Daily cleanup of stale solicitations: `SeQuraOrder` rows that never became a shop order (no `orderRef1`), that SeQura has not settled (not `confirmed`, `on_hold` or `cancelled`) and that were last solicited 7 days ago or earlier. Nothing runs until the host calls `OrderCleanupService::schedule($firstRunTimestamp)`. From then on `OrderCleanup\Listeners\OrderCleanupTickListener` moves the next run a day ahead on the first task runner tick after the scheduled time and enqueues an `OrderCleanup\Tasks\OrderCleanupTask`, unless an earlier cleanup is still queued or running, in which case that day's run is skipped. Days are counted in PHP's default timezone. Repositories implementing `ConditionallyDeletes` delete each batch with one statement per condition.
-- `SeQuraOrder::getSolicitedAt()` / `setSolicitedAt()`: when the order was last solicited, kept in the order's stored data (no new index). `OrderService::solicitFor()` sets it on a new solicitation and, at most once an hour, when it reuses an existing one. An order stored before this release has none; the cleanup then falls back to its cart's `updated_at` and keeps the order when that is missing or unreadable.
+- Daily cleanup of stale solicitations: `SeQuraOrder` rows that never became a shop order (no `orderRef1`), that SeQura has not settled (not `confirmed`, `on_hold` or `cancelled`) and that were last solicited 7 days ago or earlier. Nothing runs until the host calls `OrderCleanupService::schedule($firstRunTimestamp)`. From then on `OrderCleanup\Listeners\OrderCleanupTickListener` moves the next run a day ahead on the first task runner tick after the scheduled time and enqueues an `OrderCleanup\Tasks\OrderCleanupTask`, unless an earlier cleanup is still queued or running, in which case that day's run is skipped. When enqueueing fails, the next run is moved back so a later tick tries again. Days are counted in PHP's default timezone. Orders are deleted only through repositories implementing `ConditionallyDeletes`, one statement per condition; on any other repository the cleanup deletes nothing.
+- `SeQuraOrder::getSolicitedAt()` / `setSolicitedAt()`: when the order was last solicited, kept in the order's stored data (no new index). `OrderService::solicitFor()` sets it on a new solicitation. An order stored before this release has none; the cleanup then falls back to its cart's `updated_at` and keeps the order when that is missing or unreadable.
 - `ClockInterface` (`Domain\Time`), implemented by `Providers\Clock\Clock` on top of `TimeProvider`.
 - `SeQuraOrderRepositoryInterface::getUnlinkedOrdersAfter()` and `deleteUnlinkedOrders()`, and `OrderCleanupScheduleRepositoryInterface`.
 
 ## Changed
 - `OrderService` takes a `ClockInterface` as its last constructor argument.
+- `OrderService::solicitFor()` reuses an existing order only within 24 hours of its solicitation, and reusing writes nothing. An older order, or one stored before this release, is solicited again.
 
 # [v6.0.0](https://github.com/sequra/integration-core/tree/v6.0.0)
 ## Added

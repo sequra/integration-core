@@ -174,26 +174,19 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
      * @inheritDoc
      *
      * The shop order reference is part of the delete condition, so an order linked since it was read is kept.
+     * Nothing is deleted when the storage cannot delete by condition, since a delete by id would also remove an
+     * order linked between reading and deleting it.
      *
      * @throws QueryFilterInvalidParamException
      */
     public function deleteUnlinkedOrders(array $ids): void
     {
-        if (empty($ids)) {
+        if (empty($ids) || !$this->repository instanceof ConditionallyDeletes) {
             return;
         }
 
         foreach (self::UNLINKED_OPERATORS as $operator) {
-            $filter = $this->unlinkedFilter($operator)->where('id', Operators::IN, $ids);
-            if ($this->repository instanceof ConditionallyDeletes) {
-                $this->repository->deleteWhere($filter);
-
-                continue;
-            }
-
-            foreach ($this->repository->select($filter) as $order) {
-                $this->repository->delete($order);
-            }
+            $this->repository->deleteWhere($this->unlinkedFilter($operator)->where('id', Operators::IN, $ids));
         }
     }
 
