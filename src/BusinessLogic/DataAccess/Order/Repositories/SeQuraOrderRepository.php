@@ -18,9 +18,9 @@ use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
 {
     /**
-     * Operators matching an empty and a missing shop order reference.
+     * Conditions, as operator and value, matching an empty and a missing shop order reference.
      */
-    private const UNLINKED_OPERATORS = [Operators::EQUALS, Operators::NULL];
+    private const UNLINKED_CONDITIONS = [[Operators::EQUALS, ''], [Operators::NULL, null]];
 
     /**
      * @var RepositoryInterface SeQuraOrder repository.
@@ -144,23 +144,30 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
      * @inheritDoc
      *
      * An order without a shop order reference stores it either empty or missing, so both are read and merged.
+     * Once one read fills the limit, the next one only looks below its last id, as nothing above it can make the
+     * limit, so a storage without an index on the shop order reference does not scan the rest of the table.
      *
      * @throws QueryFilterInvalidParamException
      */
     public function getUnlinkedOrdersAfter(int $afterId, int $limit): array
     {
         $orders = [];
-        foreach (self::UNLINKED_OPERATORS as $operator) {
-            $filter = $this->unlinkedFilter($operator)
-                ->where('id', Operators::GREATER_THAN, $afterId)
-                ->orderBy('id')
-                ->setLimit($limit);
+        $beforeId = null;
+        foreach (self::UNLINKED_CONDITIONS as [$operator, $value]) {
+            $filter = (new QueryFilter())->where('orderRef1', $operator, $value)
+                ->where('id', Operators::GREATER_THAN, $afterId);
+            if ($beforeId !== null) {
+                $filter->where('id', Operators::LESS_THAN, $beforeId);
+            }
 
             /**
              * @var SeQuraOrder[] $batch
              */
-            $batch = $this->repository->select($filter);
+            $batch = $this->repository->select($filter->orderBy('id')->setLimit($limit));
             $orders = array_merge($orders, $batch);
+            if (\count($batch) === $limit) {
+                $beforeId = (int)\end($batch)->getId();
+            }
         }
 
         usort($orders, static function (SeQuraOrder $first, SeQuraOrder $second) {
@@ -193,21 +200,11 @@ class SeQuraOrderRepository implements SeQuraOrderRepositoryInterface
             return;
         }
 
-        foreach (self::UNLINKED_OPERATORS as $operator) {
-            $this->repository->deleteWhere($this->unlinkedFilter($operator)->where('id', Operators::IN, $ids));
+        foreach (self::UNLINKED_CONDITIONS as [$operator, $value]) {
+            $this->repository->deleteWhere(
+                (new QueryFilter())->where('orderRef1', $operator, $value)->where('id', Operators::IN, $ids)
+            );
         }
-    }
-
-    /**
-     * @param string $operator Operators::EQUALS for an empty shop order reference, Operators::NULL for a missing one.
-     *
-     * @return QueryFilter
-     *
-     * @throws QueryFilterInvalidParamException
-     */
-    private function unlinkedFilter(string $operator): QueryFilter
-    {
-        return (new QueryFilter())->where('orderRef1', $operator, $operator === Operators::EQUALS ? '' : null);
     }
 
     /**

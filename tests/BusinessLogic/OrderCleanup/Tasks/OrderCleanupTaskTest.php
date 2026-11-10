@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\OrderCleanup\Tasks;
 
 use Exception;
+use PHPUnit\Framework\MockObject\MockObject;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\BusinessLogic\OrderCleanup\Tasks\OrderCleanupTask;
 use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
@@ -33,12 +34,8 @@ class OrderCleanupTaskTest extends BaseTestCase
      */
     public function testRunsTheCleanup(): void
     {
-        $cleanupService = $this->createMock(OrderCleanupService::class);
-        $cleanupService->method('canCleanup')->willReturn(true);
-        $cleanupService->expects(self::once())->method('cleanup')->with(self::isType('callable'))->willReturn(0);
-        TestServiceRegister::registerService(OrderCleanupService::class, static function () use ($cleanupService) {
-            return $cleanupService;
-        });
+        $this->registerCleanupService()
+            ->expects(self::once())->method('cleanup')->with(self::isType('callable'))->willReturn(0);
 
         (new OrderCleanupTask())->execute();
     }
@@ -48,16 +45,8 @@ class OrderCleanupTaskTest extends BaseTestCase
      */
     public function testLogsTheNumberOfDeletedSolicitations(): void
     {
-        $logger = new TestShopLogger();
-        TestServiceRegister::registerService(ShopLoggerAdapter::CLASS_NAME, static function () use ($logger) {
-            return $logger;
-        });
-        $cleanupService = $this->createMock(OrderCleanupService::class);
-        $cleanupService->method('canCleanup')->willReturn(true);
-        $cleanupService->method('cleanup')->willReturn(3);
-        TestServiceRegister::registerService(OrderCleanupService::class, static function () use ($cleanupService) {
-            return $cleanupService;
-        });
+        $logger = $this->registerLogger();
+        $this->registerCleanupService()->method('cleanup')->willReturn(3);
 
         (new OrderCleanupTask())->execute();
 
@@ -69,21 +58,39 @@ class OrderCleanupTaskTest extends BaseTestCase
      */
     public function testLogsASkippedCleanupWhenTheOrderStorageCannotDeleteByCondition(): void
     {
-        $logger = new TestShopLogger();
-        TestServiceRegister::registerService(ShopLoggerAdapter::CLASS_NAME, static function () use ($logger) {
-            return $logger;
-        });
-        $cleanupService = $this->createMock(OrderCleanupService::class);
-        $cleanupService->method('canCleanup')->willReturn(false);
-        $cleanupService->expects(self::never())->method('cleanup');
-        TestServiceRegister::registerService(OrderCleanupService::class, static function () use ($cleanupService) {
-            return $cleanupService;
-        });
+        $logger = $this->registerLogger();
+        $this->registerCleanupService()->method('cleanup')->willReturn(null);
 
         (new OrderCleanupTask())->execute();
 
         self::assertTrue(
             $logger->isMessageContainedInLog('Order cleanup skipped: the order storage cannot delete by condition.')
         );
+    }
+
+    /**
+     * @return TestShopLogger
+     */
+    private function registerLogger(): TestShopLogger
+    {
+        $logger = new TestShopLogger();
+        TestServiceRegister::registerService(ShopLoggerAdapter::CLASS_NAME, static function () use ($logger) {
+            return $logger;
+        });
+
+        return $logger;
+    }
+
+    /**
+     * @return OrderCleanupService&MockObject
+     */
+    private function registerCleanupService(): MockObject
+    {
+        $cleanupService = $this->createMock(OrderCleanupService::class);
+        TestServiceRegister::registerService(OrderCleanupService::class, static function () use ($cleanupService) {
+            return $cleanupService;
+        });
+
+        return $cleanupService;
     }
 }

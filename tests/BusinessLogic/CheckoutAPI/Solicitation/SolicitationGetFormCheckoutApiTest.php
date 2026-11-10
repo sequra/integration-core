@@ -2,7 +2,6 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation;
 
-use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use phpDocumentor\Reflection\Types\Self_;
 use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Requests\SolicitationRequest;
@@ -19,6 +18,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
+use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockCreateOrderRequestBuilder;
 use SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation\MockComponents\MockOrderProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;

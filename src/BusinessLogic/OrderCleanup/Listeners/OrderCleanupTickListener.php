@@ -62,16 +62,37 @@ class OrderCleanupTickListener
             return;
         }
 
-        $dueRun = (int)$cleanupService->getNextRun();
-        $cleanupService->advanceNextRun();
+        $dueRun = $cleanupService->advanceNextRun();
         try {
             if (!static::isCleanupPending()) {
                 static::getQueueService()->enqueue(static::QUEUE_NAME, new OrderCleanupTask(), '', Priority::LOW);
             }
         } catch (Throwable $exception) {
-            $cleanupService->schedule($dueRun, true);
+            static::restoreNextRun($cleanupService, $dueRun);
 
             throw $exception;
+        }
+    }
+
+    /**
+     * Moves the next run back to the run that was due, so a later tick tries again. A failure to do so is logged
+     * on its own, so the failure that made the enqueue fail is still the one that leaves the tick.
+     *
+     * @param OrderCleanupService $cleanupService
+     * @param int $dueRun
+     *
+     * @return void
+     */
+    protected static function restoreNextRun(OrderCleanupService $cleanupService, int $dueRun): void
+    {
+        try {
+            $cleanupService->schedule($dueRun, true);
+        } catch (Throwable $exception) {
+            Logger::logError(
+                'Order cleanup could not move its next run back to the run that was due.',
+                'Core',
+                [new LogContextData('error', $exception->getMessage())]
+            );
         }
     }
 

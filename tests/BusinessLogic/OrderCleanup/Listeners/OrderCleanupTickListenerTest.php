@@ -185,9 +185,7 @@ class OrderCleanupTickListenerTest extends BaseTestCase
         $failingQueue = $this->createMock(QueueService::class);
         $failingQueue->method('findLatestByType')->willReturn(null);
         $failingQueue->method('enqueue')->willThrowException(new RuntimeException('queue unavailable'));
-        TestServiceRegister::registerService(QueueService::class, static function () use ($failingQueue) {
-            return $failingQueue;
-        });
+        $this->registerQueueService($failingQueue);
 
         OrderCleanupTickListener::handle();
 
@@ -203,13 +201,70 @@ class OrderCleanupTickListenerTest extends BaseTestCase
         $failingQueue = $this->createMock(QueueService::class);
         $failingQueue->method('findLatestByType')->willThrowException(new RuntimeException('storage unavailable'));
         $failingQueue->expects(self::never())->method('enqueue');
-        TestServiceRegister::registerService(QueueService::class, static function () use ($failingQueue) {
-            return $failingQueue;
-        });
+        $this->registerQueueService($failingQueue);
 
         OrderCleanupTickListener::handle();
 
         self::assertSame($this->now - 60, $this->cleanupService->getNextRun());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testLogsTheEnqueueFailureWhenMovingTheRunBackFailsToo(): void
+    {
+        $logger = new TestShopLogger();
+        TestServiceRegister::registerService(ShopLoggerAdapter::CLASS_NAME, static function () use ($logger) {
+            return $logger;
+        });
+        $cleanupService = $this->createMock(OrderCleanupService::class);
+        $cleanupService->method('isDue')->willReturn(true);
+        $cleanupService->method('advanceNextRun')->willReturn($this->now - 60);
+        $cleanupService->method('schedule')->willThrowException(new RuntimeException('storage unavailable'));
+        TestServiceRegister::registerService(OrderCleanupService::class, static function () use ($cleanupService) {
+            return $cleanupService;
+        });
+        $failingQueue = $this->createMock(QueueService::class);
+        $failingQueue->method('findLatestByType')->willReturn(null);
+        $failingQueue->method('enqueue')->willThrowException(new RuntimeException('queue unavailable'));
+        $this->registerQueueService($failingQueue);
+
+        OrderCleanupTickListener::handle();
+
+        self::assertSame(
+            [
+                'Order cleanup could not move its next run back to the run that was due.' => 'storage unavailable',
+                'Order cleanup could not be enqueued.' => 'queue unavailable',
+            ],
+            $this->loggedErrors($logger)
+        );
+    }
+
+    /**
+     * @param TestShopLogger $logger
+     *
+     * @return array<string, mixed>
+     */
+    private function loggedErrors(TestShopLogger $logger): array
+    {
+        $errors = [];
+        foreach ($logger->loggedMessages as $logData) {
+            $errors[$logData->getMessage()] = $logData->getContext()[0]->getValue();
+        }
+
+        return $errors;
+    }
+
+    /**
+     * @param QueueService $queueService
+     *
+     * @return void
+     */
+    private function registerQueueService(QueueService $queueService): void
+    {
+        TestServiceRegister::registerService(QueueService::class, static function () use ($queueService) {
+            return $queueService;
+        });
     }
 
     /**

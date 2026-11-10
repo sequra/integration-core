@@ -56,8 +56,8 @@ class OrderService
      */
     private const INSTALLMENT_METHOD_CODES = ['pp3', 'pp6', 'pp9'];
     /**
-     * Seconds after its solicitation during which an order is reused. It is well below the days the cleanup keeps
-     * a solicitation, so an order is never reused while the cleanup may delete it, and reusing writes nothing.
+     * Seconds after its solicitation during which an order is reused. It is well below
+     * OrderCleanupService::RETENTION_DAYS, so an order is never reused while the cleanup may delete it.
      */
     protected const SOLICITATION_REUSE_INTERVAL = 86400;
     /**

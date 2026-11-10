@@ -18,7 +18,7 @@ class OrderCleanupScheduleRepository implements OrderCleanupScheduleRepositoryIn
     /**
      * Name of the global configuration value holding the timestamp of the next cleanup run.
      */
-    public const NEXT_RUN_CONFIG_KEY = 'orderCleanupNextRun';
+    protected const NEXT_RUN_CONFIG_KEY = 'orderCleanupNextRun';
 
     /**
      * @var ConfigurationManager

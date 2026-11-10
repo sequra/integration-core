@@ -28,6 +28,11 @@ class OrderCleanupService
     protected const RETENTION_DAYS = 7;
 
     /**
+     * Seconds between two cleanup runs.
+     */
+    protected const RUN_INTERVAL = 86400;
+
+    /**
      * @var SeQuraOrderRepositoryInterface
      */
     protected $orderRepository;
@@ -67,13 +72,13 @@ class OrderCleanupService
      *
      * @param callable|null $afterEachBatch Called after every batch, e.g. to report that the task is alive.
      *
-     * @return int Number of stale solicitations sent for deletion. One linked to a shop order since it was read is
-     * kept, but still counted.
+     * @return int|null Number of stale solicitations sent for deletion, or null when the cleanup was skipped. One
+     * linked to a shop order since it was read is kept, but still counted.
      */
-    public function cleanup(?callable $afterEachBatch = null): int
+    public function cleanup(?callable $afterEachBatch = null): ?int
     {
-        if (!$this->canCleanup()) {
-            return 0;
+        if (!$this->orderRepository->canDeleteUnlinkedOrders()) {
+            return null;
         }
 
         $cutoff = $this->clock->now()->modify('-' . static::RETENTION_DAYS . ' days')->getTimestamp();
@@ -102,17 +107,6 @@ class OrderCleanupService
         } while (\count($orders) === static::BATCH_SIZE);
 
         return $deleted;
-    }
-
-    /**
-     * Whether the order storage can delete stale solicitations safely, i.e. on the condition that they are still
-     * not linked to a shop order.
-     *
-     * @return bool
-     */
-    public function canCleanup(): bool
-    {
-        return $this->orderRepository->canDeleteUnlinkedOrders();
     }
 
     /**
@@ -155,21 +149,24 @@ class OrderCleanupService
     }
 
     /**
-     * Moves the next cleanup run a day ahead, as many times as it takes to get past now, so ticks that came late
-     * or a task runner that was down do not shift the scheduled time of day. Days are counted in the timezone of
-     * the time the clock returns, PHP's default timezone unless the host sets another.
+     * Moves the next cleanup run ahead by whole RUN_INTERVALs until it is past now, so ticks that came late or a
+     * task runner that was down do not shift the run time. Runs are a fixed number of seconds apart, so the local
+     * time of day moves by an hour across a daylight saving change, but never drifts.
      *
-     * @return void
+     * @return int The next run it replaced, or now when the cleanup was not scheduled.
      */
-    public function advanceNextRun(): void
+    public function advanceNextRun(): int
     {
-        $now = $this->clock->now();
-        $nextRun = (clone $now)->setTimestamp($this->getNextRun() ?? $now->getTimestamp());
-        while ($nextRun <= $now) {
-            $nextRun->modify('+1 day');
+        $now = $this->clock->now()->getTimestamp();
+        $replacedRun = $this->getNextRun() ?? $now;
+        $nextRun = $replacedRun;
+        if ($nextRun <= $now) {
+            $nextRun += (\intdiv($now - $nextRun, static::RUN_INTERVAL) + 1) * static::RUN_INTERVAL;
         }
 
-        $this->scheduleRepository->setNextRun($nextRun->getTimestamp());
+        $this->scheduleRepository->setNextRun($nextRun);
+
+        return $replacedRun;
     }
 
     /**
@@ -201,16 +198,13 @@ class OrderCleanupService
      */
     protected function getSolicitationTime(SeQuraOrder $order): ?int
     {
-        if ($order->getSolicitedAt() !== null) {
-            return $order->getSolicitedAt();
+        $solicitedAt = $order->getSolicitedAt();
+        if ($solicitedAt !== null) {
+            return $solicitedAt;
         }
 
         $updatedAt = $order->getUnshippedCart()->getUpdatedAt();
-        if ($updatedAt === null || $updatedAt === '') {
-            return null;
-        }
-
-        $updatedAtTimestamp = strtotime($updatedAt);
+        $updatedAtTimestamp = $updatedAt === null ? false : strtotime($updatedAt);
 
         return $updatedAtTimestamp === false ? null : $updatedAtTimestamp;
     }

@@ -83,7 +83,7 @@ class OrderCleanupServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testReadsAndDeletesNothingWhenTheOrderStorageCannotDeleteByCondition(): void
+    public function testSkipsTheCleanupWhenTheOrderStorageCannotDeleteByCondition(): void
     {
         $orderRepository = $this->createMock(SeQuraOrderRepositoryInterface::class);
         $orderRepository->method('canDeleteUnlinkedOrders')->willReturn(false);
@@ -95,8 +95,7 @@ class OrderCleanupServiceTest extends BaseTestCase
             TestServiceRegister::getService(ClockInterface::class)
         );
 
-        self::assertFalse($service->canCleanup());
-        self::assertSame(0, $service->cleanup());
+        self::assertNull($service->cleanup());
     }
 
     /**
@@ -340,23 +339,28 @@ class OrderCleanupServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testKeepsTheLocalTimeOfDayWhenAdvancingAcrossADaylightSavingChange(): void
+    public function testDoesNotDriftARunInTheHourSkippedByADaylightSavingChange(): void
     {
         $timezone = new DateTimeZone('Europe/Madrid');
+        $now = new DateTime('2026-03-29 03:00:00', $timezone);
         $clock = $this->createMock(ClockInterface::class);
-        $clock->method('now')->willReturnCallback(static function () use ($timezone) {
-            return new DateTime('2026-10-25 04:00:00', $timezone);
+        $clock->method('now')->willReturnCallback(static function () use (&$now) {
+            return clone $now;
         });
         $service = new OrderCleanupService(
             TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
             TestServiceRegister::getService(OrderCleanupScheduleRepositoryInterface::class),
             $clock
         );
-        $service->schedule((new DateTime('2026-10-24 03:00:00', $timezone))->getTimestamp());
+        $scheduledRun = (new DateTime('2026-03-28 02:30:00', $timezone))->getTimestamp();
+        $service->schedule($scheduledRun);
 
+        self::assertSame($scheduledRun, $service->advanceNextRun());
+        $now = new DateTime('2026-11-02 04:00:00', $timezone);
         $service->advanceNextRun();
 
-        self::assertSame((new DateTime('2026-10-26 03:00:00', $timezone))->getTimestamp(), $service->getNextRun());
+        $nextRun = (new DateTime('@' . $service->getNextRun()))->setTimezone($timezone);
+        self::assertSame('2026-11-03 02:30', $nextRun->format('Y-m-d H:i'));
     }
 
     /**

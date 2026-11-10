@@ -36,18 +36,14 @@ class OrderCleanupTask extends Task
      */
     public function execute(): void
     {
-        $cleanupService = $this->getOrderCleanupService();
-        if (!$cleanupService->canCleanup()) {
-            Logger::logInfo('Order cleanup skipped: the order storage cannot delete by condition.');
-            $this->reportProgress(100);
-
-            return;
-        }
-
-        $deleted = $cleanupService->cleanup(function () {
+        $deleted = $this->getOrderCleanupService()->cleanup(function () {
             $this->reportAlive();
         });
-        Logger::logInfo("Order cleanup deleted up to $deleted stale solicitations.");
+        Logger::logInfo(
+            $deleted === null
+                ? 'Order cleanup skipped: the order storage cannot delete by condition.'
+                : "Order cleanup deleted up to $deleted stale solicitations."
+        );
         $this->reportProgress(100);
     }
 

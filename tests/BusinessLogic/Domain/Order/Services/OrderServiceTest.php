@@ -1695,30 +1695,28 @@ class OrderServiceTest extends BaseTestCase
             return new DateTime($now);
         });
 
-        return new OrderService(
-            $proxy,
-            $repository,
-            $this->merchantOrderBuilder,
-            TestServiceRegister::getService(OrderCreationInterface::class),
-            TestServiceRegister::getService(CheckoutService::class),
-            $clock
-        );
+        return $this->serviceWithProxy($proxy, $repository, $clock);
     }
 
     /**
      * @param OrderProxyInterface $proxy
+     * @param SeQuraOrderRepositoryInterface|null $repository
+     * @param ClockInterface|null $clock
      *
      * @return OrderService
      */
-    private function serviceWithProxy(OrderProxyInterface $proxy): OrderService
-    {
+    private function serviceWithProxy(
+        OrderProxyInterface $proxy,
+        ?SeQuraOrderRepositoryInterface $repository = null,
+        ?ClockInterface $clock = null
+    ): OrderService {
         return new OrderService(
             $proxy,
-            $this->orderRepository,
+            $repository ?? $this->orderRepository,
             $this->merchantOrderBuilder,
             TestServiceRegister::getService(OrderCreationInterface::class),
             TestServiceRegister::getService(CheckoutService::class),
-            TestServiceRegister::getService(ClockInterface::class)
+            $clock ?? TestServiceRegister::getService(ClockInterface::class)
         );
     }
 
