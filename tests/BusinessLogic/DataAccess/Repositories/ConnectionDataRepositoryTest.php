@@ -183,7 +183,7 @@ class ConnectionDataRepositoryTest extends BaseTestCase
     /**
      * @throws InvalidEnvironmentException
      */
-    public function testSetConnectionDataWithoutExpressCheckoutRegisteredKeepsTheStoredOne(): void
+    public function testSetConnectionDataWithoutExpressCheckoutRegisteredKeepsTheStoredOneForTheSameConnection(): void
     {
         // Arrange
         $registered = $this->repository->getConnectionDataByDeploymentId('sequra');
@@ -191,10 +191,10 @@ class ConnectionDataRepositoryTest extends BaseTestCase
         $this->repository->setConnectionData($registered);
 
         $fromRequest = new ConnectionData(
-            BaseProxy::LIVE_MODE,
-            'live',
+            BaseProxy::TEST_MODE,
+            'test',
             'sequra',
-            new AuthorizationCredentials('live_username', 'live_password')
+            new AuthorizationCredentials('test_username', 'test_password')
         );
 
         // Act
@@ -203,6 +203,50 @@ class ConnectionDataRepositoryTest extends BaseTestCase
 
         // Assert
         $this->assertTrue($loaded->isExpressCheckoutRegistered());
+    }
+
+    /**
+     * @dataProvider anotherConnectionProvider
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function testSetConnectionDataOfAnotherConnectionDropsTheStoredExpressCheckoutRegistered(
+        string $environment,
+        string $merchantId,
+        string $username,
+        string $password
+    ): void {
+        // Arrange
+        $registered = $this->repository->getConnectionDataByDeploymentId('sequra');
+        $registered->setExpressCheckoutRegistered(true);
+        $this->repository->setConnectionData($registered);
+
+        $fromRequest = new ConnectionData(
+            $environment,
+            $merchantId,
+            'sequra',
+            new AuthorizationCredentials($username, $password)
+        );
+
+        // Act
+        $this->repository->setConnectionData($fromRequest);
+        $loaded = $this->repository->getConnectionDataByDeploymentId('sequra');
+
+        // Assert
+        $this->assertNull($loaded->isExpressCheckoutRegistered());
+    }
+
+    /**
+     * @return array<string, string[]>
+     */
+    public function anotherConnectionProvider(): array
+    {
+        return [
+            'environment' => [BaseProxy::LIVE_MODE, 'test', 'test_username', 'test_password'],
+            'merchant' => [BaseProxy::TEST_MODE, 'other', 'test_username', 'test_password'],
+            'username' => [BaseProxy::TEST_MODE, 'test', 'other_username', 'test_password'],
+            'password' => [BaseProxy::TEST_MODE, 'test', 'test_username', 'other_password'],
+        ];
     }
 
     /**
