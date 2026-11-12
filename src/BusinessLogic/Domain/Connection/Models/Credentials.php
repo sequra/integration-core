@@ -175,6 +175,11 @@ class Credentials extends DataTransferObject
         return $this->hasContractOption('with_registration');
     }
 
+    public function isAllowedForCaas(): bool
+    {
+        return $this->hasContractOption('allow_caas');
+    }
+
     /**
      * Check if a specific contract option is present.
      */

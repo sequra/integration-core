@@ -43,10 +43,17 @@ class ConnectionData extends DataTransferObject
     protected $integrationId;
 
     /**
+     * @var bool|null
+     */
+    protected $expressCheckoutRegistered;
+
+    /**
      * @param string $environment
      * @param string|null $merchantId
      * @param string $deployment
      * @param AuthorizationCredentials $authorizationCredentials
+     * @param string|null $integrationId
+     * @param bool|null $expressCheckoutRegistered
      *
      * @throws InvalidEnvironmentException
      */
@@ -55,7 +62,8 @@ class ConnectionData extends DataTransferObject
         ?string $merchantId,
         string $deployment,
         AuthorizationCredentials $authorizationCredentials,
-        ?string $integrationId = null
+        ?string $integrationId = null,
+        ?bool $expressCheckoutRegistered = null
     ) {
         if (!\in_array($environment, [BaseProxy::LIVE_MODE, BaseProxy::TEST_MODE], true)) {
             throw new InvalidEnvironmentException();
@@ -66,6 +74,7 @@ class ConnectionData extends DataTransferObject
         $this->deployment = $deployment;
         $this->authorizationCredentials = $authorizationCredentials;
         $this->integrationId = $integrationId;
+        $this->expressCheckoutRegistered = $expressCheckoutRegistered;
     }
 
     /**
@@ -168,6 +177,16 @@ class ConnectionData extends DataTransferObject
         $this->integrationId = $integrationId;
     }
 
+    public function isExpressCheckoutRegistered(): ?bool
+    {
+        return $this->expressCheckoutRegistered;
+    }
+
+    public function setExpressCheckoutRegistered(bool $expressCheckoutRegistered): void
+    {
+        $this->expressCheckoutRegistered = $expressCheckoutRegistered;
+    }
+
     /**
      * @inheritDoc
      */
@@ -178,6 +197,7 @@ class ConnectionData extends DataTransferObject
             'merchantId' => $this->merchantId,
             'deployment' => $this->deployment,
             'integrationId' => $this->integrationId,
+            'expressCheckoutRegistered' => $this->expressCheckoutRegistered,
             'authorizationCredentials' => $this->authorizationCredentials->toArray(),
         ];
 

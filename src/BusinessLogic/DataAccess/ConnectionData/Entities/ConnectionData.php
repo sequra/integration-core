@@ -65,7 +65,8 @@ class ConnectionData extends Entity
                     self::getArrayValue($connectionData['authorizationCredentials'], 'password')
                 )
             ),
-            self::getArrayValue($connectionData, 'integrationId')
+            self::getArrayValue($connectionData, 'integrationId'),
+            self::getArrayValue($connectionData, 'expressCheckoutRegistered')
         );
     }
 
@@ -83,6 +84,7 @@ class ConnectionData extends Entity
             'merchantId' => $this->connectionData->getMerchantId(),
             'deployment' => $this->connectionData->getDeployment() ?? '',
             'integrationId' => $this->connectionData->getIntegrationId(),
+            'expressCheckoutRegistered' => $this->connectionData->isExpressCheckoutRegistered(),
             'authorizationCredentials' => [
                 'username' => $this->connectionData->getAuthorizationCredentials()->getUsername(),
                 'password' => $this->getEncryptorUtility()->encrypt(

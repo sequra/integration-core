@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\Connection\Services;
 
+use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
@@ -185,6 +186,40 @@ class ConnectionService
         $this->credentialsService->validateAndUpdateCredentials($connectionData);
 
         return true;
+    }
+
+    /**
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     *
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     * @throws BadMerchantIdException
+     */
+    public function refreshCredentials(ConnectionData $connectionData): void
+    {
+        $this->credentialsService->validateAndUpdateCredentials($connectionData);
+
+        if (
+            $connectionData->isExpressCheckoutRegistered() ===
+            $this->storeIntegrationService->isExpressCheckoutRegistrable($connectionData)
+        ) {
+            return;
+        }
+
+        try {
+            $this->reRegisterWebhooks($connectionData);
+        } catch (Exception $exception) {
+            Logger::logWarning(
+                'Store integration re-registration failed; it is retried on the next admin page visit.',
+                'Core',
+                [
+                    new LogContextData('deployment', $connectionData->getDeployment()),
+                    new LogContextData('error', $exception->getMessage()),
+                ]
+            );
+        }
     }
 
     /**
@@ -448,9 +483,11 @@ class ConnectionService
 
         // Both callers save the connection data immediately after this, so setting the id on the
         // model is enough to persist it - no write of its own.
+        $expressCheckoutRegistered = $this->storeIntegrationService->isExpressCheckoutRegistrable($connectionData);
         $connectionData->setIntegrationId(
             $this->storeIntegrationService->createStoreIntegration($connectionData)
         );
+        $connectionData->setExpressCheckoutRegistered($expressCheckoutRegistered);
     }
 
     /**

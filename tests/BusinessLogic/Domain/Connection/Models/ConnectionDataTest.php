@@ -83,6 +83,27 @@ class ConnectionDataTest extends BaseTestCase
         $this->assertSame('integration-1', $connectionData->toArray()['connectionData']['integrationId']);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
+    public function testExpressCheckoutRegisteredDefaultsToNullAndIsCarriedInToArray(): void
+    {
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'test_merchant',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
+
+        $this->assertNull($connectionData->isExpressCheckoutRegistered());
+        $this->assertNull($connectionData->toArray()['connectionData']['expressCheckoutRegistered']);
+
+        $connectionData->setExpressCheckoutRegistered(true);
+
+        $this->assertTrue($connectionData->isExpressCheckoutRegistered());
+        $this->assertTrue($connectionData->toArray()['connectionData']['expressCheckoutRegistered']);
+    }
+
     public function testInvalidEnvironmentException(): void
     {
         $this->expectException(InvalidEnvironmentException::class);

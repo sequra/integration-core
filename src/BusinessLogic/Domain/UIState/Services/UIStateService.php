@@ -2,6 +2,11 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\UIState\Services;
 
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Infrastructure\Logger\Logger;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
@@ -67,15 +72,27 @@ class UIStateService
             return true;
         }
 
-        $widgetConfig = $this->widgetSettingsRepository->getWidgetSettings();
-        if (!$widgetConfig) {
-            return true;
-        }
+        $isConfigured = $this->widgetSettingsRepository->getWidgetSettings() !== null;
 
         foreach ($allConnectionSettings as $connectionSetting) {
-            $this->connectionService->isConnectionDataValid($connectionSetting);
+            try {
+                $this->connectionService->refreshCredentials($connectionSetting);
+            } catch (HttpRequestException | WrongCredentialsException | BadMerchantIdException $exception) {
+                if ($isConfigured) {
+                    throw $exception;
+                }
+
+                Logger::logWarning(
+                    'Credentials refresh failed for a store that has not finished onboarding.',
+                    'Core',
+                    [
+                        new LogContextData('deployment', $connectionSetting->getDeployment()),
+                        new LogContextData('error', $exception->getMessage()),
+                    ]
+                );
+            }
         }
 
-        return false;
+        return !$isConfigured;
     }
 }

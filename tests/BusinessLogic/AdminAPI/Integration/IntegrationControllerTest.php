@@ -163,6 +163,11 @@ class IntegrationControllerTest extends BaseTestCase
     public function testGetUIStateNoCountryConfigurationResponseToArray(): void
     {
         // Arrange
+        $this->httpClient->setMockResponses([
+            new HttpResponse(200, [], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/Connection/SuccessfulResponse.json'
+            ))
+        ]);
         $connectionData = new ConnectionData(
             BaseProxy::TEST_MODE,
             'logeecom',
@@ -170,6 +175,28 @@ class IntegrationControllerTest extends BaseTestCase
             new AuthorizationCredentials('test_username', 'test_password')
         );
 
+        StoreContext::doWithStore('1', [$this->connectionDataRepository, 'setConnectionData'], [$connectionData]);
+
+        // Act
+        $response = AdminAPI::get()->integration('1')->getUIState();
+
+        // Assert
+        self::assertEquals(['state' => 'onboarding'], $response->toArray());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetUIStateIsOnboardingWhenTheCredentialsOfAnUnconfiguredStoreAreRejected(): void
+    {
+        // Arrange
+        $this->httpClient->setMockResponses([new HttpResponse(401, [], '{}')]);
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'logeecom',
+            'sequra',
+            new AuthorizationCredentials('test_username', 'test_password')
+        );
         StoreContext::doWithStore('1', [$this->connectionDataRepository, 'setConnectionData'], [$connectionData]);
 
         // Act

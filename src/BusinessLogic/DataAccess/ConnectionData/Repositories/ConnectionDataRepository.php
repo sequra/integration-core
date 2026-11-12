@@ -66,6 +66,16 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
                 $connectionData->setIntegrationId($existingConnectionData->getConnectionData()->getIntegrationId());
             }
 
+            $storedConnectionData = $existingConnectionData->getConnectionData();
+            $storedExpressCheckoutRegistered = $storedConnectionData->isExpressCheckoutRegistered();
+            if (
+                $connectionData->isExpressCheckoutRegistered() === null
+                && $storedExpressCheckoutRegistered !== null
+                && self::isSameConnection($storedConnectionData, $connectionData)
+            ) {
+                $connectionData->setExpressCheckoutRegistered($storedExpressCheckoutRegistered);
+            }
+
             $existingConnectionData->setConnectionData($connectionData);
             $existingConnectionData->setDeployment($connectionData->getDeployment());
             $existingConnectionData->setStoreId($this->storeContext->getStoreId());
@@ -166,5 +176,13 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
         $connectionData = $this->repository->selectOne($queryFilter);
 
         return $connectionData;
+    }
+
+    private static function isSameConnection(ConnectionData $stored, ConnectionData $connectionData): bool
+    {
+        return $stored->getEnvironment() === $connectionData->getEnvironment()
+            && $stored->getMerchantId() === $connectionData->getMerchantId()
+            && $stored->getAuthorizationCredentials()->getUsername() === $connectionData->getAuthorizationCredentials()->getUsername()
+            && $stored->getAuthorizationCredentials()->getPassword() === $connectionData->getAuthorizationCredentials()->getPassword();
     }
 }
