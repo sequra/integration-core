@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\PaymentMethods;
 
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpCommunicationException;
 use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
@@ -221,5 +222,22 @@ class PaymentMethodsCheckoutApiTest extends BaseTestCase
             new DateTime('2000-02-22T21:22:00Z'),
             new DateTime('2222-02-22T21:22:00Z')
         );
+    }
+
+    public function testGetPaymentMethodsInCategoriesIsUnsuccessfulWhenThePaymentMethodsCallTimesOut(): void
+    {
+        // Arrange
+        $this->orderService->method('getAvailablePaymentMethodsInCategories')->willThrowException(
+            new HttpCommunicationException(
+                'Request https://sandbox.sequrapi.com/orders/testOrderRef/payment_methods failed. ERROR: 28 = Operation timed out'
+            )
+        );
+
+        // Act
+        $response = CheckoutAPI::get()->solicitedOrderPaymentMethods('1')
+            ->getPaymentMethodsInCategories(new PaymentMethodsInCategoriesRequest('testOrderRef'));
+
+        // Assert
+        self::assertFalse($response->isSuccessful());
     }
 }

@@ -33,6 +33,8 @@ use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
  */
 class OrderProxy implements OrderProxyInterface
 {
+    public const CHECKOUT_REQUEST_TIMEOUT = 20000;
+
     protected const PAYMENT_OPTIONS_KEY = 'payment_options';
     protected const METHODS_KEY = 'methods';
 

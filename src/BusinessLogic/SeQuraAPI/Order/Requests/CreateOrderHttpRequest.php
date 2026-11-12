@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests;
 
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\BaseOrderRequest;
 use SeQura\Core\BusinessLogic\SeQuraAPI\HttpRequest;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 
 /**
  * Class CreateOrderHttpRequest
@@ -17,7 +18,7 @@ class CreateOrderHttpRequest extends HttpRequest
      */
     public function __construct(BaseOrderRequest $request)
     {
-        parent::__construct('orders', $this->transformBody($request));
+        parent::__construct('orders', $this->transformBody($request), [], [], OrderProxy::CHECKOUT_REQUEST_TIMEOUT);
     }
 
     /**

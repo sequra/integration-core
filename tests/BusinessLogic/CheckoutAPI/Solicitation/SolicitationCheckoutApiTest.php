@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\CheckoutAPI\Solicitation;
 
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpCommunicationException;
 use SeQura\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Requests\SolicitationRequest;
 use SeQura\Core\BusinessLogic\Domain\Checkout\Services\CheckoutService;
@@ -364,5 +365,21 @@ class SolicitationCheckoutApiTest extends BaseTestCase
 
         // Assert
         self::assertSame(1, $builder->getBuildCallCount());
+    }
+
+    public function testSolicitationIsUnsuccessfulWhenTheCreateOrderCallTimesOut(): void
+    {
+        // Arrange
+        $this->orderProxy->setCreateOrderException(
+            new HttpCommunicationException('Request https://sandbox.sequrapi.com/orders failed. ERROR: 28 = Operation timed out')
+        );
+
+        // Act
+        $response = CheckoutAPI::get()->solicitation('test1')->solicitFor(
+            new SolicitationRequest(new MockCreateOrderRequestBuilder())
+        );
+
+        // Assert
+        self::assertFalse($response->isSuccessful());
     }
 }
