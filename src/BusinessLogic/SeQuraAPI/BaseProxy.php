@@ -195,7 +195,8 @@ class BaseProxy
             $method,
             $url,
             $request->getHeaders(),
-            $this->getEncodedBody($request)
+            $this->getEncodedBody($request),
+            $request->getTimeoutMs()
         );
 
         $this->validateResponse($response);

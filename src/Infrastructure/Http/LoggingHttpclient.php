@@ -37,8 +37,13 @@ class LoggingHttpclient extends HttpClient
     /**
      * @inheritdoc Create, log and send request.
      */
-    public function request(string $method, string $url, ?array $headers = array(), string $body = ''): HttpResponse
-    {
+    public function request(
+        string $method,
+        string $url,
+        ?array $headers = array(),
+        string $body = '',
+        ?int $timeoutMs = null
+    ): HttpResponse {
         Logger::logDebug(
             "Sending http request to $url",
             'Core',
@@ -50,7 +55,7 @@ class LoggingHttpclient extends HttpClient
             )
         );
 
-        $response = $this->client->request($method, $url, $headers, $body);
+        $response = $this->client->request($method, $url, $headers, $body, $timeoutMs);
 
         Logger::logDebug(
             "Http response from $url",
@@ -165,9 +170,10 @@ class LoggingHttpclient extends HttpClient
         string $method,
         string $url,
         ?array $headers = array(),
-        string $body = ''
+        string $body = '',
+        ?int $timeoutMs = null
     ): HttpResponse {
-        return $this->client->sendHttpRequest($method, $url, $headers, $body);
+        return $this->client->sendHttpRequest($method, $url, $headers, $body, $timeoutMs);
     }
 
     /**

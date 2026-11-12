@@ -21,6 +21,9 @@ class CurlHttpClient extends HttpClient
      * Default synchronous request timeout value in milliseconds.
      */
     public const DEFAULT_REQUEST_TIMEOUT = 900000;
+
+    public const CONNECT_TIMEOUT = 5000;
+
     /**
      * Maximum number of 30x response redirects.
      */
@@ -59,6 +62,7 @@ class CurlHttpClient extends HttpClient
      * @param string $url Request URL. Full URL where request should be sent.
      * @param array<string,string>|null $headers Request headers to send. Key as header name and value as header content. Optional.
      * @param string $body Request payload. String data to send as HTTP request payload. Optional.
+     * @param int|null $timeoutMs
      *
      * @return HttpResponse Response object.
      *
@@ -69,11 +73,12 @@ class CurlHttpClient extends HttpClient
         string $method,
         string $url,
         ?array $headers = array(),
-        string $body = ''
+        string $body = '',
+        ?int $timeoutMs = null
     ): HttpResponse {
         $this->setCurlFollowLocationFlag();
         $this->setCurlSessionAndCommonRequestParts($method, $url, $headers, $body);
-        $this->setCurlSessionOptionsForSynchronousRequest();
+        $this->setCurlSessionOptionsForSynchronousRequest($timeoutMs);
         $this->setCurlOptions();
 
         return $this->executeSynchronousRequest();
@@ -269,12 +274,18 @@ class CurlHttpClient extends HttpClient
     /**
      * Sets cURL session options for synchronous request.
      *
+     * @param int|null $timeoutMs
+     *
      * @return void
      */
-    protected function setCurlSessionOptionsForSynchronousRequest(): void
+    protected function setCurlSessionOptionsForSynchronousRequest(?int $timeoutMs = null): void
     {
-        $this->curlOptions[CURLOPT_TIMEOUT_MS] =
-            $this->getConfigService()->getSyncRequestTimeout() ?: static::DEFAULT_REQUEST_TIMEOUT;
+        $configuredTimeoutMs = $this->getConfigService()->getSyncRequestTimeout() ?: static::DEFAULT_REQUEST_TIMEOUT;
+
+        $this->curlOptions[CURLOPT_CONNECTTIMEOUT_MS] = static::CONNECT_TIMEOUT;
+        $this->curlOptions[CURLOPT_TIMEOUT_MS] = $timeoutMs === null ?
+            $configuredTimeoutMs :
+            min($timeoutMs, $configuredTimeoutMs);
     }
 
     /**

@@ -1526,4 +1526,92 @@ class OrderProxyTest extends BaseTestCase
             $trackings
         );
     }
+
+    /**
+     * @throws Exception
+     */
+    public function testCreateOrderUsesTheCheckoutTimeout(): void
+    {
+        // Arrange
+        $this->httpClient->setMockResponses([new HttpResponse(204, ['UUID' => 'testUUID'], '')]);
+
+        // Act
+        $this->proxy->createOrder($this->generateMinimalCreateOrderRequest());
+
+        // Assert
+        self::assertSame(20000, $this->httpClient->getLastRequest()['timeoutMs']);
+    }
+
+    /**
+     * @throws HttpRequestException
+     */
+    public function testGetPaymentMethodsUsesTheCheckoutTimeout(): void
+    {
+        // Arrange
+        $this->httpClient->setMockResponses([$this->paymentMethodsResponse()]);
+
+        // Act
+        $this->proxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest('testId', 'testMerchantId'));
+
+        // Assert
+        self::assertSame(20000, $this->httpClient->getLastRequest()['timeoutMs']);
+    }
+
+    /**
+     * @throws HttpRequestException
+     */
+    public function testGetPaymentMethodsInCategoriesUsesTheCheckoutTimeout(): void
+    {
+        // Arrange
+        $this->httpClient->setMockResponses([$this->paymentMethodsResponse()]);
+
+        // Act
+        $this->proxy->getAvailablePaymentMethodsInCategories(
+            new GetAvailablePaymentMethodsRequest('testId', 'testMerchantId')
+        );
+
+        // Assert
+        self::assertSame(20000, $this->httpClient->getLastRequest()['timeoutMs']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateOrderKeepsTheDefaultTimeout(): void
+    {
+        // Arrange
+        $this->httpClient->setMockResponses([new HttpResponse(204, ['UUID' => 'testUUID'], '')]);
+
+        // Act
+        $this->proxy->updateOrder($this->generateMinimalUpdateOrderRequest());
+
+        // Assert
+        self::assertNull($this->httpClient->getLastRequest()['timeoutMs']);
+    }
+
+    /**
+     * @throws HttpRequestException
+     */
+    public function testGetFormKeepsTheDefaultTimeout(): void
+    {
+        // Arrange
+        $this->httpClient->setMockResponses([
+            new HttpResponse(200, [], file_get_contents(
+                __DIR__ . '/../../Common/ApiResponses/Order/GetFormResponses/SuccessfulResponse.html'
+            ))
+        ]);
+
+        // Act
+        $this->proxy->getForm(new GetFormRequest('testId'));
+
+        // Assert
+        self::assertNull($this->httpClient->getLastRequest()['timeoutMs']);
+    }
+
+    private function paymentMethodsResponse(): HttpResponse
+    {
+        return new HttpResponse(200, [], file_get_contents(
+            __DIR__ . '/../../Common/ApiResponses/Order/GetPaymentMethodsResponses/SuccessfulResponse.json'
+        ));
+    }
 }

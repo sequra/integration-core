@@ -30,23 +30,36 @@ class HttpRequest
     protected $headers;
 
     /**
+     * @var int|null
+     */
+    protected $timeoutMs;
+
+    /**
      * HttpRequest constructor.
      *
      * @param string $endpoint
      * @param mixed[] $body
      * @param mixed[] $queries
      * @param array<string,string> $headers
+     * @param int|null $timeoutMs
      */
     public function __construct(
         string $endpoint,
         array $body = [],
         array $queries = [],
-        array $headers = []
+        array $headers = [],
+        ?int $timeoutMs = null
     ) {
         $this->endpoint = $endpoint;
         $this->body = $body;
         $this->queries = $queries;
         $this->headers = $headers;
+        $this->timeoutMs = $timeoutMs;
+    }
+
+    public function getTimeoutMs(): ?int
+    {
+        return $this->timeoutMs;
     }
 
     /**

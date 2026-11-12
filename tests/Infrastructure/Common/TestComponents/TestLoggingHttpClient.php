@@ -22,9 +22,10 @@ class TestLoggingHttpClient extends LoggingHttpclient
         string $method,
         string $url,
         ?array $headers = array(),
-        string $body = ''
+        string $body = '',
+        ?int $timeoutMs = null
     ): HttpResponse {
-        return parent::sendHttpRequest($method, $url, $headers, $body);
+        return parent::sendHttpRequest($method, $url, $headers, $body, $timeoutMs);
     }
 
     /**

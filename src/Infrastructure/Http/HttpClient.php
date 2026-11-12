@@ -80,14 +80,20 @@ abstract class HttpClient
      * @param string $url Request URL. Full URL where request should be sent.
      * @param array<string,string>|null $headers Request headers to send. Key as header name and value as header content. Optional.
      * @param string $body Request payload. String data to send as HTTP request payload. Optional.
+     * @param int|null $timeoutMs
      *
      * @return HttpResponse Response from making HTTP request.
      *
      * @throws HttpCommunicationException
      */
-    public function request(string $method, string $url, ?array $headers = array(), string $body = ''): HttpResponse
-    {
-        return $this->sendHttpRequest($method, $url, $headers, $body);
+    public function request(
+        string $method,
+        string $url,
+        ?array $headers = array(),
+        string $body = '',
+        ?int $timeoutMs = null
+    ): HttpResponse {
+        return $this->sendHttpRequest($method, $url, $headers, $body, $timeoutMs);
     }
 
     /**
@@ -147,6 +153,7 @@ abstract class HttpClient
      * @param string $url Request URL. Full URL where request should be sent.
      * @param array<string,string>|null $headers Request headers to send. Key as header name and value as header content. Optional.
      * @param string $body Request payload. String data to send as HTTP request payload. Optional.
+     * @param int|null $timeoutMs
      *
      * @return HttpResponse Response object.
      *
@@ -157,7 +164,8 @@ abstract class HttpClient
         string $method,
         string $url,
         ?array $headers = array(),
-        string $body = ''
+        string $body = '',
+        ?int $timeoutMs = null
     ): HttpResponse;
 
     /**

@@ -35,9 +35,14 @@ class TestHttpClient extends HttpClient
     /**
      * @inheritdoc
      */
-    public function request(string $method, string $url, ?array $headers = array(), string $body = ''): HttpResponse
-    {
-        return $this->sendHttpRequest($method, $url, $headers, $body);
+    public function request(
+        string $method,
+        string $url,
+        ?array $headers = array(),
+        string $body = '',
+        ?int $timeoutMs = null
+    ): HttpResponse {
+        return $this->sendHttpRequest($method, $url, $headers, $body, $timeoutMs);
     }
 
     /**
@@ -55,7 +60,8 @@ class TestHttpClient extends HttpClient
         string $method,
         string $url,
         ?array $headers = array(),
-        string $body = ''
+        string $body = '',
+        ?int $timeoutMs = null
     ): HttpResponse {
         $this->history[] = array(
             'type' => self::REQUEST_TYPE_SYNCHRONOUS,
@@ -63,6 +69,7 @@ class TestHttpClient extends HttpClient
             'url' => $url,
             'headers' => $headers,
             'body' => $body,
+            'timeoutMs' => $timeoutMs,
         );
 
         if (empty($this->responses)) {
