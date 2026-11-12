@@ -34,6 +34,8 @@ class MockStoreIntegrationService extends StoreIntegrationService
      */
     private $deleteException;
 
+    private $createException;
+
     /**
      * @param ConnectionData $connectionData
      *
@@ -41,6 +43,10 @@ class MockStoreIntegrationService extends StoreIntegrationService
      */
     public function createStoreIntegration(ConnectionData $connectionData): string
     {
+        if ($this->createException !== null) {
+            throw $this->createException;
+        }
+
         $this->createdIntegrationIds[$connectionData->getMerchantId()] = true;
 
         return 'integrationId';
@@ -68,6 +74,11 @@ class MockStoreIntegrationService extends StoreIntegrationService
      *
      * @return void
      */
+    public function setCreateException(?Throwable $exception): void
+    {
+        $this->createException = $exception;
+    }
+
     public function setDeleteException(Throwable $exception): void
     {
         $this->deleteException = $exception;

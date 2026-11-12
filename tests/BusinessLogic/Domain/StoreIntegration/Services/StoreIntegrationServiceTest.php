@@ -2,6 +2,9 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Domain\StoreIntegration\Services;
 
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
+use Exception;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockCredentialsRepository;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\AuthorizationCredentials;
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
@@ -57,6 +60,11 @@ class StoreIntegrationServiceTest extends BaseTestCase
     private $storeInfoService;
 
     /**
+     * @var MockCredentialsRepository $credentialsRepository
+     */
+    private $credentialsRepository;
+
+    /**
      * @return void
      *
      * @throws RepositoryClassException
@@ -69,6 +77,8 @@ class StoreIntegrationServiceTest extends BaseTestCase
         $this->storeIntegrationService = new MockIntegrationStoreIntegrationService();
         $this->connectionDataRepository = new MockConnectionDataRepository();
         $this->storeInfoService = new MockStoreInfoService();
+        $this->credentialsRepository = new MockCredentialsRepository();
+        $this->credentialsRepository->setCredentials([]);
         $this->storeInfoService->setMockStoreInfo(
             new StoreInfo('Test Shop', 'https://shop.example.com', '', '', '', '', '', '')
         );
@@ -77,7 +87,8 @@ class StoreIntegrationServiceTest extends BaseTestCase
             $this->storeIntegrationService,
             $this->storeIntegrationProxy,
             $this->connectionDataRepository,
-            $this->storeInfoService
+            $this->storeInfoService,
+            $this->credentialsRepository
         );
     }
 
@@ -316,7 +327,8 @@ class StoreIntegrationServiceTest extends BaseTestCase
             $this->storeIntegrationService,
             $this->storeIntegrationProxy,
             $this->connectionDataRepository,
-            $storeInfoService
+            $storeInfoService,
+            $this->credentialsRepository
         );
 
         $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
@@ -366,7 +378,8 @@ class StoreIntegrationServiceTest extends BaseTestCase
             $this->storeIntegrationService,
             $proxy,
             $this->connectionDataRepository,
-            new MockStoreInfoAndUrlService('https://shop.example.com')
+            new MockStoreInfoAndUrlService('https://shop.example.com'),
+            $this->credentialsRepository
         );
 
         $optInService->createStoreIntegration(new ConnectionData(
@@ -403,5 +416,130 @@ class StoreIntegrationServiceTest extends BaseTestCase
         ));
 
         self::assertSame(1, $this->storeInfoService->getStoreInfoCallCount(), 'Legacy plugins must still go through getStoreInfo().');
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testExpressCheckoutIsNotRegisteredWithoutAllowCaas(): void
+    {
+        // Arrange
+        $this->storeIntegrationService->setMockCapabilities([Capability::general(), Capability::expressCheckout()]);
+        $this->credentialsRepository->setCredentials([$this->credentials('logeecom', [], 'sequra')]);
+
+        // Act
+        $this->service->createStoreIntegration($this->connection('sequra'));
+
+        // Assert
+        self::assertEquals([Capability::general()], $this->storeIntegrationProxy->getCapabilities());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testExpressCheckoutIsRegisteredWhenAnyMerchantOfTheDeploymentAllowsCaas(): void
+    {
+        // Arrange
+        $this->storeIntegrationService->setMockCapabilities([
+            Capability::general(),
+            Capability::expressCheckout(),
+            Capability::widget()
+        ]);
+        $this->credentialsRepository->setCredentials([
+            $this->credentials('logeecom_es', [], 'sequra'),
+            $this->credentials('logeecom_fr', ['services', 'allow_caas'], 'sequra')
+        ]);
+
+        // Act
+        $this->service->createStoreIntegration($this->connection('sequra'));
+
+        // Assert
+        self::assertEquals(
+            [Capability::general(), Capability::expressCheckout(), Capability::widget()],
+            $this->storeIntegrationProxy->getCapabilities()
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAllowCaasOfAnotherDeploymentDoesNotRegisterExpressCheckout(): void
+    {
+        // Arrange
+        $this->storeIntegrationService->setMockCapabilities([Capability::general(), Capability::expressCheckout()]);
+        $this->credentialsRepository->setCredentials([
+            $this->credentials('logeecom', [], 'sequra'),
+            $this->credentials('logeecom_svea', ['allow_caas'], 'svea')
+        ]);
+
+        // Act
+        $this->service->createStoreIntegration($this->connection('sequra'));
+
+        // Assert
+        self::assertEquals([Capability::general()], $this->storeIntegrationProxy->getCapabilities());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testExpressCheckoutIsRegistrableWhenSupportedAndTheMerchantAllowsCaas(): void
+    {
+        // Arrange
+        $this->storeIntegrationService->setMockCapabilities([Capability::general(), Capability::expressCheckout()]);
+        $this->credentialsRepository->setCredentials([$this->credentials('logeecom', ['allow_caas'], 'sequra')]);
+
+        // Act
+        $registrable = $this->service->isExpressCheckoutRegistrable($this->connection('sequra'));
+
+        // Assert
+        self::assertTrue($registrable);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testExpressCheckoutIsNotRegistrableWhenTheIntegrationDoesNotSupportIt(): void
+    {
+        // Arrange
+        $this->storeIntegrationService->setMockCapabilities([Capability::general()]);
+        $this->credentialsRepository->setCredentials([$this->credentials('logeecom', ['allow_caas'], 'sequra')]);
+
+        // Act
+        $registrable = $this->service->isExpressCheckoutRegistrable($this->connection('sequra'));
+
+        // Assert
+        self::assertFalse($registrable);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testExpressCheckoutIsNotRegistrableWithoutAllowCaas(): void
+    {
+        // Arrange
+        $this->storeIntegrationService->setMockCapabilities([Capability::general(), Capability::expressCheckout()]);
+        $this->credentialsRepository->setCredentials([$this->credentials('logeecom', ['services'], 'sequra')]);
+
+        // Act
+        $registrable = $this->service->isExpressCheckoutRegistrable($this->connection('sequra'));
+
+        // Assert
+        self::assertFalse($registrable);
+    }
+
+    /**
+     * @param string[] $contractOptions
+     */
+    private function credentials(string $merchantId, array $contractOptions, string $deployment): Credentials
+    {
+        return new Credentials($merchantId, 'ES', 'EUR', 'assetsKey', ['contract_options' => $contractOptions], $deployment);
+    }
+
+    /**
+     * @throws InvalidEnvironmentException
+     */
+    private function connection(string $deployment): ConnectionData
+    {
+        return new ConnectionData('sandbox', 'merchant', $deployment, new AuthorizationCredentials('username', 'password'));
     }
 }

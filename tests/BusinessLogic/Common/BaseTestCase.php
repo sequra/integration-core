@@ -933,7 +933,8 @@ class BaseTestCase extends TestCase
                     new MockIntegrationStoreIntegrationService(),
                     new MockStoreIntegrationProxy(),
                     new MockConnectionDataRepository(),
-                    new MockStoreInfoService()
+                    new MockStoreInfoService(),
+                    TestServiceRegister::getService(CredentialsRepositoryInterface::class)
                 );
             }
         );

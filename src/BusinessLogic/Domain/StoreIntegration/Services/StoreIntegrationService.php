@@ -4,6 +4,7 @@ namespace SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
 use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\HMAC\HMAC;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo\StoreInfoServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo\StoreUrlProviderInterface;
@@ -48,21 +49,29 @@ class StoreIntegrationService
     protected $storeInfoService;
 
     /**
+     * @var CredentialsRepositoryInterface $credentialsRepository
+     */
+    protected $credentialsRepository;
+
+    /**
      * @param IntegrationsStoreServiceInterface $integrationService
      * @param StoreIntegrationsProxyInterface $storeIntegrationsProxy
      * @param ConnectionDataRepositoryInterface $connectionDataRepository
      * @param StoreInfoServiceInterface $storeInfoService
+     * @param CredentialsRepositoryInterface $credentialsRepository
      */
     public function __construct(
         IntegrationsStoreServiceInterface $integrationService,
         StoreIntegrationsProxyInterface $storeIntegrationsProxy,
         ConnectionDataRepositoryInterface $connectionDataRepository,
-        StoreInfoServiceInterface $storeInfoService
+        StoreInfoServiceInterface $storeInfoService,
+        CredentialsRepositoryInterface $credentialsRepository
     ) {
         $this->integrationService = $integrationService;
         $this->storeIntegrationsProxy = $storeIntegrationsProxy;
         $this->connectionDataRepository = $connectionDataRepository;
         $this->storeInfoService = $storeInfoService;
+        $this->credentialsRepository = $credentialsRepository;
     }
 
     /**
@@ -79,7 +88,7 @@ class StoreIntegrationService
     {
         $signature = $this->computeSignature($connectionData);
         $webhookUrl = $this->buildWebhookUrl($this->integrationService->getWebhookUrl(), $signature);
-        $capabilities = $this->getSupportedCapabilities();
+        $capabilities = $this->getRegistrableCapabilities($connectionData);
 
         return $this->storeIntegrationsProxy->createStoreIntegration(
             new CreateStoreIntegrationRequest($connectionData, $webhookUrl, $capabilities)
@@ -101,6 +110,60 @@ class StoreIntegrationService
         $this->storeIntegrationsProxy->deleteStoreIntegration(
             new DeleteStoreIntegrationRequest($connectionData, $webhookUrl->buildUrl())
         );
+    }
+
+    public function isExpressCheckoutRegistrable(ConnectionData $connectionData): bool
+    {
+        return self::containsExpressCheckout($this->integrationService->getSupportedCapabilities())
+            && $this->isCaasAllowed($connectionData);
+    }
+
+    /**
+     * @return Capability[]
+     *
+     * @throws CapabilitiesEmptyException
+     */
+    protected function getRegistrableCapabilities(ConnectionData $connectionData): array
+    {
+        $capabilities = $this->getSupportedCapabilities();
+
+        if ($this->isCaasAllowed($connectionData)) {
+            return $capabilities;
+        }
+
+        return array_values(array_filter($capabilities, static function (Capability $capability) {
+            return !self::isExpressCheckout($capability);
+        }));
+    }
+
+    protected function isCaasAllowed(ConnectionData $connectionData): bool
+    {
+        foreach ($this->credentialsRepository->getCredentials() as $credentials) {
+            if ($credentials->getDeployment() === $connectionData->getDeployment() && $credentials->isAllowedForCaas()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Capability[] $capabilities
+     */
+    private static function containsExpressCheckout(array $capabilities): bool
+    {
+        foreach ($capabilities as $capability) {
+            if (self::isExpressCheckout($capability)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function isExpressCheckout(Capability $capability): bool
+    {
+        return $capability->getCapability() === Capability::expressCheckout()->getCapability();
     }
 
     /**

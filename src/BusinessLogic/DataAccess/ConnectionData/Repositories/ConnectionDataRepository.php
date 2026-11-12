@@ -66,6 +66,11 @@ class ConnectionDataRepository implements ConnectionDataRepositoryInterface
                 $connectionData->setIntegrationId($existingConnectionData->getConnectionData()->getIntegrationId());
             }
 
+            $storedExpressCheckoutRegistered = $existingConnectionData->getConnectionData()->isExpressCheckoutRegistered();
+            if ($connectionData->isExpressCheckoutRegistered() === null && $storedExpressCheckoutRegistered !== null) {
+                $connectionData->setExpressCheckoutRegistered($storedExpressCheckoutRegistered);
+            }
+
             $existingConnectionData->setConnectionData($connectionData);
             $existingConnectionData->setDeployment($connectionData->getDeployment());
             $existingConnectionData->setStoreId($this->storeContext->getStoreId());

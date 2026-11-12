@@ -78,7 +78,8 @@ class StoreIntegrationMigrateTaskTest extends BaseTestCase
             new MockIntegrationStoreIntegrationService(),
             new MockStoreIntegrationProxy(),
             new MockConnectionDataRepository(),
-            new MockStoreInfoService()
+            new MockStoreInfoService(),
+            new MockCredentialsRepository()
         );
 
         TestServiceRegister::registerService(StoreService::class, function () {

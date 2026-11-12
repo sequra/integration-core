@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Common\MockComponents;
 
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationRequest;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\CreateStoreIntegrationResponse;
 use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\DeleteStoreIntegrationRequest;
@@ -42,12 +43,18 @@ class MockStoreIntegrationProxy implements StoreIntegrationsProxyInterface
     private $createCallCount = 0;
 
     /**
+     * @var Capability[] $capabilities
+     */
+    private $capabilities = [];
+
+    /**
      * @inheritDoc
      */
     public function createStoreIntegration(CreateStoreIntegrationRequest $request): CreateStoreIntegrationResponse
     {
         $this->createCallCount++;
         $this->webhookUrl = $request->getWebhookUrl();
+        $this->capabilities = $request->getCapabilities();
 
         if ($this->createResponse) {
             return $this->createResponse;
@@ -112,5 +119,13 @@ class MockStoreIntegrationProxy implements StoreIntegrationsProxyInterface
     public function getCreateCallCount(): int
     {
         return $this->createCallCount;
+    }
+
+    /**
+     * @return Capability[]
+     */
+    public function getCapabilities(): array
+    {
+        return $this->capabilities;
     }
 }

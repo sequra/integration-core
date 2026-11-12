@@ -272,7 +272,8 @@ class ConfigurationWebhookAPITest extends BaseTestCase
             $this->integrationStoreIntegrationService,
             new MockStoreIntegrationProxy(),
             new MockConnectionDataRepository(),
-            new MockStoreInfoService()
+            new MockStoreInfoService(),
+            new MockCredentialsRepository()
         );
 
         TestServiceRegister::registerService(StoreIntegrationService::class, function () {

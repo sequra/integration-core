@@ -156,4 +156,64 @@ class ConnectionDataRepositoryTest extends BaseTestCase
         // Assert
         $this->assertSame('integration-2', $loaded->getIntegrationId());
     }
+
+    /**
+     * @throws InvalidEnvironmentException
+     */
+    public function testExpressCheckoutRegisteredIsStoredAndReadBack(): void
+    {
+        // Arrange
+        $connectionData = new ConnectionData(
+            BaseProxy::TEST_MODE,
+            'test',
+            'svea',
+            new AuthorizationCredentials('test_username', 'test_password'),
+            'integration-1',
+            false
+        );
+
+        // Act
+        $this->repository->setConnectionData($connectionData);
+        $loaded = $this->repository->getConnectionDataByDeploymentId('svea');
+
+        // Assert
+        $this->assertFalse($loaded->isExpressCheckoutRegistered());
+    }
+
+    /**
+     * @throws InvalidEnvironmentException
+     */
+    public function testSetConnectionDataWithoutExpressCheckoutRegisteredKeepsTheStoredOne(): void
+    {
+        // Arrange
+        $registered = $this->repository->getConnectionDataByDeploymentId('sequra');
+        $registered->setExpressCheckoutRegistered(true);
+        $this->repository->setConnectionData($registered);
+
+        $fromRequest = new ConnectionData(
+            BaseProxy::LIVE_MODE,
+            'live',
+            'sequra',
+            new AuthorizationCredentials('live_username', 'live_password')
+        );
+
+        // Act
+        $this->repository->setConnectionData($fromRequest);
+        $loaded = $this->repository->getConnectionDataByDeploymentId('sequra');
+
+        // Assert
+        $this->assertTrue($loaded->isExpressCheckoutRegistered());
+    }
+
+    /**
+     * @throws InvalidEnvironmentException
+     */
+    public function testExpressCheckoutRegisteredIsNullForAConnectionStoredWithoutIt(): void
+    {
+        // Act
+        $loaded = $this->repository->getConnectionDataByDeploymentId('sequra');
+
+        // Assert
+        $this->assertNull($loaded->isExpressCheckoutRegistered());
+    }
 }

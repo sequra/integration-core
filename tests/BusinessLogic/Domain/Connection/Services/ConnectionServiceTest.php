@@ -2,6 +2,8 @@
 
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Connection\Services;
 
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Models\Capability;
+use Exception;
 use DateTime;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
 use SeQura\Core\BusinessLogic\Domain\Deployments\ProxyContracts\DeploymentsProxyInterface;
@@ -94,6 +96,11 @@ class ConnectionServiceTest extends BaseTestCase
      */
     protected $mockStoreIntegrationService;
 
+    /**
+     * @var MockIntegrationStoreIntegrationService
+     */
+    private $integrationStoreIntegrationService;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -112,11 +119,13 @@ class ConnectionServiceTest extends BaseTestCase
 
         $this->storeSeQuraDeployment();
 
+        $this->integrationStoreIntegrationService = new MockIntegrationStoreIntegrationService();
         $this->mockStoreIntegrationService = new MockStoreIntegrationService(
-            new MockIntegrationStoreIntegrationService(),
+            $this->integrationStoreIntegrationService,
             new MockStoreIntegrationProxy(),
             new MockConnectionDataRepository(),
-            new MockStoreInfoService()
+            new MockStoreInfoService(),
+            TestServiceRegister::getService(CredentialsRepositoryInterface::class)
         );
 
         $this->connectionService = new ConnectionService(
@@ -1653,5 +1662,199 @@ class ConnectionServiceTest extends BaseTestCase
             new DeploymentURL('https://live.sequrapi.com/', 'https://live.sequracdn.com/assets/', $livePortalUrl),
             new DeploymentURL('https://sandbox.sequrapi.com/', 'https://sandbox.sequracdn.com/assets/')
         );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testConnectRecordsExpressCheckoutAsRegisteredWhenTheMerchantAllowsCaas(): void
+    {
+        // Arrange
+        $this->integrationStoreIntegrationService->setMockCapabilities([Capability::general(), Capability::expressCheckout()]);
+        $this->mockConnectionProxy->setMockCredentials([$this->credentials(['allow_caas'])]);
+
+        // Act
+        $this->connectionService->connect([$this->connectionData(BaseProxy::TEST_MODE)]);
+
+        // Assert
+        self::assertTrue($this->connectionService->getConnectionDataByDeployment('sequra')->isExpressCheckoutRegistered());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testConnectRecordsExpressCheckoutAsNotRegisteredWithoutAllowCaas(): void
+    {
+        // Arrange
+        $this->integrationStoreIntegrationService->setMockCapabilities([Capability::general(), Capability::expressCheckout()]);
+        $this->mockConnectionProxy->setMockCredentials([$this->credentials([])]);
+
+        // Act
+        $this->connectionService->connect([$this->connectionData(BaseProxy::TEST_MODE)]);
+
+        // Assert
+        self::assertFalse($this->connectionService->getConnectionDataByDeployment('sequra')->isExpressCheckoutRegistered());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRefreshCredentialsDoesNotReRegisterWhenAllowCaasIsUnchanged(): void
+    {
+        // Arrange
+        $this->integrationStoreIntegrationService->setMockCapabilities([Capability::general(), Capability::expressCheckout()]);
+        $connectionData = $this->connectionDataWithExpressCheckoutRegistered(true);
+        $this->mockConnectionProxy->setMockCredentials([$this->credentials(['allow_caas'])]);
+
+        // Act
+        $this->connectionService->refreshCredentials($connectionData);
+
+        // Assert
+        self::assertEmpty($this->mockStoreIntegrationService->getCreatedIntegrationIds());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRefreshCredentialsReRegistersWhenTheMerchantGainsAllowCaas(): void
+    {
+        // Arrange
+        $this->integrationStoreIntegrationService->setMockCapabilities([Capability::general(), Capability::expressCheckout()]);
+        $connectionData = $this->connectionDataWithExpressCheckoutRegistered(false);
+        $this->mockConnectionProxy->setMockCredentials([$this->credentials(['allow_caas'])]);
+
+        // Act
+        $this->connectionService->refreshCredentials($connectionData);
+
+        // Assert
+        self::assertNotEmpty($this->mockStoreIntegrationService->getCreatedIntegrationIds());
+        self::assertTrue($this->connectionService->getConnectionDataByDeployment('sequra')->isExpressCheckoutRegistered());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRefreshCredentialsReRegistersWhenTheMerchantLosesAllowCaas(): void
+    {
+        // Arrange
+        $this->integrationStoreIntegrationService->setMockCapabilities([Capability::general(), Capability::expressCheckout()]);
+        $connectionData = $this->connectionDataWithExpressCheckoutRegistered(true);
+        $this->mockConnectionProxy->setMockCredentials([$this->credentials([])]);
+
+        // Act
+        $this->connectionService->refreshCredentials($connectionData);
+
+        // Assert
+        self::assertNotEmpty($this->mockStoreIntegrationService->getCreatedIntegrationIds());
+        self::assertFalse($this->connectionService->getConnectionDataByDeployment('sequra')->isExpressCheckoutRegistered());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRefreshCredentialsReRegistersAConnectionWithoutARecordedExpressCheckoutRegistration(): void
+    {
+        // Arrange
+        $this->integrationStoreIntegrationService->setMockCapabilities([Capability::general(), Capability::expressCheckout()]);
+        $connectionData = $this->connectionData(BaseProxy::TEST_MODE);
+        $this->connectionService->saveConnectionData($connectionData);
+        $this->mockConnectionProxy->setMockCredentials([$this->credentials([])]);
+
+        // Act
+        $this->connectionService->refreshCredentials($connectionData);
+
+        // Assert
+        self::assertNotEmpty($this->mockStoreIntegrationService->getCreatedIntegrationIds());
+        self::assertFalse($this->connectionService->getConnectionDataByDeployment('sequra')->isExpressCheckoutRegistered());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRefreshCredentialsStoresTheRefreshedCredentials(): void
+    {
+        // Arrange
+        $connectionData = $this->connectionDataWithExpressCheckoutRegistered(false);
+        $this->mockConnectionProxy->setMockCredentials([$this->credentials(['allow_caas'])]);
+
+        // Act
+        $this->connectionService->refreshCredentials($connectionData);
+
+        // Assert
+        self::assertTrue($this->mockCredentialsRepository->getCredentialsByMerchantId('logeecom')->isAllowedForCaas());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testConnectionValidationDoesNotRegisterTheStoreIntegration(): void
+    {
+        // Arrange
+        $this->mockConnectionProxy->setMockCredentials([$this->credentials(['allow_caas'])]);
+
+        // Act
+        $this->connectionService->isConnectionDataValid($this->connectionData(BaseProxy::TEST_MODE));
+
+        // Assert
+        self::assertEmpty($this->mockStoreIntegrationService->getCreatedIntegrationIds());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRefreshCredentialsKeepsTheStoredRegistrationWhenReRegistrationFails(): void
+    {
+        // Arrange
+        $this->integrationStoreIntegrationService->setMockCapabilities([Capability::general(), Capability::expressCheckout()]);
+        $connectionData = $this->connectionDataWithExpressCheckoutRegistered(false);
+        $this->mockConnectionProxy->setMockCredentials([$this->credentials(['allow_caas'])]);
+        $this->mockStoreIntegrationService->setCreateException(new HttpRequestException('Portal unavailable'));
+
+        // Act
+        $this->connectionService->refreshCredentials($connectionData);
+
+        // Assert
+        self::assertFalse($this->connectionService->getConnectionDataByDeployment('sequra')->isExpressCheckoutRegistered());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRefreshCredentialsRetriesAFailedReRegistrationOnTheNextRefresh(): void
+    {
+        // Arrange
+        $this->integrationStoreIntegrationService->setMockCapabilities([Capability::general(), Capability::expressCheckout()]);
+        $this->connectionDataWithExpressCheckoutRegistered(false);
+        $this->mockConnectionProxy->setMockCredentials([$this->credentials(['allow_caas'])]);
+        $this->mockStoreIntegrationService->setCreateException(new HttpRequestException('Portal unavailable'));
+        $this->connectionService->refreshCredentials($this->connectionService->getConnectionDataByDeployment('sequra'));
+        $this->mockStoreIntegrationService->setCreateException(null);
+
+        // Act
+        $this->connectionService->refreshCredentials($this->connectionService->getConnectionDataByDeployment('sequra'));
+
+        // Assert
+        self::assertNotEmpty($this->mockStoreIntegrationService->getCreatedIntegrationIds());
+        self::assertTrue($this->connectionService->getConnectionDataByDeployment('sequra')->isExpressCheckoutRegistered());
+    }
+
+    /**
+     * @param string[] $contractOptions
+     */
+    private function credentials(array $contractOptions): Credentials
+    {
+        return new Credentials('logeecom', 'ES', 'EUR', 'assetsKey', ['contract_options' => $contractOptions], 'sequra');
+    }
+
+    /**
+     * @throws InvalidEnvironmentException
+     */
+    private function connectionDataWithExpressCheckoutRegistered(bool $registered): DomainConnectionData
+    {
+        $connectionData = $this->connectionData(BaseProxy::TEST_MODE);
+        $connectionData->setExpressCheckoutRegistered($registered);
+        $this->connectionService->saveConnectionData($connectionData);
+
+        return $connectionData;
     }
 }

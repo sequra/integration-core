@@ -194,7 +194,8 @@ class DisconnectServiceTest extends BaseTestCase
             new MockIntegrationStoreIntegrationService(),
             new MockStoreIntegrationProxy(),
             new MockConnectionDataRepository(),
-            new MockStoreInfoService()
+            new MockStoreInfoService(),
+            new MockCredentialsRepository()
         );
         $this->advancedSettingsRepository = new MockAdvancedSettingsRepository();
         $this->bannerSettingsRepository = new MockBannerSettingsRepository();
