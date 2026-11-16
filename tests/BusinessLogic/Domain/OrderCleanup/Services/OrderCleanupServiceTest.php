@@ -74,7 +74,7 @@ class OrderCleanupServiceTest extends BaseTestCase
     {
         $this->store($this->solicitation('2026-10-20 03:00:00'));
 
-        $deleted = $this->service->cleanup();
+        $deleted = $this->runCleanup();
 
         self::assertSame(1, $deleted);
         self::assertEmpty($this->orderRepository->select());
@@ -95,7 +95,11 @@ class OrderCleanupServiceTest extends BaseTestCase
             TestServiceRegister::getService(ClockInterface::class)
         );
 
-        self::assertNull($service->cleanup());
+        $cleanup = $service->cleanup();
+        $yielded = iterator_to_array($cleanup, false);
+
+        self::assertSame([], $yielded);
+        self::assertNull($cleanup->getReturn());
     }
 
     /**
@@ -105,7 +109,7 @@ class OrderCleanupServiceTest extends BaseTestCase
     {
         $this->store($this->solicitation('2026-10-23 03:00:00'));
 
-        $this->service->cleanup();
+        $this->runCleanup();
 
         self::assertEmpty($this->orderRepository->select());
     }
@@ -117,7 +121,7 @@ class OrderCleanupServiceTest extends BaseTestCase
     {
         $this->store($this->solicitation('2026-10-24 03:00:00'));
 
-        $this->service->cleanup();
+        $this->runCleanup();
 
         self::assertCount(1, $this->orderRepository->select());
     }
@@ -129,7 +133,7 @@ class OrderCleanupServiceTest extends BaseTestCase
     {
         $this->store($this->solicitation('2026-10-30 02:00:00', '2026-10-01 00:00:00'));
 
-        $this->service->cleanup();
+        $this->runCleanup();
 
         self::assertCount(1, $this->orderRepository->select());
     }
@@ -141,7 +145,7 @@ class OrderCleanupServiceTest extends BaseTestCase
     {
         $this->store($this->solicitation('2026-10-30 02:00:00', null));
 
-        $this->service->cleanup();
+        $this->runCleanup();
 
         self::assertCount(1, $this->orderRepository->select());
     }
@@ -155,7 +159,7 @@ class OrderCleanupServiceTest extends BaseTestCase
         $this->store($this->solicitation(null, '2026-10-20T03:00:00+00:00'));
         $this->store($this->solicitation(null, '2026-10-30T02:00:00+00:00'));
 
-        $deleted = $this->service->cleanup();
+        $deleted = $this->runCleanup();
 
         self::assertSame(2, $deleted);
         self::assertCount(1, $this->orderRepository->select());
@@ -169,7 +173,7 @@ class OrderCleanupServiceTest extends BaseTestCase
         $this->store($this->solicitation(null, null));
         $this->store($this->solicitation(null, ''));
 
-        $this->service->cleanup();
+        $this->runCleanup();
 
         self::assertCount(2, $this->orderRepository->select());
     }
@@ -181,7 +185,7 @@ class OrderCleanupServiceTest extends BaseTestCase
     {
         $this->store($this->solicitation(null, 'not a date'));
 
-        $deleted = $this->service->cleanup();
+        $deleted = $this->runCleanup();
 
         self::assertSame(0, $deleted);
         self::assertCount(1, $this->orderRepository->select());
@@ -194,7 +198,7 @@ class OrderCleanupServiceTest extends BaseTestCase
     {
         $this->store($this->solicitation('2020-01-01 00:00:00')->setOrderRef1('000000123'));
 
-        $this->service->cleanup();
+        $this->runCleanup();
 
         self::assertCount(1, $this->orderRepository->select());
     }
@@ -208,7 +212,7 @@ class OrderCleanupServiceTest extends BaseTestCase
             $this->store($this->solicitation('2026-10-01 00:00:00')->setState($state));
         }
 
-        $deleted = $this->service->cleanup();
+        $deleted = $this->runCleanup();
 
         self::assertSame(0, $deleted);
         self::assertCount(\count(OrderRequestStates::SETTLED_STATES), $this->orderRepository->select());
@@ -226,7 +230,7 @@ class OrderCleanupServiceTest extends BaseTestCase
             $this->store($this->solicitation('2026-10-30 02:00:00'));
         }
 
-        $deleted = $this->service->cleanup();
+        $deleted = $this->runCleanup();
 
         self::assertSame(550, $deleted);
         self::assertCount(50, $this->orderRepository->select());
@@ -242,7 +246,7 @@ class OrderCleanupServiceTest extends BaseTestCase
         }
         $this->store($this->solicitation('2026-10-20 03:00:00'));
 
-        $deleted = $this->service->cleanup();
+        $deleted = $this->runCleanup();
 
         self::assertSame(1, $deleted);
         self::assertCount(500, $this->orderRepository->select());
@@ -251,18 +255,27 @@ class OrderCleanupServiceTest extends BaseTestCase
     /**
      * @throws Exception
      */
-    public function testCallsBackAfterEachBatch(): void
+    public function testYieldsAfterEachBatch(): void
     {
         for ($i = 0; $i < 501; $i++) {
             $this->store($this->solicitation('2026-10-20 03:00:00'));
         }
-        $batches = 0;
 
-        $this->service->cleanup(function () use (&$batches) {
-            $batches++;
-        });
+        $cleanup = $this->service->cleanup();
+        $yielded = iterator_to_array($cleanup, false);
 
-        self::assertSame(2, $batches);
+        self::assertSame([null, null], $yielded);
+        self::assertSame(501, $cleanup->getReturn());
+        self::assertEmpty($this->orderRepository->select());
+    }
+
+    private function runCleanup(): ?int
+    {
+        $cleanup = $this->service->cleanup();
+        foreach ($cleanup as $ignored) {
+        }
+
+        return $cleanup->getReturn();
     }
 
     /**

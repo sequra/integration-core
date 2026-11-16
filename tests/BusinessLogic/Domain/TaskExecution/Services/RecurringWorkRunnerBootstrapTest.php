@@ -4,6 +4,7 @@ namespace SeQura\Core\Tests\BusinessLogic\Domain\TaskExecution\Services;
 
 use DateTime;
 use SeQura\Core\BusinessLogic\BootstrapComponent;
+use SeQura\Core\BusinessLogic\Domain\Integration\StoreIntegration\StoreIntegrationServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\RecurringWorkLockInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
@@ -19,6 +20,7 @@ use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\TickEvent;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockIntegrationStoreIntegrationService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\TestRepositoryRegistry;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\TestQueueService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\TestTaskRunnerWakeupService;
@@ -45,6 +47,12 @@ class RecurringWorkRunnerBootstrapTest extends BaseTestCase
         TestServiceRegister::registerService(TimeProvider::class, static function () use ($timeProvider) {
             return $timeProvider;
         });
+        TestServiceRegister::registerService(
+            StoreIntegrationServiceInterface::class,
+            static function () {
+                return new MockIntegrationStoreIntegrationService();
+            }
+        );
         TestServiceRegister::registerService(QueueService::class, static function () {
             return new TestQueueService();
         });

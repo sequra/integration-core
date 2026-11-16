@@ -128,7 +128,12 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\RepositoryContracts\OrderCleanupScheduleRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupScheduler;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\TaskExecutorInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\TaskMetadataProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\DefaultTaskMetadataProvider;
+use SeQura\Core\BusinessLogic\TaskExecution\Standalone\TaskRunnerExecutor;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
@@ -393,6 +398,21 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
                     TestServiceRegister::getService(OrderCleanupScheduleRepositoryInterface::class),
                     TestServiceRegister::getService(ClockInterface::class)
+                );
+            },
+            TaskMetadataProviderInterface::class => static function () {
+                return new DefaultTaskMetadataProvider();
+            },
+            TaskExecutorInterface::class => static function () {
+                return new TaskRunnerExecutor(
+                    TestServiceRegister::getService(QueueService::CLASS_NAME),
+                    TestServiceRegister::getService(TaskMetadataProviderInterface::class)
+                );
+            },
+            OrderCleanupScheduler::class => static function () {
+                return new OrderCleanupScheduler(
+                    TestServiceRegister::getService(OrderCleanupService::class),
+                    TestServiceRegister::getService(TaskExecutorInterface::class)
                 );
             },
             CountryConfigurationService::class => static function () {

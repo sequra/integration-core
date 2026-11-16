@@ -13,7 +13,6 @@ use SeQura\Core\BusinessLogic\Domain\SendReport\Models\SendReport;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
 use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\RecurringWorkRunner;
-use SeQura\Core\BusinessLogic\OrderCleanup\Tasks\OrderCleanupTask;
 use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
 use SeQura\Core\Infrastructure\Logger\LogData;
 use SeQura\Core\Infrastructure\Logger\Logger;
@@ -127,7 +126,7 @@ class RecurringWorkRunnerTest extends BaseTestCase
 
         $items = $this->queueRepository->select();
         self::assertCount(1, $items);
-        self::assertSame(OrderCleanupTask::getClassName(), $items[0]->getTaskType());
+        self::assertSame('OrderCleanupTask', $items[0]->getTaskType());
         self::assertSame('order-cleanup', $items[0]->getQueueName());
         self::assertSame('', $items[0]->getContext());
         self::assertSame(Priority::LOW, $items[0]->getPriority());
