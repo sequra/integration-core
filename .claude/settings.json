@@ -20,7 +20,8 @@
       "Bash(git check-attr:*)",
       "Skill(sq-git:commit)",
       "Skill(sq-git:open-pr)",
-      "Skill(sq-git:sync-branch)"
+      "Skill(sq-git:sync-branch)",
+      "Bash(./setup.sh:*)"
     ],
     "deny": [
       "Read(.env)",
@@ -29,7 +30,6 @@
       "Read(**/*.key)"
     ],
     "ask": [
-      "Bash(./setup.sh:*)",
       "Bash(./teardown.sh:*)",
       "Bash(git push:*)"
     ]
