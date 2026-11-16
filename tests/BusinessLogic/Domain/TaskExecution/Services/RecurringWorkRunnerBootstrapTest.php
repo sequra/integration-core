@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\StoreIntegration\StoreIntegrati
 use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\RecurringWorkLockInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportScheduler;
 use SeQura\Core\BusinessLogic\Domain\SendReport\Models\SendReport;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\RecurringWorkRunner;
@@ -125,7 +126,10 @@ class RecurringWorkRunnerBootstrapTest extends BaseTestCase
             }
         );
         TestServiceRegister::registerService(RecurringWorkRunner::class, static function () use ($acquirable) {
-            return new RecurringWorkRunner(new RecordingLock($acquirable));
+            return new RecurringWorkRunner(
+                new RecordingLock($acquirable),
+                ServiceRegister::getService(OrderReportScheduler::class)
+            );
         });
     }
 }

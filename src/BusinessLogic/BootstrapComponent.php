@@ -143,6 +143,7 @@ use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\RecurringWorkRunner;
 use SeQura\Core\BusinessLogic\TaskExecution\FileRecurringWorkLock;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportScheduler;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
@@ -501,7 +502,20 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(
             RecurringWorkRunner::class,
             static function () {
-                return new RecurringWorkRunner(ServiceRegister::getService(RecurringWorkLockInterface::class));
+                return new RecurringWorkRunner(
+                    ServiceRegister::getService(RecurringWorkLockInterface::class),
+                    ServiceRegister::getService(OrderReportScheduler::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            OrderReportScheduler::class,
+            static function () {
+                return new OrderReportScheduler(
+                    ServiceRegister::getService(StatisticalDataService::class),
+                    ServiceRegister::getService(TaskExecutorInterface::class)
+                );
             }
         );
 

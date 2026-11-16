@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\TaskExecution\Models\TaskExecutionConfig;
 use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\TaskMetadataProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Tasks\OrderCleanupTask;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\OrderReporter;
 
 class DefaultTaskMetadataProvider implements TaskMetadataProviderInterface
 {
@@ -19,10 +20,14 @@ class DefaultTaskMetadataProvider implements TaskMetadataProviderInterface
             return new TaskExecutionConfig('order-cleanup', 0, '');
         }
 
+        $storeId = StoreContext::getInstance()->getStoreId();
+
         return new TaskExecutionConfig(
-            (new ReflectionClass($task))->getShortName(),
+            $task instanceof OrderReporter
+                ? 'order-reports-' . $storeId
+                : (new ReflectionClass($task))->getShortName(),
             self::DEFAULT_PRIORITY,
-            StoreContext::getInstance()->getStoreId()
+            $storeId
         );
     }
 }

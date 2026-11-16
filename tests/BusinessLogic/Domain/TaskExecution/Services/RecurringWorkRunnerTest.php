@@ -6,9 +6,12 @@ use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\RecurringWorkLockInterface;
+use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\DefaultTaskMetadataProvider;
+use SeQura\Core\BusinessLogic\TaskExecution\Standalone\TaskRunnerExecutor;
+use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
-use SeQura\Core\BusinessLogic\Domain\OrderReport\OrderReporter;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportScheduler;
 use SeQura\Core\BusinessLogic\Domain\SendReport\Models\SendReport;
 use SeQura\Core\BusinessLogic\Domain\SendReport\RepositoryContracts\SendReportRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
@@ -97,7 +100,7 @@ class RecurringWorkRunnerTest extends BaseTestCase
         self::assertCount(2, $items);
         $queues = [];
         foreach ($items as $item) {
-            self::assertSame(OrderReporter::getClassName(), $item->getTaskType());
+            self::assertSame('OrderReporter', $item->getTaskType());
             $queues[$item->getQueueName()] = $item->getContext();
         }
         self::assertSame(['order-reports-store-7' => 'store-7', 'order-reports-store-9' => 'store-9'], $queues);
@@ -241,7 +244,15 @@ class RecurringWorkRunnerTest extends BaseTestCase
 
     private function runner(RecurringWorkLockInterface $lock): RecurringWorkRunner
     {
-        return new RecurringWorkRunner($lock);
+        $executor = new TaskRunnerExecutor(
+            TestServiceRegister::getService(QueueService::class),
+            new DefaultTaskMetadataProvider()
+        );
+
+        return new RecurringWorkRunner(
+            $lock,
+            new OrderReportScheduler(TestServiceRegister::getService(StatisticalDataService::class), $executor)
+        );
     }
 
     private function lock(bool $acquirable): RecordingLock

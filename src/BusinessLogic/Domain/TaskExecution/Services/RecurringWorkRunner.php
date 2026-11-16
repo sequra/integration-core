@@ -3,7 +3,7 @@
 namespace SeQura\Core\BusinessLogic\Domain\TaskExecution\Services;
 
 use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\RecurringWorkLockInterface;
-use SeQura\Core\BusinessLogic\Domain\OrderReport\Listeners\TickEventListener;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportScheduler;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupScheduler;
 use SeQura\Core\Infrastructure\Logger\LogContextData;
 use SeQura\Core\Infrastructure\Logger\Logger;
@@ -21,11 +21,18 @@ class RecurringWorkRunner
     private $lock;
 
     /**
-     * @param RecurringWorkLockInterface $lock
+     * @var OrderReportScheduler
      */
-    public function __construct(RecurringWorkLockInterface $lock)
+    private $orderReportScheduler;
+
+    /**
+     * @param RecurringWorkLockInterface $lock
+     * @param OrderReportScheduler $orderReportScheduler
+     */
+    public function __construct(RecurringWorkLockInterface $lock, OrderReportScheduler $orderReportScheduler)
     {
         $this->lock = $lock;
+        $this->orderReportScheduler = $orderReportScheduler;
     }
 
     /**
@@ -51,7 +58,7 @@ class RecurringWorkRunner
     private function runOrderReports(): void
     {
         try {
-            TickEventListener::handle();
+            $this->orderReportScheduler->scheduleDue();
         } catch (Throwable $exception) {
             Logger::logError(
                 'Order reports could not be enqueued.',
