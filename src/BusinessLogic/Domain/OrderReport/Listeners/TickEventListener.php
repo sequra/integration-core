@@ -6,8 +6,11 @@ use Exception;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\OrderReporter;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\Services\StatisticalDataService;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
+use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\QueueService;
+use Throwable;
 
 /**
  * Class TickEventListener
@@ -26,10 +29,18 @@ class TickEventListener
         $contexts = static::getStatisticalDataService()->getContextsForSendingReport();
 
         foreach ($contexts as $context) {
-            StoreContext::doWithStore($context, static function () use ($context) {
-                static::getStatisticalDataService()->setSendReportTime();
-                static::getQueueService()->enqueue('order-reports-' . $context, new OrderReporter(), $context);
-            });
+            try {
+                StoreContext::doWithStore($context, static function () use ($context) {
+                    static::getStatisticalDataService()->setSendReportTime();
+                    static::getQueueService()->enqueue('order-reports-' . $context, new OrderReporter(), $context);
+                });
+            } catch (Throwable $exception) {
+                Logger::logError(
+                    'Order report for store ' . $context . ' could not be enqueued.',
+                    'Core',
+                    [new LogContextData('storeId', $context), new LogContextData('error', $exception->getMessage())]
+                );
+            }
         }
     }
 

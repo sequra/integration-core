@@ -136,8 +136,10 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\RepositoryContracts\OrderCleanupScheduleRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\RecurringWorkLockInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
-use SeQura\Core\BusinessLogic\Domain\OrderReport\Listeners\TickEventListener;
+use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\RecurringWorkRunner;
+use SeQura\Core\BusinessLogic\TaskExecution\FileRecurringWorkLock;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
@@ -161,7 +163,6 @@ use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
 use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\DefaultTaskMetadataProvider;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\ConfigurationWebhookValidationService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\OrderStatusProvider;
-use SeQura\Core\BusinessLogic\OrderCleanup\Listeners\OrderCleanupTickListener;
 use SeQura\Core\BusinessLogic\Providers\Clock\Clock;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
 use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
@@ -481,6 +482,20 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(SendReportRepositoryInterface::class),
                     ServiceRegister::getService(TimeProvider::class)
                 );
+            }
+        );
+
+        ServiceRegister::registerService(
+            RecurringWorkLockInterface::class,
+            static function () {
+                return new FileRecurringWorkLock();
+            }
+        );
+
+        ServiceRegister::registerService(
+            RecurringWorkRunner::class,
+            static function () {
+                return new RecurringWorkRunner(ServiceRegister::getService(RecurringWorkLockInterface::class));
             }
         );
 
@@ -1170,8 +1185,9 @@ class BootstrapComponent extends BaseBootstrapComponent
     {
         parent::initEvents();
 
-        EventBus::getInstance()->when(TickEvent::class, OrderCleanupTickListener::class . '::handle');
-        EventBus::getInstance()->when(TickEvent::class, TickEventListener::class . '::handle');
+        EventBus::getInstance()->when(TickEvent::class, static function () {
+            ServiceRegister::getService(RecurringWorkRunner::class)->runDue();
+        });
 
         /**
          * @var QueueItemStateTransitionEventBus $queueBus
