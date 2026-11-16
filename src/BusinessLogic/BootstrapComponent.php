@@ -110,6 +110,7 @@ use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\OrderIdentifiersSe
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutIntegrationInterface;
+use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\BusinessTaskRunner;
 use SeQura\Core\BusinessLogic\Domain\Integration\Log\LogServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
@@ -413,6 +414,10 @@ class BootstrapComponent extends BaseBootstrapComponent
 
         ServiceRegister::registerService(StoreIdProvider::class, static function () {
             return new StoreIdProvider();
+        });
+
+        ServiceRegister::registerService(BusinessTaskRunner::class, static function () {
+            return new BusinessTaskRunner();
         });
 
         ServiceRegister::registerService(TaskMetadataProviderInterface::class, static function () {

@@ -183,13 +183,14 @@ class RecurringWorkRunnerTest extends BaseTestCase
                     string $queueName,
                     Task $task,
                     string $context = '',
-                    int $priority = Priority::NORMAL
+                    int $priority = Priority::NORMAL,
+                    ?int $earliestStartTimestamp = null
                 ): \SeQura\Core\Infrastructure\TaskExecution\QueueItem {
                     if ($queueName === 'order-reports-store-7') {
                         throw new Exception('queue down');
                     }
 
-                    return parent::enqueue($queueName, $task, $context, $priority);
+                    return parent::enqueue($queueName, $task, $context, $priority, $earliestStartTimestamp);
                 }
             };
         });
