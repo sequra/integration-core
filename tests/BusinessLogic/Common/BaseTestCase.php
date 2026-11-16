@@ -135,6 +135,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\TaskMetadataProvi
 use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\DefaultTaskMetadataProvider;
 use SeQura\Core\BusinessLogic\TaskExecution\Standalone\TaskRunnerExecutor;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportScheduler;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
@@ -412,6 +413,12 @@ class BaseTestCase extends TestCase
             OrderCleanupScheduler::class => static function () {
                 return new OrderCleanupScheduler(
                     TestServiceRegister::getService(OrderCleanupService::class),
+                    TestServiceRegister::getService(TaskExecutorInterface::class)
+                );
+            },
+            OrderReportScheduler::class => static function () {
+                return new OrderReportScheduler(
+                    TestServiceRegister::getService(StatisticalDataService::class),
                     TestServiceRegister::getService(TaskExecutorInterface::class)
                 );
             },

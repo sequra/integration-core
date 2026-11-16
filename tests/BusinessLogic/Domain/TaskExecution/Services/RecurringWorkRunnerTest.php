@@ -6,9 +6,6 @@ use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\RecurringWorkLockInterface;
-use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\DefaultTaskMetadataProvider;
-use SeQura\Core\BusinessLogic\TaskExecution\Standalone\TaskRunnerExecutor;
-use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportScheduler;
@@ -244,15 +241,7 @@ class RecurringWorkRunnerTest extends BaseTestCase
 
     private function runner(RecurringWorkLockInterface $lock): RecurringWorkRunner
     {
-        $executor = new TaskRunnerExecutor(
-            TestServiceRegister::getService(QueueService::class),
-            new DefaultTaskMetadataProvider()
-        );
-
-        return new RecurringWorkRunner(
-            $lock,
-            new OrderReportScheduler(TestServiceRegister::getService(StatisticalDataService::class), $executor)
-        );
+        return new RecurringWorkRunner($lock, TestServiceRegister::getService(OrderReportScheduler::class));
     }
 
     private function lock(bool $acquirable): RecordingLock

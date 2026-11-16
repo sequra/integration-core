@@ -12,7 +12,6 @@ use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupScheduler;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Tasks\OrderCleanupTask;
-use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportScheduler;
 use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\RecurringWorkRunner;
 use SeQura\Core\BusinessLogic\TaskExecution\Standalone\TaskAdapter;
 use SeQura\Core\BusinessLogic\TaskExecution\Standalone\TaskRunnerExecutor;
@@ -178,12 +177,6 @@ class OrderCleanupSchedulerBootstrapTest extends BaseTestCase
     {
         TestServiceRegister::registerService(RecurringWorkLockInterface::class, static function () {
             return new RecordingLock(true);
-        });
-        TestServiceRegister::registerService(RecurringWorkRunner::class, static function () {
-            return new RecurringWorkRunner(
-                new RecordingLock(true),
-                ServiceRegister::getService(OrderReportScheduler::class)
-            );
         });
     }
 }

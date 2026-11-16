@@ -22,12 +22,10 @@ class DefaultTaskMetadataProvider implements TaskMetadataProviderInterface
 
         $storeId = StoreContext::getInstance()->getStoreId();
 
-        return new TaskExecutionConfig(
-            $task instanceof OrderReporter
-                ? 'order-reports-' . $storeId
-                : (new ReflectionClass($task))->getShortName(),
-            self::DEFAULT_PRIORITY,
-            $storeId
-        );
+        if ($task instanceof OrderReporter) {
+            return new TaskExecutionConfig('order-reports-' . $storeId, self::DEFAULT_PRIORITY, $storeId);
+        }
+
+        return new TaskExecutionConfig((new ReflectionClass($task))->getShortName(), self::DEFAULT_PRIORITY, $storeId);
     }
 }

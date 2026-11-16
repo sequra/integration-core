@@ -16,6 +16,7 @@ use SeQura\Core\Infrastructure\Logger\LogData;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TaskExecution\RecordingTaskExecutor;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestShopLogger;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Utility\TestTimeProvider;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
@@ -64,23 +65,23 @@ class OrderReportSchedulerTest extends BaseTestCase
 
     public function testHandsOneReportJobToTheExecutorForEveryDueStore(): void
     {
-        $executor = new RecordingExecutor();
+        $executor = new RecordingTaskExecutor();
 
         $this->scheduler($executor)->scheduleDue();
 
         self::assertSame(['store-7', 'store-9'], $executor->stores);
-        foreach ($executor->tasks as $task) {
+        foreach ($executor->enqueued as $task) {
             self::assertInstanceOf(OrderReporter::class, $task);
             self::assertSame(['page' => 1], $task->toArray());
         }
-        self::assertSame(0, $executor->delayed);
+        self::assertSame([], $executor->delayed);
     }
 
     public function testMovesTheNextReportOfDueStoresADayAhead(): void
     {
         $expected = (clone $this->timeProvider->getCurrentLocalTime())->modify('+1 day')->getTimestamp();
 
-        $this->scheduler(new RecordingExecutor())->scheduleDue();
+        $this->scheduler(new RecordingTaskExecutor())->scheduleDue();
 
         self::assertSame($expected, $this->getSendReportTime('store-7'));
         self::assertSame($expected, $this->getSendReportTime('store-9'));
@@ -89,7 +90,7 @@ class OrderReportSchedulerTest extends BaseTestCase
 
     public function testFailureForOneStoreIsLoggedAndDoesNotStopTheOthers(): void
     {
-        $executor = new RecordingExecutor(new RuntimeException('queue down'), 'store-7');
+        $executor = new RecordingTaskExecutor(new RuntimeException('queue down'), 'store-7');
         $expected = (clone $this->timeProvider->getCurrentLocalTime())->modify('+1 day')->getTimestamp();
 
         $this->scheduler($executor)->scheduleDue();
@@ -105,7 +106,7 @@ class OrderReportSchedulerTest extends BaseTestCase
 
     public function testErrorForOneStoreDoesNotStopTheOthers(): void
     {
-        $executor = new RecordingExecutor(new \TypeError('bad'), 'store-7');
+        $executor = new RecordingTaskExecutor(new \TypeError('bad'), 'store-7');
 
         $this->scheduler($executor)->scheduleDue();
 

@@ -24,9 +24,6 @@ use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
  */
 class MockShopOrderService implements ShopOrderService
 {
-    public $reportOrderIds = [];
-    public $statisticsOrderIds = [];
-
     /**
      * @inheritDoc
      */
@@ -43,7 +40,7 @@ class MockShopOrderService implements ShopOrderService
      */
     public function getReportOrderIds(int $page, int $limit = 5000): array
     {
-        return array_slice($this->reportOrderIds, $page * $limit, $limit);
+        return [];
     }
 
     /**
@@ -51,7 +48,7 @@ class MockShopOrderService implements ShopOrderService
      */
     public function getStatisticsOrderIds(int $page, int $limit = 5000): array
     {
-        return array_slice($this->statisticsOrderIds, $page * $limit, $limit);
+        return [];
     }
 
     /**
