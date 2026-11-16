@@ -3,6 +3,8 @@
 namespace SeQura\Core\Tests\BusinessLogic\Domain\Migration\Tasks;
 
 use Exception;
+use ReflectionMethod;
+use RuntimeException;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData as ConnectionDataEntity;
 use SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Repositories\ConnectionDataRepository;
 use SeQura\Core\BusinessLogic\DataAccess\Credentials\Repositories\CredentialsRepository;
@@ -22,8 +24,10 @@ use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
-use SeQura\Core\Infrastructure\TaskExecution\Exceptions\AbortTaskExecutionException;
-use SeQura\Core\Tests\BusinessLogic\Common\BaseSerializationTestCase;
+use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
+use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
+use SeQura\Core\Infrastructure\TaskExecution\Task;
+use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockConnectionProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsProxy;
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\MockDeploymentsRepository;
@@ -39,7 +43,7 @@ use SeQura\Core\BusinessLogic\DataAccess\Credentials\Entities\Credentials as Cre
  *
  * @package SeQura\Core\Tests\BusinessLogic\Domain\Migration\Tasks
  */
-class DeploymentMigrateTaskTest extends BaseSerializationTestCase
+class DeploymentMigrateTaskTest extends BaseTestCase
 {
     /**
      * @var MockDomainStoreService $storeService
@@ -138,7 +142,6 @@ class DeploymentMigrateTaskTest extends BaseSerializationTestCase
     /**
      * @return void
      *
-     * @throws AbortTaskExecutionException
      * @throws InvalidEnvironmentException
      * @throws Exception
      */
@@ -183,7 +186,6 @@ class DeploymentMigrateTaskTest extends BaseSerializationTestCase
     /**
      * @return void
      *
-     * @throws AbortTaskExecutionException
      * @throws InvalidEnvironmentException
      * @throws Exception
      */
@@ -222,7 +224,6 @@ class DeploymentMigrateTaskTest extends BaseSerializationTestCase
     /**
      * @return void
      *
-     * @throws AbortTaskExecutionException
      * @throws InvalidEnvironmentException
      * @throws Exception
      */
@@ -278,7 +279,6 @@ class DeploymentMigrateTaskTest extends BaseSerializationTestCase
     /**
      * @return void
      *
-     * @throws AbortTaskExecutionException
      * @throws InvalidEnvironmentException
      * @throws Exception
      */
@@ -336,6 +336,139 @@ class DeploymentMigrateTaskTest extends BaseSerializationTestCase
         self::assertNotEmpty($credentials);
         self::assertCount(4, $credentials);
         self::assertEquals($this->getSequraCredentials(), $credentials);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws Exception
+     */
+    public function testDeploymentMigrateTaskMigratesEachStoreWithItsOwnMerchant(): void
+    {
+        $this->storeService->setMockConnectedStores(['1', '2']);
+        $this->deploymentsService->setMockDeployments([$this->getDeployments()[0]]);
+        $this->connectionProxy->setMockCredentials($this->getSequraCredentials());
+        $this->saveConnectionEntity('1', 'sandbox', 'm1');
+        $this->saveConnectionEntity('2', 'live', 'm2');
+
+        (new DeploymentMigrateTask())->execute();
+
+        $store1 = StoreContext::doWithStore('1', [$this->connectionRepository, 'getAllConnectionSettings']);
+        $store2 = StoreContext::doWithStore('2', [$this->connectionRepository, 'getAllConnectionSettings']);
+        self::assertCount(1, $store1);
+        self::assertSame('m1', $store1[0]->getMerchantId());
+        self::assertSame('sandbox', $store1[0]->getEnvironment());
+        self::assertCount(1, $store2);
+        self::assertSame('m2', $store2[0]->getMerchantId());
+        self::assertSame('live', $store2[0]->getEnvironment());
+    }
+
+    /**
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     * @throws Exception
+     */
+    public function testDeploymentMigrateTaskPropagatesFailureAfterDeletingEntity(): void
+    {
+        $exception = new RuntimeException('credentials failure');
+        $this->storeService->setMockConnectedStores(['1']);
+        $this->deploymentsService->setMockDeployments([$this->getDeployments()[0]]);
+        $this->saveConnectionEntity('1', 'sandbox', 'm1');
+        $proxy = $this->createMock(ConnectionProxyInterface::class);
+        $proxy->method('getCredentials')->willThrowException($exception);
+        TestServiceRegister::registerService(ConnectionProxyInterface::class, function () use ($proxy) {
+            return $proxy;
+        });
+
+        try {
+            (new DeploymentMigrateTask())->execute();
+            self::fail('Expected the migration to throw.');
+        } catch (RuntimeException $e) {
+            self::assertSame($exception, $e);
+        }
+
+        $filter = new QueryFilter();
+        $filter->where('storeId', Operators::EQUALS, '1');
+        self::assertNull($this->connectionDataRepository->selectOne($filter));
+    }
+
+    /**
+     * @return void
+     */
+    public function testDeploymentMigrateTaskIsNotATask(): void
+    {
+        $task = new DeploymentMigrateTask();
+
+        self::assertNotInstanceOf(Task::class, $task);
+        $method = new ReflectionMethod($task, 'execute');
+        self::assertTrue($method->isPublic());
+        self::assertFalse($method->isFinal());
+        self::assertSame('void', (string) $method->getReturnType());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSubclassOverridingExecuteKeepsServiceGetters(): void
+    {
+        $task = new class extends DeploymentMigrateTask {
+            public $executed = false;
+
+            public function execute(): void
+            {
+                $this->executed = true;
+            }
+
+            public function getters(): array
+            {
+                return [
+                    $this->getStoreService(),
+                    $this->getDeploymentsService(),
+                    $this->getConnectionProxy(),
+                    $this->getCredentialsRepository(),
+                    $this->getConnectionDataRepository(),
+                    $this->getConnectionRepository(),
+                ];
+            }
+        };
+        TestServiceRegister::registerService(ConnectionDataRepositoryInterface::class, function () {
+            return $this->connectionRepository;
+        });
+
+        $task->execute();
+        $getters = $task->getters();
+
+        self::assertTrue($task->executed);
+        self::assertSame(TestServiceRegister::getService(StoreService::class), $getters[0]);
+        self::assertSame(TestServiceRegister::getService(DeploymentsService::class), $getters[1]);
+        self::assertSame(TestServiceRegister::getService(ConnectionProxyInterface::class), $getters[2]);
+        self::assertSame(TestServiceRegister::getService(CredentialsRepositoryInterface::class), $getters[3]);
+        self::assertSame(TestServiceRegister::getService(ConnectionDataRepositoryInterface::class), $getters[4]);
+        self::assertSame(
+            TestRepositoryRegistry::getRepository(ConnectionDataEntity::getClassName()),
+            $getters[5]
+        );
+    }
+
+    /**
+     * @param string $storeId
+     * @param string $environment
+     * @param string $merchantId
+     *
+     * @return void
+     *
+     * @throws InvalidEnvironmentException
+     */
+    private function saveConnectionEntity(string $storeId, string $environment, string $merchantId): void
+    {
+        $entity = new ConnectionDataEntity();
+        $entity->setConnectionData(
+            new ConnectionData($environment, $merchantId, '', new AuthorizationCredentials('user', 'pass'))
+        );
+        $entity->setStoreId($storeId);
+        $this->connectionDataRepository->save($entity);
     }
 
     /**
