@@ -117,14 +117,23 @@ class QueueService
      *     integration) context based on account id should be provided. Failing to do this will result in global task
      *     context and unpredictable task execution.
      * @param int $priority
+     * @param int|null $earliestStartTimestamp Timestamp before which the item must not be started.
      *
      * @return QueueItem Created queue item.
      *
      * @throws QueueStorageUnavailableException When queue storage fails to save the item.
      */
-    public function enqueue(string $queueName, Task $task, string $context = '', int $priority = Priority::NORMAL): QueueItem
-    {
+    public function enqueue(
+        string $queueName,
+        Task $task,
+        string $context = '',
+        int $priority = Priority::NORMAL,
+        ?int $earliestStartTimestamp = null
+    ): QueueItem {
         $queueItem = $this->instantiate($task, $queueName, $context, $priority);
+        if ($earliestStartTimestamp !== null) {
+            $queueItem->setEarliestStartTimestamp($earliestStartTimestamp);
+        }
         $queueItem->setStatus(QueueItem::QUEUED);
         $queueItem->setQueueTimestamp($this->getTimeProvider()->getCurrentLocalTime()->getTimestamp());
         $this->save($queueItem, array(), true, QueueItem::CREATED);

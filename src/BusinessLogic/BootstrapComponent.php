@@ -123,6 +123,8 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreIdProvider;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo\StoreInfoServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreIntegration\StoreIntegrationServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\TaskExecutorInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\TaskMetadataProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
@@ -156,6 +158,7 @@ use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\BusinessLogic\Domain\UIState\Services\UIStateService;
 use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
+use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\DefaultTaskMetadataProvider;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\ConfigurationWebhookValidationService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\OrderStatusProvider;
 use SeQura\Core\BusinessLogic\OrderCleanup\Listeners\OrderCleanupTickListener;
@@ -172,6 +175,7 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\StoreIntegration\StoreIntegrationProxy;
+use SeQura\Core\BusinessLogic\TaskExecution\Standalone\TaskRunnerExecutor;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\AbortedListener;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\CreateListener;
 use SeQura\Core\BusinessLogic\TransactionLog\Listeners\FailedListener;
@@ -197,6 +201,7 @@ use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFinishedEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemRequeuedEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStartedEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStateTransitionEventBus;
+use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\TickEvent;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
@@ -407,6 +412,17 @@ class BootstrapComponent extends BaseBootstrapComponent
 
         ServiceRegister::registerService(StoreIdProvider::class, static function () {
             return new StoreIdProvider();
+        });
+
+        ServiceRegister::registerService(TaskMetadataProviderInterface::class, static function () {
+            return new DefaultTaskMetadataProvider();
+        });
+
+        ServiceRegister::registerService(TaskExecutorInterface::class, static function () {
+            return new TaskRunnerExecutor(
+                ServiceRegister::getService(QueueService::CLASS_NAME),
+                ServiceRegister::getService(TaskMetadataProviderInterface::class)
+            );
         });
 
         ServiceRegister::registerService(ClockInterface::class, static function () {

@@ -17,6 +17,7 @@ use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\TaskExecution\AsyncProcessStarterService;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStateTransitionEventBus;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\AsyncProcessService;
+use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Priority;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\TaskRunnerStatusStorage;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\TaskRunnerWakeup;
 use SeQura\Core\Infrastructure\TaskExecution\Process;
@@ -499,6 +500,79 @@ class TaskRunnerTest extends TestCase
         $this->assertTrue(
             $this->logger->isMessageContainedInLog('Task runner started but it is not active anymore.'),
             'Task runner must log messages when it detects expiration.'
+        );
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testDelayedItemIsNotStartedBeforeItsEarliestStart()
+    {
+        $this->enqueueDelayedItemAt(new DateTime('2020-01-01 10:00:00'), 600);
+        $this->timeProvider->setCurrentLocalTime(new DateTime('2020-01-01 10:09:59'));
+
+        $this->taskRunner->run();
+
+        $this->assertCount(0, RepositoryRegistry::getRepository(Process::CLASS_NAME)->select());
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testDelayedItemIsStartedOnceItsEarliestStartIsReached()
+    {
+        $item = $this->enqueueDelayedItemAt(new DateTime('2020-01-01 10:00:00'), 600);
+        $this->timeProvider->setCurrentLocalTime(new DateTime('2020-01-01 10:10:00'));
+
+        $this->taskRunner->run();
+
+        $startCallHistory = RepositoryRegistry::getRepository(Process::CLASS_NAME)->select();
+        $this->assertCount(1, $startCallHistory);
+        $this->assertTrue($this->isQueueItemInStartCallHistory($item, $startCallHistory));
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testItemWithoutEarliestStartIsStarted()
+    {
+        $this->timeProvider->setCurrentLocalTime(new DateTime('2020-01-01 10:00:00'));
+        $item = $this->queue->enqueue('queue-a', new FooTask());
+
+        $this->taskRunner->run();
+
+        $startCallHistory = RepositoryRegistry::getRepository(Process::CLASS_NAME)->select();
+        $this->assertCount(1, $startCallHistory);
+        $this->assertTrue($this->isQueueItemInStartCallHistory($item, $startCallHistory));
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testDelayedItemHoldsBackTheItemsQueuedAfterItInTheSameQueue()
+    {
+        $this->enqueueDelayedItemAt(new DateTime('2020-01-01 10:00:00'), 600);
+        $this->queue->enqueue('queue-a', new FooTask());
+        $this->timeProvider->setCurrentLocalTime(new DateTime('2020-01-01 10:09:59'));
+
+        $this->taskRunner->run();
+
+        $this->assertCount(0, RepositoryRegistry::getRepository(Process::CLASS_NAME)->select());
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function enqueueDelayedItemAt(DateTime $now, int $delaySeconds): QueueItem
+    {
+        $this->timeProvider->setCurrentLocalTime($now);
+
+        return $this->queue->enqueue(
+            'queue-a',
+            new FooTask(),
+            '',
+            Priority::NORMAL,
+            $now->getTimestamp() + $delaySeconds
         );
     }
 
