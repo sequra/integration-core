@@ -1,0 +1,10 @@
+{
+  "workflow": ".claude/workflows/implement.mjs",
+  "plugins": ["sq-git", "sq-php", "sq-review"],
+  "worktree": {
+    "create": "git worktree add {repoParent}/{repoName}-workspaces/{name} {branch} && cd {repoParent}/{repoName}-workspaces/{name} && ./setup.sh && ./bin/composer install",
+    "teardown": "(cd {repoParent}/{repoName}-workspaces/{name} && docker compose down --volumes --remove-orphans); git worktree remove --force {repoParent}/{repoName}-workspaces/{name}",
+    "dir": "{repoParent}/{repoName}-workspaces/{name}"
+  },
+  "prePrGate": "bash .claude/workflows/pre-pr-gate.sh --head --stamp-only"
+}
