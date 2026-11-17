@@ -18,6 +18,10 @@ class TransactionLog extends Entity
      */
     public const CLASS_NAME = __CLASS__;
 
+    public const QUEUED = 'queued';
+    public const IN_PROGRESS = 'in_progress';
+    public const FAILED = 'failed';
+
     /**
      * @var string
      */

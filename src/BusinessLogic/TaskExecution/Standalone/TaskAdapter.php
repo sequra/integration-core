@@ -7,9 +7,11 @@ use InvalidArgumentException;
 use ReflectionClass;
 use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\BusinessTaskInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogRecorder;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
+use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Task;
 
 /**
@@ -74,14 +76,16 @@ class TaskAdapter extends Task
     public function execute(): void
     {
         StoreContext::doWithStore($this->context, function () {
-            $signals = $this->job->execute();
-            if ($signals === null) {
-                return;
-            }
+            $this->getRecorder()->around($this->job, function () {
+                $signals = $this->job->execute();
+                if ($signals === null) {
+                    return;
+                }
 
-            foreach ($signals as $signal) {
-                $this->handleSignal($signal);
-            }
+                foreach ($signals as $signal) {
+                    $this->handleSignal($signal);
+                }
+            });
         });
     }
 
@@ -139,6 +143,11 @@ class TaskAdapter extends Task
         $adapter = self::build($data);
         $this->job = $adapter->job;
         $this->context = $adapter->context;
+    }
+
+    private function getRecorder(): TransactionLogRecorder
+    {
+        return ServiceRegister::getService(TransactionLogRecorder::class);
     }
 
     /**

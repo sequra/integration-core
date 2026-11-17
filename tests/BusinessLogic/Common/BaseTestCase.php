@@ -170,7 +170,10 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\StoreIntegration\StoreIntegrationProxy;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
+use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogRecorder;
 use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogService;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\TaskExecutorInterface;
+use SeQura\Core\Tests\BusinessLogic\Domain\TaskExecution\Doubles\RecordingTaskExecutor;
 use SeQura\Core\BusinessLogic\Utility\EncryptorInterface;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
@@ -448,6 +451,16 @@ class BaseTestCase extends TestCase
                     TestServiceRegister::getService(TransactionLogRepositoryInterface::class),
                     TestServiceRegister::getService(OrderService::class),
                     TestServiceRegister::getService(ShopOrderService::class)
+                );
+            },
+            TaskExecutorInterface::class => static function () {
+                return new RecordingTaskExecutor();
+            },
+            TransactionLogRecorder::class => static function () {
+                return new TransactionLogRecorder(
+                    TestServiceRegister::getService(TransactionLogService::class),
+                    TestServiceRegister::getService(TaskExecutorInterface::class),
+                    TestServiceRegister::getService(TimeProvider::class)
                 );
             },
             SellingCountriesService::class => static function () {

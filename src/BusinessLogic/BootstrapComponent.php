@@ -180,12 +180,8 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\StoreIntegration\StoreIntegrationProxy;
 use SeQura\Core\BusinessLogic\TaskExecution\Standalone\TaskRunnerExecutor;
-use SeQura\Core\BusinessLogic\TransactionLog\Listeners\AbortedListener;
-use SeQura\Core\BusinessLogic\TransactionLog\Listeners\CreateListener;
-use SeQura\Core\BusinessLogic\TransactionLog\Listeners\FailedListener;
-use SeQura\Core\BusinessLogic\TransactionLog\Listeners\LoadListener;
-use SeQura\Core\BusinessLogic\TransactionLog\Listeners\UpdateListener;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
+use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogRecorder;
 use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogService;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
@@ -197,14 +193,6 @@ use SeQura\Core\Infrastructure\Configuration\ConfigurationManager;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\ServiceRegister;
-use SeQura\Core\Infrastructure\TaskExecution\Events\BaseQueueItemEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemAbortedEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemEnqueuedEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFailedEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFinishedEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemRequeuedEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStartedEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStateTransitionEventBus;
 use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\TickEvent;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
@@ -419,7 +407,7 @@ class BootstrapComponent extends BaseBootstrapComponent
         });
 
         ServiceRegister::registerService(BusinessTaskRunner::class, static function () {
-            return new BusinessTaskRunner();
+            return new BusinessTaskRunner(ServiceRegister::getService(TransactionLogRecorder::class));
         });
 
         ServiceRegister::registerService(TaskMetadataProviderInterface::class, static function () {
@@ -770,6 +758,17 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(TransactionLogRepositoryInterface::class),
                     ServiceRegister::getService(OrderService::class),
                     ServiceRegister::getService(ShopOrderService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            TransactionLogRecorder::class,
+            static function () {
+                return new TransactionLogRecorder(
+                    ServiceRegister::getService(TransactionLogService::class),
+                    ServiceRegister::getService(TaskExecutorInterface::class),
+                    ServiceRegister::getService(TimeProvider::class)
                 );
             }
         );
@@ -1218,60 +1217,6 @@ class BootstrapComponent extends BaseBootstrapComponent
         EventBus::getInstance()->when(TickEvent::class, static function () {
             ServiceRegister::getService(RecurringWorkRunner::class)->runDue();
         });
-
-        /**
-         * @var QueueItemStateTransitionEventBus $queueBus
-         */
-        $queueBus = ServiceRegister::getService(QueueItemStateTransitionEventBus::CLASS_NAME);
-
-        $queueBus->when(
-            QueueItemEnqueuedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new CreateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
-
-        $queueBus->when(
-            QueueItemRequeuedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new CreateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
-
-        $queueBus->when(
-            QueueItemStartedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new LoadListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
-
-        $queueBus->when(
-            QueueItemStartedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new UpdateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
-
-        $queueBus->when(
-            QueueItemFinishedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new UpdateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
-
-        $queueBus->when(
-            QueueItemFailedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new FailedListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
-
-        $queueBus->when(
-            QueueItemAbortedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new AbortedListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
     }
 
     /**

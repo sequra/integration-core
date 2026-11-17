@@ -3,6 +3,7 @@
 namespace SeQura\Core\Tests\BusinessLogic\TransactionLog\Tasks;
 
 use Exception;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\BusinessTaskInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidCartItemsException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidQuantityException;
@@ -14,7 +15,7 @@ use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\Http\HttpResponse;
 use SeQura\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
-use SeQura\Core\Tests\BusinessLogic\Common\BaseSerializationTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
 use SeQura\Core\Tests\BusinessLogic\TransactionLog\Mocks\MockOrderUpdateData;
 use SeQura\Core\Tests\BusinessLogic\WebhookAPI\MockComponents\MockShopOrderService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TestHttpClient;
@@ -25,7 +26,7 @@ use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
  *
  * @package SeQura\Core\Tests\BusinessLogic\TransactionLog\Tasks
  */
-class TransactionalOrderUpdateTaskTest extends BaseSerializationTestCase
+class TransactionalOrderUpdateTaskTest extends BaseTestCase
 {
     /**
      * @var SeQuraOrderRepositoryInterface
@@ -36,6 +37,11 @@ class TransactionalOrderUpdateTaskTest extends BaseSerializationTestCase
      * @var TestHttpClient
      */
     public $httpClient;
+
+    /**
+     * @var TransactionalOrderUpdateTask
+     */
+    private $task;
 
     /**
      * @return void
@@ -69,12 +75,10 @@ class TransactionalOrderUpdateTaskTest extends BaseSerializationTestCase
             'isSuccessful' => true,
         ]);
 
-        $this->serializable = new TransactionalOrderUpdateTask($orderUpdateData, $transactionData);
+        $this->task = new TransactionalOrderUpdateTask($orderUpdateData, $transactionData);
     }
 
     /**
-     * @doesNotPerformAssertions
-     *
      * @throws Exception
      */
     public function testSuccessfulTaskExecution(): void
@@ -93,6 +97,30 @@ class TransactionalOrderUpdateTaskTest extends BaseSerializationTestCase
             new HttpResponse(200, [], '')
         ]);
 
-        $this->serializable->execute();
+        $signals = iterator_to_array($this->task->execute(), false);
+
+        self::assertSame([100], $signals);
+        self::assertTrue($this->task->getTransactionData()->isSuccessful());
+    }
+
+    public function testToArrayKeys(): void
+    {
+        self::assertSame(['orderUpdateData', 'transactionData', 'transactionLogId'], array_keys($this->task->toArray()));
+        self::assertNull($this->task->toArray()['transactionLogId']);
+    }
+
+    public function testArrayRoundTripKeepsTheTransactionLogId(): void
+    {
+        $this->task->setTransactionLogId(42);
+
+        $copy = TransactionalOrderUpdateTask::fromArray($this->task->toArray());
+
+        self::assertSame($this->task->toArray(), $copy->toArray());
+        self::assertSame(42, $copy->getTransactionLogId());
+    }
+
+    public function testIsABusinessTask(): void
+    {
+        self::assertInstanceOf(BusinessTaskInterface::class, $this->task);
     }
 }

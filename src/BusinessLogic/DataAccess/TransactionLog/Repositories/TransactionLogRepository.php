@@ -69,6 +69,27 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
     }
 
     /**
+     * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function findWithoutOrder(string $eventCode, string $queueStatus): array
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
+            ->where('merchantReference', Operators::EQUALS, '');
+
+        return array_values(array_filter(
+            $this->repository->select($queryFilter),
+            static function ($transactionLog) use ($eventCode, $queueStatus) {
+                return $transactionLog instanceof TransactionLog
+                    && $transactionLog->getEventCode() === $eventCode
+                    && $transactionLog->getQueueStatus() === $queueStatus;
+            }
+        ));
+    }
+
+    /**
      * @param int $limit
      * @param int $offset
      * @param DateTime|null $disconnectTime
@@ -112,6 +133,26 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
         $queryFilter
             ->where('executionId', Operators::EQUALS, $executionId)
             ->orderBy('id', QueryFilter::ORDER_DESC);
+
+        /**
+         * @var TransactionLog|null $transactionLog
+         */
+        $transactionLog = $this->repository->selectOne($queryFilter);
+
+        return $transactionLog;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function getItemById(int $id): ?TransactionLog
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter
+            ->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
+            ->where('id', Operators::EQUALS, $id);
 
         /**
          * @var TransactionLog|null $transactionLog

@@ -49,6 +49,23 @@ interface TransactionLogRepositoryInterface
     public function getItemByExecutionId(int $executionId): ?TransactionLog;
 
     /**
+     * @param int $id
+     *
+     * @return ?TransactionLog
+     */
+    public function getItemById(int $id): ?TransactionLog;
+
+    /**
+     * @param string $eventCode
+     * @param string $queueStatus
+     *
+     * @return TransactionLog[]
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function findWithoutOrder(string $eventCode, string $queueStatus): array;
+
+    /**
      * @param int $limit
      * @param int $offset
      * @param DateTime|null $disconnectTime

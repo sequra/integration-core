@@ -48,6 +48,16 @@ class MockTransactionLogRepository implements TransactionLogRepositoryInterface
         return $this->transactionLog;
     }
 
+    public function getItemById(int $id): ?TransactionLog
+    {
+        return $this->transactionLog;
+    }
+
+    public function findWithoutOrder(string $eventCode, string $queueStatus): array
+    {
+        return [];
+    }
+
     public function find(int $limit, int $offset, ?DateTime $disconnectTime = null): array
     {
         return [];

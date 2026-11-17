@@ -8,6 +8,7 @@ use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\BusinessTaskInter
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\TaskExecution\Exceptions\InvalidTaskPayloadException;
 use SeQura\Core\BusinessLogic\Domain\TaskExecution\Models\TaskPayload;
+use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogRecorder;
 use SeQura\Core\Infrastructure\Logger\Logger;
 
 /**
@@ -15,6 +16,16 @@ use SeQura\Core\Infrastructure\Logger\Logger;
  */
 class BusinessTaskRunner
 {
+    /**
+     * @var TransactionLogRecorder
+     */
+    private $recorder;
+
+    public function __construct(TransactionLogRecorder $recorder)
+    {
+        $this->recorder = $recorder;
+    }
+
     /**
      * @param array<string, mixed> $payload
      *
@@ -27,7 +38,11 @@ class BusinessTaskRunner
         $taskPayload = TaskPayload::fromArray($payload);
 
         StoreContext::doWithStore($taskPayload->getContext(), function () use ($taskPayload): void {
-            $this->execute($taskPayload->createTask());
+            $task = $taskPayload->createTask();
+
+            $this->recorder->around($task, function () use ($task): void {
+                $this->execute($task);
+            });
         });
     }
 

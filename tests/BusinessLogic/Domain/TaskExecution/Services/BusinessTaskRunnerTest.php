@@ -6,20 +6,26 @@ use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\TaskExecution\Exceptions\InvalidTaskPayloadException;
 use SeQura\Core\BusinessLogic\Domain\TaskExecution\Models\TaskPayload;
 use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\BusinessTaskRunner;
+use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogRecorder;
 use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableException;
 use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
 use SeQura\Core\Infrastructure\Logger\Logger;
+use RuntimeException;
 use SeQura\Core\Tests\BusinessLogic\Common\BaseTestCase;
+use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TaskExecution\ScriptedBusinessTask;
 use SeQura\Core\Tests\BusinessLogic\Domain\TaskExecution\Runner\RunnerTask;
 use SeQura\Core\Tests\BusinessLogic\Domain\TaskExecution\Runner\UnbuildableTask;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestShopLogger;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
+use SeQura\Core\Tests\BusinessLogic\TransactionLog\Mocks\TransactionLogFixtures;
 
 /**
  * @package SeQura\Core\Tests\BusinessLogic\Domain\TaskExecution\Services
  */
 class BusinessTaskRunnerTest extends BaseTestCase
 {
+    use TransactionLogFixtures;
+
     /**
      * @var BusinessTaskRunner
      */
@@ -31,7 +37,7 @@ class BusinessTaskRunnerTest extends BaseTestCase
 
         RunnerTask::reset();
         UnbuildableTask::$executions = 0;
-        $this->runner = new BusinessTaskRunner();
+        $this->runner = new BusinessTaskRunner(TestServiceRegister::getService(TransactionLogRecorder::class));
     }
 
     public function testRunsTheRebuiltJobOnce(): void
@@ -187,6 +193,51 @@ class BusinessTaskRunnerTest extends BaseTestCase
         }
 
         self::assertSame(0, UnbuildableTask::$executions);
+    }
+
+    public function testFailingJobLeavesAFailedTransactionLogRowAndRethrows(): void
+    {
+        $error = new RuntimeException('boom');
+        ScriptedBusinessTask::$script = static function () use ($error) {
+            throw $error;
+        };
+
+        try {
+            $this->runner->run($this->scriptedPayload());
+            self::fail('Expected exception');
+        } catch (RuntimeException $e) {
+            self::assertSame($error, $e);
+        }
+
+        $rows = $this->transactionLogRows('store-7');
+        self::assertCount(1, $rows);
+        self::assertSame('ScriptedBusinessTask', $rows[0]->getEventCode());
+        self::assertSame('failed', $rows[0]->getQueueStatus());
+        self::assertSame('boom', $rows[0]->getReason());
+    }
+
+    public function testGeneratorBodyRunsWhileTheTransactionLogRowIsInProgress(): void
+    {
+        $statuses = [];
+        ScriptedBusinessTask::$script = function () use (&$statuses) {
+            yield null;
+            $statuses = array_map(static function ($row) {
+                return $row->getQueueStatus();
+            }, $this->transactionLogRows('store-7'));
+        };
+
+        $this->runner->run($this->scriptedPayload());
+
+        self::assertSame(['in_progress'], $statuses);
+        self::assertSame([], $this->transactionLogRows('store-7'));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function scriptedPayload(): array
+    {
+        return json_decode(json_encode(TaskPayload::fromTask(new ScriptedBusinessTask(), 'store-7')->toArray()), true);
     }
 
     /**

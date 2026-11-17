@@ -18,9 +18,12 @@ use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TaskExecution\SampleBu
 use SeQura\Core\Tests\BusinessLogic\Common\MockComponents\TaskExecution\ScriptedBusinessTask;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestShopLogger;
 use SeQura\Core\Tests\Infrastructure\Common\TestServiceRegister;
+use SeQura\Core\Tests\BusinessLogic\TransactionLog\Mocks\TransactionLogFixtures;
 
 class TaskAdapterTest extends BaseTestCase
 {
+    use TransactionLogFixtures;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -242,6 +245,43 @@ class TaskAdapterTest extends BaseTestCase
     public function testTypeIsTheJobShortClassName(): void
     {
         self::assertSame('SampleBusinessTask', (new TaskAdapter(new SampleBusinessTask(), ''))->getType());
+    }
+
+    public function testFailingJobLeavesAFailedTransactionLogRowAndRethrows(): void
+    {
+        $error = new RuntimeException('boom');
+        $adapter = $this->scripted(static function () use ($error) {
+            throw $error;
+        });
+
+        try {
+            $adapter->execute();
+            self::fail('Expected exception');
+        } catch (RuntimeException $e) {
+            self::assertSame($error, $e);
+        }
+
+        $rows = $this->transactionLogRows('store-7');
+        self::assertCount(1, $rows);
+        self::assertSame('ScriptedBusinessTask', $rows[0]->getEventCode());
+        self::assertSame('failed', $rows[0]->getQueueStatus());
+        self::assertSame('boom', $rows[0]->getReason());
+    }
+
+    public function testGeneratorBodyRunsWhileTheTransactionLogRowIsInProgress(): void
+    {
+        $statuses = [];
+        $adapter = $this->scripted(function () use (&$statuses) {
+            yield null;
+            $statuses = array_map(static function ($row) {
+                return $row->getQueueStatus();
+            }, $this->transactionLogRows('store-7'));
+        });
+
+        $adapter->execute();
+
+        self::assertSame(['in_progress'], $statuses);
+        self::assertSame([], $this->transactionLogRows('store-7'));
     }
 
     private function scripted(callable $script, string $context = 'store-7'): TaskAdapter
