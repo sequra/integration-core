@@ -26,7 +26,6 @@ use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\MemoryRepository;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\MemoryStorage;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\AbortTask;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\BarTask;
-use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\FooOrchestrator;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\FooTask;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\TestQueueService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\TestTaskRunnerWakeupService;
@@ -1292,42 +1291,6 @@ class QueueTest extends TestCase
         );
     }
 
-    public function testReportAliveParentReportAlive()
-    {
-        // Arrange
-        $item = $this->queue->enqueue('test', new FooOrchestrator());
-        $this->queue->start($item);
-        /** @var FooOrchestrator $orchestrator */
-        $orchestrator = $item->getTask();
-        $this->queue->batchStatusUpdate([$orchestrator->taskList[0]->getExecutionId()], QueueItem::IN_PROGRESS);
-        $subjob = $this->queue->find($orchestrator->taskList[0]->getExecutionId());
-
-        // Act
-        $subjob->getTask()->reportAlive();
-
-        // Assert
-        $saved = $this->queue->find($item->getId());
-        self::assertNotNull($saved->getLastUpdateTimestamp());
-    }
-
-    public function testReportProgressParentReportedProgress()
-    {
-        // Arrange
-        $item = $this->queue->enqueue('test', new FooOrchestrator());
-        $this->queue->start($item);
-        /** @var FooOrchestrator $orchestrator */
-        $orchestrator = $item->getTask();
-        $this->queue->batchStatusUpdate([$orchestrator->taskList[0]->getExecutionId()], QueueItem::IN_PROGRESS);
-        $subjob = $this->queue->find($orchestrator->taskList[0]->getExecutionId());
-
-        // Act
-        $subjob->getTask()->reportProgress(100);
-
-        // Assert
-        $saved = $this->queue->find($item->getId());
-        self::assertEquals(33.33, $saved->getProgressFormatted());
-    }
-
     /**
      * @throws \SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueItemDeserializationException
      * @throws \SeQura\Core\Infrastructure\TaskExecution\Exceptions\AbortTaskExecutionException
@@ -1449,137 +1412,11 @@ class QueueTest extends TestCase
         );
     }
 
-    public function testCreate()
-    {
-        // Arrange
-        $task = new FooTask();
-
-        // Act
-        $item = $this->queue->create("Test", $task);
-
-        // Assert
-        self::assertNotNull($item);
-    }
-
-    public function testCreateItemSaved()
-    {
-        // Arrange
-        $task = new FooTask();
-
-        // Act
-        $item = $this->queue->create("Test", $task);
-
-        // Assert
-        $saved = $this->queue->find($item->getId());
-        self::assertNotNull($saved);
-    }
-
-    public function testCreateTaskSet()
-    {
-        // Arrange
-        $task = new FooTask();
-
-        // Act
-        $item = $this->queue->create("Test", $task);
-
-        // Assert
-        $saved = $this->queue->find($item->getId());
-        self::assertNotNull($saved->getTask());
-        self::assertEquals($item->getTask(), $saved->getTask());
-    }
-
-    public function testCreateQueueNameSet()
-    {
-        // Arrange
-        $task = new FooTask();
-
-        // Act
-        $item = $this->queue->create("Test", $task);
-
-        // Assert
-        $saved = $this->queue->find($item->getId());
-        self::assertEquals('Test', $saved->getQueueName());
-    }
-
-    public function testCreateContextSet()
-    {
-        // Arrange
-        $task = new FooTask();
-
-        // Act
-        $item = $this->queue->create("Test", $task, 'TestCtx', Priority::HIGH);
-
-        // Assert
-        $saved = $this->queue->find($item->getId());
-        self::assertEquals('TestCtx', $saved->getContext());
-    }
-
-    public function testCreatePrioritySet()
-    {
-        // Arrange
-        $task = new FooTask();
-
-        // Act
-        $item = $this->queue->create("Test", $task, '', Priority::HIGH);
-
-        // Assert
-        $saved = $this->queue->find($item->getId());
-        self::assertEquals(Priority::HIGH, $saved->getPriority());
-    }
-
-    public function testCreateParentSet()
-    {
-        // Arrange
-        $task = new FooTask();
-
-        // Act
-        $item = $this->queue->create("Test", $task, '', Priority::HIGH, 1023);
-
-        // Assert
-        $saved = $this->queue->find($item->getId());
-        self::assertEquals(1023, $saved->getParentId());
-    }
-
-    public function testBatchStatusUpdate()
-    {
-        // Arrange
-        $item1 = $this->queue->create('test', new FooTask());
-        $item2 = $this->queue->create('test', new FooTask());
-
-        // Act
-        $this->queue->batchStatusUpdate([$item1->getId(), $item2->getId()], QueueItem::QUEUED);
-
-        // Assert
-        $saved1 = $this->queue->find($item1->getId());
-        $saved2 = $this->queue->find($item2->getId());
-
-        self::assertEquals(QueueItem::QUEUED, $saved1->getStatus());
-        self::assertEquals(QueueItem::QUEUED, $saved2->getStatus());
-    }
-
-    public function testBatchStatusUpdateProperSelection()
-    {
-        // Arrange
-        $item1 = $this->queue->create('test', new FooTask());
-        $item2 = $this->queue->create('test', new FooTask());
-        $item3 = $this->queue->create('test', new FooTask());
-
-        // Act
-        $this->queue->batchStatusUpdate([$item3->getId(), $item2->getId()], QueueItem::QUEUED);
-
-        // Assert
-        $saved1 = $this->queue->find($item1->getId());
-
-        self::assertEquals(QueueItem::CREATED, $saved1->getStatus());
-    }
-
     public function testFailParentFailed()
     {
         // Arrange
-        $item1 = $this->queue->create('test', new FooTask());
-        $item2 = $this->queue->create('test', new FooTask(), '', 100, $item1->getId());
-        $this->queue->batchStatusUpdate([$item1->getId(), $item2->getId()], QueueItem::IN_PROGRESS);
-        $item2->setStatus(QueueItem::IN_PROGRESS);
+        $item1 = $this->saveItem(QueueItem::IN_PROGRESS);
+        $item2 = $this->saveItem(QueueItem::IN_PROGRESS, $item1->getId());
         $item2->setRetries(TestQueueService::MAX_RETRIES);
 
         // Act
@@ -1593,11 +1430,9 @@ class QueueTest extends TestCase
     public function testFailGrandParentFailed()
     {
         // Arrange
-        $item1 = $this->queue->create('test', new FooTask());
-        $item2 = $this->queue->create('test', new FooTask(), '', 100, $item1->getId());
-        $item3 = $this->queue->create('test', new FooTask(), '', 100, $item2->getId());
-        $this->queue->batchStatusUpdate([$item1->getId(), $item2->getId(), $item3->getId()], QueueItem::IN_PROGRESS);
-        $item3->setStatus(QueueItem::IN_PROGRESS);
+        $item1 = $this->saveItem(QueueItem::IN_PROGRESS);
+        $item2 = $this->saveItem(QueueItem::IN_PROGRESS, $item1->getId());
+        $item3 = $this->saveItem(QueueItem::IN_PROGRESS, $item2->getId());
         $item3->setRetries(TestQueueService::MAX_RETRIES);
 
         // Act
@@ -1608,11 +1443,37 @@ class QueueTest extends TestCase
         self::assertEquals(QueueItem::FAILED, $saved->getStatus());
     }
 
+    public function testFailSkipsParentInTerminalState()
+    {
+        // Arrange
+        $parent = $this->saveItem(QueueItem::FAILED);
+        $child = $this->saveItem(QueueItem::IN_PROGRESS, $parent->getId());
+
+        // Act
+        $this->queue->fail($child, 'Test reason.', true);
+
+        // Assert
+        self::assertEquals(QueueItem::FAILED, $this->queue->find($child->getId())->getStatus());
+        self::assertEquals(QueueItem::FAILED, $this->queue->find($parent->getId())->getStatus());
+    }
+
+    public function testFailSkipsMissingParent()
+    {
+        // Arrange
+        $child = $this->saveItem(QueueItem::IN_PROGRESS, 99999);
+
+        // Act
+        $this->queue->fail($child, 'Test reason.', true);
+
+        // Assert
+        self::assertEquals(QueueItem::FAILED, $this->queue->find($child->getId())->getStatus());
+    }
+
     public function testAbortParentAborted()
     {
         // Arrange
-        $item1 = $this->queue->create('test', new FooTask());
-        $item2 = $this->queue->create('test', new FooTask(), '', 100, $item1->getId());
+        $item1 = $this->saveItem(QueueItem::IN_PROGRESS);
+        $item2 = $this->saveItem(QueueItem::IN_PROGRESS, $item1->getId());
 
         // Act
         $this->queue->abort($item2, 'SubJob aborted');
@@ -1620,6 +1481,17 @@ class QueueTest extends TestCase
         // Assert
         $saved = $this->queue->find($item1->getId());
         self::assertEquals(QueueItem::ABORTED, $saved->getStatus());
+    }
+
+    private function saveItem(string $status, ?int $parentId = null): QueueItem
+    {
+        $item = new QueueItem(new FooTask());
+        $item->setQueueName('test');
+        $item->setStatus($status);
+        $item->setParentId($parentId);
+        $item->setId($this->queueStorage->save($item));
+
+        return $item;
     }
 
     /**

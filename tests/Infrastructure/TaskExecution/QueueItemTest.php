@@ -2,11 +2,14 @@
 
 namespace SeQura\Core\Tests\Infrastructure\TaskExecution;
 
+use SeQura\Core\Infrastructure\Serializer\Concrete\JsonSerializer;
 use SeQura\Core\Infrastructure\Serializer\Concrete\NativeSerializer;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueItemDeserializationException;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Priority;
+use SeQura\Core\Infrastructure\TaskExecution\Interfaces\StoredTaskUpgrader;
 use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
+use SeQura\Core\Infrastructure\TaskExecution\Task;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\FooTask;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Utility\TestTimeProvider;
@@ -309,5 +312,103 @@ class QueueItemTest extends TestCase
 
         $queueItem = new QueueItem();
         $queueItem->setPriority(2);
+    }
+
+    public function testGetTaskWithoutUpgraderRebuildsTheStoredTask()
+    {
+        $this->useJsonSerializer();
+        $queueItem = new QueueItem();
+        $queueItem->setSerializedTask(Serializer::serialize(new FooTask()));
+
+        self::assertInstanceOf(FooTask::class, $queueItem->getTask());
+    }
+
+    public function testGetTaskOfUnknownClassFails()
+    {
+        $this->useJsonSerializer();
+        $queueItem = new QueueItem();
+        $queueItem->setSerializedTask('{"class_name":"SeQura\\\\Core\\\\NoSuchTask"}');
+
+        $this->expectException(QueueItemDeserializationException::class);
+
+        $queueItem->getTask();
+    }
+
+    public function testGetTaskFailsAgainOnASecondCall()
+    {
+        $this->useJsonSerializer();
+        $queueItem = new QueueItem();
+        $queueItem->setSerializedTask('{"class_name":"SeQura\\\\Core\\\\NoSuchTask"}');
+
+        foreach (array(1, 2) as $attempt) {
+            try {
+                $queueItem->getTask();
+                self::fail('Expected QueueItemDeserializationException');
+            } catch (QueueItemDeserializationException $e) {
+                self::assertInstanceOf(QueueItemDeserializationException::class, $e);
+            }
+        }
+    }
+
+    public function testGetTaskWrapsErrorsThrownByTheUpgrader()
+    {
+        $this->useJsonSerializer();
+        $error = new \TypeError('boom');
+        TestServiceRegister::registerService(StoredTaskUpgrader::class, function () use ($error) {
+            return new class ($error) implements StoredTaskUpgrader {
+                private $error;
+
+                public function __construct(\Throwable $error)
+                {
+                    $this->error = $error;
+                }
+
+                public function upgrade(QueueItem $item): ?Task
+                {
+                    throw $this->error;
+                }
+            };
+        });
+        $queueItem = new QueueItem();
+        $queueItem->setSerializedTask(Serializer::serialize(new FooTask()));
+
+        try {
+            $queueItem->getTask();
+            self::fail('Expected QueueItemDeserializationException');
+        } catch (QueueItemDeserializationException $e) {
+            self::assertSame($error, $e->getPrevious());
+        }
+    }
+
+    public function testGetTaskUsesTheUpgradedTaskWhenOneIsReturned()
+    {
+        $this->useJsonSerializer();
+        $upgraded = new FooTask('upgraded', 1);
+        TestServiceRegister::registerService(StoredTaskUpgrader::class, function () use ($upgraded) {
+            return new class ($upgraded) implements StoredTaskUpgrader {
+                private $task;
+
+                public function __construct(Task $task)
+                {
+                    $this->task = $task;
+                }
+
+                public function upgrade(QueueItem $item): ?Task
+                {
+                    return $this->task;
+                }
+            };
+        });
+        $queueItem = new QueueItem();
+        $queueItem->setSerializedTask('{"class_name":"SeQura\\\\Core\\\\NoSuchTask"}');
+
+        self::assertSame($upgraded, $queueItem->getTask());
+    }
+
+    private function useJsonSerializer()
+    {
+        TestServiceRegister::registerService(Serializer::CLASS_NAME, function () {
+            return new JsonSerializer();
+        });
     }
 }

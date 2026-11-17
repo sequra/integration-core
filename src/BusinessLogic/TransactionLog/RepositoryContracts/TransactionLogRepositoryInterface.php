@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts;
 use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
+use SeQura\Core\BusinessLogic\TransactionLog\Models\TransactionData;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 
 /**
@@ -43,10 +44,11 @@ interface TransactionLogRepositoryInterface
 
     /**
      * @param int $executionId
+     * @param TransactionData $transactionData
      *
      * @return ?TransactionLog
      */
-    public function getItemByExecutionId(int $executionId): ?TransactionLog;
+    public function getItemByExecutionId(int $executionId, TransactionData $transactionData): ?TransactionLog;
 
     /**
      * @param int $id

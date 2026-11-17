@@ -5,6 +5,7 @@ namespace SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories;
 use DateTime;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\TransactionLog\Models\TransactionData;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
@@ -122,24 +123,32 @@ class TransactionLogRepository implements TransactionLogRepositoryInterface
 
     /**
      * @param int $executionId
+     * @param TransactionData $transactionData
      *
      * @return ?TransactionLog
      *
      * @throws QueryFilterInvalidParamException
      */
-    public function getItemByExecutionId(int $executionId): ?TransactionLog
+    public function getItemByExecutionId(int $executionId, TransactionData $transactionData): ?TransactionLog
     {
         $queryFilter = new QueryFilter();
         $queryFilter
+            ->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
+            ->where('merchantReference', Operators::EQUALS, (string) $transactionData->getMerchantReference())
             ->where('executionId', Operators::EQUALS, $executionId)
+            ->where('timestamp', Operators::EQUALS, $transactionData->getTimestamp())
             ->orderBy('id', QueryFilter::ORDER_DESC);
 
-        /**
-         * @var TransactionLog|null $transactionLog
-         */
-        $transactionLog = $this->repository->selectOne($queryFilter);
+        foreach ($this->repository->select($queryFilter) as $transactionLog) {
+            if (
+                $transactionLog instanceof TransactionLog
+                && $transactionLog->getEventCode() === $transactionData->getEventCode()
+            ) {
+                return $transactionLog;
+            }
+        }
 
-        return $transactionLog;
+        return null;
     }
 
     /**

@@ -179,6 +179,7 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\StoreIntegration\StoreIntegrationProxy;
+use SeQura\Core\BusinessLogic\TaskExecution\Standalone\LegacyStoredTaskUpgrader;
 use SeQura\Core\BusinessLogic\TaskExecution\Standalone\TaskRunnerExecutor;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogRecorder;
@@ -193,6 +194,7 @@ use SeQura\Core\Infrastructure\Configuration\ConfigurationManager;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\ServiceRegister;
+use SeQura\Core\Infrastructure\TaskExecution\Interfaces\StoredTaskUpgrader;
 use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\TickEvent;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
@@ -404,6 +406,10 @@ class BootstrapComponent extends BaseBootstrapComponent
 
         ServiceRegister::registerService(StoreIdProvider::class, static function () {
             return new StoreIdProvider();
+        });
+
+        ServiceRegister::registerService(StoredTaskUpgrader::class, static function () {
+            return new LegacyStoredTaskUpgrader(ServiceRegister::getService(TransactionLogRepositoryInterface::class));
         });
 
         ServiceRegister::registerService(BusinessTaskRunner::class, static function () {

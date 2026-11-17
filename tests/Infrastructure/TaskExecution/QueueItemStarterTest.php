@@ -12,6 +12,7 @@ use SeQura\Core\Infrastructure\Logger\Interfaces\DefaultLoggerAdapter;
 use SeQura\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
 use SeQura\Core\Infrastructure\Logger\Logger;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
+use SeQura\Core\Infrastructure\Serializer\Concrete\JsonSerializer;
 use SeQura\Core\Infrastructure\Serializer\Concrete\NativeSerializer;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStateTransitionEventBus;
@@ -25,6 +26,7 @@ use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestDefaultLog
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\Logger\TestShopLogger;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\MemoryQueueItemRepository;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\ORM\MemoryRepository;
+use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\BarTask;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\FooTask;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\TestQueueService;
 use SeQura\Core\Tests\Infrastructure\Common\TestComponents\TaskExecution\TestTaskRunnerWakeupService;
@@ -194,5 +196,33 @@ class QueueItemStarterTest extends TestCase
             $this->configurationManager->getContext(),
             'Item starter must set task context before task execution.'
         );
+    }
+
+    public function testUnrebuildableItemIsFailedAndLoggedAndTheNextItemStillRuns()
+    {
+        TestServiceRegister::registerService(Serializer::CLASS_NAME, function () {
+            return new JsonSerializer();
+        });
+        $broken = new QueueItem();
+        $broken->setQueueName('test');
+        $broken->setStatus(QueueItem::QUEUED);
+        $broken->setSerializedTask('{"class_name":"SeQura\\\\Core\\\\NoSuchTask"}');
+        $broken->setId($this->queueStorage->save($broken));
+        $healthy = new QueueItem(new BarTask());
+        $healthy->setQueueName('test');
+        $healthy->setStatus(QueueItem::QUEUED);
+        $healthy->setId($this->queueStorage->save($healthy));
+
+        (new QueueItemStarter($broken->getId()))->run();
+        (new QueueItemStarter($healthy->getId()))->run();
+
+        $failed = $this->queue->find($broken->getId());
+        self::assertSame(QueueItem::FAILED, $failed->getStatus());
+        self::assertNotEmpty($failed->getFailureDescription());
+        $errors = array_filter($this->logger->loggedMessages, function ($message) {
+            return $message->getLogLevel() === Logger::ERROR;
+        });
+        self::assertCount(1, $errors);
+        self::assertSame(QueueItem::COMPLETED, $this->queue->find($healthy->getId())->getStatus());
     }
 }

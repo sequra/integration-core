@@ -4,6 +4,7 @@ namespace SeQura\Core\Tests\BusinessLogic\TransactionLog\Mocks;
 
 use DateTime;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
+use SeQura\Core\BusinessLogic\TransactionLog\Models\TransactionData;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 
 /**
@@ -43,7 +44,7 @@ class MockTransactionLogRepository implements TransactionLogRepositoryInterface
     /**
      * @inheritDoc
      */
-    public function getItemByExecutionId(int $executionId): ?TransactionLog
+    public function getItemByExecutionId(int $executionId, TransactionData $transactionData): ?TransactionLog
     {
         return $this->transactionLog;
     }
