@@ -18,7 +18,8 @@
   "autoload-dev": {
     "psr-4": {
       "SeQura\\Core\\Tests\\Infrastructure\\": "tests/Infrastructure",
-      "SeQura\\Core\\Tests\\BusinessLogic\\": "tests/BusinessLogic"
+      "SeQura\\Core\\Tests\\BusinessLogic\\": "tests/BusinessLogic",
+      "SeQura\\Core\\PHPStan\\": "phpstan/"
     }
   },
   "require-dev": {

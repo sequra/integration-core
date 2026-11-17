@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+cd "$(dirname "$0")/.."
+
+exec docker run --rm -v "$PWD":/app -v sequra-deptrac:/tmp -w /app composer:2 sh -c '
+  set -eu
+  composer global show deptrac/deptrac 2>/dev/null | grep -q "^versions : \* 2\.0\.6$" ||
+    composer global require --quiet deptrac/deptrac:2.0.6
+  run_deptrac() {
+    php -d "error_reporting=E_ALL & ~E_DEPRECATED" /tmp/vendor/bin/deptrac "$@"
+  }
+  case "${1:-}" in
+    "" | -*) run_deptrac analyse "$@" --no-progress --cache-file=/tmp/deptrac.cache ;;
+    *) run_deptrac "$@" ;;
+  esac
+' deptrac "$@"

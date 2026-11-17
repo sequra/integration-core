@@ -1,6 +1,14 @@
+includes:
+    - phpstan/rules.neon
+
 parameters:
     level: 6
     errorFormat: table
     treatPhpDocTypesAsCertain: false
     paths:
         - src/
+    ignoreErrors:
+        -
+            identifier: sequra.domainOuterLayer
+            path: src/BusinessLogic/Domain/PaymentMethod/Services/PaymentMethodsService.php
+            count: 1

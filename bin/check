@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+cd "$(dirname "$0")/.."
+
+./bin/php-syntax-check
+./bin/phpcs
+./bin/phpstan
+./bin/deptrac
+./bin/phpunit

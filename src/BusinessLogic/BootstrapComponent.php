@@ -167,8 +167,6 @@ use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\DefaultTaskMetadataP
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\ConfigurationWebhookValidationService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\OrderStatusProvider;
 use SeQura\Core\BusinessLogic\Providers\Clock\Clock;
-use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
-use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Deployments\DeploymentsProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Affiliate\AffiliateProxy;
@@ -430,13 +428,6 @@ class BootstrapComponent extends BaseBootstrapComponent
         ServiceRegister::registerService(ClockInterface::class, static function () {
             return new Clock(ServiceRegister::getService(TimeProvider::class));
         });
-
-        ServiceRegister::registerService(
-            QueueNameProviderInterface::class,
-            static function () {
-                return new QueueNameProvider();
-            }
-        );
 
         ServiceRegister::registerService(
             OrderStatusSettingsService::class,

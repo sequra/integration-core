@@ -1,0 +1,29 @@
+deptrac:
+  skip_violations:
+    SeQura\Core\BusinessLogic\AdminAPI\Aspects\ErrorHandlingAspect:
+      - SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException
+      - SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiUnauthorizedException
+    SeQura\Core\BusinessLogic\AdminAPI\OrderManagement\OrderManagementController:
+      - SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException
+    SeQura\Core\BusinessLogic\AdminAPI\TransactionLogs\Responses\TransactionLogsResponse:
+      - SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog
+    SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData:
+      - SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy
+    SeQura\Core\BusinessLogic\Domain\Connection\Services\CredentialsService:
+      - SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException
+      - SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiUnauthorizedException
+    SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface:
+      - SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest
+    SeQura\Core\BusinessLogic\Domain\Migration\Tasks\DeploymentMigrateTask:
+      - SeQura\Core\BusinessLogic\DataAccess\ConnectionData\Entities\ConnectionData
+    SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderUpdateRejectedException:
+      - SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiRequestException
+    SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService:
+      - SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException
+      - SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiNotFoundException
+    SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services\PaymentMethodsService:
+      - SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest
+    SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy:
+      - SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest
+    SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\Requests\GetAvailablePaymentMethodsHttpRequest:
+      - SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest

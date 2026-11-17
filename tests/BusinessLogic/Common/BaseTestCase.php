@@ -157,8 +157,6 @@ use SeQura\Core\BusinessLogic\Domain\UIState\Services\UIStateService;
 use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\ConfigurationWebhookValidationService;
 use SeQura\Core\BusinessLogic\Providers\Clock\Clock;
-use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
-use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Deployments\DeploymentsProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Affiliate\AffiliateProxy;
@@ -712,13 +710,6 @@ class BaseTestCase extends TestCase
                 return new MockMiniWidgetMessagesProvider();
             }
         ]);
-
-        TestServiceRegister::registerService(
-            QueueNameProviderInterface::class,
-            static function () {
-                return new QueueNameProvider();
-            }
-        );
 
         TestServiceRegister::registerService(
             TimeProvider::class,

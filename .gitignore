@@ -31,3 +31,4 @@ CLAUDE.local.md
 .claude/logs/
 .claude/artifacts/
 .claude/agent-memory/
+.deptrac.cache
