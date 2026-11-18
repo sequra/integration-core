@@ -8,6 +8,7 @@
 - [🛠 Installation](#🛠-installation)
     - [Requirements](#requirements)
     - [Installing via Composer](#installing-via-composer)
+    - [Upgrading from 6.x](#upgrading-from-6x)
     - [Developer guide](#developer-guide)
 - [🚀 Quick Start Guide](#🚀-quick-start-guide)
     - [Services](#services)
@@ -107,6 +108,10 @@ Implements **shop-specific adapters and extensions**, bridging CORE with the hos
 ```bash
 composer require sequra/integration-core
 ```
+
+### Upgrading from 6.x
+
+Version 7.0.0 replaces the task model with business jobs and an executor contract a platform can implement. Before upgrading a platform from 6.x, read the [upgrade guide](UPGRADE-7.0.md).
 
 ### Developer guide
 If you are planning to contribute to the development of this library, please refer to the [Developer Guide](DEVELOPER_GUIDE.md) for instructions on setting up your development environment, debugging, and running tests.
@@ -1182,7 +1187,7 @@ The **WebhookAPI layer** in the SeQura integration-core library handles incoming
 
 #### Overview
 
-The WebhookAPI follows a **simplified Controller pattern** with **validation, handling, and asynchronous processing** to ensure reliable webhook processing even under high load or temporary system issues.
+The WebhookAPI follows a **simplified Controller pattern** with **validation and handling**: the handler updates the order in the platform while the webhook is processed, and answers SeQura with the HTTP status code it expects, so SeQura retries the webhook when a temporary issue prevents the update.
 
 #### Core Components
 
@@ -1210,14 +1215,7 @@ The WebhookAPI follows a **simplified Controller pattern** with **validation, ha
   - `validateOrder(Webhook $webhook)` - Additional order validation
   - `acknowledgeOrder(string $orderRef, string $state)` - Acknowledges order to SeQura API
 
-##### 5. **OrderUpdateTask**
-- **Purpose**: Asynchronous task for updating order status in the platform
-- **Features**:
-  - **Store Context Aware**: Maintains proper store context during execution
-  - **Asynchronous Execution**: Prevents webhook timeouts by processing in background
-  - **Error Resilience**: Can be retried if initial processing fails
-
-##### 6. **Webhook Model**
+##### 5. **Webhook Model**
 - **Purpose**: Represents webhook data structure
 - **Key Properties**:
   - `signature` - Security signature for validation
@@ -1237,7 +1235,6 @@ sequenceDiagram
     participant WebhookController as WebhookController.handleRequest()
     participant WebhookValidator
     participant WebhookHandler
-    participant OrderUpdateTask
     participant Platform
 
     SeQura->>PlatformEndpoint: 1. Send webhook
@@ -1246,8 +1243,7 @@ sequenceDiagram
     WebhookController->>WebhookValidator: 3. Validate (Signature, Order, State)
     WebhookValidator-->>WebhookController: Validation result
     WebhookController->>WebhookHandler: 4. Process payload
-    WebhookHandler->>OrderUpdateTask: Create and queue task
-    OrderUpdateTask->>Platform: 5. Update order status
+    WebhookHandler->>Platform: 5. Update order status
     WebhookHandler->>SeQura: 6. Send acknowledgment (approved / needs_review)
     PlatformEndpoint-->>SeQura: 7. Respond with HTTP 200/201/202 (or 410/404/501)
 ```
@@ -1523,34 +1519,29 @@ class WebhookValidator
 }
 ```
 
-#### Asynchronous Processing
+#### Order Update Processing
+
+The order is updated while the webhook is handled: `WebhookHandler::handle()` maps SeQura's state to the shop's status and asks the platform's `ShopOrderService` to apply it, then acknowledges the order to SeQura. The webhook runs in the store context set by `WebhookAPI::webhookHandler($storeId)`.
 
 ```php
-// OrderUpdateTask for reliable background processing
-class OrderUpdateTask extends Task
+// WebhookHandler updates the order synchronously
+class WebhookHandler
 {
-    protected $webhook;
-    protected $storeId;
-
-    public function execute(): void
+    public function handle(Webhook $webhook): void
     {
-        // Execute in proper store context
-        StoreContext::doWithStore($this->storeId, function () {
-            $this->doExecute();
-        });
-    }
+        $this->validateOrder($webhook);
 
-    protected function doExecute(): void
-    {
         // Get platform-specific status mapping
-        $shopStatus = $this->getOrderStatusMappingService()
-            ->getMapping($this->webhook->getSqState());
-        
-        // Update order in platform
-        $this->getShopOrderService()
-            ->updateStatus($this->webhook, $shopStatus);
+        $statusSettingsService = ServiceRegister::getService(OrderStatusSettingsService::class);
+        $shopStatus = $statusSettingsService->getMapping($webhook->getSqState());
 
-        $this->reportProgress(100);
+        // Update order in platform
+        ServiceRegister::getService(ShopOrderService::class)->updateStatus($webhook, $shopStatus);
+
+        // Acknowledge approved and needs_review orders to SeQura
+        if (\in_array($webhook->getSqState(), [OrderStates::STATE_APPROVED, OrderStates::STATE_NEEDS_REVIEW], true)) {
+            $this->acknowledgeOrder($webhook->getOrderRef(), $webhook->getSqState());
+        }
     }
 }
 ```
@@ -1569,151 +1560,131 @@ SeQura expects specific HTTP response codes:
 
 ### Task Execution System
 
-The **Task Execution System** is the backbone of the SeQura integration-core library's asynchronous processing capabilities. It handles background tasks like webhook processing, order reporting, and long-running operations that cannot be executed synchronously without impacting user experience.
+The **Task Execution System** runs the work the core does in the background: the daily order report, the daily order cleanup, and order updates scheduled with a transaction log row. The work itself is written as **business jobs** that know nothing about how they are queued, and the core hands them to an **executor** the platform can replace. A platform can keep the built-in queue and task runner, or run the core's jobs on its own scheduler.
+
+> Moving from 6.x? Read the [upgrade guide](UPGRADE-7.0.md).
 
 #### Overview
 
-The task system follows an **Event-Driven Queue Architecture** with **reliable execution, retry mechanisms, and comprehensive monitoring**. It's designed to handle high-volume operations while maintaining data consistency and system responsiveness.
+The system has two entry points a scheduler calls, and one contract it implements:
+
+- **Run job**: `BusinessTaskRunner::run(array $payload)` runs one stored job in its store context and records it in the transaction log.
+- **Run what's due**: `RecurringWorkRunner::runDue()` enqueues the recurring work that is due (the order reports and the order cleanup). It must be called at least hourly.
+- **Executor contract**: `TaskExecutorInterface` receives every job the core wants to run later. `TaskMetadataProviderInterface` tells it the job's queue name, priority and store context.
+
+In **standalone mode** (the default) the executor is `TaskRunnerExecutor`, which puts each job on the built-in queue (`QueueService`), and the built-in task runner runs it. Every tick of the built-in runner calls `runDue()`, so a platform on the built-in runner has nothing to wire.
 
 #### Core Components
 
-##### 1. **Task (Abstract Base Class)**
-- **Purpose**: Base class for all background operations
-- **Key Features**:
-  - Progress reporting and alive signals
-  - Automatic serialization/deserialization
-  - Error handling and recovery
-  - Priority-based execution
-  - Store context awareness
-
-##### 2. **QueueService**
-- **Purpose**: Manages task lifecycle and execution queue
+##### 1. **BusinessTaskInterface**
+- **Purpose**: The contract of a business job
 - **Key Methods**:
-  - `enqueue()` - Adds tasks to processing queue
-  - `start()` - Begins task execution
-  - `finish()` - Completes successful tasks
-  - `fail()` - Handles task failures with retry logic
-  - `abort()` - Terminates tasks permanently
+  - `execute()` - Does the work. It may return a `Generator`; every value it yields tells the runner the job is still alive
+  - `toArray()` / `fromArray()` - The job's whole state, so it can be stored and rebuilt
+- **Examples**: `OrderReporter` (one page of the order report), `OrderCleanupTask`, `TransactionalOrderUpdateTask`
 
-##### 3. **QueueItem**
-- **Purpose**: Represents a task instance in the queue
-- **Status Flow**: `QUEUED` → `IN_PROGRESS` → `COMPLETED`/`FAILED`/`ABORTED`
-- **Properties**: Priority, retry count, execution context, timestamps
+##### 2. **TaskExecutorInterface**
+- **Purpose**: Receives the jobs the core wants to run later
+- **Key Methods**:
+  - `enqueue(BusinessTaskInterface $task)` - Run the job as soon as possible
+  - `scheduleDelayed(BusinessTaskInterface $task, int $delaySeconds)` - Run the job after a delay
+- **Default**: `TaskRunnerExecutor` (standalone mode on the built-in queue)
 
-##### 4. **Priority System**
-- **Priority::HIGH** - Critical tasks (webhooks, order updates)
-- **Priority::NORMAL** - Standard operations (reporting, sync)
-- **Priority::LOW** - Background maintenance tasks
+##### 3. **TaskMetadataProviderInterface**
+- **Purpose**: Decides where and how a job runs
+- **Key Method**: `getExecutionConfig(BusinessTaskInterface $task)` - Returns a `TaskExecutionConfig` with the queue name, a priority from 0 to 100 and the context (store id)
+- **Default**: `DefaultTaskMetadataProvider`
 
-#### Creating Custom Tasks
+##### 4. **BusinessTaskRunner**
+- **Purpose**: "Run job" - runs a stored job
+- **Key Method**: `run(array $payload)` - Rebuilds the job from a `TaskPayload` array, runs it inside `StoreContext::doWithStore()` and records it with `TransactionLogRecorder`. It throws when the job fails, so the scheduler can retry it
 
-Here's how to create and implement custom tasks:
+##### 5. **RecurringWorkRunner**
+- **Purpose**: "Run what's due" - enqueues the recurring work that is due
+- **Key Method**: `runDue()` - Enqueues the order report of every store whose report time has come and the order cleanup when it is due, under a `RecurringWorkLockInterface` lock (by default `FileRecurringWorkLock`, which covers one server)
+
+##### 6. **TransactionLogRecorder**
+- **Purpose**: Keeps the transaction log in step with the jobs
+- **Key Methods**:
+  - `schedule(TransactionLogAwareInterface $job)` - Creates the order's transaction log row and enqueues the job
+  - `around(BusinessTaskInterface $job, callable $run)` - Records a job while it runs, including jobs with no order
+
+```mermaid
+sequenceDiagram
+    participant Scheduler as Scheduler (built-in runner or platform)
+    participant RecurringWorkRunner
+    participant Executor as TaskExecutorInterface
+    participant BusinessTaskRunner
+    participant Job as BusinessTaskInterface
+
+    Scheduler->>RecurringWorkRunner: 1. runDue() (at least hourly)
+    RecurringWorkRunner->>Executor: 2. enqueue(job) for the work that is due
+    Executor->>Executor: 3. Store TaskPayload::fromTask(job, context)->toArray()
+    Scheduler->>BusinessTaskRunner: 4. run(payload)
+    BusinessTaskRunner->>Job: 5. execute() in the job's store context
+    Job-->>BusinessTaskRunner: 6. Alive signals, then done or an exception
+```
+
+#### Creating a Business Job
+
+A job implements `BusinessTaskInterface` and keeps all its state in `toArray()`. It does not need to capture the store: the executor stores the context with the job and `BusinessTaskRunner` restores it.
 
 ```php
 <?php
-// Custom task for processing bulk order updates
-class BulkOrderSyncTask extends Task
+// Business job for processing bulk order updates
+class BulkOrderSyncJob implements BusinessTaskInterface
 {
     private $orderIds;
-    private $storeId;
     private $syncType;
 
     public function __construct(array $orderIds, string $syncType = 'status')
     {
-        parent::__construct();
         $this->orderIds = $orderIds;
         $this->syncType = $syncType;
-        // Capture store context when task is created
-        $this->storeId = StoreContext::getInstance()->getStoreId();
     }
 
     /**
-     * Main task execution logic
+     * Main job logic; runs in the store context the job was enqueued with
      */
-    public function execute(): void
+    public function execute(): \Generator
     {
-        // Execute in proper store context
-        StoreContext::doWithStore($this->storeId, function() {
-            $this->doExecute();
-        });
-    }
-
-    private function doExecute(): void
-    {
-        $totalOrders = count($this->orderIds);
-        $processed = 0;
-
         foreach ($this->orderIds as $orderId) {
             try {
-                // Report progress periodically
-                $this->reportAlive();
-                
-                // Process individual order
                 $this->syncOrderData($orderId);
-                $processed++;
-                
-                // Update progress (0-100%)
-                $progress = ($processed / $totalOrders) * 100;
-                $this->reportProgress($progress);
-                
             } catch (Exception $e) {
-                Logger::logError("Failed to sync order: {$orderId}", [
-                    'error' => $e->getMessage(),
-                    'task_type' => $this->getType()
+                Logger::logError("Failed to sync order: {$orderId}", 'Integration', [
+                    new LogContextData('error', $e->getMessage()),
                 ]);
-                
-                // Decide whether to fail entire task or continue
+
+                // Decide whether to fail the entire job or continue
                 if ($this->isCriticalError($e)) {
-                    throw $e; // This will fail the entire task
+                    throw $e; // The runner marks the job failed and the scheduler may retry it
                 }
                 // Otherwise continue with next order
             }
+
+            // Tell the runner the job is still alive
+            yield null;
         }
-        
-        // Final progress report
-        $this->reportProgress(100);
     }
 
     /**
-     * Task serialization for queue storage
+     * The job's whole state, stored with the job
      */
     public function toArray(): array
     {
         return [
-            'storeId' => $this->storeId,
             'orderIds' => $this->orderIds,
             'syncType' => $this->syncType
         ];
     }
 
     /**
-     * Task deserialization from queue storage
+     * Rebuilds the job from its stored state
      */
-    public static function fromArray(array $data): Serializable
+    public static function fromArray(array $data): BusinessTaskInterface
     {
-        return StoreContext::doWithStore($data['storeId'], function() use ($data) {
-            return new static($data['orderIds'], $data['syncType']);
-        });
-    }
-
-    /**
-     * Set task priority (webhooks should be HIGH)
-     */
-    public function getPriority(): int
-    {
-        return $this->syncType === 'webhook' ? Priority::HIGH : Priority::NORMAL;
-    }
-
-    /**
-     * Handle task failure
-     */
-    public function onFail(): void
-    {
-        Logger::logWarning("Bulk order sync task failed", [
-            'store_id' => $this->storeId,
-            'order_count' => count($this->orderIds),
-            'sync_type' => $this->syncType
-        ]);
+        return new self($data['orderIds'], $data['syncType']);
     }
 
     private function syncOrderData(string $orderId): void
@@ -1733,74 +1704,136 @@ class BulkOrderSyncTask extends Task
 
     private function isCriticalError(Exception $e): bool
     {
-        // Define which errors should fail the entire task
-        return $e instanceof AuthenticationException 
+        // Define which errors should fail the entire job
+        return $e instanceof AuthenticationException
             || $e instanceof InvalidConfigurationException;
     }
 }
 ```
 
-#### Using the Queue Service
+#### Enqueuing Jobs
 
-Here's how to enqueue and manage tasks:
+Jobs are handed to the `TaskExecutorInterface`, never to a queue directly, so the same code works on the built-in runner and on a platform's own scheduler. The store context the job runs in is the one active when it is enqueued.
 
 ```php
 <?php
-// Service for managing background operations
-class BackgroundTaskManager
+// Service for scheduling background work
+class BackgroundJobScheduler
+{
+    private $executor;
+
+    public function __construct()
+    {
+        $this->executor = ServiceRegister::getService(TaskExecutorInterface::class);
+    }
+
+    /**
+     * Enqueue an order synchronization job for the current store
+     */
+    public function scheduleOrderSync(array $orderIds): void
+    {
+        $this->executor->enqueue(new BulkOrderSyncJob($orderIds, 'status'));
+    }
+
+    /**
+     * Run the job in ten minutes
+     */
+    public function scheduleOrderSyncLater(array $orderIds): void
+    {
+        $this->executor->scheduleDelayed(new BulkOrderSyncJob($orderIds, 'status'), 600);
+    }
+
+    /**
+     * Schedule an order update with a row in the transaction log
+     */
+    public function scheduleOrderUpdate(OrderUpdateData $orderUpdateData, TransactionData $transactionData): void
+    {
+        ServiceRegister::getService(TransactionLogRecorder::class)->schedule(
+            new TransactionalOrderUpdateTask($orderUpdateData, $transactionData)
+        );
+    }
+
+    /**
+     * Send an order report right away (the daily report is enqueued by RecurringWorkRunner::runDue())
+     */
+    public function sendOrderReport(string $merchantId, array $orderIds): bool
+    {
+        return ServiceRegister::getService(OrderReportService::class)->sendReport(
+            new ReportData($merchantId, $orderIds)
+        );
+    }
+}
+```
+
+The queue name and priority of a job come from `TaskMetadataProviderInterface`. To change them, register your own provider after `parent::init()`:
+
+```php
+class PlatformTaskMetadataProvider implements TaskMetadataProviderInterface
+{
+    public function getExecutionConfig(BusinessTaskInterface $task): TaskExecutionConfig
+    {
+        $storeId = StoreContext::getInstance()->getStoreId();
+
+        if ($task instanceof BulkOrderSyncJob) {
+            return new TaskExecutionConfig('order-sync', 80, $storeId);
+        }
+
+        return (new DefaultTaskMetadataProvider())->getExecutionConfig($task);
+    }
+}
+```
+
+#### Plugging In a Native Scheduler
+
+A platform with its own scheduler implements `TaskExecutorInterface`, stores the payload of each job, and runs it from its worker:
+
+```php
+class NativeTaskExecutor implements TaskExecutorInterface
+{
+    public function enqueue(BusinessTaskInterface $task): void
+    {
+        $this->scheduleDelayed($task, 0);
+    }
+
+    public function scheduleDelayed(BusinessTaskInterface $task, int $delaySeconds): void
+    {
+        $config = ServiceRegister::getService(TaskMetadataProviderInterface::class)->getExecutionConfig($task);
+
+        // A plain array: the job's class, its toArray() data and the context
+        $payload = TaskPayload::fromTask($task, $config->getContext())->toArray();
+
+        $this->platformQueue->push($config->getQueueName(), $payload, $config->getPriority(), $delaySeconds);
+    }
+}
+
+// In the platform's bootstrap, after parent::init():
+ServiceRegister::registerService(TaskExecutorInterface::class, static function () {
+    return new NativeTaskExecutor();
+});
+
+// In the platform's worker ("run job"); the scheduler owns retries when it throws:
+ServiceRegister::getService(BusinessTaskRunner::class)->run($payload);
+
+// In the platform's scheduler, at least hourly ("run what's due"):
+ServiceRegister::getService(RecurringWorkRunner::class)->runDue();
+```
+
+See the [upgrade guide](UPGRADE-7.0.md) for the full list of steps.
+
+#### Monitoring the Built-in Queue
+
+In standalone mode each job is a queue item of the built-in queue, so the `QueueService` can report on it:
+
+```php
+<?php
+// Monitoring for the built-in queue (standalone mode only)
+class BuiltInQueueMonitor
 {
     private $queueService;
 
     public function __construct()
     {
         $this->queueService = ServiceRegister::getService(QueueService::class);
-    }
-
-    /**
-     * Enqueue order synchronization task
-     */
-    public function scheduleOrderSync(array $orderIds, string $priority = 'normal'): QueueItem
-    {
-        $task = new BulkOrderSyncTask($orderIds, 'status');
-        
-        $priorityLevel = $priority === 'high' ? Priority::HIGH : Priority::NORMAL;
-        
-        return $this->queueService->enqueue(
-            'order-sync',           // Queue name
-            $task,                  // Task instance
-            'bulk-operation',       // Context for filtering
-            $priorityLevel         // Priority level
-        );
-    }
-
-    /**
-     * Schedule webhook processing (high priority)
-     */
-    public function scheduleWebhookProcessing(Webhook $webhook): QueueItem
-    {
-        $task = new WebhookProcessingTask($webhook);
-        
-        return $this->queueService->enqueue(
-            'webhooks',             // Dedicated webhook queue
-            $task,
-            "webhook-{$webhook->getOrderRef()}",
-            Priority::HIGH          // Webhooks are always high priority
-        );
-    }
-
-    /**
-     * Schedule order reporting (background)
-     */
-    public function scheduleOrderReporting(string $merchantId, array $orderIds): QueueItem
-    {
-        $task = new OrderReportTask($merchantId, $orderIds);
-        
-        return $this->queueService->enqueue(
-            'reporting',
-            $task,
-            "report-{$merchantId}",
-            Priority::LOW           // Reporting can wait
-        );
     }
 
     /**
@@ -1884,9 +1917,11 @@ class BackgroundTaskManager
 
 #### Task Monitoring and Health Checks
 
+On the built-in queue (standalone mode), the health of the queue can be checked the same way. A platform running its own scheduler monitors it with that scheduler's tools.
+
 ```php
 <?php
-// Task system health monitoring
+// Built-in queue health monitoring (standalone mode only)
 class TaskHealthMonitor
 {
     private $queueService;
@@ -1970,39 +2005,35 @@ class TaskHealthMonitor
 #### Key Benefits of the Task System
 
 1. **Asynchronous Processing**: Non-blocking operations improve user experience
-2. **Reliability**: Automatic retry mechanisms handle temporary failures
+2. **Pluggable Execution**: The same jobs run on the built-in runner or on the platform's own scheduler
 3. **Scalability**: Queue-based processing handles high-volume operations
-4. **Monitoring**: Progress tracking and health monitoring capabilities
-5. **Store Context**: Proper multi-store isolation and context management
-6. **Priority Management**: Critical tasks (webhooks) get priority over background tasks
-7. **Error Recovery**: Failed tasks can be analyzed and retried
-8. **Resource Management**: Prevents system overload through controlled execution
+4. **Store Context**: Every job runs in the store context it was enqueued with
+5. **Priority Management**: `TaskMetadataProviderInterface` decides the queue and priority of each job
+6. **Error Recovery**: Failed jobs are recorded in the transaction log and can be retried by the scheduler
+7. **Recurring Work**: One call, `RecurringWorkRunner::runDue()`, enqueues everything that is due
 
 #### Task Execution Best Practices
 
-1. **Progress Reporting**: Always call `reportProgress()` for long operations
-2. **Alive Signals**: Use `reportAlive()` in loops to prevent timeout
-3. **Store Context**: Capture store context in constructor, use in execution
-4. **Error Handling**: Distinguish between retryable and permanent failures
-5. **Serialization**: Ensure all task data is properly serializable
-6. **Resource Cleanup**: Clean up resources in failure/abort handlers
-7. **Monitoring**: Implement health checks for production systems
+1. **Job Contract**: Implement `BusinessTaskInterface`; do not depend on the built-in runner's classes
+2. **Alive Signals**: Return a `Generator` from `execute()` and yield in long loops so the runner knows the job is alive
+3. **Store Context**: Enqueue the job in the store it belongs to; `BusinessTaskRunner` restores that context
+4. **Error Handling**: Throw to fail the job; the scheduler decides whether to retry it
+5. **Serialization**: Keep the job's whole state in `toArray()` / `fromArray()`, as plain values
+6. **Enqueue Through the Executor**: Hand jobs to `TaskExecutorInterface`, or to `TransactionLogRecorder::schedule()` when the job is an order update that needs a transaction log row
+7. **Recurring Work**: Without the built-in runner, call `runDue()` at least hourly
 
 #### Usage Pattern
 
 ```php
-// Standard task usage pattern:
-$task = new CustomTask($data);                    // Create task with data
-$queueItem = $queueService->enqueue(              // Enqueue for processing
-    'queue-name', 
-    $task, 
-    'context', 
-    Priority::NORMAL
-);
+// Standard job usage pattern:
+$job = new CustomJob($data);                                          // Create a business job
+ServiceRegister::getService(TaskExecutorInterface::class)->enqueue($job); // Hand it to the executor
 
-// Monitor execution
-$status = $queueService->find($queueItem->getId());
-echo "Task status: {$status->getStatus()}, Progress: {$status->getProgressPercent()}%";
+// Worker of a native scheduler ("run job"):
+ServiceRegister::getService(BusinessTaskRunner::class)->run($payload);
+
+// Scheduler, at least hourly ("run what's due"):
+ServiceRegister::getService(RecurringWorkRunner::class)->runDue();
 ```
 
 ### ORM & Data Persistence Layer
@@ -2838,48 +2869,40 @@ class StoreAwareOrderRepository implements RepositoryInterface
 
 #### Task Execution with Store Context
 
-Background tasks maintain store context throughout execution:
+A business job runs in the store context it was enqueued with: the executor stores the context (the store id) next to the job, and `BusinessTaskRunner` runs the job inside `StoreContext::doWithStore()`. A job that works across several stores switches the context itself, and keeps all its state in `toArray()` so it can be rebuilt with `fromArray()`:
 
 ```php
 <?php
-// Store-aware task implementation
-class MultiStoreReportTask extends Task
+// Store-aware business job
+class MultiStoreReportJob implements BusinessTaskInterface
 {
     private $storeConfigurations;
     private $reportType;
 
     public function __construct(array $storeConfigurations, string $reportType)
     {
-        parent::__construct();
         $this->storeConfigurations = $storeConfigurations;
         $this->reportType = $reportType;
     }
 
-    public function execute(): void
+    public function execute(): \Generator
     {
-        $totalStores = count($this->storeConfigurations);
-        $processed = 0;
-
         foreach ($this->storeConfigurations as $storeId => $config) {
             try {
                 // Execute each store's processing in its context
                 StoreContext::doWithStore($storeId, function() use ($config) {
                     $this->processStoreReport($config);
                 });
-                
-                $processed++;
-                $progress = ($processed / $totalStores) * 100;
-                $this->reportProgress($progress);
-                
+
+                // Tell the runner the job is still alive
+                yield null;
             } catch (Exception $e) {
                 Logger::logError("Failed to process report for store {$storeId}", [
                     'store_id' => $storeId,
                     'report_type' => $this->reportType,
                     'error' => $e->getMessage()
                 ]);
-                
                 // Continue with other stores
-                $processed++;
             }
         }
     }
@@ -2905,9 +2928,9 @@ class MultiStoreReportTask extends Task
         ];
     }
 
-    public static function fromArray(array $data): Serializable
+    public static function fromArray(array $data): BusinessTaskInterface
     {
-        return new static($data['storeConfigurations'], $data['reportType']);
+        return new self($data['storeConfigurations'], $data['reportType']);
     }
 }
 ```

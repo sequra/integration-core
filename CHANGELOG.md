@@ -4,6 +4,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 # [Unreleased]
+
+# [v7.0.0](https://github.com/sequra/integration-core/tree/v7.0.0)
+The task model is replaced by contracts a platform can implement. Read the [upgrade guide](UPGRADE-7.0.md) before moving from 6.x: it lists what every platform must check, what each known platform must change, and how to plug in a native scheduler.
+
+## Added
+- `BusinessTaskInterface` (`Domain\Integration\TaskExecution`): the contract of a business job, with `execute()`, `toArray()` and `fromArray()`. `execute()` may return a `Generator` to signal that the job is alive.
+- `TaskExecutorInterface`, with `enqueue()` and `scheduleDelayed($task, $delaySeconds)`: what the core hands its jobs to. The default, `TaskRunnerExecutor`, enqueues them on the built-in queue through `TaskAdapter`; a platform with its own scheduler registers its own after `parent::init()`.
+- `TaskMetadataProviderInterface`: `getExecutionConfig()` returns a `TaskExecutionConfig` (queue name, priority from 0 to 100, context). The default is `DefaultTaskMetadataProvider`.
+- `TaskPayload`: `TaskPayload::fromTask($task, $context)->toArray()` is the array a native scheduler stores for a job.
+- `BusinessTaskRunner`: `run(array $payload)` runs a stored payload in its store context and records it in the transaction log.
+- `RecurringWorkRunner`: `runDue()` enqueues the order reports and the order cleanup that are due. The built-in runner's `TickEvent` calls it; a platform with its own scheduler calls it at least hourly.
+- `RecurringWorkLockInterface` and its default `FileRecurringWorkLock`, a file lock that covers one server only. A platform that runs the recurring work on more than one server registers its own.
+- `OrderReportScheduler` and `OrderCleanupScheduler`, which `runDue()` uses to enqueue the order reports and the cleanup.
+- `TransactionLogRecorder`: `TransactionLogRecorder::schedule()` creates the transaction log row of an order job and enqueues it; `around()` records every job while it runs, including jobs with no order.
+- `StoredTaskUpgrader` and `LegacyStoredTaskUpgrader`: queue items stored by 6.x for `OrderReporter` and `TransactionalOrderUpdateTask` are translated when read (`JsonSerializer` only).
+
+## Changed
+- **Breaking:** `OrderReporter` is a `BusinessTaskInterface` job holding a `page` (`new OrderReporter(int $page = 1)`) instead of an `Orchestrator`. It sends one page with `OrderReportService::sendReport()` and enqueues the next page.
+- **Breaking:** `OrderCleanupTask` moved from `OrderCleanup\Tasks` to `Domain\OrderCleanup\Tasks` and is a `BusinessTaskInterface` job. A 6.x item of the old class is marked failed and the cleanup runs again at its next due time.
+- **Breaking:** `OrderCleanupService::cleanup()` returns a `Generator` that yields after each batch and returns the count, instead of taking an `$afterEachBatch` callback.
+- **Breaking:** the order cleanup is enqueued by `RecurringWorkRunner::runDue()` instead of a `TickEvent` listener; a host that replaces the `TickEvent` handlers, or runs no task runner, must call `runDue()` itself.
+- **Breaking:** `StoreIntegrationMigrateTask` and `DeploymentMigrateTask` no longer extend `Task`. They are called with `execute()` as before; a subclass must not call `parent::__construct()` or methods inherited from `Task`.
+- **Breaking:** `TransactionLogAwareInterface` extends `BusinessTaskInterface` and has `getTransactionLogId()` / `setTransactionLogId()` / `getTransactionData()` instead of `getTransactionLog()` / `setTransactionLog()` / `getStoreId()`. `TransactionLogAwareTrait` changed the same way, and `TransactionalTask` and `TransactionalOrderUpdateTask` no longer extend `Task`.
+- **Breaking:** `TransactionLogService` has `createOrderLog()`, `createJobLog()`, `findById()` and `deleteFailedWithoutOrder()` instead of `create()`, `load()` and `hasQueueItem()`.
+- **Breaking:** `TransactionLogRepositoryInterface::getItemByExecutionId()` takes a second `TransactionData` argument, and `getItemById()` and `findWithoutOrder()` are new methods every implementation must add.
+- The transaction log also shows jobs with no order, has no `aborted` status, and links a job to its row through the job rather than the queue item.
+- **Breaking:** `GuidProvider`: `generateGuid()` returns 64 characters (`bin2hex(random_bytes(32))`). Check that the `Process` `guid` index column and the configuration value column that holds `taskRunnerStatus` can store it.
+- `WebhookHandler::handle()` updates the shop order itself.
+- `OnReportProgress` only updates the item's own progress.
+- `QueueService::enqueue()` takes an optional last argument, `earliestStartTimestamp` (`?int $earliestStartTimestamp = null`); the runner does not start an item before that time.
+
+## Removed
+- **Breaking:** `OrderReportTask`; send a report with `OrderReportService::sendReport()`.
+- **Breaking:** `OrderReport\Listeners\TickEventListener` (`TickEventListener`) and `OrderCleanupTickListener`; `runDue()` replaces them.
+- **Breaking:** the webhook `OrderUpdateTask`; `WebhookHandler::handle()` does the update.
+- **Breaking:** the transaction log listeners `Listener`, `CreateListener`, `LoadListener`, `UpdateListener`, `FailedListener` and `AbortedListener`; jobs are logged by `TransactionLogRecorder`.
+- **Breaking:** `Orchestrator`, `ExecutionDetails`, `QueueService::create()` and `QueueService::batchStatusUpdate()`, with no replacement.
+- **Breaking:** `QueueNameProvider` and `QueueNameProviderInterface`; use `TaskMetadataProviderInterface`.
+
+# [v6.1.0](https://github.com/sequra/integration-core/tree/v6.1.0)
 ## Added
 - Daily cleanup of stale solicitations: `SeQuraOrder` rows that never became a shop order (no `orderRef1`), that SeQura has not settled (not `confirmed`, `on_hold` or `cancelled`) and that were last solicited 7 days ago or earlier. Nothing runs until the host calls `OrderCleanupService::schedule($firstRunTimestamp)`. From then on, on the first task runner tick after the scheduled time, `OrderCleanup\Listeners\OrderCleanupTickListener` moves the next run ahead until it is past now and enqueues an `OrderCleanup\Tasks\OrderCleanupTask`, unless an earlier cleanup is still queued or running, in which case that day's run is skipped. When enqueueing fails, the next run is moved back so a later tick tries again. Runs are 24 hours apart, so across a daylight saving change the local time of day moves by an hour. Orders are deleted only through repositories implementing `ConditionallyDeletes`, one statement per condition; on any other repository the cleanup reads and deletes nothing and the task logs that it was skipped.
 - `SeQuraOrder::getSolicitedAt()` / `setSolicitedAt()`: when the order was last solicited, kept in the order's stored data (no new index). `OrderService::solicitFor()` sets it on a new solicitation. An order stored before this release has none; the cleanup then falls back to its cart's `updated_at` and keeps the order when that is missing or unreadable.
