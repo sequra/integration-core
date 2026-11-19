@@ -1,0 +1,220 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
+
+# [Unreleased]
+## Added
+- The Express Checkout solicit answers with what the SeQura Cart Summary page needs. `CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutSolicitResponse` (extends `IdentificationFormResponse`) adds `getOrderUuid()`, `getMetadataEndpoint()` and `getFormUrl()`, and its `toArray()` carries `orderUuid`, `metadataEndpoint` and `formUrl` after `identificationForm`, `null` values included. The values come from `Domain\ExpressCheckout\Models\ExpressCheckoutForm` (extends `SeQuraForm`): the order uuid is the reference of the order the solicit created or reused; the form URL is the first double-quoted `data-base-url` of the form HTML, HTML-entity-decoded, and `null` when it is missing or not an absolute `http`/`https` URL with a non-empty host; the metadata endpoint is the form URL with the first `/orders/{id}/{page}` of its path pointing at `/orders/{id}/metadata`, query kept, and `null` when the path has none. The form HTML itself is returned unchanged.
+- `GetFormRequest` takes a last optional `?bool $showCart` argument (`getShowCart()`, `show_cart` in `fromArray()` / `toArray()`), and `GetFormHttpRequest` sends `show_cart=true` only when it is `true`. `OrderService::getIdentificationForm()` takes a last optional `bool $showCart = false` and passes it on.
+- `Merchant::setOptions()`.
+- `ExpressCheckoutController::solicitCartSummary(string $cartId)`, reached as `CheckoutAPI::get()->expressCheckout($storeId)->solicitCartSummary($cartId)`. It solicits the express order of the cart with the country check on, and answers an `ExpressCheckoutCartSummaryResponse` (extends `ExpressCheckoutSolicitResponse`) that adds `getFlowToken()` and `getCartData()`, the first `cartDataReady` payload; its `toArray()` adds `flowToken` and `cartData`. When the delivery country has no merchant it answers an `ExpressCheckoutUnavailableResponse`.
+- The platform interfaces `Domain\Integration\ExpressCheckout\ExpressCheckoutCartProviderInterface` (`getCartSummary()`, `getCreateOrderRequestBuilder()`) and `ExpressCheckoutFlowTokenStorageInterface` (`getFlowTokens()`, `saveFlowTokens()`, scoped to the shopper's session).
+- The models `CartSummary`, `CartAddress`, `ShippingMethodOption`, `RegionOption` and `SolicitedCartSummary` in `Domain\ExpressCheckout\Models`.
+- `FlowTokenRegistry` (`mint()`, `resolve()`) and `CartDataBuilder` (`build()`) in `Domain\ExpressCheckout\Services`. A token is 32 random characters from a-z, A-Z and 0-9; minting one for a cart removes the cart's previous token and keeps the newest 8.
+- `ExpressCheckoutController::updateCart(ExpressCheckoutCartUpdateRequest $request): Response`, reached as `CheckoutAPI::get()->expressCheckout($storeId)->updateCart(new ExpressCheckoutCartUpdateRequest($flowToken, $payload))`, with the raw posted `flow_token` and `payload`. It checks the request with Magento's cart update rules, finds the cart the flow token names, refuses a cart that is gone or whose latest seQura order is confirmed or on hold, has the platform apply the change, solicits the express order again and answers the refreshed `cartDataReady` payload, plus `reloadUrl` when the new form has a form URL. It never mints, retires or saves a flow token. The plugin maps the answer to an HTTP status:
+
+  | Core answer | HTTP status the plugin returns |
+  |---|---|
+  | `ExpressCheckoutCartUpdateResponse` | 200, with `toArray()` as the JSON body |
+  | rejected, `invalid_request` | 400 |
+  | rejected, `cart_unavailable` | 400 |
+  | rejected, `not_eligible` | 422 |
+  | any other unsuccessful response | 500 (core has already logged it) |
+  | the plugin's own CSRF check failed | 403 |
+  | `ExpressCheckoutThrottledResponse` | 429, no Retry-After, body not part of the contract |
+
+  The host script does not read the body of a non-200 answer. The plugin checks that its payment method is active before it calls `updateCart`, and answers 422 when it is not. A seQura API failure during the re-solicit is an unsuccessful response (500), not `not_eligible` as in Magento.
+- `CheckoutAPI\ExpressCheckout\Requests\ExpressCheckoutCartUpdateRequest` (`getFlowToken()`, `getPayload()`, untyped), and the responses `ExpressCheckoutCartUpdateResponse` (successful, `getCartData()`) and `ExpressCheckoutCartUpdateRejectedResponse` (unsuccessful, `getReason()`, `toArray()` is `['reason' => $reason]`, with the constants `REASON_INVALID_REQUEST`, `REASON_CART_UNAVAILABLE` and `REASON_NOT_ELIGIBLE`). Core logs nothing for a rejected answer.
+- The platform interface `Domain\Integration\ExpressCheckout\ExpressCheckoutCartUpdaterInterface`: `isCartOpen(string $cartId): bool` and `applyCartChange(string $cartId, CartChange $change): bool`, which returns `false` for a changed cart that is not eligible and throws `InvalidShippingMethodReferenceException` for a shipping method the cart does not offer.
+- The models `CartChange` (`getAddress()`, `getShippingMethodReference()`, `getEmail()`, `fromPayload()`) and `CartAddressChange` in `Domain\ExpressCheckout\Models`.
+- The exceptions `InvalidExpressCheckoutCartUpdateException` (400), `InvalidShippingMethodReferenceException` (400), `ExpressCheckoutCartUnavailableException` (400) and `ExpressCheckoutCartNotEligibleException` (422) in `Domain\ExpressCheckout\Exceptions`.
+- `ExpressCheckoutRateLimiter` in `Domain\ExpressCheckout\Services` (`isExceeded()`, `wouldBeExceeded()`). Every `solicit`, `solicitCartSummary` and `updateCart` call counts against two budgets per 60-second window that opens with the first call: 30 per shopper session (`SESSION_LIMIT`) and 600 per peer address (`ADDRESS_LIMIT`), not configurable. The session budget is checked first, and a call it refuses does not spend the address budget. A call with no session id is limited by its address only, and calls with no peer address share the `unknown` budget. Counters are saved with a 60-second TTL under `sequra_express_solicit_sid_` / `sequra_express_solicit_ip_` plus the sha256 of the session id or address, with no store id; a counter the cache returns unreadable starts a new window. Counting is not atomic. When the cache, the session id or the peer address fails, the budget it backs is skipped and the other still applies. Nothing about throttling or these failures is logged.
+- The platform interfaces `ExpressCheckoutRateLimitCacheInterface` (`load(string $key): ?string`, `save(string $key, string $value, int $ttlSeconds): void`, shared by every web node), `ExpressCheckoutPeerAddressProviderInterface` (`getPeerAddress(): ?string`, the connection's own peer address, never a forwarded header; behind a reverse proxy or CDN the 600 budget is per proxy address) and `ExpressCheckoutSessionIdProviderInterface` (`getSessionId(): ?string`) in `Domain\Integration\ExpressCheckout`.
+- The responses `ExpressCheckoutThrottledResponse` (extends `ExpressCheckoutSolicitResponse`, unsuccessful, `toArray()` is `['identificationForm' => '', 'orderUuid' => null, 'metadataEndpoint' => null, 'formUrl' => null]`) and `ExpressCheckoutNotThrottledResponse` (successful, `toArray()` is `[]`). `solicit`, `solicitCartSummary` and `updateCart` answer `ExpressCheckoutThrottledResponse` over budget, before reading the request; the plugin returns it as HTTP 429.
+- `ExpressCheckoutController::checkRateLimit(): Response`, reached as `CheckoutAPI::get()->expressCheckout($storeId)->checkRateLimit()`. It answers `ExpressCheckoutThrottledResponse` when the next call would be refused and `ExpressCheckoutNotThrottledResponse` otherwise, and counts nothing. `isAvailable` and `isAvailableForGuest` are never limited or counted.
+
+## Changed
+- **Breaking:** the platform must register `ExpressCheckoutRateLimitCacheInterface`, `ExpressCheckoutPeerAddressProviderInterface` and `ExpressCheckoutSessionIdProviderInterface`; core gives them no default. Until they are registered, every `CheckoutAPI::get()->expressCheckout($storeId)` call, `isAvailable` included, returns an unsuccessful response and logs "Unhandled error occurred.". `ExpressCheckoutController` takes a fourth constructor argument, `ExpressCheckoutRateLimiter $rateLimiter`. Plugins call `checkRateLimit()` first, before building anything such as a product-page temporary cart, and test for `ExpressCheckoutThrottledResponse` before `isSuccessful()`, mapping it to HTTP 429 with no Retry-After.
+- **Breaking:** the platform must register `ExpressCheckoutCartUpdaterInterface`. Until it does, every call through `CheckoutAPI::get()->expressCheckout($storeId)` answers an unsuccessful response and logs "Unhandled error occurred.". `ExpressCheckoutCartService` takes two more constructor arguments, `SeQuraOrderRepositoryInterface` and `ExpressCheckoutCartUpdaterInterface`.
+- **Breaking:** the platform must register `ExpressCheckoutCartProviderInterface` and `ExpressCheckoutFlowTokenStorageInterface`. Until it does, every call through `CheckoutAPI::get()->expressCheckout($storeId)` (`isAvailable`, `isAvailableForGuest`, `solicit`, `solicitCartSummary`) answers an unsuccessful response and logs "Unhandled error occurred.". `ExpressCheckoutController` takes a third constructor argument, `ExpressCheckoutCartService`.
+- The Express Checkout create-order request sends `addresses_may_be_missing: true` in the merchant options. A merchant the builder leaves out is built as for any solicit, keeping every option `MerchantDataProviderInterface::getOptions()` returns; a merchant the builder supplies keeps its other options. A `false` from either is sent as `true`. A regular solicit still sends the flag only when the shop's own options set it. Since an order is reused only for an identical request, an Express Checkout solicit and a regular one for the same cart do not reuse each other's order, unless the shop's own options already send `addresses_may_be_missing: true` on regular checkout, in which case the two requests are identical and may share an order.
+- The Express Checkout form request sends `show_cart=true`, so the form opens on the Cart Summary page. Other form requests do not send it.
+- `OrderService::getIdentificationForm()` has a fifth parameter, `bool $showCart = false`. An integration that overrides it, even for regular checkout only, has to add that optional parameter to its override, since on PHP 8 an override with fewer parameters than its parent is a fatal error.
+- The Express Checkout solicit fetches the form of the order it solicited, by that order's reference and merchant, instead of the newest order stored for the cart.
+- `ExpressCheckoutService::solicit()` returns `?ExpressCheckoutForm` and `OrderService::solicitExpressCheckoutForm()` returns `ExpressCheckoutForm` instead of `SeQuraForm`, and `ExpressCheckoutController::solicit()` returns `ExpressCheckoutSolicitResponse` instead of `IdentificationFormResponse`. An integration that overrides one of them has to change its return type, since an override that keeps the old one fails to load. `ExpressCheckoutUnavailableResponse` extends `ExpressCheckoutSolicitResponse`, with no order uuid, form URL or metadata endpoint, and `getIdentificationForm()->getForm()` still returns the form HTML on both.
+
+# [v7.0.0](https://github.com/sequra/integration-core/tree/v7.0.0)
+The task model is replaced by contracts a platform can implement. Read the [upgrade guide](UPGRADE-7.0.md) before moving from 6.x: it lists what every platform must check, what each known platform must change, and how to plug in a native scheduler.
+
+## Added
+- `BusinessTaskInterface` (`Domain\Integration\TaskExecution`): the contract of a business job, with `execute()`, `toArray()` and `fromArray()`. `execute()` may return a `Generator` to signal that the job is alive.
+- `TaskExecutorInterface`, with `enqueue()` and `scheduleDelayed($task, $delaySeconds)`: what the core hands its jobs to. The default, `TaskRunnerExecutor`, enqueues them on the built-in queue through `TaskAdapter`; a platform with its own scheduler registers its own after `parent::init()`.
+- `TaskMetadataProviderInterface`: `getExecutionConfig()` returns a `TaskExecutionConfig` (queue name, priority from 0 to 100, context). The default is `DefaultTaskMetadataProvider`.
+- `TaskPayload`: `TaskPayload::fromTask($task, $context)->toArray()` is the array a native scheduler stores for a job.
+- `BusinessTaskRunner`: `run(array $payload)` runs a stored payload in its store context and records it in the transaction log.
+- `RecurringWorkRunner`: `runDue()` enqueues the order reports and the order cleanup that are due. The built-in runner's `TickEvent` calls it; a platform with its own scheduler calls it at least hourly.
+- `RecurringWorkLockInterface` and its default `FileRecurringWorkLock`, a file lock that covers one server only. A platform that runs the recurring work on more than one server registers its own.
+- `OrderReportScheduler` and `OrderCleanupScheduler`, which `runDue()` uses to enqueue the order reports and the cleanup.
+- `TransactionLogRecorder`: `TransactionLogRecorder::schedule()` creates the transaction log row of an order job and enqueues it; `around()` records every job while it runs, including jobs with no order.
+- `StoredTaskUpgrader` and `LegacyStoredTaskUpgrader`: queue items stored by 6.x for `OrderReporter` and `TransactionalOrderUpdateTask` are translated when read (`JsonSerializer` only).
+
+## Changed
+- **Breaking:** `OrderReporter` is a `BusinessTaskInterface` job holding a `page` (`new OrderReporter(int $page = 1)`) instead of an `Orchestrator`. It sends one page with `OrderReportService::sendReport()` and enqueues the next page.
+- **Breaking:** `OrderCleanupTask` moved from `OrderCleanup\Tasks` to `Domain\OrderCleanup\Tasks` and is a `BusinessTaskInterface` job. A 6.x item of the old class is marked failed and the cleanup runs again at its next due time.
+- **Breaking:** `OrderCleanupService::cleanup()` returns a `Generator` that yields after each batch and returns the count, instead of taking an `$afterEachBatch` callback.
+- **Breaking:** the order cleanup is enqueued by `RecurringWorkRunner::runDue()` instead of a `TickEvent` listener; a host that replaces the `TickEvent` handlers, or runs no task runner, must call `runDue()` itself.
+- **Breaking:** `StoreIntegrationMigrateTask` and `DeploymentMigrateTask` no longer extend `Task`. They are called with `execute()` as before; a subclass must not call `parent::__construct()` or methods inherited from `Task`.
+- **Breaking:** `TransactionLogAwareInterface` extends `BusinessTaskInterface` and has `getTransactionLogId()` / `setTransactionLogId()` / `getTransactionData()` instead of `getTransactionLog()` / `setTransactionLog()` / `getStoreId()`. `TransactionLogAwareTrait` changed the same way, and `TransactionalTask` and `TransactionalOrderUpdateTask` no longer extend `Task`.
+- **Breaking:** `TransactionLogService` has `createOrderLog()`, `createJobLog()`, `findById()` and `deleteFailedWithoutOrder()` instead of `create()`, `load()` and `hasQueueItem()`.
+- **Breaking:** `TransactionLogRepositoryInterface::getItemByExecutionId()` takes a second `TransactionData` argument, and `getItemById()` and `findWithoutOrder()` are new methods every implementation must add.
+- The transaction log also shows jobs with no order, has no `aborted` status, and links a job to its row through the job rather than the queue item.
+- **Breaking:** `GuidProvider`: `generateGuid()` returns 64 characters (`bin2hex(random_bytes(32))`). Check that the `Process` `guid` index column and the configuration value column that holds `taskRunnerStatus` can store it.
+- `WebhookHandler::handle()` updates the shop order itself.
+- `OnReportProgress` only updates the item's own progress.
+- `QueueService::enqueue()` takes an optional last argument, `earliestStartTimestamp` (`?int $earliestStartTimestamp = null`); the runner does not start an item before that time.
+
+## Removed
+- **Breaking:** `OrderReportTask`; send a report with `OrderReportService::sendReport()`.
+- **Breaking:** `OrderReport\Listeners\TickEventListener` (`TickEventListener`) and `OrderCleanupTickListener`; `runDue()` replaces them.
+- **Breaking:** the webhook `OrderUpdateTask`; `WebhookHandler::handle()` does the update.
+- **Breaking:** the transaction log listeners `Listener`, `CreateListener`, `LoadListener`, `UpdateListener`, `FailedListener` and `AbortedListener`; jobs are logged by `TransactionLogRecorder`.
+- **Breaking:** `Orchestrator`, `ExecutionDetails`, `QueueService::create()` and `QueueService::batchStatusUpdate()`, with no replacement.
+- **Breaking:** `QueueNameProvider` and `QueueNameProviderInterface`; use `TaskMetadataProviderInterface`.
+
+# [v6.1.0](https://github.com/sequra/integration-core/tree/v6.1.0)
+## Added
+- Daily cleanup of stale solicitations: `SeQuraOrder` rows that never became a shop order (no `orderRef1`), that SeQura has not settled (not `confirmed`, `on_hold` or `cancelled`) and that were last solicited 7 days ago or earlier. Nothing runs until the host calls `OrderCleanupService::schedule($firstRunTimestamp)`. From then on, on the first task runner tick after the scheduled time, `OrderCleanup\Listeners\OrderCleanupTickListener` moves the next run ahead until it is past now and enqueues an `OrderCleanup\Tasks\OrderCleanupTask`, unless an earlier cleanup is still queued or running, in which case that day's run is skipped. When enqueueing fails, the next run is moved back so a later tick tries again. Runs are 24 hours apart, so across a daylight saving change the local time of day moves by an hour. Orders are deleted only through repositories implementing `ConditionallyDeletes`, one statement per condition; on any other repository the cleanup reads and deletes nothing and the task logs that it was skipped.
+- `SeQuraOrder::getSolicitedAt()` / `setSolicitedAt()`: when the order was last solicited, kept in the order's stored data (no new index). `OrderService::solicitFor()` sets it on a new solicitation. An order stored before this release has none; the cleanup then falls back to its cart's `updated_at` and keeps the order when that is missing or unreadable.
+- `ClockInterface` (`Domain\Time`), implemented by `Providers\Clock\Clock` on top of `TimeProvider`.
+- `OrderCleanupScheduleRepositoryInterface`.
+
+## Changed
+- `OrderService` takes a `ClockInterface` as its last constructor argument.
+- `SeQuraOrderRepositoryInterface` has three new methods, `getUnlinkedOrdersAfter()`, `canDeleteUnlinkedOrders()` and `deleteUnlinkedOrders()`, which every implementation of it must add.
+- `BootstrapComponent::initEvents()` registers `OrderCleanupTickListener` for `TickEvent`, ahead of `TickEventListener`. A host that replaces the `TickEvent` handlers must keep it, and must run it with the storage context the order and configuration repositories need, or the cleanup never runs.
+- The cleanup pages through `SeQuraOrder` rows with `id >`, `id <` and `id IN` conditions, so a host's `ConditionallyDeletes` repository must honour the operator of a condition on `id`. A repository that treats every `id` condition as an equality finds nothing to clean up.
+- `OrderService::solicitFor()` reuses an existing order only within 24 hours of its solicitation, and reusing writes nothing. An older order, or one stored before this release, is solicited again.
+
+# [v6.0.0](https://github.com/sequra/integration-core/tree/v6.0.0)
+## Added
+- `ConnectionData` carries the id the SeQura portal gave the store's integration (`getIntegrationId()` / `setIntegrationId()`, a last optional constructor argument, `integrationId` in `toArray()`). Connecting and re-registering webhooks record it, and `ConnectionService::getPortalUrl()` then links to the settings page of the store's own integration instead of the list of integrations. A connection stored before the id was kept, or one whose registration was skipped, has none and still gets the list link. `ConnectionDataRepository::setConnectionData()` keeps the stored id when the model it is given carries none, so saving credentials through `saveConnectionData()` does not take the link away.
+- Order updates carry the order's trackings. `OrderUpdateRequest` and `OrderUpdateData` take a last optional `Tracking[]|null $trackings` argument (`getTrackings()` / `setTrackings()` on `OrderUpdateData`, `trackings` in its `toArray()`). `null` leaves the stored trackings as they are; a list that differs from the stored one replaces it and is sent to SeQura with the order update. An empty list clears the stored trackings. An entry that is not a `Tracking` instance is refused with `InvalidTrackingException`, answered as `general.errors.order.invalidTracking`.
+
+## Changed
+- **Breaking:** `ConnectionService::connect()` returns the `ConnectionData[]` it connected, leaving out the connections without credentials, instead of `void`. Callers that ignore the return value are unaffected, but an integration that subclasses `ConnectionService` and overrides `connect()` has to declare `: array`, since an override that keeps `: void` fails to load.
+- **Breaking:** these constructors take a new required argument, so an integration that subclasses one of them, or builds it itself instead of resolving it through `ServiceRegister`, has to pass the new collaborator. An integration that only uses the classes `BootstrapComponent` registers is unaffected.
+  - `ConnectionService`: `DeploymentsRepositoryInterface $deploymentsRepository`, `DeploymentsService $deploymentsService`
+  - `CredentialsService`: `SellingCountriesServiceInterface $sellingCountriesService`
+  - `CheckoutService`: `CountryConfigurationService $countryConfigurationService`
+  - `OrderService`: `CheckoutService $checkoutService`
+  - `GeneralSettingsController` and `SaveGeneralSettingsHandler`: `StatisticalDataService $statisticalDataService`
+  - `GetGeneralSettingsHandler`: `OrderIdentifiersService $orderIdentifiersService`, `StatisticalDataService $statisticalDataService`
+  - `GetGeneralSettingsResponse`: `array $listOfOrderIdentifiers`, `bool $isSendStatisticalData`
+- **Breaking:** `CheckoutAPI::get()->solicitation($storeId)->solicitFor()` takes a `SolicitationRequest` instead of a `CreateOrderRequestBuilder`. A caller that still passes a builder gets a `TypeError`, which the API error handling answers as an unsuccessful response, so every solicitation fails until the call is updated. Before soliciting, the core now checks the selling country configuration, the allowed IP addresses and the product and category exclusions of the general settings. A cart that fails these checks is answered with a successful `SolicitationResponse` that has no order and no payment methods, so `getSolicitedOrder()` returns `?SeQuraOrder` and `toArray()` carries `'order' => null`.
+- **Breaking:** onboarding no longer takes the merchant's statistical-data consent, which is now configured in the SeQura portal and saved through the configuration webhook. A successful onboarding connect stores the consent as given (`true`, scheduling the first report) for a store that has none stored yet, and leaves a stored consent as it is:
+  - `OnboardingRequest` and `OnboardingData` drop the `bool $sendStatisticalData` constructor argument, and `OnboardingData` drops `isSendStatisticalData()` / `setSendStatisticalData()`. PHP ignores the extra argument, so a host that still passes it gets no error, but the value is no longer stored.
+  - `OnboardingDataResponse` takes `?string $portalUrl` and `array $portalUrls` instead of `?StatisticalData`, and its `toArray()` carries `portalUrl` / `portalUrls` instead of `sendStatisticalData`.
+  - A connect request in which no connection carries credentials is answered with an unsuccessful `ConnectionValidationResponse` instead of a success.
+- **Breaking:** `WidgetSettingsService::setWidgetSettings()` validates the settings before storing them, on every save, Admin UI, configuration webhook and host migrations alike. It throws `EmptyWidgetSelectorParameterException` for a page the widgets are turned on for without a price selector, `DuplicatedWidgetProductException` for a payment method configured more than once, and `InvalidWidgetStylesException` for styles that are not valid JSON. A host that re-saves legacy widget settings, for example in a migration, has to handle the unsuccessful response before deleting what it had stored.
+- **Breaking:** the API facade methods (`AdminAPI`, `CheckoutAPI`, the static `WebhookAPI::webhookHandler()` and `ConfigurationWebhookAPI::configurationHandler()`) and `Aspects::beforeEachMethodOfInstance()` / `beforeEachMethodOfService()` declare `: object` instead of `: Aspects`, so IDEs and PHPStan resolve the concrete controller. A subclass that overrides one of them with `: Aspects` fails to load on PHP 7.2 and 7.3, which have no return-type covariance.
+- **Breaking:** a webhook with an unknown state is answered with `501 Not Implemented` instead of `400`.
+- **Breaking:** `OrderProxyInterface::updateMerchantReference()` and `SeQuraOrderRepositoryInterface::getOrderBatchByCartIds()` are new interface methods. An integration with its own implementation of either interface, test doubles included, has to implement them.
+- `StoreIntegrationService::createStoreIntegration()` returns the id of the registered integration as a `string` instead of `void`. Callers ignoring the return value are unaffected, but an integration that subclasses the service and overrides this method has to adopt the new return type: on PHP 8 an override that keeps `void` is a fatal error.
+- `GeneralSettingsService::getGeneralSettings()` returns a `GeneralSettings` instead of `?GeneralSettings`: a store that has not stored its general settings yet is answered with the defaults (no order report, no hosted page, empty lists, `P1Y` end date) rather than `null`, with the three service lists derived from the stored credentials either way. `GeneralSettingsResponse::toArray()` and the `get-general-settings` webhook answer therefore carry the defaults for such a store instead of an empty array, and `CheckoutService` judges a virtual product by the merchant's contract whether or not the store has saved its settings. An integration that reads the response to tell a store that saved its settings from one that did not has to ask `GeneralSettingsRepositoryInterface::getGeneralSettings()` instead, which is still `null` until something is saved; one that subclasses the service and overrides this method has to adopt the new return type, since on PHP 8 an override that keeps `?GeneralSettings` is a fatal error.
+
+## Fixed
+- `CheckoutService` cached the general settings for the whole process regardless of the store, so after a call for one store the checkout guards (IP allowlist, product and category exclusions, services) of another store in the same process were judged against the first store's settings. The cache is now kept for the active store only.
+- A credential without a merchant reference (`ref`) for a country the shop sells in made `ConnectionService::connect()` stop at that deployment on its first connection, leaving its credentials stored without a connection and skipping the deployments after it. That deployment is now left unconnected and the others are still connected; `connect()` then throws the `EmptyCountryConfigurationParameterException`, answered as `general.errors.countries.empty`, and logs a warning naming the deployment. The credentials stored for the failed deployment are replaced on its next connect.
+- The portal URLs of the onboarding and connection responses (`portalUrl`, `portalUrls`) were `null` for a deployment stored before deployments carried their portal URL, until another screen happened to refresh the deployments. `ConnectionService::getPortalBaseUrl()` now fetches the deployments from the API, which also stores them, when the connection's deployment is not stored or has no portal URL; if the API cannot be reached it logs a warning and answers `null` as before.
+- Saving widget settings with empty `widgetStyles` (or an empty custom widget style) through `AdminAPI::get()->widgetConfiguration($storeId)->setWidgetSettings()` answered `UnsuccessfulJsonResponse`, while the same settings were stored through the `save-widget-settings` configuration webhook. Empty styles are accepted by both now; styles that are not valid JSON are still refused.
+- The service lists of the general settings (`enabledForServices`, `allowFirstServicePaymentDelay`, `allowServiceRegistrationItems`) were empty for a store that had connected but not yet saved its general settings, because they were derived only after a stored row was found. They come from the merchant's contract, so a merchant whose account allows services saw no service fields on their products until they saved the general settings once in the portal.
+- `Tracking::fromArray()` instantiated the abstract `Tracking` class, so loading a `SeQuraOrder` with stored trackings, or building a `CreateOrderRequest`, `UpdateOrderRequest` or `OrderReport` from an array with trackings, ended in a fatal error. It now builds the subtype the `type` names (`TrackingPostal`, `TrackingPickupPoint`, `TrackingPickupStore`) and throws `InvalidTrackingTypeException`, answered as `general.errors.order.invalidTrackingType`, for any other type.
+
+# [v5.8.0](https://github.com/sequra/integration-core/tree/v5.8.0)
+## Added
+- Payment methods of an already solicited order, from the storefront: `CheckoutAPI::get()->solicitedOrderPaymentMethods($storeId)->getPaymentMethodsInCategories(new PaymentMethodsInCategoriesRequest($orderRef))` answers with the methods SeQura offers for that order, grouped in the categories it returns them in. It depends on `OrderService` alone, so an integration that solicits orders without configuring the checkout library can use it; the methods a merchant offers before an order exists still come from `cachedPaymentMethods()`. The payload carries the categories under `categories` and, because a category with no method is returned as well, a `hasAvailablePaymentMethods` flag telling whether the buyer has anything to choose from.
+- `OrderMerchantNotFoundException`, raised for a stored order whose merchant carries no id, so the failure names the order rather than surfacing further down as a missing credentials error with nothing pointing back at it.
+- `SEQURA_SKIP_STORE_INTEGRATION_REGISTRATION` env var that, when set to `1`/`true`, skips store integration registration (and therefore webhook registration) during connect, re-registration and the store integration migration task. Honored for sandbox connections only; it is ignored in live mode.
+
+## Changed
+- The `$merchantId` argument of `OrderService::getAvailablePaymentMethodsInCategories()` is optional (`?string`, `null` by default). Omitting it reads the merchant off the stored order, which then has to exist; a caller that holds the merchant keeps passing it and is unaffected, and an empty string is still passed through rather than treated as omitted. Existing two argument calls need no change, but an integration that subclasses `OrderService` and overrides this method has to adopt the new signature: on PHP 8 an override that keeps the old one is a fatal error.
+- `OrderNotFoundException` and `OrderMerchantNotFoundException` are answered by the API error handling as `404` responses carrying `general.errors.order.notFound` and `general.errors.order.merchantNotFound`, instead of falling through to `general.errors.unknown`. An integration that translates error codes needs the two new labels; one that does not have them renders the English `errorMessage` the response already carries. No endpoint that existed before reaches either exception, so the change is visible only through the new payment methods endpoint.
+
+## Fixed
+- Creating an order from a webhook raises `OrderMerchantNotFoundException` when the stored order carries no merchant id, rather than reading the id straight off the order and failing further down in the credentials lookup. The order reference is part of the message, so a webhook that fails this way points back at the order that caused it.
+- `QueueItem::setFailureDescription(null)` stores an empty string. The property and `getFailureDescription()` are typed `string`, so a null kept as it came made the getter throw a `TypeError` instead of returning.
+- A partial disconnect no longer rewrites the country configuration of a store that has none stored: `getCountryConfiguration()` answering `null` is told apart from an empty list, and the deployment cleanup leaves the record alone instead of saving an empty one over it.
+
+# [v5.6.0](https://github.com/sequra/integration-core/tree/v5.6.0)
+## Added
+- Affiliate outbound postbacks: an `AffiliateProxy` (under `SeQuraAPI/Affiliate`) that sends the conversion and cancellation postbacks already shaped for their destination and without attaching the connection credentials, plus a `CheckoutAPI` affiliate facade (`affiliate($storeId)->reportConversion(...)` / `->reportCancellation(...)`) that sources the affiliate credentials from the stored `AffiliateSettings` and dispatches only when affiliate marketing is enabled.
+
+# [v5.5.0](https://github.com/sequra/integration-core/tree/v5.5.0)
+## Added
+- Affiliate configuration support: the `AffiliateSettings` entity and `AffiliateSettingsService`, the `get-affiliate-settings` and `save-affiliate-settings` configuration webhook topics, and connect time provisioning that reads the `affiliate` block from the merchant `configuration_data` and persists it.
+
+# [v1.0.13](https://github.com/sequra/integration-core/tree/v1.0.13)
+## Changed
+- Added compatibility with PHP8.2.
+
+# [v1.0.12](https://github.com/sequra/integration-core/tree/v1.0.12)
+**BREAKING CHANGES**
+- The `SeQura\Core\BusinessLogic\Webhook\Repositories\OrderStatusMappingRepository` interface is moved and renamed to
+`SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface`,
+- The `SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Models\OrderStatusSettings` entity is removed.
+- The `SeQura\Core\BusinessLogic\Webhook\Services\StatusMappingService` service is moved and renamed to 
+`SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService`
+
+# [v1.0.11](https://github.com/sequra/integration-core/tree/v1.0.11)
+**BREAKING CHANGES**
+- The `\SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService::updateStatus` method signature is changed.
+Now the whole `Webhook` instance is passed as first argument instead of shop order reference. Existing code can get
+the shop order id directly from `Webhook` instance.
+- The `\SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy::updateOrderCarts` method has been removed since it is 
+the same as `updateOrder` method from the same class. Also 
+`\SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\UpdateOrderCartsHttpRequest` has been removed since it is the same 
+as `\SeQura\Core\BusinessLogic\SeQuraAPI\Order\Requests\UpdateOrderHttpRequest`.
+
+# [v1.0.10](https://github.com/sequra/integration-core/tree/v1.0.10)
+## Changed
+- Added order total calculation in cart items setter.
+
+# [v1.0.9](https://github.com/sequra/integration-core/tree/v1.0.9)
+## Changed
+- Added optional parameters to the updateStatus method of ShopOrderService interface.
+
+# [v1.0.8](https://github.com/sequra/integration-core/tree/v1.0.8)
+## Changed
+- Made methods of webhook handler protected.
+
+# [v1.0.7](https://github.com/sequra/integration-core/tree/v1.0.7)
+## Changed
+- Fixed a duplicated cart bug when transforming order update request.
+
+# [v1.0.6](https://github.com/sequra/integration-core/tree/v1.0.6)
+## Changed
+- Removed operator reference from merchant DTO.
+
+# [v1.0.5](https://github.com/sequra/integration-core/tree/v1.0.5)
+## Changed
+- Updated the endpoint URL for updating order carts in proxy.
+
+# [v1.0.4](https://github.com/sequra/integration-core/tree/v1.0.4)
+## Changed
+- Updated the cart DTO to allow updating order items.
+
+# [v1.0.3](https://github.com/sequra/integration-core/tree/v1.0.3)
+## Added
+- Added a proxy method for updating carts on the SeQura API
+
+# [v1.0.2](https://github.com/sequra/integration-core/tree/v1.0.2)
+## Changed
+- Updated webhook handling logic to execute synchronously in order to return an error response in case there are any errors while updating the target shop order status.
+
+# [v1.0.1](https://github.com/sequra/integration-core/tree/v1.0.1)
+## Added
+- Function to fetch grouped payment methods.
+
+## [v1.0.0](https://github.com/sequra/integration-core/tree/v1.0.0)
+- Initial release

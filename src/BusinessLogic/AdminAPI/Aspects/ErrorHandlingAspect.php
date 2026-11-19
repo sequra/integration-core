@@ -1,0 +1,111 @@
+<?php
+
+namespace SeQura\Core\BusinessLogic\AdminAPI\Aspects;
+
+use Exception;
+use SeQura\Core\BusinessLogic\AdminAPI\Response\TranslatableErrorResponse;
+use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspect;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderMerchantNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\TranslatableOrderMerchantNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\TranslatableOrderNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableException;
+use SeQura\Core\BusinessLogic\Domain\Translations\Model\BaseTranslatableUnhandledException;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiUnauthorizedException;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
+use SeQura\Core\Infrastructure\Logger\Logger;
+use Throwable;
+
+/**
+ * Class ErrorHandlingAspect
+ *
+ * @package SeQura\Core\BusinessLogic\AdminAPI\Aspects
+ */
+class ErrorHandlingAspect implements Aspect
+{
+    /**
+     * @throws Exception
+     */
+    public function applyOn(callable $callee, array $params = [])
+    {
+        try {
+            $response = \call_user_func_array($callee, $params);
+        } catch (BaseTranslatableException $e) {
+            Logger::logError(
+                $e->getMessage(),
+                'Core',
+                [
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', \get_class($e)),
+                    new LogContextData('trace', $e->getTraceAsString()),
+                ]
+            );
+
+            $response = TranslatableErrorResponse::fromError($e);
+        } catch (HttpApiUnauthorizedException $e) {
+            Logger::logError(
+                $e->getMessage(),
+                'Core',
+                [
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', \get_class($e)),
+                    new LogContextData('trace', $e->getTraceAsString()),
+                ]
+            );
+
+            $response = TranslatableErrorResponse::fromError(new WrongCredentialsException());
+        } catch (OrderNotFoundException $e) {
+            Logger::logWarning(
+                $e->getMessage(),
+                'Core',
+                [
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', \get_class($e)),
+                ]
+            );
+
+            $response = TranslatableErrorResponse::fromError(new TranslatableOrderNotFoundException($e));
+        } catch (OrderMerchantNotFoundException $e) {
+            Logger::logWarning(
+                $e->getMessage(),
+                'Core',
+                [
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', \get_class($e)),
+                ]
+            );
+
+            $response = TranslatableErrorResponse::fromError(new TranslatableOrderMerchantNotFoundException($e));
+        } catch (HttpApiInvalidUrlParameterException $e) {
+            Logger::logError(
+                $e->getMessage(),
+                'Core',
+                [
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', \get_class($e)),
+                    new LogContextData('trace', $e->getTraceAsString()),
+                ]
+            );
+
+            $response = TranslatableErrorResponse::fromError(new BadMerchantIdException());
+        } catch (Throwable $e) {
+            Logger::logError(
+                'Unhandled error occurred.',
+                'Core',
+                [
+                    new LogContextData('message', $e->getMessage()),
+                    new LogContextData('type', \get_class($e)),
+                    new LogContextData('trace', $e->getTraceAsString()),
+                ]
+            );
+
+            $exception = new BaseTranslatableUnhandledException($e);
+            $response = TranslatableErrorResponse::fromError($exception);
+        }
+
+        return $response;
+    }
+}

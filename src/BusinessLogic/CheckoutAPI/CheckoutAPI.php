@@ -1,0 +1,146 @@
+<?php
+
+namespace SeQura\Core\BusinessLogic\CheckoutAPI;
+
+use SeQura\Core\BusinessLogic\AdminAPI\Aspects\ErrorHandlingAspect;
+use SeQura\Core\BusinessLogic\AdminAPI\Aspects\StoreContextAspect;
+use SeQura\Core\BusinessLogic\Bootstrap\Aspect\Aspects;
+use SeQura\Core\BusinessLogic\CheckoutAPI\Affiliate\AffiliateController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\Checkout\Controller\CheckoutController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Controller\ExpressCheckoutController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\Banners\BannerCheckoutController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\CachedPaymentMethodsController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\PaymentMethods\PaymentMethodsCheckoutController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\PromotionalWidgets\PromotionalWidgetsCheckoutController;
+use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Controller\SolicitationController;
+
+/**
+ * Class CheckoutAPI
+ *
+ * @package SeQura\Core\BusinessLogic\CheckoutAPI
+ */
+class CheckoutAPI
+{
+    protected function __construct()
+    {
+    }
+
+    /**
+     * Gets an CheckoutAPI instance.
+     *
+     * @return CheckoutAPI
+     */
+    public static function get(): object
+    {
+        return Aspects::run(new ErrorHandlingAspect())->beforeEachMethodOfInstance(new CheckoutAPI());
+    }
+
+    /**
+     * @param string $storeId
+     *
+     * @return object
+     */
+    public function solicitation(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(SolicitationController::class);
+    }
+
+    /**
+     * @param string $storeId
+     *
+     * @return object
+     */
+    public function cachedPaymentMethods(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(CachedPaymentMethodsController::class);
+    }
+
+    /**
+     * Payment methods of an order already solicited at SeQura, addressed by its reference. The methods a
+     * merchant offers before an order exists come from cachedPaymentMethods() instead.
+     *
+     * @param string $storeId
+     *
+     * @return object
+     */
+    public function solicitedOrderPaymentMethods(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(PaymentMethodsCheckoutController::class);
+    }
+
+    /**
+     * @param string $storeId
+     *
+     * @return object
+     */
+    public function promotionalWidgets(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(PromotionalWidgetsCheckoutController::class);
+    }
+
+    /**
+     * Feature-neutral storefront bootstrap config for the seQura checkout library.
+     *
+     * @param string $storeId
+     *
+     * @return object
+     */
+    public function checkout(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(CheckoutController::class);
+    }
+
+    /**
+     * @param string $storeId
+     *
+     * @return object
+     */
+    public function expressCheckout(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(ExpressCheckoutController::class);
+    }
+
+    /**
+     * @param string $storeId
+     *
+     * @return object
+     */
+    public function banners(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(BannerCheckoutController::class);
+    }
+
+    /**
+     * @param string $storeId
+     *
+     * @return object
+     */
+    public function affiliate(string $storeId): object
+    {
+        return Aspects
+            ::run(new ErrorHandlingAspect())
+            ->andRun(new StoreContextAspect($storeId))
+            ->beforeEachMethodOfService(AffiliateController::class);
+    }
+}

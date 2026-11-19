@@ -1,0 +1,278 @@
+<?php
+
+namespace SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models;
+
+use SeQura\Core\Infrastructure\Data\DataTransferObject;
+
+/**
+ * Class WidgetSettings
+ *
+ * @package SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\Models
+ */
+class WidgetSettings extends DataTransferObject
+{
+    /**
+     * @var bool
+     */
+    protected $displayOnProductPage;
+    /**
+     * @var bool
+     */
+    protected $showInstallmentsInProductListing;
+    /**
+     * @var bool
+     */
+    protected $showInstallmentsInCartPage;
+    /**
+     * @var string|null
+     */
+    protected $widgetConfig;
+    /**
+     * @var WidgetSelectorSettings|null
+     */
+    protected $widgetSettingsForProduct;
+    /**
+     * @var WidgetSelectorSettings|null
+     */
+    protected $widgetSettingsForCart;
+    /**
+     * @var WidgetSelectorSettings|null
+     */
+    protected $widgetSettingsForListing;
+
+    /**
+     * @param bool $displayOnProductPage
+     * @param bool $showInstallmentsInProductListing
+     * @param bool $showInstallmentsInCartPage
+     * @param string|null $widgetConfig
+     * @param WidgetSelectorSettings|null $widgetSettingsForProduct
+     * @param WidgetSelectorSettings|null $widgetSettingsForCart
+     * @param WidgetSelectorSettings|null $widgetSettingsForListing
+     */
+    public function __construct(
+        bool $displayOnProductPage = false,
+        bool $showInstallmentsInProductListing = false,
+        bool $showInstallmentsInCartPage = false,
+        ?string $widgetConfig = null,
+        ?WidgetSelectorSettings $widgetSettingsForProduct = null,
+        ?WidgetSelectorSettings $widgetSettingsForCart = null,
+        ?WidgetSelectorSettings $widgetSettingsForListing = null
+    ) {
+        $this->displayOnProductPage = $displayOnProductPage;
+        $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
+        $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
+        $this->widgetConfig = $widgetConfig;
+        $this->widgetSettingsForProduct = $widgetSettingsForProduct;
+        $this->widgetSettingsForCart = $widgetSettingsForCart;
+        $this->widgetSettingsForListing = $widgetSettingsForListing;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDisplayOnProductPage(): bool
+    {
+        return $this->displayOnProductPage;
+    }
+
+    /**
+     * @param bool $displayOnProductPage
+     *
+     * @return void
+     */
+    public function setDisplayOnProductPage(bool $displayOnProductPage): void
+    {
+        $this->displayOnProductPage = $displayOnProductPage;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isShowInstallmentsInProductListing(): bool
+    {
+        return $this->showInstallmentsInProductListing;
+    }
+
+    /**
+     * @param bool $showInstallmentsInProductListing
+     *
+     * @return void
+     */
+    public function setShowInstallmentsInProductListing(bool $showInstallmentsInProductListing): void
+    {
+        $this->showInstallmentsInProductListing = $showInstallmentsInProductListing;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isShowInstallmentsInCartPage(): bool
+    {
+        return $this->showInstallmentsInCartPage;
+    }
+
+    /**
+     * @param bool $showInstallmentsInCartPage
+     *
+     * @return void
+     */
+    public function setShowInstallmentsInCartPage(bool $showInstallmentsInCartPage): void
+    {
+        $this->showInstallmentsInCartPage = $showInstallmentsInCartPage;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getWidgetConfig(): ?string
+    {
+        return $this->widgetConfig;
+    }
+
+    /**
+     * @param string|null $widgetConfig
+     *
+     * @return void
+     */
+    public function setWidgetConfig(?string $widgetConfig): void
+    {
+        $this->widgetConfig = $widgetConfig;
+    }
+
+    /**
+     * @return WidgetSelectorSettings|null
+     */
+    public function getWidgetSettingsForProduct(): ?WidgetSelectorSettings
+    {
+        return $this->widgetSettingsForProduct;
+    }
+
+    /**
+     * @param WidgetSelectorSettings|null $widgetSettingsForProduct
+     */
+    public function setWidgetSettingsForProduct(?WidgetSelectorSettings $widgetSettingsForProduct): void
+    {
+        $this->widgetSettingsForProduct = $widgetSettingsForProduct;
+    }
+
+    /**
+     * @return WidgetSelectorSettings|null
+     */
+    public function getWidgetSettingsForCart(): ?WidgetSelectorSettings
+    {
+        return $this->widgetSettingsForCart;
+    }
+
+    /**
+     * @param WidgetSelectorSettings|null $widgetSettingsForCart
+     */
+    public function setWidgetSettingsForCart(?WidgetSelectorSettings $widgetSettingsForCart): void
+    {
+        $this->widgetSettingsForCart = $widgetSettingsForCart;
+    }
+
+    /**
+     * @return WidgetSelectorSettings|null
+     */
+    public function getWidgetSettingsForListing(): ?WidgetSelectorSettings
+    {
+        return $this->widgetSettingsForListing;
+    }
+
+    /**
+     * @param WidgetSelectorSettings|null $widgetSettingsForListing
+     */
+    public function setWidgetSettingsForListing(?WidgetSelectorSettings $widgetSettingsForListing): void
+    {
+        $this->widgetSettingsForListing = $widgetSettingsForListing;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toArray(): array
+    {
+        $widgetSettingsArray = [
+            'displayWidgetOnProductPage' => $this->isDisplayOnProductPage(),
+            'showInstallmentAmountInProductListing' => $this->isShowInstallmentsInProductListing(),
+            'showInstallmentAmountInCartPage' => $this->isShowInstallmentsInCartPage(),
+            'widgetStyles' => $this->getWidgetConfig()
+        ];
+
+        $widgetSettingsForProduct = $this->getWidgetSettingsForProduct();
+        $widgetSettingsForCart = $this->getWidgetSettingsForCart();
+        $widgetSettingsForListing = $this->getWidgetSettingsForListing();
+
+        if ($widgetSettingsForProduct) {
+            $widgetSettingsArray['productPriceSelector'] = $widgetSettingsForProduct->getPriceSelector();
+            $widgetSettingsArray['defaultProductLocationSelector'] = $widgetSettingsForProduct->getLocationSelector();
+            $widgetSettingsArray['altProductPriceSelector'] = $widgetSettingsForProduct->getAltPriceSelector();
+            $widgetSettingsArray['altProductPriceTriggerSelector'] = $widgetSettingsForProduct->getAltPriceTriggerSelector();
+            $widgetSettingsArray['customLocations'] = [];
+
+            foreach ($widgetSettingsForProduct->getCustomWidgetsSettings() as $customWidgetSettings) {
+                $widgetSettingsArray['customLocations'][] = [
+                    'product' => $customWidgetSettings->getProduct(),
+                    'selForTarget' => $customWidgetSettings->getCustomLocationSelector(),
+                    'displayWidget' => $customWidgetSettings->isDisplayWidget(),
+                    'widgetStyles' => $customWidgetSettings->getCustomWidgetStyle()
+                ];
+            }
+        }
+
+        if ($widgetSettingsForCart) {
+            $widgetSettingsArray['cartPriceSelector'] = $widgetSettingsForCart->getPriceSelector();
+            $widgetSettingsArray['cartLocationSelector'] = $widgetSettingsForCart->getLocationSelector();
+            $widgetSettingsArray['widgetOnCartPage'] = $widgetSettingsForCart->getWidgetProduct();
+        }
+
+        if ($widgetSettingsForListing) {
+            $widgetSettingsArray['listingPriceSelector'] = $widgetSettingsForListing->getPriceSelector();
+            $widgetSettingsArray['listingLocationSelector'] = $widgetSettingsForListing->getLocationSelector();
+            $widgetSettingsArray['widgetOnListingPage'] = $widgetSettingsForListing->getWidgetProduct();
+        }
+
+        return $widgetSettingsArray;
+    }
+
+    /**
+     * Factory method to create a default WidgetSettings instance.
+     *
+     * @param string $productPriceSelector Selector for the product price element.
+     * @param string $defaultProductLocationSelector Selector for the default product location.
+     * @param string $cartPriceSelector Selector for the cart price element.
+     * @param string $cartLocationSelector Selector for the cart location element.
+     * @param string $listingPriceSelector Selector for the listing price element.
+     * @param string $listingLocationSelector Selector for the listing location element.
+     * @param string $altProductPriceSelector (Optional) Selector for the alternative product price element.
+     * @param string $altProductPriceTriggerSelector (Optional) Selector for the alternative product price trigger element.
+     *
+     * @return WidgetSettings A new instance of WidgetSettings with the provided selectors.
+     */
+    public static function createDefault(
+        string $productPriceSelector,
+        string $defaultProductLocationSelector,
+        string $cartPriceSelector,
+        string $cartLocationSelector,
+        string $listingPriceSelector,
+        string $listingLocationSelector,
+        string $altProductPriceSelector = '',
+        string $altProductPriceTriggerSelector = ''
+    ): WidgetSettings {
+        return new WidgetSettings(
+            false,
+            false,
+            false,
+            null,
+            new WidgetSelectorSettings(
+                $productPriceSelector,
+                $defaultProductLocationSelector,
+                '',
+                $altProductPriceSelector,
+                $altProductPriceTriggerSelector
+            ),
+            new WidgetSelectorSettings($cartPriceSelector, $cartLocationSelector),
+            new WidgetSelectorSettings($listingPriceSelector, $listingLocationSelector)
+        );
+    }
+}

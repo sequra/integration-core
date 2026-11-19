@@ -1,0 +1,42 @@
+{
+  "name": "sequra/integration-core",
+  "description": "Core SeQura integration library",
+  "type": "library",
+  "license": "proprietary",
+  "require": {
+    "php": ">=7.2",
+    "ext-json": "*",
+    "ext-ctype": "*",
+    "ext-mbstring": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "SeQura\\Core\\Infrastructure\\": "src/Infrastructure",
+      "SeQura\\Core\\BusinessLogic\\": "src/BusinessLogic"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "SeQura\\Core\\Tests\\Infrastructure\\": "tests/Infrastructure",
+      "SeQura\\Core\\Tests\\BusinessLogic\\": "tests/BusinessLogic",
+      "SeQura\\Core\\PHPStan\\": "phpstan/"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "8.5.52",
+    "phpcompatibility/php-compatibility": "^9.3",
+    "phpstan/phpstan": "^1.12 || ^2.1",
+    "slevomat/coding-standard": "^7.0"
+  },
+  "prefer-stable": true,
+  "config": {
+    "platform": {
+      "php": "7.2"
+    },
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true
+    },
+    "preferred-install": "dist"
+  }
+}

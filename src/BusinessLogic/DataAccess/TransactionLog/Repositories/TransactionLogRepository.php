@@ -1,0 +1,296 @@
+<?php
+
+namespace SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories;
+
+use DateTime;
+use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
+use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use SeQura\Core\BusinessLogic\TransactionLog\Models\TransactionData;
+use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
+use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use SeQura\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
+use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
+use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
+
+/**
+ * Class TransactionLogRepository
+ *
+ * @package SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Repositories
+ */
+class TransactionLogRepository implements TransactionLogRepositoryInterface
+{
+    /**
+     * @var RepositoryInterface Transaction log repository.
+     */
+    protected $repository;
+
+    /**
+     * @var StoreContext Store context needed for multistore environment.
+     */
+    protected $storeContext;
+
+    /**
+     * @param RepositoryInterface $repository
+     * @param StoreContext $storeContext
+     */
+    public function __construct(RepositoryInterface $repository, StoreContext $storeContext)
+    {
+        $this->repository = $repository;
+        $this->storeContext = $storeContext;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function getTransactionLog(string $merchantReference): ?TransactionLog
+    {
+        $entity = $this->getTransactionLogEntity($merchantReference);
+
+        return $entity ?: null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setTransactionLog(TransactionLog $transactionLog): void
+    {
+        $this->repository->save($transactionLog);
+    }
+
+    /**
+     * @param TransactionLog $transactionLog
+     *
+     * @return void
+     */
+    public function updateTransactionLog(TransactionLog $transactionLog): void
+    {
+        $this->repository->update($transactionLog);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function findWithoutOrder(string $eventCode, string $queueStatus): array
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
+            ->where('merchantReference', Operators::EQUALS, '');
+
+        return array_values(array_filter(
+            $this->repository->select($queryFilter),
+            static function ($transactionLog) use ($eventCode, $queueStatus) {
+                return $transactionLog instanceof TransactionLog
+                    && $transactionLog->getEventCode() === $eventCode
+                    && $transactionLog->getQueueStatus() === $queueStatus;
+            }
+        ));
+    }
+
+    /**
+     * @param int $limit
+     * @param int $offset
+     * @param DateTime|null $disconnectTime
+     *
+     * @return TransactionLog[]
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function find(int $limit, int $offset, ?DateTime $disconnectTime = null): array
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->setLimit($limit);
+        $queryFilter->setOffset($offset);
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())->orderBy(
+            'id',
+            QueryFilter::ORDER_DESC
+        );
+
+        if ($disconnectTime) {
+            $queryFilter->where('timestamp', Operators::GREATER_THAN, $disconnectTime);
+        }
+
+        return array_filter(
+            $this->repository->select($queryFilter),
+            function ($transactionLog) {
+                return $transactionLog instanceof TransactionLog;
+            }
+        );
+    }
+
+    /**
+     * @param int $executionId
+     * @param TransactionData $transactionData
+     *
+     * @return ?TransactionLog
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function getItemByExecutionId(int $executionId, TransactionData $transactionData): ?TransactionLog
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter
+            ->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
+            ->where('merchantReference', Operators::EQUALS, (string) $transactionData->getMerchantReference())
+            ->where('executionId', Operators::EQUALS, $executionId)
+            ->where('timestamp', Operators::EQUALS, $transactionData->getTimestamp())
+            ->orderBy('id', QueryFilter::ORDER_DESC);
+
+        foreach ($this->repository->select($queryFilter) as $transactionLog) {
+            if (
+                $transactionLog instanceof TransactionLog
+                && $transactionLog->getEventCode() === $transactionData->getEventCode()
+            ) {
+                return $transactionLog;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function getItemById(int $id): ?TransactionLog
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter
+            ->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
+            ->where('id', Operators::EQUALS, $id);
+
+        /**
+         * @var TransactionLog|null $transactionLog
+         */
+        $transactionLog = $this->repository->selectOne($queryFilter);
+
+        return $transactionLog;
+    }
+
+    /**
+     * @param DateTime|null $disconnectTime
+     *
+     * @return int
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function count(?DateTime $disconnectTime = null): int
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
+
+        if ($disconnectTime) {
+            $queryFilter->where('timestamp', Operators::GREATER_THAN, $disconnectTime);
+        }
+
+        return $this->repository->count($queryFilter);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function findByMerchantReference(string $merchantReference): ?TransactionLog
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('merchantReference', Operators::EQUALS, $merchantReference);
+
+        /**
+         * @var TransactionLog|null $transactionLog
+         */
+        $transactionLog = $this->repository->selectOne($queryFilter);
+
+        return $transactionLog;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function logsExist(DateTime $beforeDate): bool
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('timestamp', Operators::LESS_THAN, $beforeDate->getTimestamp())
+            ->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
+        $result = $this->repository->count($queryFilter);
+
+        return $result > 0;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteLogs(DateTime $beforeDate, int $limit): void
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('timestamp', Operators::LESS_THAN, $beforeDate->getTimestamp())
+            ->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
+        $queryFilter->setLimit($limit);
+
+        // @phpstan-ignore-next-line
+        $this->repository->deleteWhere($queryFilter);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteTransactionLogById(int $id): void
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('id', Operators::EQUALS, $id);
+
+        // @phpstan-ignore-next-line
+        $this->repository->deleteWhere($queryFilter);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function deleteAllTransactionLogs(): void
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId());
+
+        /**
+         * @var TransactionLog[] $transactionLogs
+         */
+        $transactionLogs = $this->repository->select($queryFilter);
+
+        foreach ($transactionLogs as $transactionLog) {
+            $this->repository->delete($transactionLog);
+        }
+    }
+
+    /**
+     * @param string $merchantReference
+     *
+     * @return TransactionLog|null
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    protected function getTransactionLogEntity(string $merchantReference): ?TransactionLog
+    {
+        $queryFilter = new QueryFilter();
+        $queryFilter->where('storeId', Operators::EQUALS, $this->storeContext->getStoreId())
+            ->where('merchantReference', Operators::EQUALS, $merchantReference);
+
+        /**
+         * @var TransactionLog|null $transactionLog
+         */
+        $transactionLog = $this->repository->selectOne($queryFilter);
+
+        return $transactionLog;
+    }
+}

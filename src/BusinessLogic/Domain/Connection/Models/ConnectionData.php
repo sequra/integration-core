@@ -1,0 +1,206 @@
+<?php
+
+namespace SeQura\Core\BusinessLogic\Domain\Connection\Models;
+
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidEnvironmentException;
+use SeQura\Core\BusinessLogic\SeQuraAPI\BaseProxy;
+use SeQura\Core\Infrastructure\Data\DataTransferObject;
+
+/**
+ * Class ConnectionData
+ *
+ * @package SeQura\Core\BusinessLogic\Domain\Connection\Models
+ */
+class ConnectionData extends DataTransferObject
+{
+    /**
+     * @var string
+     */
+    protected $environment;
+
+    /**
+     * @var string|null
+     */
+    protected $merchantId;
+
+    /**
+     * @var string
+     */
+    protected $deployment;
+
+    /**
+     * @var AuthorizationCredentials
+     */
+    protected $authorizationCredentials;
+
+    /**
+     * Id of this store's integration in the SeQura portal, as the portal reported it when the
+     * integration was registered. Null for a store connected before the id was kept, and for one
+     * whose registration was skipped.
+     *
+     * @var string|null
+     */
+    protected $integrationId;
+
+    /**
+     * @var bool|null
+     */
+    protected $expressCheckoutRegistered;
+
+    /**
+     * @param string $environment
+     * @param string|null $merchantId
+     * @param string $deployment
+     * @param AuthorizationCredentials $authorizationCredentials
+     * @param string|null $integrationId
+     * @param bool|null $expressCheckoutRegistered
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function __construct(
+        string $environment,
+        ?string $merchantId,
+        string $deployment,
+        AuthorizationCredentials $authorizationCredentials,
+        ?string $integrationId = null,
+        ?bool $expressCheckoutRegistered = null
+    ) {
+        if (!\in_array($environment, [BaseProxy::LIVE_MODE, BaseProxy::TEST_MODE], true)) {
+            throw new InvalidEnvironmentException();
+        }
+
+        $this->environment = $environment;
+        $this->merchantId = $merchantId;
+        $this->deployment = $deployment;
+        $this->authorizationCredentials = $authorizationCredentials;
+        $this->integrationId = $integrationId;
+        $this->expressCheckoutRegistered = $expressCheckoutRegistered;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEnvironment(): string
+    {
+        return $this->environment;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLive(): bool
+    {
+        return $this->environment === BaseProxy::LIVE_MODE;
+    }
+
+    /**
+     * @param string $environment
+     */
+    public function setEnvironment(string $environment): void
+    {
+        $this->environment = $environment;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSandbox(): bool
+    {
+        return $this->environment === BaseProxy::TEST_MODE;
+    }
+
+    /**
+     * @return AuthorizationCredentials
+     */
+    public function getAuthorizationCredentials(): AuthorizationCredentials
+    {
+        return $this->authorizationCredentials;
+    }
+
+    /**
+     * @param AuthorizationCredentials $authorizationCredentials
+     */
+    public function setAuthorizationCredentials(AuthorizationCredentials $authorizationCredentials): void
+    {
+        $this->authorizationCredentials = $authorizationCredentials;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMerchantId(): ?string
+    {
+        return $this->merchantId;
+    }
+
+    /**
+     * @param string|null $merchantId
+     */
+    public function setMerchantId(?string $merchantId): void
+    {
+        $this->merchantId = $merchantId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDeployment(): string
+    {
+        return $this->deployment;
+    }
+
+    /**
+     * @param string $deployment
+     *
+     * @return void
+     */
+    public function setDeployment(string $deployment): void
+    {
+        $this->deployment = $deployment;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getIntegrationId(): ?string
+    {
+        return $this->integrationId;
+    }
+
+    /**
+     * @param string|null $integrationId
+     *
+     * @return void
+     */
+    public function setIntegrationId(?string $integrationId): void
+    {
+        $this->integrationId = $integrationId;
+    }
+
+    public function isExpressCheckoutRegistered(): ?bool
+    {
+        return $this->expressCheckoutRegistered;
+    }
+
+    public function setExpressCheckoutRegistered(bool $expressCheckoutRegistered): void
+    {
+        $this->expressCheckoutRegistered = $expressCheckoutRegistered;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toArray(): array
+    {
+        $data['connectionData'] = [
+            'environment' => $this->environment,
+            'merchantId' => $this->merchantId,
+            'deployment' => $this->deployment,
+            'integrationId' => $this->integrationId,
+            'expressCheckoutRegistered' => $this->expressCheckoutRegistered,
+            'authorizationCredentials' => $this->authorizationCredentials->toArray(),
+        ];
+
+        return $data;
+    }
+}

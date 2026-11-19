@@ -1,0 +1,245 @@
+<?php
+
+namespace SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services;
+
+use SeQura\Core\BusinessLogic\AdminAPI\PaymentMethods\Requests\GetAvailablePaymentMethodsRequest;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Models\SeQuraPaymentMethod;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+
+/**
+ * Class PaymentMethodService
+ *
+ * @package SeQura\Core\BusinessLogic\Domain\PaymentMethod\Services
+ */
+class PaymentMethodsService
+{
+    /**
+     * Payment-method categories whose products can carry promotional financing (widgets,
+     * mini-widgets, Express Checkout). Used to derive the storefront library's product list.
+     */
+    public const PROMOTIONAL_PRODUCT_CATEGORIES = ['part_payment', 'pay_later'];
+
+    /**
+     * @var MerchantProxyInterface
+     */
+    protected $merchantProxy;
+    /**
+     * @var PaymentMethodRepositoryInterface
+     */
+    protected $paymentMethodsRepository;
+
+    /**
+     * @var CountryConfigurationService
+     */
+    protected $countryConfigurationService;
+
+    /**
+     * @param MerchantProxyInterface $merchantProxy
+     * @param PaymentMethodRepositoryInterface $paymentMethodsRepository
+     * @param CountryConfigurationService $countryConfigurationService
+     */
+    public function __construct(
+        MerchantProxyInterface $merchantProxy,
+        PaymentMethodRepositoryInterface $paymentMethodsRepository,
+        CountryConfigurationService $countryConfigurationService
+    ) {
+        $this->merchantProxy = $merchantProxy;
+        $this->paymentMethodsRepository = $paymentMethodsRepository;
+        $this->countryConfigurationService = $countryConfigurationService;
+    }
+
+    /**
+     * Gets available payment methods for merchant.
+     *
+     * @param string $merchantId
+     * @param bool $cache
+     *
+     * @return SeQuraPaymentMethod[]
+     *
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     */
+    public function getMerchantsPaymentMethods(string $merchantId, bool $cache = false): array
+    {
+        $availablePaymentMethods = $this->merchantProxy->getAvailablePaymentMethods(new GetAvailablePaymentMethodsRequest($merchantId));
+
+        if ($cache) {
+            $this->cachePaymentMethods($merchantId, $availablePaymentMethods);
+        }
+
+        return $availablePaymentMethods;
+    }
+
+    /**
+     * Returns available payment methods for all merchants, grouped by product.
+     * Payment methods sharing the same product code have their titles concatenated with `/`.
+     *
+     * @param bool $cache
+     *
+     * @return SeQuraPaymentMethod[]
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     * @throws FailedToRetrieveSellingCountriesException
+     */
+    public function getGroupedPaymentMethodsForAllMerchants(bool $cache = false): array
+    {
+        return $this->groupPaymentMethodsByProduct(
+            $this->getAvailablePaymentMethodsForAllMerchants($cache)
+        );
+    }
+
+    /**
+     *  Returns available payment methods for all enabled merchants.
+     *
+     * @param bool $cache
+     *
+     * @return SeQuraPaymentMethod[]
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     * @throws FailedToRetrieveSellingCountriesException
+     */
+    public function getAvailablePaymentMethodsForAllMerchants(bool $cache = false): array
+    {
+        $availablePaymentMethods = [];
+        $merchantIds = $this->getMerchantIds();
+
+        foreach ($merchantIds as $merchantId) {
+            $methods = $this->getMerchantsPaymentMethods($merchantId, $cache);
+
+            if (!empty($methods)) {
+                $availablePaymentMethods[] = $methods;
+            }
+        }
+
+        return !empty($availablePaymentMethods) ? array_merge(...$availablePaymentMethods) : [];
+    }
+
+    /**
+     * Gets available products for the merchant.
+     *
+     * @param string $merchantId
+     *
+     * @return string[]
+     *
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     */
+    public function getMerchantProducts(string $merchantId): array
+    {
+        $methods = $this->getCachedPaymentMethods($merchantId);
+
+        return array_map(function (SeQuraPaymentMethod $method) {
+            return $method->getProduct();
+        }, $methods);
+    }
+
+    /**
+     * Returns the merchant's products that can carry promotional financing (categories in
+     * self::PROMOTIONAL_PRODUCT_CATEGORIES). Used to build the storefront library's product list.
+     *
+     * @param string $merchantId
+     *
+     * @return string[]
+     *
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     */
+    public function getMerchantPromotionalProducts(string $merchantId): array
+    {
+        $products = [];
+
+        foreach ($this->getCachedPaymentMethods($merchantId) as $paymentMethod) {
+            if (\in_array($paymentMethod->getCategory(), self::PROMOTIONAL_PRODUCT_CATEGORIES, true)) {
+                $products[] = $paymentMethod->getProduct();
+            }
+        }
+
+        return $products;
+    }
+
+    /**
+     * Returns cached SeQura payment methods.
+     *
+     * @return SeQuraPaymentMethod[]
+     *
+     * @throws HttpRequestException
+     * @throws PaymentMethodNotFoundException
+     */
+    public function getCachedPaymentMethods(string $merchantId): array
+    {
+        $cachedPaymentMethods = $this->paymentMethodsRepository->getPaymentMethods($merchantId);
+        if (!empty($cachedPaymentMethods)) {
+            return $cachedPaymentMethods;
+        }
+
+        // No cached payment methods found. Fetch them from the API as fallback.
+        return $this->getMerchantsPaymentMethods($merchantId, true);
+    }
+
+    /**
+     * Caches payment methods.
+     *
+     * @param string $merchantId
+     * @param SeQuraPaymentMethod[] $paymentMethods
+     *
+     * @throws PaymentMethodNotFoundException
+     */
+    private function cachePaymentMethods(string $merchantId, array $paymentMethods): void
+    {
+        $this->paymentMethodsRepository->deletePaymentMethods($merchantId);
+
+        foreach ($paymentMethods as $paymentMethod) {
+            $this->paymentMethodsRepository->setPaymentMethod($merchantId, $paymentMethod);
+        }
+    }
+
+    /**
+     * Groups payment methods by product code, concatenating titles with `/`.
+     *
+     * @param SeQuraPaymentMethod[] $paymentMethods
+     *
+     * @return SeQuraPaymentMethod[]
+     */
+    private function groupPaymentMethodsByProduct(array $paymentMethods): array
+    {
+        $grouped = [];
+        foreach ($paymentMethods as $method) {
+            $product = $method->getProduct();
+            if (isset($grouped[$product])) {
+                $existingTitle = $grouped[$product]->getTitle();
+                $newTitle = $method->getTitle();
+                if (strpos($existingTitle, $newTitle) === false) {
+                    $grouped[$product]->setTitle($existingTitle . '/' . $newTitle);
+                }
+                continue;
+            }
+            $grouped[$product] = $method;
+        }
+
+        return array_values($grouped);
+    }
+
+    /**
+     * Retrieves available merchant ids from database.
+     *
+     * @return string[]
+     *
+     * @throws FailedToRetrieveSellingCountriesException
+     */
+    private function getMerchantIds(): array
+    {
+        $countryConfigurations = $this->countryConfigurationService->getCountryConfiguration();
+        if (empty($countryConfigurations)) {
+            return [];
+        }
+
+        return array_map(function ($config) {
+            return $config->getMerchantId();
+        }, $countryConfigurations);
+    }
+}

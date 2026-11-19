@@ -1,0 +1,274 @@
+<?php
+
+namespace SeQura\Core\BusinessLogic\Domain\Connection\Services;
+
+use SeQura\Core\BusinessLogic\Domain\Affiliate\Models\AffiliateSettings;
+use SeQura\Core\BusinessLogic\Domain\Affiliate\Services\AffiliateSettingsService;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\CredentialsRequest;
+use SeQura\Core\BusinessLogic\Domain\Connection\ProxyContracts\ConnectionProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\CredentialsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Models\CountryConfiguration;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\SellingCountries\SellingCountriesServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\RepositoryContracts\PaymentMethodRepositoryInterface;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiInvalidUrlParameterException;
+use SeQura\Core\BusinessLogic\SeQuraAPI\Exceptions\HttpApiUnauthorizedException;
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+
+/**
+ * Class CredentialsService.
+ *
+ * @package SeQura\Core\BusinessLogic\Domain\Connection\Services
+ */
+class CredentialsService
+{
+    /**
+     * @var ConnectionProxyInterface $connectionProxy
+     */
+    protected $connectionProxy;
+    /**
+     * @var CredentialsRepositoryInterface $credentialsRepository
+     */
+    protected $credentialsRepository;
+
+    /**
+     * @var CountryConfigurationRepositoryInterface $countryConfigurationRepository
+     */
+    protected $countryConfigurationRepository;
+
+    /**
+     * @var PaymentMethodRepositoryInterface
+     */
+    protected $paymentMethodRepository;
+
+    /**
+     * @var AffiliateSettingsService
+     */
+    protected $affiliateSettingsService;
+
+    /**
+     * @var SellingCountriesServiceInterface
+     */
+    protected $sellingCountriesService;
+
+    /**
+     * @param ConnectionProxyInterface $connectionProxy
+     * @param CredentialsRepositoryInterface $credentialsRepository
+     * @param CountryConfigurationRepositoryInterface $countryConfigurationRepository
+     * @param PaymentMethodRepositoryInterface $paymentMethodRepository
+     * @param AffiliateSettingsService $affiliateSettingsService
+     * @param SellingCountriesServiceInterface $sellingCountriesService
+     */
+    public function __construct(
+        ConnectionProxyInterface $connectionProxy,
+        CredentialsRepositoryInterface $credentialsRepository,
+        CountryConfigurationRepositoryInterface $countryConfigurationRepository,
+        PaymentMethodRepositoryInterface $paymentMethodRepository,
+        AffiliateSettingsService $affiliateSettingsService,
+        SellingCountriesServiceInterface $sellingCountriesService
+    ) {
+        $this->connectionProxy = $connectionProxy;
+        $this->credentialsRepository = $credentialsRepository;
+        $this->countryConfigurationRepository = $countryConfigurationRepository;
+        $this->paymentMethodRepository = $paymentMethodRepository;
+        $this->affiliateSettingsService = $affiliateSettingsService;
+        $this->sellingCountriesService = $sellingCountriesService;
+    }
+
+    /**
+     * Attempts to send an HTTP request to the SeQura API with the provided connection data.
+     * If response is successful, credentials entities are saved to database.
+     *
+     * @param ConnectionData $connectionData
+     *
+     * @return Credentials[]
+     *
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     * @throws BadMerchantIdException
+     */
+    public function validateAndUpdateCredentials(ConnectionData $connectionData): array
+    {
+        try {
+            $credentials = $this->connectionProxy->getCredentials(new CredentialsRequest($connectionData));
+        } catch (HttpApiUnauthorizedException $exception) {
+            throw new WrongCredentialsException();
+        } catch (HttpApiInvalidUrlParameterException $exception) {
+            throw new BadMerchantIdException();
+        }
+
+        $this->credentialsRepository->deleteCredentialsByDeploymentId($connectionData->getDeployment());
+        $this->credentialsRepository->setCredentials($credentials);
+        $this->updateAffiliateSettingsFromCredentials($credentials);
+
+        return $credentials;
+    }
+
+    /**
+     * Persists the affiliate settings carried in the connect-time configuration_data, when present.
+     *
+     * The block is merchant-level (identical across the per-country credentials), so the first one
+     * that carries it wins. When no credential carries an affiliate block (e.g. the merchant API has
+     * not started emitting it yet) the stored settings are left untouched.
+     *
+     * @param Credentials[] $credentials
+     *
+     * @return void
+     */
+    private function updateAffiliateSettingsFromCredentials(array $credentials): void
+    {
+        foreach ($credentials as $credential) {
+            $affiliate = $credential->getPayload()['affiliate'] ?? null;
+            if (!\is_array($affiliate)) {
+                continue;
+            }
+
+            $this->affiliateSettingsService->setAffiliateSettings(new AffiliateSettings(
+                (bool)($affiliate['enabled'] ?? false),
+                (string)($affiliate['offer_id'] ?? ''),
+                (string)($affiliate['security_token'] ?? '')
+            ));
+
+            return;
+        }
+    }
+
+    /**
+     * Updates country configuration with new merchant ids and remove payment methods with old merchant ids
+     *
+     * @param Credentials[] $credentials
+     *
+     * @return void
+     *
+     * @throws PaymentMethodNotFoundException
+     */
+    public function updateCountryConfigurationWithNewMerchantIdsAndRemoveOldPaymentMethods(array $credentials): void
+    {
+        $countryConfigurations = $this->countryConfigurationRepository->getCountryConfiguration();
+        if (!$countryConfigurations) {
+            return;
+        }
+
+        $newMerchantIds = [];
+        foreach ($credentials as $credential) {
+            $newMerchantIds[$credential->getCountry()] = $credential->getMerchantId();
+        }
+
+        foreach ($countryConfigurations as $configuration) {
+            if (\array_key_exists($configuration->getCountryCode(), $newMerchantIds)) {
+                $this->paymentMethodRepository->deletePaymentMethods($configuration->getMerchantId());
+                $configuration->setMerchantId($newMerchantIds[$configuration->getCountryCode()]);
+            }
+        }
+
+        $this->countryConfigurationRepository->setCountryConfiguration($countryConfigurations);
+    }
+
+    /**
+     * Enables every country the credentials sell in and the shop sells in too, leaving the
+     * countries already configured as they are. The merchant narrows them in the portal.
+     *
+     * @param Credentials[] $credentials
+     *
+     * @return void
+     * @throws EmptyCountryConfigurationParameterException
+     */
+    public function enableSellingCountries(array $credentials): void
+    {
+        $countryConfigurations = $this->countryConfigurationRepository->getCountryConfiguration() ?? [];
+        $shopCountries = $this->sellingCountriesService->getSellingCountries();
+
+        $configuredCountries = array_map(static function (CountryConfiguration $configuration) {
+            return $configuration->getCountryCode();
+        }, $countryConfigurations);
+
+        $added = false;
+        foreach ($credentials as $credential) {
+            $country = $credential->getCountry();
+            if (!\in_array($country, $shopCountries, true) || \in_array($country, $configuredCountries, true)) {
+                continue;
+            }
+
+            $countryConfigurations[] = new CountryConfiguration($country, $credential->getMerchantId());
+            $configuredCountries[] = $country;
+            $added = true;
+        }
+
+        if ($added) {
+            $this->countryConfigurationRepository->setCountryConfiguration($countryConfigurations);
+        }
+    }
+
+    /**
+     * @return Credentials[]
+     */
+    public function getCredentials(): array
+    {
+        return $this->credentialsRepository->getCredentials();
+    }
+
+    /**
+     * Returns credentials by given county code
+     *
+     * @param string $countryCode
+     *
+     * @return Credentials|null
+     */
+    public function getCredentialsByCountryCode(string $countryCode): ?Credentials
+    {
+        return $this->credentialsRepository->getCredentialsByCountryCode($countryCode);
+    }
+
+    /**
+     * Returns credentials by given merchant ID
+     *
+     * @param string $merchantId
+     *
+     * @return Credentials|null
+     */
+    public function getCredentialsByMerchantId(string $merchantId): ?Credentials
+    {
+        return $this->credentialsRepository->getCredentialsByMerchantId($merchantId);
+    }
+
+    /**
+     * Returns credentials for the shopper's country, preferring the shipping country and falling
+     * back to the current (browsing) country.
+     *
+     * @param string $shippingCountry
+     * @param string $currentCountry
+     *
+     * @return Credentials|null
+     */
+    public function getCredentialsByCountry(string $shippingCountry, string $currentCountry): ?Credentials
+    {
+        $credentials = $this->getCredentialsByCountryCode($shippingCountry);
+        if (!$credentials) {
+            $credentials = $this->getCredentialsByCountryCode($currentCountry);
+        }
+
+        return $credentials;
+    }
+
+    /**
+     * Get the merchant ID by country code.
+     *
+     * @throws CredentialsNotFoundException
+     */
+    public function getMerchantIdByCountryCode(string $countryCode): string
+    {
+        $credentials = $this->getCredentialsByCountryCode($countryCode);
+        if (!$credentials) {
+            throw new CredentialsNotFoundException();
+        }
+
+        return $credentials->getMerchantId();
+    }
+}

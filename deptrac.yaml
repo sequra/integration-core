@@ -1,0 +1,58 @@
+imports:
+  - deptrac.baseline.yaml
+
+deptrac:
+  paths:
+    - ./src
+  layers:
+    - name: Domain
+      collectors:
+        - type: classLike
+          value: ^SeQura\\Core\\BusinessLogic\\Domain\\.*
+    - name: DataAccess
+      collectors:
+        - type: classLike
+          value: ^SeQura\\Core\\BusinessLogic\\DataAccess\\.*
+    - name: SeQuraAPI
+      collectors:
+        - type: classLike
+          value: ^SeQura\\Core\\BusinessLogic\\SeQuraAPI\\.*
+    - name: Facades
+      collectors:
+        - type: classLike
+          value: ^SeQura\\Core\\BusinessLogic\\(AdminAPI|CheckoutAPI|WebhookAPI|ConfigurationWebhookAPI)\\.*
+    - name: TaskRunnerBridge
+      collectors:
+        - type: classLike
+          value: ^SeQura\\Core\\BusinessLogic\\TaskExecution\\Standalone\\.*
+    - name: WiringManifest
+      collectors:
+        - type: classLike
+          value: ^SeQura\\Core\\BusinessLogic\\BootstrapComponent$
+    - name: OtherBusinessLogic
+      collectors:
+        - type: classLike
+          value: ^SeQura\\Core\\BusinessLogic\\(?!(Domain|DataAccess|SeQuraAPI|AdminAPI|CheckoutAPI|WebhookAPI|ConfigurationWebhookAPI)\\|TaskExecution\\Standalone\\|BootstrapComponent$).*
+    - name: TaskRunner
+      collectors:
+        - type: classLike
+          value: ^SeQura\\Core\\Infrastructure\\TaskExecution\\.*
+    - name: HttpClient
+      collectors:
+        - type: classLike
+          value: ^SeQura\\Core\\Infrastructure\\Http\\\w*Http[Cc]lient$
+    - name: Infrastructure
+      collectors:
+        - type: classLike
+          value: ^SeQura\\Core\\Infrastructure\\(?!TaskExecution\\|Http\\\w*Http[Cc]lient$).*
+  ruleset:
+    Domain: [OtherBusinessLogic, Infrastructure]
+    DataAccess: [Domain, OtherBusinessLogic, Infrastructure, HttpClient]
+    SeQuraAPI: [Domain, OtherBusinessLogic, Infrastructure, HttpClient]
+    Facades: [Domain, OtherBusinessLogic, Infrastructure, HttpClient]
+    TaskRunnerBridge: [Domain, DataAccess, SeQuraAPI, Facades, OtherBusinessLogic, WiringManifest, TaskRunner, Infrastructure, HttpClient]
+    WiringManifest: [Domain, DataAccess, SeQuraAPI, Facades, TaskRunnerBridge, OtherBusinessLogic, TaskRunner, Infrastructure, HttpClient]
+    OtherBusinessLogic: [Domain, DataAccess, SeQuraAPI, Facades, TaskRunnerBridge, WiringManifest, Infrastructure, HttpClient]
+    TaskRunner: [Infrastructure, HttpClient]
+    HttpClient: [Infrastructure, TaskRunner]
+    Infrastructure: [HttpClient, TaskRunner]

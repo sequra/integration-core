@@ -1,0 +1,528 @@
+<?php
+
+namespace SeQura\Core\BusinessLogic\Domain\Connection\Services;
+
+use Exception;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\ConnectionData;
+use SeQura\Core\BusinessLogic\Domain\Connection\Models\Credentials;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\EmptyCountryConfigurationParameterException;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Models\Deployment;
+use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\DeploymentsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
+use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Exceptions\CapabilitiesEmptyException;
+use SeQura\Core\BusinessLogic\Domain\StoreIntegration\Services\StoreIntegrationService;
+use SeQura\Core\BusinessLogic\Domain\URL\Exceptions\InvalidUrlException;
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
+use SeQura\Core\Infrastructure\Logger\Logger;
+
+/**
+ * Class ConnectionService
+ *
+ * @package SeQura\Core\BusinessLogic\Domain\Connection\Services
+ */
+class ConnectionService
+{
+    /**
+     * Page of the SeQura portal where a merchant configures the store integrations of their account
+     */
+    private const PORTAL_STORE_INTEGRATIONS_PATH = '/development/store-integrations';
+
+    /**
+     * Path, under a store integration's page, of the settings the merchant edits
+     */
+    private const PORTAL_STORE_INTEGRATION_SETTINGS_PATH = '/settings';
+
+    /**
+     * Env var key that, when explicitly truthy, skips store integration (and therefore webhook) registration
+     * for sandbox connections.
+     */
+    public const SKIP_STORE_INTEGRATION_REGISTRATION_ENV = 'SEQURA_SKIP_STORE_INTEGRATION_REGISTRATION';
+
+    /**
+     * @var ConnectionDataRepositoryInterface $connectionDataRepository
+     */
+    protected $connectionDataRepository;
+
+    /**
+     * @var CredentialsService $credentialsService
+     */
+    protected $credentialsService;
+
+    /**
+     * @var StoreIntegrationService $storeIntegrationService
+     */
+    protected $storeIntegrationService;
+
+    /**
+     * @var DeploymentsRepositoryInterface $deploymentsRepository
+     */
+    protected $deploymentsRepository;
+
+    /**
+     * @var DeploymentsService $deploymentsService
+     */
+    protected $deploymentsService;
+
+    /**
+     * @param ConnectionDataRepositoryInterface $connectionDataRepository
+     * @param CredentialsService $credentialsService
+     * @param StoreIntegrationService $storeIntegrationService
+     * @param DeploymentsRepositoryInterface $deploymentsRepository
+     * @param DeploymentsService $deploymentsService
+     */
+    public function __construct(
+        ConnectionDataRepositoryInterface $connectionDataRepository,
+        CredentialsService $credentialsService,
+        StoreIntegrationService $storeIntegrationService,
+        DeploymentsRepositoryInterface $deploymentsRepository,
+        DeploymentsService $deploymentsService
+    ) {
+        $this->connectionDataRepository = $connectionDataRepository;
+        $this->credentialsService = $credentialsService;
+        $this->storeIntegrationService = $storeIntegrationService;
+        $this->deploymentsRepository = $deploymentsRepository;
+        $this->deploymentsService = $deploymentsService;
+    }
+
+    /**
+     * @param ConnectionData[] $connections
+     *
+     * @return ConnectionData[] The connections that were connected, without the ones left without credentials
+     *
+     * @throws BadMerchantIdException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     * @throws PaymentMethodNotFoundException
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidUrlException
+     * @throws EmptyCountryConfigurationParameterException when a credential carries no merchant reference for a
+     * country the shop sells in. Its deployment is not connected; the other deployments are.
+     */
+    public function connect(array $connections): array
+    {
+        $errors = [];
+        $emptyCountryConfigurationException = null;
+        $connected = [];
+
+        foreach ($connections as $connectionData) {
+            // A deployment the merchant left without credentials is left untouched, not connected and
+            // not disconnected either: disconnecting has its own endpoint
+            if (!$this->hasCredentials($connectionData)) {
+                continue;
+            }
+
+            // Only a deployment connected for the first time gets its countries: a reconnect must not
+            // bring back the countries the merchant turned off in the portal
+            $isFirstConnection = $this->getConnectionDataByDeployment($connectionData->getDeployment()) === null;
+
+            try {
+                $credentials = $this->credentialsService->validateAndUpdateCredentials($connectionData);
+                $this->credentialsService->updateCountryConfigurationWithNewMerchantIdsAndRemoveOldPaymentMethods($credentials);
+                if ($isFirstConnection) {
+                    $this->credentialsService->enableSellingCountries($credentials);
+                }
+                $this->registerWebhooks($connectionData);
+                $this->saveConnectionData($connectionData);
+                $connected[] = $connectionData;
+            } catch (WrongCredentialsException $exception) {
+                $errors[] = $connectionData->getDeployment();
+            } catch (EmptyCountryConfigurationParameterException $exception) {
+                // A credential without a merchant reference fails its own deployment only, so the
+                // deployment is left unconnected while the others are still processed
+                Logger::logWarning(
+                    'Deployment not connected because a credential carries no merchant reference.',
+                    'Core',
+                    [new LogContextData('deployment', $connectionData->getDeployment())]
+                );
+                $emptyCountryConfigurationException = $emptyCountryConfigurationException ?? $exception;
+            }
+        }
+
+        if (!empty($errors)) {
+            throw new WrongCredentialsException(null, $errors);
+        }
+
+        if ($emptyCountryConfigurationException) {
+            throw $emptyCountryConfigurationException;
+        }
+
+        return $connected;
+    }
+
+    /**
+     * Tells whether a connection carries the credentials a deployment is connected with.
+     *
+     * @param ConnectionData $connectionData
+     *
+     * @return bool
+     */
+    private function hasCredentials(ConnectionData $connectionData): bool
+    {
+        $credentials = $connectionData->getAuthorizationCredentials();
+
+        return $credentials->getUsername() !== '' && $credentials->getPassword() !== '';
+    }
+
+    /**
+     * Attempts to send an HTTP request to the SeQura API with the provided connection data.
+     *
+     * @param ConnectionData $connectionData
+     *
+     * @return bool
+     *
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     * @throws BadMerchantIdException
+     */
+    public function isConnectionDataValid(ConnectionData $connectionData): bool
+    {
+        $this->credentialsService->validateAndUpdateCredentials($connectionData);
+
+        return true;
+    }
+
+    /**
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     *
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     * @throws BadMerchantIdException
+     */
+    public function refreshCredentials(ConnectionData $connectionData): void
+    {
+        $this->credentialsService->validateAndUpdateCredentials($connectionData);
+
+        if (
+            $connectionData->isExpressCheckoutRegistered() ===
+            $this->storeIntegrationService->isExpressCheckoutRegistrable($connectionData)
+        ) {
+            return;
+        }
+
+        try {
+            $this->reRegisterWebhooks($connectionData);
+        } catch (Exception $exception) {
+            Logger::logWarning(
+                'Store integration re-registration failed; it is retried on the next admin page visit.',
+                'Core',
+                [
+                    new LogContextData('deployment', $connectionData->getDeployment()),
+                    new LogContextData('error', $exception->getMessage()),
+                ]
+            );
+        }
+    }
+
+    /**
+     * Retrieves connection data from the database via connection data repository.
+     *
+     * @return ConnectionData[]
+     */
+    public function getAllConnectionData(): array
+    {
+        return $this->connectionDataRepository->getAllConnectionSettings();
+    }
+
+    /**
+     * Returns the URL of the SeQura portal page where the store is configured, or null when
+     * the store is not connected yet or no connected deployment names a portal.
+     *
+     * @param ConnectionData[]|null $connections Connections of the store, read when not given
+     *
+     * @return string|null
+     */
+    public function getPortalUrl(?array $connections = null): ?string
+    {
+        $connections = $connections ?? $this->getAllConnectionData();
+
+        $listUrl = null;
+
+        foreach ($connections as $connection) {
+            $portalUrl = $this->getConnectionPortalUrl($connection);
+
+            if ($portalUrl === null) {
+                continue;
+            }
+
+            if (self::hasIntegrationId($connection)) {
+                return $portalUrl;
+            }
+
+            // A store connected before the id was kept, or one whose registration was skipped, has
+            // none. Keep the first such portal as the fallback, but go on looking: another
+            // connection may carry an id, and deployments can share a portal.
+            $listUrl = $listUrl ?? $portalUrl;
+        }
+
+        return $listUrl;
+    }
+
+    /**
+     * Returns the portal URL of each connection, keyed by its deployment: each deployment
+     * registers a store integration of its own, so each has its own page in the portal.
+     *
+     * @param ConnectionData[] $connections
+     *
+     * @return array<string, string|null>
+     */
+    public function getPortalUrlsByDeployment(array $connections): array
+    {
+        $portalUrls = [];
+
+        foreach ($connections as $connection) {
+            $portalUrls[$connection->getDeployment()] = $this->getConnectionPortalUrl($connection);
+        }
+
+        return $portalUrls;
+    }
+
+    /**
+     * Returns the URL of the portal page of the connection's own store integration, the list of
+     * store integrations when the connection keeps no id, or null when its deployment names no portal.
+     *
+     * @param ConnectionData $connection
+     *
+     * @return string|null
+     */
+    public function getConnectionPortalUrl(ConnectionData $connection): ?string
+    {
+        $portalUrl = $this->getPortalBaseUrl($connection);
+
+        if ($portalUrl === null) {
+            return null;
+        }
+
+        if (!self::hasIntegrationId($connection)) {
+            return $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH;
+        }
+
+        return $portalUrl . self::PORTAL_STORE_INTEGRATIONS_PATH . '/'
+            . rawurlencode((string)$connection->getIntegrationId())
+            . self::PORTAL_STORE_INTEGRATION_SETTINGS_PATH;
+    }
+
+    /**
+     * Returns the base URL of the SeQura portal the connection's deployment belongs to.
+     *
+     * A deployment that is not stored, or was stored before deployments carried their portal URL, is fetched
+     * from the API once, which also stores it for the next call.
+     *
+     * @param ConnectionData $connection
+     *
+     * @return string|null
+     */
+    public function getPortalBaseUrl(ConnectionData $connection): ?string
+    {
+        $deploymentId = $connection->getDeployment();
+        $portalUrl = $this->getDeploymentPortalBaseUrl(
+            $this->deploymentsRepository->getDeploymentById($deploymentId),
+            $connection
+        );
+
+        if ($portalUrl === '') {
+            try {
+                foreach ($this->deploymentsService->getDeployments() as $deployment) {
+                    if ($deployment->getId() === $deploymentId) {
+                        $portalUrl = $this->getDeploymentPortalBaseUrl($deployment, $connection);
+                    }
+                }
+            } catch (HttpRequestException $exception) {
+                Logger::logWarning(
+                    'Failed to fetch the deployments to resolve the portal URL.',
+                    'Core',
+                    [new LogContextData('deployment', $deploymentId)]
+                );
+            }
+        }
+
+        return $portalUrl === '' ? null : rtrim($portalUrl, '/');
+    }
+
+    /**
+     * @param Deployment|null $deployment
+     * @param ConnectionData $connection
+     *
+     * @return string The portal base URL of the connection's environment, empty when the deployment has none.
+     */
+    private function getDeploymentPortalBaseUrl(?Deployment $deployment, ConnectionData $connection): string
+    {
+        if (!$deployment) {
+            return '';
+        }
+
+        $deploymentUrl = $connection->isLive() ?
+            $deployment->getLiveDeploymentURL() :
+            $deployment->getSandboxDeploymentURL();
+
+        return $deploymentUrl ? $deploymentUrl->getPortalBaseUrl() : '';
+    }
+
+    /**
+     * Retrieves connection data from the database via connection data repository.
+     *
+     * @param string $deployment
+     *
+     * @return ConnectionData|null
+     */
+    public function getConnectionDataByDeployment(string $deployment): ?ConnectionData
+    {
+        return $this->connectionDataRepository->getConnectionDataByDeploymentId($deployment);
+    }
+
+    /**
+     * @return Credentials[]
+     *
+     * @throws BadMerchantIdException
+     * @throws HttpRequestException
+     * @throws WrongCredentialsException
+     */
+    public function getCredentials(): array
+    {
+        $credentials = $this->credentialsService->getCredentials();
+
+        if (!empty($credentials)) {
+            return $credentials;
+        }
+
+        $connections = $this->getAllConnectionData();
+        $credentials = [];
+        foreach ($connections as $connectionData) {
+            $credentials = $this->credentialsService->validateAndUpdateCredentials($connectionData);
+        }
+
+        return $credentials;
+    }
+
+    /**
+     * Calls the repository to save the connection data to the database.
+     *
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     */
+    public function saveConnectionData(ConnectionData $connectionData): void
+    {
+        $this->connectionDataRepository->setConnectionData($connectionData);
+    }
+
+    /**
+     * Fetches connection data based on merchant ID. Firstly, credentials are fetched, and then based on deployment,
+     * Connection data are fetched.
+     *
+     * @param string $merchantId
+     *
+     * @return ConnectionData
+     *
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     */
+    public function getConnectionDataByMerchantId(string $merchantId): ConnectionData
+    {
+        $credentials = $this->credentialsService->getCredentialsByMerchantId($merchantId);
+
+        if (!$credentials) {
+            throw new CredentialsNotFoundException();
+        }
+
+        $connectionData = $this->connectionDataRepository->getConnectionDataByDeploymentId($credentials->getDeployment());
+
+        if (!$connectionData) {
+            throw new ConnectionDataNotFoundException();
+        }
+
+        return $connectionData;
+    }
+
+    /**
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidUrlException
+     */
+    public function reRegisterWebhooks(ConnectionData $connectionData): void
+    {
+        $this->registerWebhooks($connectionData);
+        $this->saveConnectionData($connectionData);
+    }
+
+    /**
+     * @param ConnectionData $connectionData
+     *
+     * @return void
+     *
+     * @throws CapabilitiesEmptyException
+     * @throws InvalidUrlException
+     */
+    protected function registerWebhooks(ConnectionData $connectionData): void
+    {
+        if (self::shouldSkipStoreIntegrationRegistration($connectionData)) {
+            Logger::logWarning(
+                'Store integration registration skipped because '
+                . self::SKIP_STORE_INTEGRATION_REGISTRATION_ENV . ' is set. '
+                . 'Webhooks will not be registered for this merchant.',
+                'Core',
+                [
+                    new LogContextData('merchantId', $connectionData->getMerchantId()),
+                    new LogContextData('deployment', $connectionData->getDeployment()),
+                ]
+            );
+
+            return;
+        }
+
+        // Both callers save the connection data immediately after this, so setting the id on the
+        // model is enough to persist it - no write of its own.
+        $expressCheckoutRegistered = $this->storeIntegrationService->isExpressCheckoutRegistrable($connectionData);
+        $connectionData->setIntegrationId(
+            $this->storeIntegrationService->createStoreIntegration($connectionData)
+        );
+        $connectionData->setExpressCheckoutRegistered($expressCheckoutRegistered);
+    }
+
+    /**
+     * Tells whether store integration registration must be skipped, based on an env var. This is a local
+     * development aid, so it is honored in sandbox only: setting the variable against a live merchant has
+     * no effect. Only an explicit truthy value ("1" or "true", case-insensitive, trimmed) enables the skip;
+     * anything else, including an absent or empty value, means "do not skip".
+     *
+     * @param ConnectionData $connectionData
+     *
+     * @return bool
+     */
+    protected static function shouldSkipStoreIntegrationRegistration(ConnectionData $connectionData): bool
+    {
+        if (!$connectionData->isSandbox()) {
+            return false;
+        }
+
+        $flag = getenv(self::SKIP_STORE_INTEGRATION_REGISTRATION_ENV);
+        if (!\is_string($flag)) {
+            return false;
+        }
+
+        return \in_array(strtolower(trim($flag)), ['1', 'true'], true);
+    }
+
+    /**
+     * @param ConnectionData $connection
+     *
+     * @return bool
+     */
+    private static function hasIntegrationId(ConnectionData $connection): bool
+    {
+        $integrationId = $connection->getIntegrationId();
+
+        return $integrationId !== null && $integrationId !== '';
+    }
+}

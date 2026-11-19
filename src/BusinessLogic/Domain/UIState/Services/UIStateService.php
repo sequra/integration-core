@@ -1,0 +1,98 @@
+<?php
+
+namespace SeQura\Core\BusinessLogic\Domain\UIState\Services;
+
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
+use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
+use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
+use SeQura\Core\Infrastructure\Logger\Logger;
+use SeQura\Core\Infrastructure\Logger\LogContextData;
+use Exception;
+use SeQura\Core\BusinessLogic\Domain\Connection\RepositoryContracts\ConnectionDataRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
+use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\PromotionalWidgets\RepositoryContracts\WidgetSettingsRepositoryInterface;
+
+/**
+ * Class UIStateService
+ *
+ * @package SeQura\Core\BusinessLogic\Domain\UIState\Services
+ */
+class UIStateService
+{
+    /**
+     * @var ConnectionService
+     */
+    protected $connectionService;
+
+    /**
+     * @var ConnectionDataRepositoryInterface
+     */
+    protected $connectionDataRepository;
+
+    /**
+     * @var CountryConfigurationRepositoryInterface
+     */
+    protected $countryConfigurationRepository;
+
+    /**
+     * @var WidgetSettingsRepositoryInterface
+     */
+    protected $widgetSettingsRepository;
+
+    /**
+     * @param ConnectionService $connectionService
+     * @param ConnectionDataRepositoryInterface $connectionDataRepository
+     * @param CountryConfigurationRepositoryInterface $countryConfigurationRepository
+     * @param WidgetSettingsRepositoryInterface $widgetSettingsRepository
+     */
+    public function __construct(
+        ConnectionService $connectionService,
+        ConnectionDataRepositoryInterface $connectionDataRepository,
+        CountryConfigurationRepositoryInterface $countryConfigurationRepository,
+        WidgetSettingsRepositoryInterface $widgetSettingsRepository
+    ) {
+        $this->connectionService = $connectionService;
+        $this->connectionDataRepository = $connectionDataRepository;
+        $this->countryConfigurationRepository = $countryConfigurationRepository;
+        $this->widgetSettingsRepository = $widgetSettingsRepository;
+    }
+
+    /**
+     * Returns true it the application state is onboarding.
+     *
+     * @return bool
+     *
+     * @throws Exception
+     */
+    public function isOnboardingState(): bool
+    {
+        $allConnectionSettings = $this->connectionDataRepository->getAllConnectionSettings();
+        if (empty($allConnectionSettings)) {
+            return true;
+        }
+
+        $isConfigured = $this->widgetSettingsRepository->getWidgetSettings() !== null;
+
+        foreach ($allConnectionSettings as $connectionSetting) {
+            try {
+                $this->connectionService->refreshCredentials($connectionSetting);
+            } catch (HttpRequestException | WrongCredentialsException | BadMerchantIdException $exception) {
+                if ($isConfigured) {
+                    throw $exception;
+                }
+
+                Logger::logWarning(
+                    'Credentials refresh failed for a store that has not finished onboarding.',
+                    'Core',
+                    [
+                        new LogContextData('deployment', $connectionSetting->getDeployment()),
+                        new LogContextData('error', $exception->getMessage()),
+                    ]
+                );
+            }
+        }
+
+        return !$isConfigured;
+    }
+}
