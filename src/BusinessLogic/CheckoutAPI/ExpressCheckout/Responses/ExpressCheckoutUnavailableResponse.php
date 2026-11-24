@@ -2,6 +2,7 @@
 
 namespace SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses;
 
+use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Response\IdentificationFormResponse;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 
 /**
@@ -14,7 +15,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
  *
  * @package SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses
  */
-class ExpressCheckoutUnavailableResponse extends ExpressCheckoutSolicitResponse
+class ExpressCheckoutUnavailableResponse extends IdentificationFormResponse
 {
     /**
      * @var bool
@@ -23,6 +24,6 @@ class ExpressCheckoutUnavailableResponse extends ExpressCheckoutSolicitResponse
 
     public function __construct()
     {
-        parent::__construct(new SeQuraForm(''), null, null, null);
+        parent::__construct(new SeQuraForm(''));
     }
 }

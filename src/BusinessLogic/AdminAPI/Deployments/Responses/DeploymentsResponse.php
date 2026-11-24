@@ -34,7 +34,9 @@ class DeploymentsResponse extends Response
             function ($deployment) {
                 return [
                     'id' => $deployment->getId(),
-                    'name' => $deployment->getName()
+                    'name' => $deployment->getName(),
+                    'description' => $deployment->getDescription(),
+                    'logoUrl' => $deployment->getLogoUrl(),
                 ];
             },
             $this->deployments

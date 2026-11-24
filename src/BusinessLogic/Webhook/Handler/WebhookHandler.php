@@ -14,11 +14,11 @@ use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderReques
 use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraOrder;
 use SeQura\Core\BusinessLogic\Domain\Order\OrderRequestStatusMapping;
 use SeQura\Core\BusinessLogic\Domain\Order\OrderStates;
-use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
+use SeQura\Core\BusinessLogic\Webhook\Tasks\OrderUpdateTask;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
@@ -75,15 +75,8 @@ class WebhookHandler
     {
         $this->validateOrder($webhook);
 
-        /**
-         * @var OrderStatusSettingsService $statusSettingsService
-         */
-        $statusSettingsService = ServiceRegister::getService(OrderStatusSettingsService::class);
-        /**
-         * @var ShopOrderService $shopOrderService
-         */
-        $shopOrderService = ServiceRegister::getService(ShopOrderService::class);
-        $shopOrderService->updateStatus($webhook, $statusSettingsService->getMapping($webhook->getSqState()));
+        $task = new OrderUpdateTask($webhook);
+        $task->execute();
 
         if (\in_array($webhook->getSqState(), [OrderStates::STATE_APPROVED, OrderStates::STATE_NEEDS_REVIEW], true)) {
             $this->acknowledgeOrder($webhook->getOrderRef(), $webhook->getSqState());

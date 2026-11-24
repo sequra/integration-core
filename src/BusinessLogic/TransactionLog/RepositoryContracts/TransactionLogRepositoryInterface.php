@@ -5,7 +5,6 @@ namespace SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts;
 use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
-use SeQura\Core\BusinessLogic\TransactionLog\Models\TransactionData;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 
 /**
@@ -44,28 +43,10 @@ interface TransactionLogRepositoryInterface
 
     /**
      * @param int $executionId
-     * @param TransactionData $transactionData
      *
      * @return ?TransactionLog
      */
-    public function getItemByExecutionId(int $executionId, TransactionData $transactionData): ?TransactionLog;
-
-    /**
-     * @param int $id
-     *
-     * @return ?TransactionLog
-     */
-    public function getItemById(int $id): ?TransactionLog;
-
-    /**
-     * @param string $eventCode
-     * @param string $queueStatus
-     *
-     * @return TransactionLog[]
-     *
-     * @throws QueryFilterInvalidParamException
-     */
-    public function findWithoutOrder(string $eventCode, string $queueStatus): array;
+    public function getItemByExecutionId(int $executionId): ?TransactionLog;
 
     /**
      * @param int $limit

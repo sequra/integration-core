@@ -209,22 +209,6 @@ class TaskRunner
     }
 
     /**
-     * @param QueueItem[] $items
-     *
-     * @return QueueItem[]
-     */
-    protected function excludeDelayedItems(array $items): array
-    {
-        $now = $this->getTimeProvider()->getCurrentLocalTime()->getTimestamp();
-
-        return array_values(array_filter($items, static function (QueueItem $item) use ($now) {
-            $earliestStart = $item->getEarliestStartTimestamp();
-
-            return $earliestStart === null || $earliestStart <= $now;
-        }));
-    }
-
-    /**
      * Starts oldest queue item from all queues respecting following list of criteria:
      *      - Queue must be without already running queue items
      *      - For one queue only one (oldest queued) item should be started
@@ -252,7 +236,7 @@ class TaskRunner
 
         $this->keepAlive();
 
-        $items = $this->excludeDelayedItems($this->getQueue()->findOldestQueuedItems($numberOfAvailableSlots));
+        $items = $this->getQueue()->findOldestQueuedItems($numberOfAvailableSlots);
 
         $this->keepAlive();
 

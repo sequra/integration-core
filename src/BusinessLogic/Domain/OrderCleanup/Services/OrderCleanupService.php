@@ -70,9 +70,12 @@ class OrderCleanupService
      * or unreadable too, so nothing is deleted on a guess. Nothing is read or deleted when the order storage cannot
      * delete by condition.
      *
-     * @return \Generator<int, null, mixed, int|null>
+     * @param callable|null $afterEachBatch Called after every batch, e.g. to report that the task is alive.
+     *
+     * @return int|null Number of stale solicitations sent for deletion, or null when the cleanup was skipped. One
+     * linked to a shop order since it was read is kept, but still counted.
      */
-    public function cleanup(): \Generator
+    public function cleanup(?callable $afterEachBatch = null): ?int
     {
         if (!$this->orderRepository->canDeleteUnlinkedOrders()) {
             return null;
@@ -98,7 +101,9 @@ class OrderCleanupService
 
             $this->orderRepository->deleteUnlinkedOrders($staleIds);
             $deleted += \count($staleIds);
-            yield null;
+            if ($afterEachBatch !== null) {
+                $afterEachBatch();
+            }
         } while (\count($orders) === static::BATCH_SIZE);
 
         return $deleted;

@@ -18,12 +18,11 @@
   "autoload-dev": {
     "psr-4": {
       "SeQura\\Core\\Tests\\Infrastructure\\": "tests/Infrastructure",
-      "SeQura\\Core\\Tests\\BusinessLogic\\": "tests/BusinessLogic",
-      "SeQura\\Core\\PHPStan\\": "phpstan/"
+      "SeQura\\Core\\Tests\\BusinessLogic\\": "tests/BusinessLogic"
     }
   },
   "require-dev": {
-    "phpunit/phpunit": "8.5.52",
+    "phpunit/phpunit": "8.5.14",
     "phpcompatibility/php-compatibility": "^9.3",
     "phpstan/phpstan": "^1.12 || ^2.1",
     "slevomat/coding-standard": "^7.0"

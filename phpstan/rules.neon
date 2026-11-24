@@ -1,6 +1,0 @@
-includes:
-    - autoload.php
-
-rules:
-    - SeQura\Core\PHPStan\Rules\NoOuterLayerInDomainRule
-    - SeQura\Core\PHPStan\Rules\StoreScopedRepositoryRule

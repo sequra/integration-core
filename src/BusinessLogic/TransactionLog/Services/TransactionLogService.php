@@ -5,13 +5,15 @@ namespace SeQura\Core\BusinessLogic\TransactionLog\Services;
 use DateTime;
 use Exception;
 use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
-use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\TransactionLog\Contracts\TransactionLogAwareInterface;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
 use SeQura\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueItemDeserializationException;
+use SeQura\Core\Infrastructure\TaskExecution\QueueItem;
+use SeQura\Core\Infrastructure\TaskExecution\Task;
 
 /**
  * Class TransactionLogService
@@ -46,6 +48,45 @@ class TransactionLogService
         $this->transactionLogRepository = $transactionLogRepository;
         $this->orderService = $orderService;
         $this->integrationOrderService = $integrationOrderService;
+    }
+
+    /**
+     * Creates transaction log. Fails existing.
+     *
+     * @param QueueItem $item
+     *
+     * @return void
+     *
+     * @throws QueueItemDeserializationException
+     * @throws OrderNotFoundException
+     */
+    public function create(QueueItem $item): void
+    {
+        /**
+ * @var Task | TransactionLogAwareInterface $task
+*/
+        $task = $item->getTask();
+        if ($task === null) {
+            return;
+        }
+
+        if (!($task instanceof TransactionLogAwareInterface)) {
+            return;
+        }
+
+        if ($item->getParentId() !== null) {
+            return;
+        }
+
+        if ($item->getId() && ($log = $this->transactionLogRepository->getItemByExecutionId($item->getId())) !== null) {
+            $log->setQueueStatus(QueueItem::FAILED);
+            $this->update($log);
+        }
+
+        $transactionLog = $this->createTransactionLogInstance($item);
+        $this->save($transactionLog);
+
+        $task->setTransactionLog($transactionLog);
     }
 
     /**
@@ -84,6 +125,43 @@ class TransactionLogService
     public function delete(int $transactionLogId): void
     {
         $this->transactionLogRepository->deleteTransactionLogById($transactionLogId);
+    }
+
+    /**
+     * Loads transaction log.
+     *
+     * @param QueueItem $item
+     *
+     * @return void
+     *
+     * @throws QueueItemDeserializationException
+     */
+    public function load(QueueItem $item): void
+    {
+        /**
+        * @var TransactionLogAwareInterface $task
+        */
+        $task = $item->getTask();
+
+        if ($task === null) {
+            return;
+        }
+
+        $id = $item->getParentId() ?? $item->getId();
+        $log = $this->transactionLogRepository->getItemByExecutionId($id);
+        if ($log) {
+            $task->setTransactionLog($log);
+        }
+    }
+
+    /**
+     * @param QueueItem $queueItem
+     *
+     * @return bool
+     */
+    public function hasQueueItem(QueueItem $queueItem): bool
+    {
+        return !($this->transactionLogRepository->getItemByExecutionId($queueItem->getId()) === null);
     }
 
     /**
@@ -156,97 +234,41 @@ class TransactionLogService
     }
 
     /**
-     * @param TransactionLogAwareInterface $job
-     * @param string $queueStatus
+     * @param QueueItem $item
      *
      * @return TransactionLog
      *
+     * @throws QueueItemDeserializationException
      * @throws OrderNotFoundException
      */
-    public function createOrderLog(TransactionLogAwareInterface $job, string $queueStatus): TransactionLog
+    protected function createTransactionLogInstance(QueueItem $item): TransactionLog
     {
-        $data = $job->getTransactionData();
-        $order = $this->orderService->getOrderByShopReference($data->getMerchantReference());
-        $paymentMethod = $order->getPaymentMethod() ? $order->getPaymentMethod()->getName() : '';
 
-        $transactionLog = new TransactionLog();
-        $transactionLog->setStoreId(StoreContext::getInstance()->getStoreId());
-        $transactionLog->setMerchantReference($data->getMerchantReference());
-        $transactionLog->setEventCode($data->getEventCode());
-        $transactionLog->setReason($data->getReason());
-        $transactionLog->setIsSuccessful($data->isSuccessful());
-        $transactionLog->setTimestamp($data->getTimestamp());
-        $transactionLog->setPaymentMethod($paymentMethod);
-        $transactionLog->setQueueStatus($queueStatus);
-        $transactionLog->setSequraLink(self::SEQURA_PORTAL_URL . urlencode($order->getReference()));
-        $transactionLog->setShopLink($this->integrationOrderService->getOrderUrl($data->getMerchantReference()));
-
-        $this->saveWithOwnExecutionId($transactionLog);
-
-        return $transactionLog;
-    }
-
-    /**
-     * @param string $eventCode
-     * @param int $timestamp
-     * @param string $queueStatus
-     *
-     * @return TransactionLog
-     */
-    public function createJobLog(string $eventCode, int $timestamp, string $queueStatus): TransactionLog
-    {
-        $transactionLog = new TransactionLog();
-        $transactionLog->setStoreId(StoreContext::getInstance()->getStoreId());
-        $transactionLog->setMerchantReference('');
-        $transactionLog->setEventCode($eventCode);
-        $transactionLog->setReason('');
-        $transactionLog->setIsSuccessful(false);
-        $transactionLog->setTimestamp($timestamp);
-        $transactionLog->setPaymentMethod('');
-        $transactionLog->setQueueStatus($queueStatus);
-        $transactionLog->setSequraLink('');
-        $transactionLog->setShopLink('');
-        $transactionLog->setFailureDescription('');
-
-        $this->saveWithOwnExecutionId($transactionLog);
-
-        return $transactionLog;
-    }
-
-    /**
-     * @param int $id
-     *
-     * @return TransactionLog|null
-     */
-    public function findById(int $id): ?TransactionLog
-    {
-        return $this->transactionLogRepository->getItemById($id);
-    }
-
-    /**
-     * @param string $eventCode
-     *
-     * @return void
-     *
-     * @throws QueryFilterInvalidParamException
-     */
-    public function deleteFailedWithoutOrder(string $eventCode): void
-    {
-        foreach ($this->transactionLogRepository->findWithoutOrder($eventCode, TransactionLog::FAILED) as $log) {
-            $this->delete($log->getId());
+        /**
+        * @var TransactionLogAwareInterface $task
+        */
+        $task = $item->getTask();
+        $order = $this->orderService->getOrderByShopReference($task->getTransactionData()->getMerchantReference());
+        $paymentMethod = '';
+        if ($order->getPaymentMethod()) {
+            $paymentMethod = $order->getPaymentMethod()->getName();
         }
-    }
 
-    /**
-     * @param TransactionLog $transactionLog
-     *
-     * @return void
-     */
-    private function saveWithOwnExecutionId(TransactionLog $transactionLog): void
-    {
-        $transactionLog->setExecutionId(0);
-        $this->save($transactionLog);
-        $transactionLog->setExecutionId($transactionLog->getId());
-        $this->update($transactionLog);
+        $transactionLog = new TransactionLog();
+        $transactionLog->setStoreId($task->getStoreId() ?? '');
+        $transactionLog->setMerchantReference($task->getTransactionData()->getMerchantReference());
+        $transactionLog->setExecutionId($item->getId() ?? 0);
+        $transactionLog->setEventCode($task->getTransactionData()->getEventCode());
+        $transactionLog->setReason($task->getTransactionData()->getReason());
+        $transactionLog->setIsSuccessful($task->getTransactionData()->isSuccessful());
+        $transactionLog->setTimestamp($task->getTransactionData()->getTimestamp());
+        $transactionLog->setPaymentMethod($paymentMethod);
+        $transactionLog->setQueueStatus(QueueItem::QUEUED);
+        $transactionLog->setSequraLink(self::SEQURA_PORTAL_URL . urlencode($order->getReference()));
+        $transactionLog->setShopLink(
+            $this->integrationOrderService->getOrderUrl($task->getTransactionData()->getMerchantReference())
+        );
+
+        return $transactionLog;
     }
 }
