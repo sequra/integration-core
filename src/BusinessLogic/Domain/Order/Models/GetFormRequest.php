@@ -37,24 +37,32 @@ class GetFormRequest extends DataTransferObject
     protected $merchantId;
 
     /**
+     * @var bool|null
+     */
+    protected $showCart;
+
+    /**
      * @param string $orderId
      * @param string|null $product
      * @param string|null $campaign
      * @param bool|null $ajax
      * @param string $merchantId
+     * @param bool|null $showCart
      */
     public function __construct(
         string $orderId,
         ?string $product = null,
         ?string $campaign = null,
         ?bool $ajax = null,
-        string $merchantId = ''
+        string $merchantId = '',
+        ?bool $showCart = null
     ) {
         $this->orderId = $orderId;
         $this->product = $product;
         $this->campaign = $campaign;
         $this->ajax = $ajax;
         $this->merchantId = $merchantId;
+        $this->showCart = $showCart;
     }
 
     /**
@@ -97,6 +105,11 @@ class GetFormRequest extends DataTransferObject
         return $this->merchantId;
     }
 
+    public function getShowCart(): ?bool
+    {
+        return $this->showCart;
+    }
+
     /**
      * Create a GetFormRequest instance from an array.
      *
@@ -111,7 +124,8 @@ class GetFormRequest extends DataTransferObject
             self::getDataValue($data, 'product', null),
             self::getDataValue($data, 'campaign', null),
             self::getDataValue($data, 'ajax', null),
-            self::getDataValue($data, 'merchantId', '')
+            self::getDataValue($data, 'merchantId', ''),
+            self::getDataValue($data, 'show_cart', null)
         );
     }
 
@@ -125,6 +139,7 @@ class GetFormRequest extends DataTransferObject
         $data['campaign'] = $this->campaign;
         $data['ajax'] = $this->ajax;
         $data['merchantId'] = $this->merchantId;
+        $data['show_cart'] = $this->showCart;
 
         return $data;
     }

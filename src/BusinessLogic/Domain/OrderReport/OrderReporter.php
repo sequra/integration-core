@@ -2,40 +2,62 @@
 
 namespace SeQura\Core\BusinessLogic\Domain\OrderReport;
 
-use Exception;
+use Generator;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\RepositoryContracts\CountryConfigurationRepositoryInterface;
-use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
-use SeQura\Core\BusinessLogic\Domain\OrderReport\Tasks\OrderReportTask;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\BusinessTaskInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\TaskExecutorInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Models\ReportData;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\StatisticalData\RepositoryContracts\StatisticalDataRepositoryInterface;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
-use SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable;
-use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\ServiceRegister;
-use SeQura\Core\Infrastructure\TaskExecution\Composite\ExecutionDetails;
-use SeQura\Core\Infrastructure\TaskExecution\Composite\Orchestrator;
-use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 
 /**
- * Class OrderReporter
- *
  * @package SeQura\Core\BusinessLogic\Domain\OrderReport
  */
-class OrderReporter extends Orchestrator
+class OrderReporter implements BusinessTaskInterface
 {
-    protected const ORDERS_PER_BACH = 5000;
+    protected const ORDERS_PER_PAGE = 5000;
+
     /**
      * @var int
      */
-    protected $page = 1;
-    /**
-     * @var string
-     */
-    protected $storeId;
+    private $page;
 
-    public function __construct()
+    /**
+     * @param int $page
+     */
+    public function __construct(int $page = 1)
     {
-        parent::__construct();
-        $this->storeId = StoreContext::getInstance()->getStoreId();
+        $this->page = $page;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function execute(): Generator
+    {
+        $reportOrderIds = $this->getShopOrderService()->getReportOrderIds($this->page, self::ORDERS_PER_PAGE);
+
+        $statisticsOrderIds = null;
+        $statisticalData = $this->getStatisticalDataRepository()->getStatisticalData();
+        if ($statisticalData && $statisticalData->isSendStatisticalData()) {
+            $statisticsOrderIds = $this->getShopOrderService()->getStatisticsOrderIds(
+                $this->page,
+                self::ORDERS_PER_PAGE
+            );
+        }
+
+        $merchantId = $this->getMerchantId();
+
+        if ((!empty($reportOrderIds) || !empty($statisticsOrderIds)) && $merchantId) {
+            $this->getOrderReportService()->sendReport(
+                new ReportData($merchantId, $reportOrderIds, $statisticsOrderIds)
+            );
+            $this->getTaskExecutor()->enqueue(new self($this->page + 1));
+        }
+
+        yield 100;
     }
 
     /**
@@ -43,102 +65,28 @@ class OrderReporter extends Orchestrator
      */
     public function toArray(): array
     {
-        $result = parent::toArray();
-        $result['page'] = $this->page;
-        $result['storeId'] = $this->storeId;
-
-        return $result;
+        return ['page' => $this->page];
     }
 
     /**
      * @inheritDoc
      */
-    public static function fromArray(array $array): Serializable
+    public static function fromArray(array $data): BusinessTaskInterface
     {
-        $entity = parent::fromArray($array);
-        $entity->page = \intval($array['page']);
-        $entity->storeId = (string) $array['storeId'];
-
-        return $entity;
+        return new self(\intval($data['page']));
     }
 
     /**
-     * @inheritDoc
+     * @return string|null
      */
-    public function serialize(): ?string
+    private function getMerchantId(): ?string
     {
-        return Serializer::serialize([
-            'parent' => parent::serialize(),
-            'page' => $this->page,
-            'storeId' => $this->storeId,
-        ]);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function unserialize($serialized): void
-    {
-        $unserialized = Serializer::unserialize($serialized);
-        parent::unserialize($unserialized['parent']);
-        $this->page = $unserialized['page'];
-        $this->storeId = $unserialized['storeId'];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function __unserialize($data): void
-    {
-        parent::__unserialize($data);
-        $this->page = $data['page'];
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @throws Exception
-     */
-    protected function getSubTask(): ?ExecutionDetails
-    {
-        return StoreContext::doWithStore($this->storeId, function () {
-            return $this->getSubTaskInContext();
-        });
-    }
-
-    /**
-     * @return ExecutionDetails|null
-     *
-     * @throws QueueStorageUnavailableException
-     */
-    protected function getSubTaskInContext(): ?ExecutionDetails
-    {
-        $reportOrderIds = $this->getShopOrderService()->getReportOrderIds($this->page, static::ORDERS_PER_BACH);
-
-        $statisticsOrderIds = null;
-        $statisticalData = $this->getStatisticalDataRepository()->getStatisticalData();
-        if ($statisticalData && $statisticalData->isSendStatisticalData()) {
-            $statisticsOrderIds = $this->getShopOrderService()->getStatisticsOrderIds($this->page, static::ORDERS_PER_BACH);
-        }
-
-        $merchantId = null;
         $countryConfiguration = $this->getCountryConfigurationRepository()->getCountryConfiguration();
-        if ($countryConfiguration && $countryConfiguration[0]) {
-            $merchantId = $countryConfiguration[0]->getMerchantId();
-        }
 
-        if ((empty($reportOrderIds) && empty($statisticsOrderIds)) || !$merchantId) {
-            return null;
-        }
-
-        $this->page++;
-
-        return $this->createSubJob(new OrderReportTask($merchantId, $reportOrderIds, $statisticsOrderIds));
+        return $countryConfiguration && $countryConfiguration[0] ? $countryConfiguration[0]->getMerchantId() : null;
     }
 
     /**
-     * Provides product service.
-     *
      * @return ShopOrderService
      */
     protected function getShopOrderService(): ShopOrderService
@@ -147,8 +95,6 @@ class OrderReporter extends Orchestrator
     }
 
     /**
-     * Returns an instance of the statistical data repository.
-     *
      * @return StatisticalDataRepositoryInterface
      */
     protected function getStatisticalDataRepository(): StatisticalDataRepositoryInterface
@@ -157,12 +103,26 @@ class OrderReporter extends Orchestrator
     }
 
     /**
-     * Returns an instance of the statistical data repository.
-     *
      * @return CountryConfigurationRepositoryInterface
      */
     protected function getCountryConfigurationRepository(): CountryConfigurationRepositoryInterface
     {
         return ServiceRegister::getService(CountryConfigurationRepositoryInterface::class);
+    }
+
+    /**
+     * @return OrderReportService
+     */
+    protected function getOrderReportService(): OrderReportService
+    {
+        return ServiceRegister::getService(OrderReportService::class);
+    }
+
+    /**
+     * @return TaskExecutorInterface
+     */
+    protected function getTaskExecutor(): TaskExecutorInterface
+    {
+        return ServiceRegister::getService(TaskExecutorInterface::class);
     }
 }

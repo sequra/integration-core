@@ -3,12 +3,91 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-# [v6.3.0](https://github.com/sequra/integration-core/tree/v6.3.0)
+# [v7.0.0-rc.2](https://github.com/sequra/integration-core/tree/v7.0.0-rc.2)
 ## Added
+- The Express Checkout solicit answers with what the SeQura Cart Summary page needs. `CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutSolicitResponse` (extends `IdentificationFormResponse`) adds `getOrderUuid()`, `getMetadataEndpoint()` and `getFormUrl()`, and its `toArray()` carries `orderUuid`, `metadataEndpoint` and `formUrl` after `identificationForm`, `null` values included. The values come from `Domain\ExpressCheckout\Models\ExpressCheckoutForm` (extends `SeQuraForm`): the order uuid is the reference of the order the solicit created or reused; the form URL is the first double-quoted `data-base-url` of the form HTML, HTML-entity-decoded, and `null` when it is missing or not an absolute `http`/`https` URL with a non-empty host; the metadata endpoint is the form URL with the first `/orders/{id}/{page}` of its path pointing at `/orders/{id}/metadata`, query kept, and `null` when the path has none. The form HTML itself is returned unchanged.
+- `GetFormRequest` takes a last optional `?bool $showCart` argument (`getShowCart()`, `show_cart` in `fromArray()` / `toArray()`), and `GetFormHttpRequest` sends `show_cart=true` only when it is `true`. `OrderService::getIdentificationForm()` takes a last optional `bool $showCart = false` and passes it on.
+- `Merchant::setOptions()`.
+- `ExpressCheckoutController::solicitCartSummary(string $cartId)`, reached as `CheckoutAPI::get()->expressCheckout($storeId)->solicitCartSummary($cartId)`. It solicits the express order of the cart with the country check on, and answers an `ExpressCheckoutCartSummaryResponse` (extends `ExpressCheckoutSolicitResponse`) that adds `getFlowToken()` and `getCartData()`, the first `cartDataReady` payload; its `toArray()` adds `flowToken` and `cartData`. When the delivery country has no merchant it answers an `ExpressCheckoutUnavailableResponse`.
+- The platform interfaces `Domain\Integration\ExpressCheckout\ExpressCheckoutCartProviderInterface` (`getCartSummary()`, `getCreateOrderRequestBuilder()`) and `ExpressCheckoutFlowTokenStorageInterface` (`getFlowTokens()`, `saveFlowTokens()`, scoped to the shopper's session).
+- The models `CartSummary`, `CartAddress`, `ShippingMethodOption`, `RegionOption` and `SolicitedCartSummary` in `Domain\ExpressCheckout\Models`.
+- `FlowTokenRegistry` (`mint()`, `resolve()`) and `CartDataBuilder` (`build()`) in `Domain\ExpressCheckout\Services`. A token is 32 random characters from a-z, A-Z and 0-9; minting one for a cart removes the cart's previous token and keeps the newest 8.
+- `ExpressCheckoutController::updateCart(ExpressCheckoutCartUpdateRequest $request): Response`, reached as `CheckoutAPI::get()->expressCheckout($storeId)->updateCart(new ExpressCheckoutCartUpdateRequest($flowToken, $payload))`, with the raw posted `flow_token` and `payload`. It checks the request with Magento's cart update rules, finds the cart the flow token names, refuses a cart that is gone or whose latest seQura order is confirmed or on hold, has the platform apply the change, solicits the express order again and answers the refreshed `cartDataReady` payload, plus `reloadUrl` when the new form has a form URL. It never mints, retires or saves a flow token. The plugin maps the answer to an HTTP status:
+
+  | Core answer | HTTP status the plugin returns |
+  |---|---|
+  | `ExpressCheckoutCartUpdateResponse` | 200, with `toArray()` as the JSON body |
+  | rejected, `invalid_request` | 400 |
+  | rejected, `cart_unavailable` | 400 |
+  | rejected, `not_eligible` | 422 |
+  | any other unsuccessful response | 500 (core has already logged it) |
+  | the plugin's own CSRF check failed | 403 |
+  | `ExpressCheckoutThrottledResponse` | 429, no Retry-After, body not part of the contract |
+
+  The host script does not read the body of a non-200 answer. The plugin checks that its payment method is active before it calls `updateCart`, and answers 422 when it is not. A seQura API failure during the re-solicit is an unsuccessful response (500), not `not_eligible` as in Magento.
+- `CheckoutAPI\ExpressCheckout\Requests\ExpressCheckoutCartUpdateRequest` (`getFlowToken()`, `getPayload()`, untyped), and the responses `ExpressCheckoutCartUpdateResponse` (successful, `getCartData()`) and `ExpressCheckoutCartUpdateRejectedResponse` (unsuccessful, `getReason()`, `toArray()` is `['reason' => $reason]`, with the constants `REASON_INVALID_REQUEST`, `REASON_CART_UNAVAILABLE` and `REASON_NOT_ELIGIBLE`). Core logs nothing for a rejected answer.
+- The platform interface `Domain\Integration\ExpressCheckout\ExpressCheckoutCartUpdaterInterface`: `isCartOpen(string $cartId): bool` and `applyCartChange(string $cartId, CartChange $change): bool`, which returns `false` for a changed cart that is not eligible and throws `InvalidShippingMethodReferenceException` for a shipping method the cart does not offer.
+- The models `CartChange` (`getAddress()`, `getShippingMethodReference()`, `getEmail()`, `fromPayload()`) and `CartAddressChange` in `Domain\ExpressCheckout\Models`.
+- The exceptions `InvalidExpressCheckoutCartUpdateException` (400), `InvalidShippingMethodReferenceException` (400), `ExpressCheckoutCartUnavailableException` (400) and `ExpressCheckoutCartNotEligibleException` (422) in `Domain\ExpressCheckout\Exceptions`.
+- `ExpressCheckoutRateLimiter` in `Domain\ExpressCheckout\Services` (`isExceeded()`, `wouldBeExceeded()`). Every `solicit`, `solicitCartSummary` and `updateCart` call counts against two budgets per 60-second window that opens with the first call: 30 per shopper session (`SESSION_LIMIT`) and 600 per peer address (`ADDRESS_LIMIT`), not configurable. The session budget is checked first, and a call it refuses does not spend the address budget. A call with no session id is limited by its address only, and calls with no peer address share the `unknown` budget. Counters are saved with a 60-second TTL under `sequra_express_solicit_sid_` / `sequra_express_solicit_ip_` plus the sha256 of the session id or address, with no store id; a counter the cache returns unreadable starts a new window. Counting is not atomic. When the cache, the session id or the peer address fails, the budget it backs is skipped and the other still applies. Nothing about throttling or these failures is logged.
+- The platform interfaces `ExpressCheckoutRateLimitCacheInterface` (`load(string $key): ?string`, `save(string $key, string $value, int $ttlSeconds): void`, shared by every web node), `ExpressCheckoutPeerAddressProviderInterface` (`getPeerAddress(): ?string`, the connection's own peer address, never a forwarded header; behind a reverse proxy or CDN the 600 budget is per proxy address) and `ExpressCheckoutSessionIdProviderInterface` (`getSessionId(): ?string`) in `Domain\Integration\ExpressCheckout`.
+- The responses `ExpressCheckoutThrottledResponse` (extends `ExpressCheckoutSolicitResponse`, unsuccessful, `toArray()` is `['identificationForm' => '', 'orderUuid' => null, 'metadataEndpoint' => null, 'formUrl' => null]`) and `ExpressCheckoutNotThrottledResponse` (successful, `toArray()` is `[]`). `solicit`, `solicitCartSummary` and `updateCart` answer `ExpressCheckoutThrottledResponse` over budget, before reading the request; the plugin returns it as HTTP 429.
+- `ExpressCheckoutController::checkRateLimit(): Response`, reached as `CheckoutAPI::get()->expressCheckout($storeId)->checkRateLimit()`. It answers `ExpressCheckoutThrottledResponse` when the next call would be refused and `ExpressCheckoutNotThrottledResponse` otherwise, and counts nothing. `isAvailable` and `isAvailableForGuest` are never limited or counted.
 - `Deployment` takes optional trailing constructor arguments `array $description = []` (language code to text) and `string $logoUrl = ''`, read with `getDescription()` / `getLogoUrl()`.
 - `Deployment::toArray()` / `fromArray()` use the keys `description` and `logo_url`, so stored deployments keep them; only `https://` logo URLs are kept.
 - The Admin API deployments responses add `description` and `logoUrl`.
 - `GET /deployments` payloads and stored deployments without them load with `[]` and `''`.
+
+## Changed
+- **Breaking:** the platform must register `ExpressCheckoutRateLimitCacheInterface`, `ExpressCheckoutPeerAddressProviderInterface` and `ExpressCheckoutSessionIdProviderInterface`; core gives them no default. Until they are registered, every `CheckoutAPI::get()->expressCheckout($storeId)` call, `isAvailable` included, returns an unsuccessful response and logs "Unhandled error occurred.". `ExpressCheckoutController` takes a fourth constructor argument, `ExpressCheckoutRateLimiter $rateLimiter`. Plugins call `checkRateLimit()` first, before building anything such as a product-page temporary cart, and test for `ExpressCheckoutThrottledResponse` before `isSuccessful()`, mapping it to HTTP 429 with no Retry-After.
+- **Breaking:** the platform must register `ExpressCheckoutCartUpdaterInterface`. Until it does, every call through `CheckoutAPI::get()->expressCheckout($storeId)` answers an unsuccessful response and logs "Unhandled error occurred.". `ExpressCheckoutCartService` takes two more constructor arguments, `SeQuraOrderRepositoryInterface` and `ExpressCheckoutCartUpdaterInterface`.
+- **Breaking:** the platform must register `ExpressCheckoutCartProviderInterface` and `ExpressCheckoutFlowTokenStorageInterface`. Until it does, every call through `CheckoutAPI::get()->expressCheckout($storeId)` (`isAvailable`, `isAvailableForGuest`, `solicit`, `solicitCartSummary`) answers an unsuccessful response and logs "Unhandled error occurred.". `ExpressCheckoutController` takes a third constructor argument, `ExpressCheckoutCartService`.
+- The Express Checkout create-order request sends `addresses_may_be_missing: true` in the merchant options. A merchant the builder leaves out is built as for any solicit, keeping every option `MerchantDataProviderInterface::getOptions()` returns; a merchant the builder supplies keeps its other options. A `false` from either is sent as `true`. A regular solicit still sends the flag only when the shop's own options set it. Since an order is reused only for an identical request, an Express Checkout solicit and a regular one for the same cart do not reuse each other's order, unless the shop's own options already send `addresses_may_be_missing: true` on regular checkout, in which case the two requests are identical and may share an order.
+- The Express Checkout form request sends `show_cart=true`, so the form opens on the Cart Summary page. Other form requests do not send it.
+- `OrderService::getIdentificationForm()` has a fifth parameter, `bool $showCart = false`. An integration that overrides it, even for regular checkout only, has to add that optional parameter to its override, since on PHP 8 an override with fewer parameters than its parent is a fatal error.
+- The Express Checkout solicit fetches the form of the order it solicited, by that order's reference and merchant, instead of the newest order stored for the cart.
+- `ExpressCheckoutService::solicit()` returns `?ExpressCheckoutForm` and `OrderService::solicitExpressCheckoutForm()` returns `ExpressCheckoutForm` instead of `SeQuraForm`, and `ExpressCheckoutController::solicit()` returns `ExpressCheckoutSolicitResponse` instead of `IdentificationFormResponse`. An integration that overrides one of them has to change its return type, since an override that keeps the old one fails to load. `ExpressCheckoutUnavailableResponse` extends `ExpressCheckoutSolicitResponse`, with no order uuid, form URL or metadata endpoint, and `getIdentificationForm()->getForm()` still returns the form HTML on both.
+
+## Fixed
+- `OrderService::updateOrder`, `OrderService::updateMerchantReference` and `OrderService::getOrderByShopReference` act on the placed seQura order of the shop reference or the cart (state `confirmed`, `on_hold` or `cancelled`, the highest id among them) instead of the newest stored one. A cart or shop reference can name several stored orders, for example after an Express Checkout solicit and a regular one, and the newest is not always the one the shopper placed. With orders stored but none placed, `updateOrder` and `updateMerchantReference` send and save nothing, `updateOrder` returns the newest stored order unchanged, and `getOrderByShopReference` throws `OrderNotFoundException`. With no order stored, all three throw `OrderNotFoundException` as before.
+
+# [v7.0.0](https://github.com/sequra/integration-core/tree/v7.0.0)
+The task model is replaced by contracts a platform can implement. Read the [upgrade guide](UPGRADE-7.0.md) before moving from 6.x: it lists what every platform must check, what each known platform must change, and how to plug in a native scheduler.
+
+## Added
+- `BusinessTaskInterface` (`Domain\Integration\TaskExecution`): the contract of a business job, with `execute()`, `toArray()` and `fromArray()`. `execute()` may return a `Generator` to signal that the job is alive.
+- `TaskExecutorInterface`, with `enqueue()` and `scheduleDelayed($task, $delaySeconds)`: what the core hands its jobs to. The default, `TaskRunnerExecutor`, enqueues them on the built-in queue through `TaskAdapter`; a platform with its own scheduler registers its own after `parent::init()`.
+- `TaskMetadataProviderInterface`: `getExecutionConfig()` returns a `TaskExecutionConfig` (queue name, priority from 0 to 100, context). The default is `DefaultTaskMetadataProvider`.
+- `TaskPayload`: `TaskPayload::fromTask($task, $context)->toArray()` is the array a native scheduler stores for a job.
+- `BusinessTaskRunner`: `run(array $payload)` runs a stored payload in its store context and records it in the transaction log.
+- `RecurringWorkRunner`: `runDue()` enqueues the order reports and the order cleanup that are due. The built-in runner's `TickEvent` calls it; a platform with its own scheduler calls it at least hourly.
+- `RecurringWorkLockInterface` and its default `FileRecurringWorkLock`, a file lock that covers one server only. A platform that runs the recurring work on more than one server registers its own.
+- `OrderReportScheduler` and `OrderCleanupScheduler`, which `runDue()` uses to enqueue the order reports and the cleanup.
+- `TransactionLogRecorder`: `TransactionLogRecorder::schedule()` creates the transaction log row of an order job and enqueues it; `around()` records every job while it runs, including jobs with no order.
+- `StoredTaskUpgrader` and `LegacyStoredTaskUpgrader`: queue items stored by 6.x for `OrderReporter` and `TransactionalOrderUpdateTask` are translated when read (`JsonSerializer` only).
+
+## Changed
+- **Breaking:** `OrderReporter` is a `BusinessTaskInterface` job holding a `page` (`new OrderReporter(int $page = 1)`) instead of an `Orchestrator`. It sends one page with `OrderReportService::sendReport()` and enqueues the next page.
+- **Breaking:** `OrderCleanupTask` moved from `OrderCleanup\Tasks` to `Domain\OrderCleanup\Tasks` and is a `BusinessTaskInterface` job. A 6.x item of the old class is marked failed and the cleanup runs again at its next due time.
+- **Breaking:** `OrderCleanupService::cleanup()` returns a `Generator` that yields after each batch and returns the count, instead of taking an `$afterEachBatch` callback.
+- **Breaking:** the order cleanup is enqueued by `RecurringWorkRunner::runDue()` instead of a `TickEvent` listener; a host that replaces the `TickEvent` handlers, or runs no task runner, must call `runDue()` itself.
+- **Breaking:** `StoreIntegrationMigrateTask` and `DeploymentMigrateTask` no longer extend `Task`. They are called with `execute()` as before; a subclass must not call `parent::__construct()` or methods inherited from `Task`.
+- **Breaking:** `TransactionLogAwareInterface` extends `BusinessTaskInterface` and has `getTransactionLogId()` / `setTransactionLogId()` / `getTransactionData()` instead of `getTransactionLog()` / `setTransactionLog()` / `getStoreId()`. `TransactionLogAwareTrait` changed the same way, and `TransactionalTask` and `TransactionalOrderUpdateTask` no longer extend `Task`.
+- **Breaking:** `TransactionLogService` has `createOrderLog()`, `createJobLog()`, `findById()` and `deleteFailedWithoutOrder()` instead of `create()`, `load()` and `hasQueueItem()`.
+- **Breaking:** `TransactionLogRepositoryInterface::getItemByExecutionId()` takes a second `TransactionData` argument, and `getItemById()` and `findWithoutOrder()` are new methods every implementation must add.
+- The transaction log also shows jobs with no order, has no `aborted` status, and links a job to its row through the job rather than the queue item.
+- **Breaking:** `GuidProvider`: `generateGuid()` returns 64 characters (`bin2hex(random_bytes(32))`). Check that the `Process` `guid` index column and the configuration value column that holds `taskRunnerStatus` can store it.
+- `WebhookHandler::handle()` updates the shop order itself.
+- `OnReportProgress` only updates the item's own progress.
+- `QueueService::enqueue()` takes an optional last argument, `earliestStartTimestamp` (`?int $earliestStartTimestamp = null`); the runner does not start an item before that time.
+
+## Removed
+- **Breaking:** `OrderReportTask`; send a report with `OrderReportService::sendReport()`.
+- **Breaking:** `OrderReport\Listeners\TickEventListener` (`TickEventListener`) and `OrderCleanupTickListener`; `runDue()` replaces them.
+- **Breaking:** the webhook `OrderUpdateTask`; `WebhookHandler::handle()` does the update.
+- **Breaking:** the transaction log listeners `Listener`, `CreateListener`, `LoadListener`, `UpdateListener`, `FailedListener` and `AbortedListener`; jobs are logged by `TransactionLogRecorder`.
+- **Breaking:** `Orchestrator`, `ExecutionDetails`, `QueueService::create()` and `QueueService::batchStatusUpdate()`, with no replacement.
+- **Breaking:** `QueueNameProvider` and `QueueNameProviderInterface`; use `TaskMetadataProviderInterface`.
 
 # [v6.1.0](https://github.com/sequra/integration-core/tree/v6.1.0)
 ## Added

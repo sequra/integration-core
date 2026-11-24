@@ -7,12 +7,12 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdExceptio
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutForm;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutSettings;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\PrebuiltCreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\SeQuraForm;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
@@ -188,7 +188,7 @@ class ExpressCheckoutService
      * configured countries first. An unsupported country is an expected shopper state, not an
      * error, so it returns null instead of the solicit failing on the missing merchant.
      *
-     * @return SeQuraForm|null Null when the country check is enabled and the delivery country has
+     * @return ExpressCheckoutForm|null Null when the country check is enabled and the delivery country has
      * no configured merchant.
      *
      * @throws HttpRequestException
@@ -197,7 +197,7 @@ class ExpressCheckoutService
      * @throws InvalidUrlException
      * @throws FailedToRetrieveSellingCountriesException
      */
-    public function solicit(CreateOrderRequestBuilder $builder, bool $checkCountry = false): ?SeQuraForm
+    public function solicit(CreateOrderRequestBuilder $builder, bool $checkCountry = false): ?ExpressCheckoutForm
     {
         $createOrderRequest = $builder->build();
 

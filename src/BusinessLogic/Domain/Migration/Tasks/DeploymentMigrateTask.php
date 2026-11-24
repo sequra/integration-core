@@ -18,33 +18,16 @@ use SeQura\Core\Infrastructure\ORM\QueryFilter\Operators;
 use SeQura\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\ServiceRegister;
-use SeQura\Core\Infrastructure\TaskExecution\Task;
 
 /**
  * Class DeploymentMigrateTask.
  *
  * @package SeQura\Core\BusinessLogic\Domain\Migration\Tasks
  */
-class DeploymentMigrateTask extends Task
+class DeploymentMigrateTask
 {
     /**
-     * @inheritDoc
-     */
-    public function __serialize(): array
-    {
-        return [];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function __unserialize(array $data): void
-    {
-    }
-
-    /**
-     * @inheritDoc
-     * @throws     Exception
+     * @throws Exception
      */
     public function execute(): void
     {

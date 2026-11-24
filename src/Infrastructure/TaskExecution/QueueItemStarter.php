@@ -10,6 +10,7 @@ use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\AbortTaskExecutionException;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\ExecutionRequirementsNotMetException;
+use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueItemDeserializationException;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Runnable;
 use Exception;
@@ -149,6 +150,12 @@ class QueueItemStarter implements Runnable
         } catch (AbortTaskExecutionException $exception) {
             $queueService->abort($queueItem, $exception->getMessage());
         } catch (Exception $ex) {
+            if ($ex instanceof QueueItemDeserializationException) {
+                $this->failUnrebuildableItem($queueItem, $ex);
+
+                return;
+            }
+
             if (QueueItem::IN_PROGRESS === $queueItem->getStatus()) {
                 $queueService->fail($queueItem, $ex->getMessage());
             }
@@ -160,6 +167,20 @@ class QueueItemStarter implements Runnable
 
             Logger::logError("Fail to start task execution because: {$ex->getMessage()}.", 'Core', $context);
         }
+    }
+
+    private function failUnrebuildableItem(QueueItem $queueItem, QueueItemDeserializationException $ex): void
+    {
+        $this->getQueueService()->fail($queueItem, $ex->getMessage(), true);
+
+        Logger::logError(
+            "Fail to rebuild the task of queue item [{$this->getQueueItemId()}]: {$ex->getMessage()}.",
+            'Core',
+            array(
+                new LogContextData('TaskId', $this->getQueueItemId()),
+                new LogContextData('ExceptionTrace', $ex->getTraceAsString()),
+            )
+        );
     }
 
     /**

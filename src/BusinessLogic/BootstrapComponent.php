@@ -102,14 +102,25 @@ use SeQura\Core\BusinessLogic\Domain\Deployments\RepositoryContracts\Deployments
 use SeQura\Core\BusinessLogic\Domain\Deployments\Services\DeploymentsService;
 use SeQura\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\RepositoryContracts\ExpressCheckoutSettingsRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\CartDataBuilder;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutCartService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutRateLimiter;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\FlowTokenRegistry;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\RepositoryContracts\GeneralSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\CategoryService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use SeQura\Core\BusinessLogic\Domain\GeneralSettings\Services\OrderIdentifiersService;
 use SeQura\Core\BusinessLogic\Domain\Integration\Category\CategoryServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Disconnect\DisconnectServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutCartProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutCartUpdaterInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutFlowTokenStorageInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutIntegrationInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutPeerAddressProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutRateLimitCacheInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\ExpressCheckout\ExpressCheckoutSessionIdProviderInterface;
+use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\BusinessTaskRunner;
 use SeQura\Core\BusinessLogic\Domain\Integration\Log\LogServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\MerchantDataProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
@@ -123,6 +134,8 @@ use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreIdProvider;
 use SeQura\Core\BusinessLogic\Domain\Integration\Store\StoreServiceInterface as IntegrationStoreService;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreInfo\StoreInfoServiceInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\StoreIntegration\StoreIntegrationServiceInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\TaskExecutorInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\TaskMetadataProviderInterface;
 use SeQura\Core\BusinessLogic\Domain\Integration\Version\VersionServiceInterface as VersionStoreService;
 use SeQura\Core\BusinessLogic\Domain\Merchant\ProxyContracts\MerchantProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
@@ -134,9 +147,13 @@ use SeQura\Core\BusinessLogic\Domain\Order\ProxyContracts\OrderProxyInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\RepositoryContracts\SeQuraOrderRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\RepositoryContracts\OrderCleanupScheduleRepositoryInterface;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\RecurringWorkLockInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupScheduler;
 use SeQura\Core\BusinessLogic\Domain\OrderCleanup\Services\OrderCleanupService;
-use SeQura\Core\BusinessLogic\Domain\OrderReport\Listeners\TickEventListener;
+use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\RecurringWorkRunner;
+use SeQura\Core\BusinessLogic\TaskExecution\FileRecurringWorkLock;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\ProxyContracts\OrderReportProxyInterface;
+use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportScheduler;
 use SeQura\Core\BusinessLogic\Domain\OrderReport\Service\OrderReportService;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\RepositoryContracts\OrderStatusSettingsRepositoryInterface;
 use SeQura\Core\BusinessLogic\Domain\OrderStatusSettings\Services\OrderStatusSettingsService;
@@ -156,12 +173,10 @@ use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\BusinessLogic\Domain\Time\ClockInterface;
 use SeQura\Core\BusinessLogic\Domain\UIState\Services\UIStateService;
 use SeQura\Core\BusinessLogic\Domain\Version\Services\VersionService;
+use SeQura\Core\BusinessLogic\Domain\TaskExecution\Services\DefaultTaskMetadataProvider;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\ConfigurationWebhookValidationService;
 use SeQura\Core\BusinessLogic\Domain\Webhook\Services\OrderStatusProvider;
-use SeQura\Core\BusinessLogic\OrderCleanup\Listeners\OrderCleanupTickListener;
 use SeQura\Core\BusinessLogic\Providers\Clock\Clock;
-use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\Contract\QueueNameProviderInterface;
-use SeQura\Core\BusinessLogic\Providers\QueueNameProvider\QueueNameProvider;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Connection\ConnectionProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Deployments\DeploymentsProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Affiliate\AffiliateProxy;
@@ -172,12 +187,10 @@ use SeQura\Core\BusinessLogic\SeQuraAPI\Merchant\MerchantProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\Order\OrderProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\OrderReport\OrderReportProxy;
 use SeQura\Core\BusinessLogic\SeQuraAPI\StoreIntegration\StoreIntegrationProxy;
-use SeQura\Core\BusinessLogic\TransactionLog\Listeners\AbortedListener;
-use SeQura\Core\BusinessLogic\TransactionLog\Listeners\CreateListener;
-use SeQura\Core\BusinessLogic\TransactionLog\Listeners\FailedListener;
-use SeQura\Core\BusinessLogic\TransactionLog\Listeners\LoadListener;
-use SeQura\Core\BusinessLogic\TransactionLog\Listeners\UpdateListener;
+use SeQura\Core\BusinessLogic\TaskExecution\Standalone\LegacyStoredTaskUpgrader;
+use SeQura\Core\BusinessLogic\TaskExecution\Standalone\TaskRunnerExecutor;
 use SeQura\Core\BusinessLogic\TransactionLog\RepositoryContracts\TransactionLogRepositoryInterface;
+use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogRecorder;
 use SeQura\Core\BusinessLogic\TransactionLog\Services\TransactionLogService;
 use SeQura\Core\BusinessLogic\Webhook\Handler\WebhookHandler;
 use SeQura\Core\BusinessLogic\Webhook\Services\ShopOrderService;
@@ -189,14 +202,8 @@ use SeQura\Core\Infrastructure\Configuration\ConfigurationManager;
 use SeQura\Core\Infrastructure\Http\HttpClient;
 use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\ServiceRegister;
-use SeQura\Core\Infrastructure\TaskExecution\Events\BaseQueueItemEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemAbortedEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemEnqueuedEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFailedEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFinishedEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemRequeuedEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStartedEvent;
-use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemStateTransitionEventBus;
+use SeQura\Core\Infrastructure\TaskExecution\Interfaces\StoredTaskUpgrader;
+use SeQura\Core\Infrastructure\TaskExecution\QueueService;
 use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\TickEvent;
 use SeQura\Core\Infrastructure\Utility\Events\EventBus;
 use SeQura\Core\Infrastructure\Utility\TimeProvider;
@@ -409,16 +416,28 @@ class BootstrapComponent extends BaseBootstrapComponent
             return new StoreIdProvider();
         });
 
+        ServiceRegister::registerService(StoredTaskUpgrader::class, static function () {
+            return new LegacyStoredTaskUpgrader(ServiceRegister::getService(TransactionLogRepositoryInterface::class));
+        });
+
+        ServiceRegister::registerService(BusinessTaskRunner::class, static function () {
+            return new BusinessTaskRunner(ServiceRegister::getService(TransactionLogRecorder::class));
+        });
+
+        ServiceRegister::registerService(TaskMetadataProviderInterface::class, static function () {
+            return new DefaultTaskMetadataProvider();
+        });
+
+        ServiceRegister::registerService(TaskExecutorInterface::class, static function () {
+            return new TaskRunnerExecutor(
+                ServiceRegister::getService(QueueService::CLASS_NAME),
+                ServiceRegister::getService(TaskMetadataProviderInterface::class)
+            );
+        });
+
         ServiceRegister::registerService(ClockInterface::class, static function () {
             return new Clock(ServiceRegister::getService(TimeProvider::class));
         });
-
-        ServiceRegister::registerService(
-            QueueNameProviderInterface::class,
-            static function () {
-                return new QueueNameProvider();
-            }
-        );
 
         ServiceRegister::registerService(
             OrderStatusSettingsService::class,
@@ -469,12 +488,49 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            RecurringWorkLockInterface::class,
+            static function () {
+                return new FileRecurringWorkLock();
+            }
+        );
+
+        ServiceRegister::registerService(
+            RecurringWorkRunner::class,
+            static function () {
+                return new RecurringWorkRunner(
+                    ServiceRegister::getService(RecurringWorkLockInterface::class),
+                    ServiceRegister::getService(OrderReportScheduler::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            OrderReportScheduler::class,
+            static function () {
+                return new OrderReportScheduler(
+                    ServiceRegister::getService(StatisticalDataService::class),
+                    ServiceRegister::getService(TaskExecutorInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             OrderCleanupService::class,
             static function () {
                 return new OrderCleanupService(
                     ServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
                     ServiceRegister::getService(OrderCleanupScheduleRepositoryInterface::class),
                     ServiceRegister::getService(ClockInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            OrderCleanupScheduler::class,
+            static function () {
+                return new OrderCleanupScheduler(
+                    ServiceRegister::getService(OrderCleanupService::class),
+                    ServiceRegister::getService(TaskExecutorInterface::class)
                 );
             }
         );
@@ -709,6 +765,17 @@ class BootstrapComponent extends BaseBootstrapComponent
                     ServiceRegister::getService(TransactionLogRepositoryInterface::class),
                     ServiceRegister::getService(OrderService::class),
                     ServiceRegister::getService(ShopOrderService::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            TransactionLogRecorder::class,
+            static function () {
+                return new TransactionLogRecorder(
+                    ServiceRegister::getService(TransactionLogService::class),
+                    ServiceRegister::getService(TaskExecutorInterface::class),
+                    ServiceRegister::getService(TimeProvider::class)
                 );
             }
         );
@@ -1006,11 +1073,57 @@ class BootstrapComponent extends BaseBootstrapComponent
         );
 
         ServiceRegister::registerService(
+            FlowTokenRegistry::class,
+            static function () {
+                return new FlowTokenRegistry(
+                    ServiceRegister::getService(ExpressCheckoutFlowTokenStorageInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            CartDataBuilder::class,
+            static function () {
+                return new CartDataBuilder(
+                    ServiceRegister::getService(ExpressCheckoutSettingsRepositoryInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            ExpressCheckoutCartService::class,
+            static function () {
+                return new ExpressCheckoutCartService(
+                    ServiceRegister::getService(ExpressCheckoutCartProviderInterface::class),
+                    ServiceRegister::getService(ExpressCheckoutService::class),
+                    ServiceRegister::getService(CartDataBuilder::class),
+                    ServiceRegister::getService(FlowTokenRegistry::class),
+                    ServiceRegister::getService(SeQuraOrderRepositoryInterface::class),
+                    ServiceRegister::getService(ExpressCheckoutCartUpdaterInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
+            ExpressCheckoutRateLimiter::class,
+            static function () {
+                return new ExpressCheckoutRateLimiter(
+                    ServiceRegister::getService(ExpressCheckoutRateLimitCacheInterface::class),
+                    ServiceRegister::getService(ExpressCheckoutSessionIdProviderInterface::class),
+                    ServiceRegister::getService(ExpressCheckoutPeerAddressProviderInterface::class),
+                    ServiceRegister::getService(ClockInterface::class)
+                );
+            }
+        );
+
+        ServiceRegister::registerService(
             ExpressCheckoutController::class,
             static function () {
                 return new ExpressCheckoutController(
                     ServiceRegister::getService(ExpressCheckoutService::class),
-                    ServiceRegister::getService(CountryConfigurationService::class)
+                    ServiceRegister::getService(CountryConfigurationService::class),
+                    ServiceRegister::getService(ExpressCheckoutCartService::class),
+                    ServiceRegister::getService(ExpressCheckoutRateLimiter::class)
                 );
             }
         );
@@ -1154,62 +1267,9 @@ class BootstrapComponent extends BaseBootstrapComponent
     {
         parent::initEvents();
 
-        EventBus::getInstance()->when(TickEvent::class, OrderCleanupTickListener::class . '::handle');
-        EventBus::getInstance()->when(TickEvent::class, TickEventListener::class . '::handle');
-
-        /**
-         * @var QueueItemStateTransitionEventBus $queueBus
-         */
-        $queueBus = ServiceRegister::getService(QueueItemStateTransitionEventBus::CLASS_NAME);
-
-        $queueBus->when(
-            QueueItemEnqueuedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new CreateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
-
-        $queueBus->when(
-            QueueItemRequeuedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new CreateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
-
-        $queueBus->when(
-            QueueItemStartedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new LoadListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
-
-        $queueBus->when(
-            QueueItemStartedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new UpdateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
-
-        $queueBus->when(
-            QueueItemFinishedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new UpdateListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
-
-        $queueBus->when(
-            QueueItemFailedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new FailedListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
-
-        $queueBus->when(
-            QueueItemAbortedEvent::class,
-            static function (BaseQueueItemEvent $event) {
-                (new AbortedListener(ServiceRegister::getService(TransactionLogService::class)))->handle($event);
-            }
-        );
+        EventBus::getInstance()->when(TickEvent::class, static function () {
+            ServiceRegister::getService(RecurringWorkRunner::class)->runDue();
+        });
     }
 
     /**
