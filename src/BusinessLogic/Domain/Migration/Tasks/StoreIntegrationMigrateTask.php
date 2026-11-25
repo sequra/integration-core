@@ -6,7 +6,6 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Stores\Services\StoreService;
 use SeQura\Core\Infrastructure\ServiceRegister;
-use SeQura\Core\Infrastructure\TaskExecution\Task;
 use Exception;
 
 /**
@@ -15,23 +14,8 @@ use Exception;
  *
  * @package SeQura\Core\BusinessLogic\Domain\Migration\Tasks
  */
-class StoreIntegrationMigrateTask extends Task
+class StoreIntegrationMigrateTask
 {
-    /**
-     * @inheritDoc
-     */
-    public function __serialize(): array
-    {
-        return [];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function __unserialize(array $data): void
-    {
-    }
-
     /**
      * @throws Exception
      */

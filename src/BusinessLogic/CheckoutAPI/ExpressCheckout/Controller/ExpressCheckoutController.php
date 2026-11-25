@@ -2,19 +2,32 @@
 
 namespace SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Controller;
 
+use SeQura\Core\BusinessLogic\AdminAPI\Response\Response;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\ExpressCheckoutAvailabilityRequest;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\ExpressCheckoutCartUpdateRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\ExpressCheckoutSolicitRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Requests\GuestExpressCheckoutAvailabilityRequest;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutAvailabilityResponse;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutCartSummaryResponse;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutCartUpdateRejectedResponse;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutCartUpdateResponse;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutNotThrottledResponse;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutSolicitResponse;
+use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutThrottledResponse;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\ExpressCheckoutUnavailableResponse;
 use SeQura\Core\BusinessLogic\CheckoutAPI\ExpressCheckout\Responses\GuestExpressCheckoutAvailabilityResponse;
-use SeQura\Core\BusinessLogic\CheckoutAPI\Solicitation\Response\IdentificationFormResponse;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\BadMerchantIdException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionDataNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Services\CountryConfigurationService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\ExpressCheckoutCartNotEligibleException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\ExpressCheckoutCartUnavailableException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidExpressCheckoutCartUpdateException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Exceptions\InvalidShippingMethodReferenceException;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutCartService;
+use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutRateLimiter;
 use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Services\ExpressCheckoutService;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\PaymentMethod\Exceptions\PaymentMethodNotFoundException;
@@ -38,15 +51,31 @@ class ExpressCheckoutController
     protected $countryConfigurationService;
 
     /**
+     * @var ExpressCheckoutCartService
+     */
+    protected $expressCheckoutCartService;
+
+    /**
+     * @var ExpressCheckoutRateLimiter
+     */
+    protected $rateLimiter;
+
+    /**
      * @param ExpressCheckoutService $expressCheckoutService
      * @param CountryConfigurationService $countryConfigurationService
+     * @param ExpressCheckoutCartService $expressCheckoutCartService
+     * @param ExpressCheckoutRateLimiter $rateLimiter
      */
     public function __construct(
         ExpressCheckoutService $expressCheckoutService,
-        CountryConfigurationService $countryConfigurationService
+        CountryConfigurationService $countryConfigurationService,
+        ExpressCheckoutCartService $expressCheckoutCartService,
+        ExpressCheckoutRateLimiter $rateLimiter
     ) {
         $this->expressCheckoutService = $expressCheckoutService;
         $this->countryConfigurationService = $countryConfigurationService;
+        $this->expressCheckoutCartService = $expressCheckoutCartService;
+        $this->rateLimiter = $rateLimiter;
     }
 
     /**
@@ -120,9 +149,7 @@ class ExpressCheckoutController
      *
      * @param ExpressCheckoutSolicitRequest $request
      *
-     * @return IdentificationFormResponse Unsuccessful ({@see ExpressCheckoutUnavailableResponse})
-     * when the request enables the country check and no merchant is configured for the order's
-     * delivery country — an expected shopper state, resolved without an exception or a log entry.
+     * @return ExpressCheckoutSolicitResponse Unsuccessful ({@see ExpressCheckoutUnavailableResponse}) when the request enables the country check and no merchant is configured for the order's delivery country — an expected shopper state, resolved without an exception or a log entry. An ExpressCheckoutThrottledResponse when the call is over its rate limit budget: HTTP 429, no Retry-After, body not part of the contract; plugins call checkRateLimit() before building anything (such as a product-page temporary cart) and test for ExpressCheckoutThrottledResponse before isSuccessful().
      *
      * @throws HttpRequestException
      * @throws ConnectionDataNotFoundException
@@ -130,8 +157,12 @@ class ExpressCheckoutController
      * @throws InvalidUrlException
      * @throws FailedToRetrieveSellingCountriesException
      */
-    public function solicit(ExpressCheckoutSolicitRequest $request): IdentificationFormResponse
+    public function solicit(ExpressCheckoutSolicitRequest $request): ExpressCheckoutSolicitResponse
     {
+        if ($this->rateLimiter->isExceeded()) {
+            return new ExpressCheckoutThrottledResponse();
+        }
+
         $form = $this->expressCheckoutService->solicit(
             $request->getBuilder(),
             $request->isCountryCheckEnabled()
@@ -141,7 +172,97 @@ class ExpressCheckoutController
             return new ExpressCheckoutUnavailableResponse();
         }
 
-        return new IdentificationFormResponse($form);
+        return new ExpressCheckoutSolicitResponse(
+            $form,
+            $form->getOrderUuid(),
+            $form->getMetadataEndpoint(),
+            $form->getFormUrl()
+        );
+    }
+
+    /**
+     * @param string $cartId
+     *
+     * @return ExpressCheckoutSolicitResponse An {@see ExpressCheckoutCartSummaryResponse}, or an {@see ExpressCheckoutUnavailableResponse} when the delivery country has no configured merchant. An ExpressCheckoutThrottledResponse when the call is over its rate limit budget: HTTP 429, no Retry-After, body not part of the contract; plugins call checkRateLimit() before building anything (such as a product-page temporary cart) and test for ExpressCheckoutThrottledResponse before isSuccessful().
+     *
+     * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws InvalidUrlException
+     * @throws FailedToRetrieveSellingCountriesException
+     * @throws \Exception
+     */
+    public function solicitCartSummary(string $cartId): ExpressCheckoutSolicitResponse
+    {
+        if ($this->rateLimiter->isExceeded()) {
+            return new ExpressCheckoutThrottledResponse();
+        }
+
+        $summary = $this->expressCheckoutCartService->solicitCartSummary($cartId);
+        if ($summary === null) {
+            return new ExpressCheckoutUnavailableResponse();
+        }
+
+        $form = $summary->getForm();
+
+        return new ExpressCheckoutCartSummaryResponse(
+            $form,
+            $form->getOrderUuid(),
+            $form->getMetadataEndpoint(),
+            $form->getFormUrl(),
+            $summary->getFlowToken(),
+            $summary->getCartData()
+        );
+    }
+
+    /**
+     * @param ExpressCheckoutCartUpdateRequest $request
+     *
+     * @return Response HTTP status contract: ExpressCheckoutCartUpdateResponse is 200 with toArray() as the JSON body; ExpressCheckoutCartUpdateRejectedResponse is 400 for invalid_request and cart_unavailable and 422 for not_eligible; any other unsuccessful response is 500 (core has already logged it); the plugin's failed CSRF check is 403; ExpressCheckoutThrottledResponse is HTTP 429, no Retry-After, body not part of the contract; plugins call checkRateLimit() before building anything (such as a product-page temporary cart) and test for ExpressCheckoutThrottledResponse before isSuccessful().
+     *
+     * @throws HttpRequestException
+     * @throws ConnectionDataNotFoundException
+     * @throws CredentialsNotFoundException
+     * @throws InvalidUrlException
+     * @throws FailedToRetrieveSellingCountriesException
+     */
+    public function updateCart(ExpressCheckoutCartUpdateRequest $request): Response
+    {
+        if ($this->rateLimiter->isExceeded()) {
+            return new ExpressCheckoutThrottledResponse();
+        }
+
+        try {
+            return new ExpressCheckoutCartUpdateResponse(
+                $this->expressCheckoutCartService->updateCart($request->getFlowToken(), $request->getPayload())
+            );
+        } catch (InvalidExpressCheckoutCartUpdateException $exception) {
+            return new ExpressCheckoutCartUpdateRejectedResponse(
+                ExpressCheckoutCartUpdateRejectedResponse::REASON_INVALID_REQUEST
+            );
+        } catch (InvalidShippingMethodReferenceException $exception) {
+            return new ExpressCheckoutCartUpdateRejectedResponse(
+                ExpressCheckoutCartUpdateRejectedResponse::REASON_INVALID_REQUEST
+            );
+        } catch (ExpressCheckoutCartUnavailableException $exception) {
+            return new ExpressCheckoutCartUpdateRejectedResponse(
+                ExpressCheckoutCartUpdateRejectedResponse::REASON_CART_UNAVAILABLE
+            );
+        } catch (ExpressCheckoutCartNotEligibleException $exception) {
+            return new ExpressCheckoutCartUpdateRejectedResponse(
+                ExpressCheckoutCartUpdateRejectedResponse::REASON_NOT_ELIGIBLE
+            );
+        }
+    }
+
+    /**
+     * @return Response An ExpressCheckoutNotThrottledResponse, or an ExpressCheckoutThrottledResponse when the next solicit, solicitCartSummary or updateCart call would be refused; counts nothing. ExpressCheckoutThrottledResponse is HTTP 429, no Retry-After, body not part of the contract; plugins call checkRateLimit() before building anything (such as a product-page temporary cart) and test for ExpressCheckoutThrottledResponse before isSuccessful().
+     */
+    public function checkRateLimit(): Response
+    {
+        return $this->rateLimiter->wouldBeExceeded()
+            ? new ExpressCheckoutThrottledResponse()
+            : new ExpressCheckoutNotThrottledResponse();
     }
 
     /**

@@ -2,40 +2,27 @@
 
 namespace SeQura\Core\BusinessLogic\TransactionLog\Contracts;
 
-use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
+use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\BusinessTaskInterface;
 use SeQura\Core\BusinessLogic\TransactionLog\Models\TransactionData;
 
 /**
- * Interface TransactionLogAwareTaskInterface
- *
  * @package SeQura\Core\BusinessLogic\TransactionLog\Contracts
  */
-interface TransactionLogAwareInterface
+interface TransactionLogAwareInterface extends BusinessTaskInterface
 {
     /**
-     * Provides transaction log.
-     *
-     * @return TransactionLog
+     * @return int|null
      */
-    public function getTransactionLog(): TransactionLog;
+    public function getTransactionLogId(): ?int;
 
     /**
-     * Sets transaction log.
+     * @param int $id
      *
-     * @param TransactionLog $transactionLog
+     * @return void
      */
-    public function setTransactionLog(TransactionLog $transactionLog): void;
+    public function setTransactionLogId(int $id): void;
 
     /**
-     * Gets the store id for which the transactional task is created
-     *
-     * @return string
-     */
-    public function getStoreId(): string;
-
-    /**
-     * Gets the transaction data for which the transactional task is created
-     *
      * @return TransactionData
      */
     public function getTransactionData(): TransactionData;

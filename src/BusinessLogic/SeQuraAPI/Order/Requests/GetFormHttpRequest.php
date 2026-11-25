@@ -35,6 +35,7 @@ class GetFormHttpRequest extends HttpRequest
         $request->getProduct() && $params['product'] = $request->getProduct();
         $request->getCampaign() && $params['campaign'] = $request->getCampaign();
         $request->getAjax() && $params['ajax'] = $request->getAjax();
+        $request->getShowCart() && $params['show_cart'] = 'true';
 
         return $params ?? [];
     }

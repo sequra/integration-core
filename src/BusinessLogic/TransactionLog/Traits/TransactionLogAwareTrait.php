@@ -2,8 +2,6 @@
 
 namespace SeQura\Core\BusinessLogic\TransactionLog\Traits;
 
-use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
-
 /**
  * Trait TransactionLogAwareTrait
  *
@@ -12,23 +10,25 @@ use SeQura\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 trait TransactionLogAwareTrait
 {
     /**
-     * @var TransactionLog
+     * @var int|null
      */
-    protected $transactionLog;
+    protected $transactionLogId;
 
     /**
-     * @return TransactionLog
+     * @return int|null
      */
-    public function getTransactionLog(): TransactionLog
+    public function getTransactionLogId(): ?int
     {
-        return $this->transactionLog;
+        return $this->transactionLogId;
     }
 
     /**
-     * @param TransactionLog $transactionLog
+     * @param int $id
+     *
+     * @return void
      */
-    public function setTransactionLog(TransactionLog $transactionLog): void
+    public function setTransactionLogId(int $id): void
     {
-        $this->transactionLog = $transactionLog;
+        $this->transactionLogId = $id;
     }
 }
