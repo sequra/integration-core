@@ -52,6 +52,6 @@ class GuidProvider
      */
     public function generateGuid()
     {
-        return bin2hex(random_bytes(32));
+        return uniqid(getmypid() . '_', true);
     }
 }

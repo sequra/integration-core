@@ -57,7 +57,8 @@ class OnboardingDataResponse extends Response
                 'username' => $connectionData->getAuthorizationCredentials()->getUsername(),
                 'password' => $connectionData->getAuthorizationCredentials()->getPassword(),
                 'merchantId' => $connectionData->getMerchantId(),
-                'deployment' => $connectionData->getDeployment()
+                'deployment' => $connectionData->getDeployment(),
+                'environment' => $connectionData->getEnvironment()
             ];
         }
 

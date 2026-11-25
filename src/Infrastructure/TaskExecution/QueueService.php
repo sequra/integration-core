@@ -9,6 +9,7 @@ use SeQura\Core\Infrastructure\ORM\RepositoryRegistry;
 use SeQura\Core\Infrastructure\ServiceRegister;
 use SeQura\Core\Infrastructure\TaskExecution\Events\BeforeQueueStatusChangeEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemAbortedEvent;
+use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemCreatedEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemEnqueuedEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFailedEvent;
 use SeQura\Core\Infrastructure\TaskExecution\Events\QueueItemFinishedEvent;
@@ -70,6 +71,44 @@ class QueueService
     protected $configService;
 
     /**
+     * Updates status of a group of tasks.
+     *
+     * @param array<mixed> $ids
+     * @param string $status
+     */
+    public function batchStatusUpdate(array $ids, string $status): void
+    {
+        $this->getStorage()->batchStatusUpdate($ids, $status);
+    }
+
+    /**
+     * Creates queue item.
+     *
+     * @param string $queueName
+     * @param Task $task
+     * @param string $context
+     * @param int $priority
+     * @param int|null $parent
+     *
+     * @return QueueItem
+     *
+     * @throws QueueStorageUnavailableException
+     */
+    public function create(
+        string $queueName,
+        Task $task,
+        string $context = '',
+        int $priority = Priority::NORMAL,
+        ?int $parent = null
+    ): QueueItem {
+        $queueItem = $this->instantiate($task, $queueName, $context, $priority, $parent);
+        $this->save($queueItem);
+        $this->fireStateTransitionEvent(new QueueItemCreatedEvent($queueItem));
+
+        return $queueItem;
+    }
+
+    /**
      * Enqueues queue item to a given queue and stores changes.
      *
      * @param string $queueName Name of a queue where queue item should be queued.
@@ -78,23 +117,14 @@ class QueueService
      *     integration) context based on account id should be provided. Failing to do this will result in global task
      *     context and unpredictable task execution.
      * @param int $priority
-     * @param int|null $earliestStartTimestamp Timestamp before which the item must not be started.
      *
      * @return QueueItem Created queue item.
      *
      * @throws QueueStorageUnavailableException When queue storage fails to save the item.
      */
-    public function enqueue(
-        string $queueName,
-        Task $task,
-        string $context = '',
-        int $priority = Priority::NORMAL,
-        ?int $earliestStartTimestamp = null
-    ): QueueItem {
+    public function enqueue(string $queueName, Task $task, string $context = '', int $priority = Priority::NORMAL): QueueItem
+    {
         $queueItem = $this->instantiate($task, $queueName, $context, $priority);
-        if ($earliestStartTimestamp !== null) {
-            $queueItem->setEarliestStartTimestamp($earliestStartTimestamp);
-        }
         $queueItem->setStatus(QueueItem::QUEUED);
         $queueItem->setQueueTimestamp($this->getTimeProvider()->getCurrentLocalTime()->getTimestamp());
         $this->save($queueItem, array(), true, QueueItem::CREATED);
@@ -270,9 +300,11 @@ class QueueService
 
         if ($queueItem->getStatus() === QueueItem::FAILED && $queueItem->getParentId()) {
             $parent = $this->find($queueItem->getParentId());
-            if ($parent !== null && $parent->getStatus() === QueueItem::IN_PROGRESS) {
-                $this->fail($parent, "SubJob failed.", true);
+            if ($parent === null) {
+                throw new RuntimeException("Parent not found");
             }
+
+            $this->fail($parent, "SubJob failed.", true);
         }
 
         $this->fireStateTransitionEvent(new QueueItemFailedEvent($queueItem, $failureDescription));

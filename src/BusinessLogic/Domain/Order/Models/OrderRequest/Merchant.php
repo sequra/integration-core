@@ -247,11 +247,6 @@ class Merchant extends OrderRequestDTO
         return $this->options;
     }
 
-    public function setOptions(Options $options): void
-    {
-        $this->options = $options;
-    }
-
     /**
      * @return EventsWebhook|null
      */

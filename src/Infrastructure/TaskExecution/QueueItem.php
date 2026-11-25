@@ -8,10 +8,8 @@ use SeQura\Core\Infrastructure\ORM\Configuration\IndexMap;
 use SeQura\Core\Infrastructure\ORM\Entity;
 use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\ServiceRegister;
-use SeQura\Core\Infrastructure\Exceptions\ServiceNotRegisteredException;
 use SeQura\Core\Infrastructure\TaskExecution\Exceptions\QueueItemDeserializationException;
 use SeQura\Core\Infrastructure\TaskExecution\Interfaces\Priority;
-use SeQura\Core\Infrastructure\TaskExecution\Interfaces\StoredTaskUpgrader;
 use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\AliveAnnouncedTaskEvent;
 use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\Listeners\OnReportAlive;
 use SeQura\Core\Infrastructure\TaskExecution\TaskEvents\Listeners\OnReportProgress;
@@ -466,8 +464,8 @@ class QueueItem extends Entity
     {
         if ($this->task === null) {
             try {
-                $task = $this->upgradeStoredTask() ?? Serializer::unserialize($this->serializedTask);
-            } catch (\Throwable $e) {
+                $this->task = Serializer::unserialize($this->serializedTask);
+            } catch (\Exception $e) {
                 throw new QueueItemDeserializationException(
                     json_encode(
                         array(
@@ -481,7 +479,7 @@ class QueueItem extends Entity
                 );
             }
 
-            if (!$task instanceof Task) {
+            if (empty($this->task)) {
                 throw new QueueItemDeserializationException(
                     json_encode(
                         array(
@@ -493,25 +491,10 @@ class QueueItem extends Entity
                 );
             }
 
-            $this->task = $task;
             $this->attachTaskEventHandlers();
         }
 
         return $this->task;
-    }
-
-    /**
-     * @return Task|null
-     */
-    private function upgradeStoredTask(): ?Task
-    {
-        try {
-            $upgrader = ServiceRegister::getService(StoredTaskUpgrader::class);
-        } catch (ServiceNotRegisteredException $e) {
-            return null;
-        }
-
-        return $upgrader->upgrade($this);
     }
 
     /**

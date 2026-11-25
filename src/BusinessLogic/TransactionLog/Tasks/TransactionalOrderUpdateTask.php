@@ -2,17 +2,20 @@
 
 namespace SeQura\Core\BusinessLogic\TransactionLog\Tasks;
 
-use SeQura\Core\BusinessLogic\Domain\Integration\TaskExecution\BusinessTaskInterface;
+use Exception;
+use SeQura\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderUpdateData;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\BusinessLogic\TransactionLog\Models\TransactionData;
+use SeQura\Core\Infrastructure\Serializer\Serializer;
 use SeQura\Core\Infrastructure\ServiceRegister;
 
 /**
  * Class TransactionalOrderUpdateTask
  *
  * @package SeQura\Core\BusinessLogic\TransactionLog\Tasks
- *
+ */
+/**
  * @phpstan-consistent-constructor
  */
 class TransactionalOrderUpdateTask extends TransactionalTask
@@ -28,24 +31,49 @@ class TransactionalOrderUpdateTask extends TransactionalTask
     protected $transactionData;
 
     /**
+     * @var string
+     */
+    protected $storeId;
+
+    /**
      * @param OrderUpdateData $orderUpdateData
      * @param TransactionData $transactionData
      */
     public function __construct(OrderUpdateData $orderUpdateData, TransactionData $transactionData)
     {
+        parent::__construct();
         $this->orderUpdateData = $orderUpdateData;
         $this->transactionData = $transactionData;
+        $this->storeId = StoreContext::getInstance()->getStoreId();
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws Exception
      */
-    public function execute()
+    public function execute(): void
+    {
+        StoreContext::doWithStore(
+            $this->storeId,
+            function () {
+                $this->doExecute();
+            }
+        );
+    }
+
+    /**
+     * Executes task behavior.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    protected function doExecute(): void
     {
         $this->getOrderService()->updateOrder($this->orderUpdateData);
         $this->transactionData->setIsSuccessful(true);
-
-        yield 100;
+        $this->reportProgress(100);
     }
 
     /**
@@ -58,19 +86,17 @@ class TransactionalOrderUpdateTask extends TransactionalTask
 
     /**
      * @inheritDoc
+     *
+     * @throws Exception
      */
-    public static function fromArray(array $data): BusinessTaskInterface
+    public static function fromArray(array $array): \SeQura\Core\Infrastructure\Serializer\Interfaces\Serializable
     {
-        $task = new static(
-            OrderUpdateData::fromArray($data['orderUpdateData']),
-            TransactionData::fromArray($data['transactionData'])
-        );
-
-        if (isset($data['transactionLogId'])) {
-            $task->setTransactionLogId((int)$data['transactionLogId']);
-        }
-
-        return $task;
+        return StoreContext::doWithStore($array['storeId'], static function () use ($array) {
+            return new static(
+                OrderUpdateData::fromArray($array['orderUpdateData']),
+                TransactionData::fromArray($array['transactionData'])
+            );
+        });
     }
 
     /**
@@ -81,8 +107,60 @@ class TransactionalOrderUpdateTask extends TransactionalTask
         return [
             'orderUpdateData' => $this->orderUpdateData->toArray(),
             'transactionData' => $this->transactionData->toArray(),
-            'transactionLogId' => $this->transactionLogId,
+            'storeId' => $this->storeId,
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __serialize(): array
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws Exception
+     */
+    public function __unserialize($data): void
+    {
+        $this->storeId = $data['storeId'];
+        $this->orderUpdateData = OrderUpdateData::fromArray($data['orderUpdateData']);
+        $this->transactionData = TransactionData::fromArray($data['transactionData']);
+    }
+
+    /**
+     * String representation of object
+     *
+     * @return string the string representation of the object or null
+     */
+    public function serialize(): string
+    {
+        return Serializer::serialize(array($this->orderUpdateData, $this->transactionData, $this->storeId));
+    }
+
+    /**
+     * Constructs the object
+     *
+     * @param string $serialized <p>
+     * The string representation of the object.
+     * </p>
+     *
+     * @return void
+     */
+    public function unserialize($serialized): void
+    {
+        [$this->orderUpdateData, $this->transactionData, $this->storeId] = Serializer::unserialize($serialized);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getStoreId(): string
+    {
+        return $this->storeId;
     }
 
     /**

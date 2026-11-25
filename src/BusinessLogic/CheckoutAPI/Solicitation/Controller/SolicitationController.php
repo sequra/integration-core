@@ -12,7 +12,6 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsExcep
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\InvalidUrlException;
 use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderMerchantNotFoundException;
-use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderNotFoundException;
 use SeQura\Core\BusinessLogic\Domain\Order\Service\OrderService;
 use SeQura\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
@@ -93,34 +92,6 @@ class SolicitationController
     ): IdentificationFormResponse {
         return new IdentificationFormResponse(
             $this->orderService->getIdentificationForm($cartId, $product, $campaign, $ajax)
-        );
-    }
-
-    /**
-     * @param string $orderReference
-     * @param string|null $product
-     * @param string|null $campaign
-     * @param bool $ajax
-     *
-     * @return IdentificationFormResponse
-     *
-     * @throws HttpRequestException
-     * @throws OrderNotFoundException
-     */
-    public function getIdentificationFormByOrderReference(
-        string $orderReference,
-        ?string $product = null,
-        ?string $campaign = null,
-        bool $ajax = true
-    ): IdentificationFormResponse {
-        return new IdentificationFormResponse(
-            $this->orderService->getIdentificationFormByOrderReference(
-                $orderReference,
-                $product,
-                $campaign,
-                $ajax,
-                false
-            )
         );
     }
 }

@@ -11,7 +11,6 @@ use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\CredentialsNotFoundEx
 use SeQura\Core\BusinessLogic\Domain\Connection\Exceptions\WrongCredentialsException;
 use SeQura\Core\BusinessLogic\Domain\CountryConfiguration\Exceptions\FailedToRetrieveSellingCountriesException;
 use SeQura\Core\BusinessLogic\Domain\Deployments\Exceptions\DeploymentNotFoundException;
-use SeQura\Core\BusinessLogic\Domain\ExpressCheckout\Models\ExpressCheckoutForm;
 use SeQura\Core\BusinessLogic\Domain\Integration\Order\OrderCreationInterface;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\CreateOrderRequestBuilder;
 use SeQura\Core\BusinessLogic\Domain\Order\Builders\MerchantOrderRequestBuilder;
@@ -25,9 +24,7 @@ use SeQura\Core\BusinessLogic\Domain\Order\Exceptions\OrderUpdateRejectedExcepti
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetAvailablePaymentMethodsRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\GetFormRequest;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\CreateOrderRequest;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Merchant;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\MerchantReference;
-use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Options;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestDTO;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\OrderRequestStates;
 use SeQura\Core\BusinessLogic\Domain\Order\Models\OrderRequest\Tracking\Tracking;
@@ -123,10 +120,7 @@ class OrderService
      */
     public function getOrderByShopReference(string $shopReference): SeQuraOrder
     {
-        $order = $this->getNewestOrder(
-            $this->orderRepository->getOrderBatchByShopReferences([$shopReference]),
-            true
-        );
+        $order = $this->orderRepository->getByShopReference($shopReference);
         if (!$order) {
             throw new OrderNotFoundException('Order for shop reference ' . $shopReference . ' not found.');
         }
@@ -163,7 +157,13 @@ class OrderService
     public function solicitFor(CreateOrderRequestBuilder $builder): SeQuraOrder
     {
         $createOrderRequest = $builder->build();
-        $this->addMerchantIfMissing($createOrderRequest);
+
+        if (!$createOrderRequest->getMerchant()) {
+            $createOrderRequest->setMerchant($this->merchantOrderRequestBuilder->build(
+                $createOrderRequest->getDeliveryAddress()->getCountryCode(),
+                $createOrderRequest->getCart()->getCartRef()
+            ));
+        }
 
         $existingOrder = $this->getExistingOrderFor($createOrderRequest);
         if ($existingOrder && $this->isReusableFor($existingOrder, $createOrderRequest)) {
@@ -290,23 +290,18 @@ class OrderService
      *
      * @param CreateOrderRequestBuilder $builder
      *
-     * @return ExpressCheckoutForm
+     * @return SeQuraForm
      *
      * @throws HttpRequestException
      * @throws ConnectionDataNotFoundException
      * @throws CredentialsNotFoundException
      * @throws InvalidUrlException
      */
-    public function solicitExpressCheckoutForm(CreateOrderRequestBuilder $builder): ExpressCheckoutForm
+    public function solicitExpressCheckoutForm(CreateOrderRequestBuilder $builder): SeQuraForm
     {
-        $createOrderRequest = clone $builder->build();
-        $this->addMerchantIfMissing($createOrderRequest);
-        $createOrderRequest->setMerchant($this->withMissingAddressesAllowed($createOrderRequest->getMerchant()));
+        $order = $this->solicitFor($builder);
 
-        $order = $this->solicitFor(new PrebuiltCreateOrderRequestBuilder($createOrderRequest));
-        $form = $this->getFormFor($order, null, null, true, true);
-
-        return new ExpressCheckoutForm($form->getForm(), $order->getReference());
+        return $this->getIdentificationForm($order->getCartId());
     }
 
     /**
@@ -316,7 +311,6 @@ class OrderService
      * @param string|null $product
      * @param string|null $campaign
      * @param bool $ajax
-     * @param bool $showCart
      *
      * @return SeQuraForm
      *
@@ -326,8 +320,7 @@ class OrderService
         string $cartId,
         ?string $product = null,
         ?string $campaign = null,
-        bool $ajax = true,
-        bool $showCart = false
+        bool $ajax = true
     ): SeQuraForm {
         $existingOrder = $this->orderRepository->getByCartId($cartId);
         if (!$existingOrder) {
@@ -336,57 +329,13 @@ class OrderService
             );
         }
 
-        return $this->getFormFor($existingOrder, $product, $campaign, $ajax, $showCart);
-    }
-
-    /**
-     * @param string $orderReference
-     * @param string|null $product
-     * @param string|null $campaign
-     * @param bool $ajax
-     * @param bool $showCart
-     *
-     * @return SeQuraForm
-     *
-     * @throws HttpRequestException
-     * @throws OrderNotFoundException
-     */
-    public function getIdentificationFormByOrderReference(
-        string $orderReference,
-        ?string $product = null,
-        ?string $campaign = null,
-        bool $ajax = true,
-        bool $showCart = false
-    ): SeQuraForm {
-        return $this->getFormFor($this->getSeQuraOrder($orderReference), $product, $campaign, $ajax, $showCart);
-    }
-
-    /**
-     * @param SeQuraOrder $order
-     * @param string|null $product
-     * @param string|null $campaign
-     * @param bool $ajax
-     * @param bool $showCart
-     *
-     * @return SeQuraForm
-     *
-     * @throws HttpRequestException
-     */
-    private function getFormFor(
-        SeQuraOrder $order,
-        ?string $product,
-        ?string $campaign,
-        bool $ajax,
-        bool $showCart
-    ): SeQuraForm {
         return $this->proxy->getForm(
             new GetFormRequest(
-                $order->getReference(),
+                $existingOrder->getReference(),
                 $product,
                 $campaign,
                 $ajax,
-                $order->getMerchant()->getId(),
-                $showCart
+                $existingOrder->getMerchant()->getId()
             )
         );
     }
@@ -402,18 +351,7 @@ class OrderService
      */
     public function updateOrder(OrderUpdateData $orderUpdateData): SeQuraOrder
     {
-        $shopReference = $orderUpdateData->getOrderShopReference();
-        $orders = $this->orderRepository->getOrderBatchByShopReferences([$shopReference]);
-        $newest = $this->getNewestOrder($orders, false);
-        if (!$newest) {
-            throw new OrderNotFoundException('Order for shop reference ' . $shopReference . ' not found.');
-        }
-
-        $order = $this->getNewestOrder($orders, true);
-        if (!$order) {
-            return $newest;
-        }
-
+        $order = $this->getOrderByShopReference($orderUpdateData->getOrderShopReference());
         $hasChanges = false;
 
         $newShippedCart = $orderUpdateData->getShippedCart();
@@ -487,14 +425,9 @@ class OrderService
      */
     public function updateMerchantReference(string $cartId, string $shopReference): void
     {
-        $orders = $this->orderRepository->getOrderBatchByCartIds([$cartId]);
-        if (empty($orders)) {
-            throw new OrderNotFoundException('Order for cart ' . $cartId . ' not found.', 404);
-        }
-
-        $order = $this->getNewestOrder($orders, true);
+        $order = $this->orderRepository->getByCartId($cartId);
         if (!$order) {
-            return;
+            throw new OrderNotFoundException('Order for cart ' . $cartId . ' not found.', 404);
         }
 
         $currentReference = $order->getOrderRef1();
@@ -629,36 +562,6 @@ class OrderService
         }
 
         $this->orderRepository->setSeQuraOrder($order);
-    }
-
-    /**
-     * @throws ConnectionDataNotFoundException
-     * @throws CredentialsNotFoundException
-     * @throws InvalidUrlException
-     */
-    private function addMerchantIfMissing(CreateOrderRequest $request): void
-    {
-        if (!$request->getMerchant()) {
-            $request->setMerchant($this->merchantOrderRequestBuilder->build(
-                $request->getDeliveryAddress()->getCountryCode(),
-                $request->getCart()->getCartRef()
-            ));
-        }
-    }
-
-    private function withMissingAddressesAllowed(Merchant $merchant): Merchant
-    {
-        $options = $merchant->getOptions() ?? new Options();
-        $merchant = clone $merchant;
-        $merchant->setOptions(new Options(
-            $options->getHasJquery(),
-            $options->getUsesShippedCart(),
-            true,
-            $options->getImmutableCustomerData(),
-            $options->getDesiredFirstChargeOn()
-        ));
-
-        return $merchant;
     }
 
     /**
@@ -860,28 +763,6 @@ class OrderService
         }
 
         return null;
-    }
-
-    /**
-     * @param SeQuraOrder[] $orders
-     * @param bool $placedOnly
-     *
-     * @return SeQuraOrder|null
-     */
-    private function getNewestOrder(array $orders, bool $placedOnly): ?SeQuraOrder
-    {
-        $newest = null;
-        foreach ($orders as $order) {
-            if ($placedOnly && !\in_array($order->getState(), OrderRequestStates::SETTLED_STATES, true)) {
-                continue;
-            }
-
-            if ($newest === null || (int)$order->getId() > (int)$newest->getId()) {
-                $newest = $order;
-            }
-        }
-
-        return $newest;
     }
 
     /**
